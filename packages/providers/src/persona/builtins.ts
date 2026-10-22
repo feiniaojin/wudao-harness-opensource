@@ -9,14 +9,14 @@ import type { PersonaDefinition } from "./types.js";
 
 export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
   {
-    // doc90 §1 (the upstream format @ a8a678cb, npm 2.1.88)
-    id: "the upstream format",
+    // doc90 §1 (anthropic-cli @ a8a678cb, npm 2.1.88)
+    id: "anthropic-cli",
     displayName: "the upstream harness",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §1 (the upstream format/restored-src): headers http.ts:34 + services/api/client.ts:106-108; betas constants/betas.ts:3; prompt constants/system.ts:10. Anthropic Messages protocol only — openai-chat/responses undefined ⇒ byte-identical on those wires.",
-      pinnedVersion: "sourcemap a8a678cb6244e6770e1e421767ff0987a1d95549; npm @anthropic-ai/the upstream format 2.1.88",
+        "doc90 §1 (anthropic-cli/restored-src): headers http.ts:34 + services/api/client.ts:106-108; betas constants/betas.ts:3; prompt constants/system.ts:10. Anthropic Messages protocol only — openai-chat/responses undefined ⇒ byte-identical on those wires.",
+      pinnedVersion: "sourcemap a8a678cb6244e6770e1e421767ff0987a1d95549; npm @anthropic-ai/anthropic-cli 2.1.88",
     },
     confidence: "byte-verified",
     headers: {
@@ -32,7 +32,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
         "anthropic-version": "2023-06-01", // doc90 §1.1: 恒发, codeSessionApi.ts:16 等
         "x-app": "cli", // doc90 §1.1: client.ts:106, 恒发
         "X-the upstream harness-Session-Id": "{{sessionId}}", // doc90 §1.1: client.ts:108, 会话 UUID 恒发
-        "anthropic-beta": "the upstream format-20250219", // doc90 §1.1 beta 表: 非 haiku 模型恒发 (betas.ts:3); 其余 beta 均条件发,不编码
+        "anthropic-beta": "anthropic-cli-20250219", // doc90 §1.1 beta 表: 非 haiku 模型恒发 (betas.ts:3); 其余 beta 均条件发,不编码
       },
       // Conditional rows omitted: x-claude-remote-container-id / -remote-session-id /
       // x-client-app / x-anthropic-additional-protection / x-client-request-id, and the
@@ -53,14 +53,14 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     },
   },
   {
-    // doc90 §2 (the upstream project-rs workspace clone @ 51ebf5b1)
-    id: "the upstream project",
+    // doc90 §2 (openai-responses-rs workspace clone @ 51ebf5b1)
+    id: "openai-responses",
     displayName: "Codex CLI",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §2 (the upstream project/the upstream project-rs): originator login/src/auth/[upstream client]:40,335-338; session-id the upstream project-api/src/requests/headers.rs:5-13; store core/src/client.rs:946; instructions protocol/src/prompts/base_instructions/default.md:1. OpenAI Responses protocol only.",
-      pinnedVersion: "the upstream project-rs workspace HEAD 51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e (2026-08-21); workspace version 0.0.0 (rolling dev)",
+        "doc90 §2 (openai-responses/openai-responses-rs): originator login/src/auth/[upstream client]:40,335-338; session-id openai-responses-api/src/requests/headers.rs:5-13; store core/src/client.rs:946; instructions protocol/src/prompts/base_instructions/default.md:1. OpenAI Responses protocol only.",
+      pinnedVersion: "openai-responses-rs workspace HEAD 51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e (2026-08-21); workspace version 0.0.0 (rolling dev)",
     },
     confidence: "byte-verified",
     headers: {
@@ -72,11 +72,11 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
         // 机器值 (os_info::os_type()/version()/architecture() + terminal-detection
         // user_agent_token),无 slot 可解析 — 钉定为常见 macOS/Apple Silicon 形
         // ("Mac OS"/arm64 即 os_info 在 macOS 的取值,Apple_Terminal 为终端名回退
-        // token 形)。原模板 ${…} 占位与 the upstream format UA 同病:按 UA 认工具的供应商
+        // token 形)。原模板 ${…} 占位与 anthropic-cli UA 同病:按 UA 认工具的供应商
         // 拒收 (2026-08-31),求值常量才可上线。
         "User-Agent": "wudao_harness/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal",
       },
-      // Omitted: thread-id (no v1 slot), x-the upstream project-installation-id / -beta-features /
+      // Omitted: thread-id (no v1 slot), x-openai-responses-installation-id / -beta-features /
       // -turn-state / -routing-hint, x-oai-attestation, residency / responses-lite —
       // all conditional or runtime-valued (doc90 §2.1).
     },
@@ -118,7 +118,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     // no body (protobuf transport, nothing mappable) and NO prompt (doc90 §5.3: 未定 — never guess)
   },
   {
-    // doc90 §4 (the upstream project @ 3a31c4ea, package 1.18.21) — multi-protocol
+    // doc90 §4 (openai-responses @ 3a31c4ea, package 1.18.21) — multi-protocol
     id: "multi-wire",
     displayName: "multi-wire",
     source: {
@@ -161,26 +161,26 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     },
   },
   {
-    // doc90 §3 (the upstream format @ b150a551, package 0.1.1-rc.2)
-    id: "the upstream format",
+    // doc90 §3 (anthropic-cli @ b150a551, package 0.1.1-rc.2)
+    id: "deepseek-native",
     displayName: "DeepSeek Harness",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §3 (the upstream format/): attribution user-agent packages/llm/llm/src/attribution.ts:40-44,53-54 (版本取自包清单); session 头 llm-deepseek/src/adapter.ts:526-528; 身份段 packages/core/system-prompt/src/index.ts:358-363 (harness:identity, order -100). OpenAI 兼容 chat-completions 协议 (relay 场景)。",
-      pinnedVersion: "the upstream format HEAD b150a551b8d465e31e418e1b2eaf5e79bbb7d28e (2026-08-21, release/a ref-0.1.1-rc.2); @deepseek-ai/a ref-llm 0.1.1-rc.2",
+        "doc90 §3 (anthropic-cli/): attribution user-agent packages/llm/llm/src/attribution.ts:40-44,53-54 (版本取自包清单); session 头 llm-deepseek/src/adapter.ts:526-528; 身份段 packages/core/system-prompt/src/index.ts:358-363 (harness:identity, order -100). OpenAI 兼容 chat-completions 协议 (relay 场景)。",
+      pinnedVersion: "anthropic-cli HEAD b150a551b8d465e31e418e1b2eaf5e79bbb7d28e (2026-08-21, release/a ref-0.1.1-rc.2); @deepseek-ai/a ref-llm 0.1.1-rc.2",
     },
     confidence: "byte-verified",
     headers: {
       "openai-chat": {
-        "user-agent": "the upstream format/0.1.1-rc.2 (+https://github.com/deepseek-ai/the upstream format)", // doc90 §3.1: attribution 恒发不可关闭; 版本=钉定包清单 0.1.1-rc.2
-        "x-the upstream format-session-id": "{{sessionId}}", // doc90 §3.1: adapter.ts:526-528 (sessionId 存在时; v1 槽位语义=必须提供,见 task-4 report)
+        "user-agent": "anthropic-cli/0.1.1-rc.2 (+https://github.com/deepseek-ai/anthropic-cli)", // doc90 §3.1: attribution 恒发不可关闭; 版本=钉定包清单 0.1.1-rc.2
+        "x-anthropic-cli-session-id": "{{sessionId}}", // doc90 §3.1: adapter.ts:526-528 (sessionId 存在时; v1 槽位语义=必须提供,见 task-4 report)
         // Omitted: authorization (auth — schema 拒绝), content-type/accept (传输机械头,
-        // 适配器自管), x-the upstream format-user-id (稳定匿名用户 id,无忠实槽位 — {{uuid}}
-        // 为逐请求随机,语义不符), x-the upstream format-compact (仅 compaction)。
+        // 适配器自管), x-anthropic-cli-user-id (稳定匿名用户 id,无忠实槽位 — {{uuid}}
+        // 为逐请求随机,语义不符), x-anthropic-cli-compact (仅 compaction)。
       },
     },
-    // no body: thinking (§3.2 the upstream format的签名开关) 不在 v1 openai-chat 白名单 — 冲突已披露,
+    // no body: thinking (§3.2 anthropic-cli的签名开关) 不在 v1 openai-chat 白名单 — 冲突已披露,
     // 不强行写入; reasoning_effort 值(low/high/max)配置驱动未钉定; temperature/max_tokens/
     // stop 为透传可选。
     prompt: {

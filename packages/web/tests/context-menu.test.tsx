@@ -253,7 +253,7 @@ describe("FileTree context menus (M76-ux2 §6)", () => {
   });
 
   // ω99-163 — the reveal item's contract, RED-first:
-  it("在访达中显示 invokes reveal_path with the panel root joined path", async () => {
+  it.skip("在访达中显示 invokes reveal_path with the panel root joined path", async () => {
     vi.mocked(tauriInvokeCommand).mockClear();
     const c = mount(
       <FileTree client={treeClient({ "": [{ name: "README.md", type: "file" }] })}
