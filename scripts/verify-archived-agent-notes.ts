@@ -39,6 +39,13 @@ if (!parsedOk) {
 if (rootFlag !== -1) root = resolve(args[rootFlag + 1] ?? ".");
 
 const archiveRoot = resolve(root, "archived");
+// The opensource distribution ships no `.agents/notes/` tree (it is the
+// internal development audit trail, deliberately excluded by sync) — a
+// missing tree means there is nothing to verify, not a violation.
+if (!existsSync(archiveRoot)) {
+  console.log(`verify-archived-agent-notes: no archive at ${archiveRoot}; nothing to verify.`);
+  process.exit(0);
+}
 const manifestRepoPath = ".agents/notes/archived/manifest.json";
 const errors: string[] = [];
 

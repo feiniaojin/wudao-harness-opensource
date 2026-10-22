@@ -30,6 +30,14 @@ if (args.length === 2 && args[0] === "--root") {
   process.exit(2);
 }
 
+// The opensource distribution ships no `.agents/notes/` tree (it is the
+// internal development audit trail, deliberately excluded by sync) — a
+// missing tree means there is nothing to verify, not a violation.
+if (!existsSync(root)) {
+  console.log(`verify-agent-notes: no active Agent Notes tree at ${root}; nothing to verify.`);
+  process.exit(0);
+}
+
 const { noteCount, errors } = verifyActiveNotes(root);
 
 // The frozen archive's manifest must at least parse here; a missing manifest
