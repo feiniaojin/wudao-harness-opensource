@@ -66,7 +66,7 @@ describe("夜移 035 — loop wiring: the threaded recorder sees the run's real 
     const p = recorder.complete();
     expect(p.samplingRequestCount).toBe(1);
     expect(p.samplingRetryCount).toBe(0);
-    expect(p.samplingMs).toBeGreaterThanOrEqual(20); // the injected request sleep
+    expect(p.samplingMs).toBeGreaterThanOrEqual(18); // the injected request sleep (≥20, −2ms timer granularity for CI)
     expect(p.compactionMs).toBe(0);
     expect(p.toolBlockingMs).toBe(0);
     expect(p.betweenSamplingOverheadMs).toBe(0); // no second sampling round
