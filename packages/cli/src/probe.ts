@@ -195,8 +195,10 @@ export interface ProbeAuditSink {
 /** 每条 ProbeEvent 追加一行 JSON。任何失败（目录不可建/盘满/权限）静默吞——
  *  审计绝不阻塞执行；文件在首条事件时才创建（零事件=零文件）。 */
 export function openProbeAudit(bus: UiProbeBusPort, path: string): ProbeAuditSink {
-  let tail: Promise<void> = Promise.resolve();
-  void mkdir(dirname(path), { recursive: true }).catch(() => {});
+  // The directory create HEADS the write chain: as a fire-and-forget it raced
+  // the first event's appendFile (slow CI fs: append hit ENOENT before mkdir
+  // landed — the catch swallowed it and the audit silently lost the event).
+  let tail: Promise<void> = mkdir(dirname(path), { recursive: true }).catch(() => {});
   const unsubscribe = bus.subscribe("*", (e) => {
     tail = tail.then(() => appendFile(path, `${JSON.stringify(e)}\n`, "utf8")).catch(() => {});
   });
