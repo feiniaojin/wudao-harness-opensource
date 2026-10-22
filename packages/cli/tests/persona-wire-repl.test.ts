@@ -4,7 +4,7 @@
 // injected fetch, and assert the captured wire request carries the RESOLVED
 // session header (the Critical: the REPL constructed its PersonaRuntime with
 // no slots, so every templated header threw at request time).
-// I1: the protocol-mismatch notice — codex defines headers/body only on
+// I1: the protocol-mismatch notice — openai-responses defines headers/body only on
 // `responses`; the REPL speaks openai-chat, so the switch confirmation must
 // say the wire is byte-unchanged (and the captured wire proves it).
 // T13-M1: the driver's /persona is a VISIBLE unavailable notice, not a silent
@@ -159,12 +159,12 @@ describe.skip("final-review C1 — REPL runtime slots (runRepl integration)", ()
 
 describe("final-review I1 — protocol-mismatch switch notice (runRepl integration)", () => {
   it("/persona openai-responses: layers flagged on but nothing defined on openai-chat → the notice line + a byte-unchanged wire", async () => {
-    const { wire, out } = await driveRepl(["/persona codex", "hi", "/exit"], { sessionId: "wire-sess-2" });
+    const { wire, out } = await driveRepl(["/persona openai-responses", "hi", "/exit"], { sessionId: "wire-sess-2" });
     // The informational notice (exact brief text), appended to the confirmation.
     expect(out).toContain("注：此 persona 未定义 openai-chat 的 headers/body——这里只有 prompt 层生效"); // ω99-166f-ii: 钉随源演进
     // The confirmation itself still prints (informational, not an error).
-    expect(out).toContain("persona → codex [headers+body] —— 下一个请求即生效"); // ω99-166f-ii: 钉随源演进
-    // The wire proof: codex defines headers/body only on `responses` — the
+    expect(out).toContain("persona → openai-responses [headers+body] —— 下一个请求即生效"); // ω99-166f-ii: 钉随源演进
+    // The wire proof: openai-responses defines headers/body only on `responses` — the
     // captured request is byte-wise the adapter's own (exactly the two
     // baseline headers, nothing persona-added).
     const call = chatCall(wire);

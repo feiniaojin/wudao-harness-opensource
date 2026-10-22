@@ -21,8 +21,8 @@ const ccDef: PersonaDefinition = {
   confidence: "byte-verified",
 };
 const dshDef: PersonaDefinition = {
-  id: "a ref", displayName: "the upstream format",
-  source: { kind: "workspace-source", provenance: "ref/a ref", pinnedVersion: "1" },
+  id: "owire", displayName: "the upstream format",
+  source: { kind: "workspace-source", provenance: "ref/owire", pinnedVersion: "1" },
   headers: { "openai-chat": { "x-client": "the upstream format" } },
 };
 const registry: PersonaRegistry = { personas: [ccDef, dshDef], errors: [] };
@@ -52,7 +52,7 @@ describe("parsePersonaArgument", () => {
   it("fail-closed on garbage", () => {
     expect(parsePersonaArgument("--headers-only")).toEqual({ ok: false, error: expect.stringContaining("--headers-only") });
     expect(parsePersonaArgument("cc --wat")).toEqual({ ok: false, error: expect.stringContaining("--wat") });
-    expect(parsePersonaArgument("cc a ref")).toEqual({ ok: false, error: expect.any(String) });
+    expect(parsePersonaArgument("cc owire")).toEqual({ ok: false, error: expect.any(String) });
   });
   it("layerOverrideFor semantics", () => {
     // Fix round 1（spec §10.1 mask）：旗标携带**完整启用集**——--with-prompt =
@@ -80,8 +80,8 @@ describe("resolvePersonaSwitch / resolveBootstrapPersona", () => {
   });
   it("bootstrap: absent config → null; present → resolved; bad id → error", () => {
     expect(resolveBootstrapPersona(registry, {})).toEqual({ ok: true, resolved: null });
-    const ok = resolveBootstrapPersona(registry, { persona: { id: "a ref" } });
-    expect(ok.ok && ok.resolved?.definition.id).toBe("a ref");
+    const ok = resolveBootstrapPersona(registry, { persona: { id: "owire" } });
+    expect(ok.ok && ok.resolved?.definition.id).toBe("owire");
     const bad = resolveBootstrapPersona(registry, { persona: { id: "zzz" } });
     expect(bad.ok).toBe(false);
   });
@@ -136,7 +136,7 @@ describe("recordPersonaChange + formatPersonaList", () => {
     const out = formatPersonaList(registry, "cc");
     expect(out).toContain("cc");
     expect(out).toContain("← current");
-    expect(out).toContain("a ref");
+    expect(out).toContain("owire");
     expect(out).toContain("byte-verified");
     expect(out.split("← current").length - 1).toBe(1); // 有且只有一个 current 标记
   });
@@ -153,7 +153,7 @@ describe("recordPersonaChange + formatPersonaList", () => {
       });
       await recordPersonaChange({
         workspaceRoot: ws, sessionId: "s4",
-        to: { id: "a ref", layers: { headers: true, body: true, prompt: false } },
+        to: { id: "owire", layers: { headers: true, body: true, prompt: false } },
         coldTurnExpected: false, now: new Date("2026-08-23T01:02:03.000Z"),
       });
       const store = createJsonlSessionStore(join(ws, ".wudao", "sessions"));
@@ -177,7 +177,7 @@ describe("recordPersonaChange + formatPersonaList", () => {
       });
       await recordPersonaChange({
         workspaceRoot: ws, sessionId: "s3",
-        to: { id: "a ref", layers: { headers: true, body: true, prompt: false } },
+        to: { id: "owire", layers: { headers: true, body: true, prompt: false } },
         coldTurnExpected: false, now: new Date("2026-08-23T01:02:03.000Z"),
       });
       const store = createJsonlSessionStore(join(ws, ".wudao", "sessions"));
@@ -238,24 +238,24 @@ describe("resolveActivePersona (spec §1 chain)", () => {
 // undefined、层集走缺省）。
 describe("resolveActivePersona layer-qualified refs (id:layers)", () => {
   it("qualified binding resolves with the layer MASK and echoes spec; a plain id keeps spec undefined + default layers", () => {
-    const q = resolveActivePersona(registry, { envPersona: null, bindingId: "cc:headers", defaultId: "a ref" });
+    const q = resolveActivePersona(registry, { envPersona: null, bindingId: "cc:headers", defaultId: "owire" });
     expect(q.provenance).toBe("binding");
     expect(q.resolved?.definition.id).toBe("cc");
     // mask：只启用 headers——body/prompt 关（即使 body 缺省开）。
     expect(q.resolved?.layers).toEqual({ headers: true, body: false, prompt: false });
     expect(q.spec).toBe("cc:headers");
-    const plain = resolveActivePersona(registry, { envPersona: null, bindingId: "cc", defaultId: "a ref" });
+    const plain = resolveActivePersona(registry, { envPersona: null, bindingId: "cc", defaultId: "owire" });
     expect(plain.provenance).toBe("binding");
     expect(plain.spec).toBeUndefined();
     // 纯 id 与 resolvePersona(ccDef) 逐字节一致（缺省层集，无 mask）。
     expect(plain.resolved?.layers).toEqual(resolvePersona(ccDef).layers);
   });
-  it("qualified default leg: a ref:prompt means ONLY the prompt layer (mask) + spec", () => {
-    const r = resolveActivePersona(registry, { envPersona: null, bindingId: undefined, defaultId: "a ref:prompt" });
+  it("qualified default leg: owire:prompt means ONLY the prompt layer (mask) + spec", () => {
+    const r = resolveActivePersona(registry, { envPersona: null, bindingId: undefined, defaultId: "owire:prompt" });
     expect(r.provenance).toBe("default");
-    expect(r.resolved?.definition.id).toBe("a ref");
+    expect(r.resolved?.definition.id).toBe("owire");
     expect(r.resolved?.layers).toEqual({ headers: false, body: false, prompt: true });
-    expect(r.spec).toBe("a ref:prompt");
+    expect(r.spec).toBe("owire:prompt");
   });
   it("\"+\"-joined multi-layer parses; mask keeps exactly the listed layers; spec echoes in canonical form", () => {
     const r = resolveActivePersona(registry, { envPersona: null, bindingId: "cc:prompt+headers", defaultId: undefined });
@@ -264,13 +264,13 @@ describe("resolveActivePersona layer-qualified refs (id:layers)", () => {
     expect(r.spec).toBe("cc:headers+prompt");
   });
   it("fail-closed: unknown id WITH qualifier / bad layer name on the binding → warning + fall through to default", () => {
-    const ghost = resolveActivePersona(registry, { envPersona: null, bindingId: "ghost:headers", defaultId: "a ref" });
+    const ghost = resolveActivePersona(registry, { envPersona: null, bindingId: "ghost:headers", defaultId: "owire" });
     expect(ghost.provenance).toBe("default");
-    expect(ghost.resolved?.definition.id).toBe("a ref");
+    expect(ghost.resolved?.definition.id).toBe("owire");
     expect(ghost.warning).toContain("ghost:headers");
-    const bogus = resolveActivePersona(registry, { envPersona: null, bindingId: "cc:bogus", defaultId: "a ref" });
+    const bogus = resolveActivePersona(registry, { envPersona: null, bindingId: "cc:bogus", defaultId: "owire" });
     expect(bogus.provenance).toBe("default");
-    expect(bogus.resolved?.definition.id).toBe("a ref");
+    expect(bogus.resolved?.definition.id).toBe("owire");
     expect(bogus.warning).toContain("cc:bogus");
     expect(bogus.warning).toContain("unknown layer");
   });

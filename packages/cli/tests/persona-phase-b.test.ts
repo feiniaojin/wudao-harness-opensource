@@ -7,7 +7,7 @@
 //      full model turn of the live REPL loop (stream path).
 //   ④ /persona --off — the mismatch note the switch path already prints
 //      (final-review I1) was MISSING on the bootstrap fallback: a
-//      protocol-mismatched config persona (the upstream project= responses-only) fell back
+//      protocol-mismatched config persona (openai-responses = responses-only) fell back
 //      silently. The --off confirmation must carry the same note, naming the
 //      protocol the LIVE wire speaks (openai-chat default, or wire=anthropic).
 import { describe, it, expect } from "vitest";
@@ -161,13 +161,13 @@ describe("Phase B ① — wire=anthropic reaches the anthropic adapter through t
 });
 
 describe("Phase B ④ — /persona --off mismatch note (protocol-mismatched bootstrap persona)", () => {
-  // the upstream projectdefines headers/body ONLY on `responses` — a protocol-mismatched
+  // openai-responses defines headers/body ONLY on `responses` — a protocol-mismatched
   // bootstrap persona under every wire this test speaks.
-  const CODEX_BOOT = { ...CFG, persona: { id: "the upstream project" } } as ProviderConfig;
+  const CODEX_BOOT = { ...CFG, persona: { id: "openai-responses" } } as ProviderConfig;
 
   it("default wire: the --off fallback prints the mismatch note (was silently missing)", async () => {
     const { out } = await driveRepl(["/persona --off", "/exit"], { config: CODEX_BOOT, sessionId: "phase-b-off-1" });
-    expect(out).toContain("persona → the upstream project —— 下一个请求即生效"); // ω99-166f-ii: 钉随源演进
+    expect(out).toContain("persona → openai-responses —— 下一个请求即生效"); // ω99-166f-ii: 钉随源演进
     expect(out).toContain("注：此 persona 未定义 openai-chat 的 headers/body——这里只有 prompt 层生效"); // ω99-166f-ii: 钉随源演进
   });
 
