@@ -1,0 +1,17 @@
+# ω99-155 — the chat answer's markdown link's command: hand an http(s) URL
+# to the OS default browser (bare `open`, the ω99-129 open_path posture —
+# fire-and-forget, no .wait()). Same remote-origin rule as open-path (the
+# ω99-104 precedent): both webviews run on the sidecar's http://127.0.0.1
+# origin, which tauri's ACL treats as REMOTE — an app command is dead
+# without an explicit capability.
+#
+# Referenced by capabilities/main.json ONLY (the main window renders the
+# conversation; the pet window never invokes it — no entry in pet.json/
+# drag.json). The command itself gates on a scheme whitelist (http/https
+# only, whitespace refused — open_url_gate in main.rs; a `javascript:` or
+# `file:` string the model emitted never reaches `open`) and passes args
+# as an array (no shell), so no scope entries are needed.
+[[permission]]
+identifier = "allow-open-url"
+description = "Allows opening an http(s) markdown link in the default browser (scheme-whitelisted, fire-and-forget, no data returned)."
+commands.allow = ["open_url"]

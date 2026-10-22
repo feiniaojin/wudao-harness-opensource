@@ -1,0 +1,965 @@
+/* ω99-98 — the pet window's ONLY stylesheet, imported by pet/main.tsx alone
+   (never by the main shell — the shell's dist must reference none of it).
+   119b 去廉价化：本表从「钉死字面量孤岛」迁入主窗令牌体系——pet/main.tsx
+   现在与主窗共享同一份 ../tokens.css（纯 CSS，零 JS 模块图影响；styles.css
+   仍不进本入口，主 UI 依旧不在本窗模块图里——ω99-97 隔离的实质是 JS 面）。
+   中性面/文本/边框/圆角/投影全消费 var(--*)；明暗随 html[data-theme]
+   自动翻转（275 的浅色覆写块整体退役）。仅存的 pet 域自有变量是精灵品牌
+   绿 --pet-accent（通道形式：rgb 三元组 + alpha 用法，皮肤色不属 chrome）。
+   The logo sprite carries its own colors now.
+   Motion contract (§3): every state is driven by [data-pet-state] on the
+   root; keyframes use transform only (GPU-friendly); the root itself
+   never animates (it carries the fixed-position transform) — the .pet-figure
+   inside holds the sprite img, and the img moves. */
+/* 119b — 精灵品牌绿通道（rgb 三元组；消费一律 rgb(var(--pet-accent) / α)）：
+   悟道史莱姆的产品形象色，属 pet 域品牌变量而非 chrome 中性色——不随
+   data-accent 摆动（主窗换 black/blue accent 时精灵仍是绿的）。ink 对取
+   主窗 accent-ink 的近墨 idiom（绿底上 5.35:1，两主题同值——绿底本身不随
+   主题翻）。改值必须两处同步（通道值/hex 注释）。 */
+:root {
+  --pet-accent: 14 159 110;   /* #0E9F6E — 精灵品牌绿（皮肤族锚，非 chrome） */
+  --pet-accent-ink: 20 21 25; /* #141519 — 品牌绿上的近墨字（accent-ink idiom） */
+}
+/* ω99-146 — 陪伴感第二层：idle 时 .pet-figure（原零动画的父层）挂 pet-sway
+   常摆——与子层 .pet-sprite-img 的呼吸/动作跨元素叠乘（两个 transform 动画
+   同元素会互斥，跨元素则叠乘），root 仍永不动画（§3 契约不动）。 */
+.pet-root {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 96px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  touch-action: none;
+}
+.pet-root[data-pet-state="drag"] {
+  cursor: grabbing;
+}
+
+/* the sheet skin (ω99-108 logo slime → ω99-111 2-frame sheet): one
+   background-div per skin, url swapped by the sheetSkin factory. The
+   character now fills the 96px element (the old letterboxed img showed it
+   at ~66×42 — the "looks static" root cause). The div is pointer-INERT on
+   purpose: pointerdown must keep landing on .pet-root (the drag seam in
+   pet/main.tsx). transform-origin pins to the bottom: the slime's wavy
+   skirt is its ground, so squash/tilt read as jelly sitting on a surface —
+   the div is bottom-anchored in the 96x96 figure for the same reason. */
+.pet-figure {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.pet-sprite-img {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: block;
+  width: 96px;
+  aspect-ratio: 390 / 238; /* the sheet frame geometry (make-logo-sprite.py crop), pinned */
+  background-size: 200% 100%; /* two frames side by side → each frame fills the element */
+  background-repeat: no-repeat;
+  background-position: 0 0; /* frame 0 = eyes open; pet-blink flips to 100% 0 */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform, background-position;
+  transform-origin: 50% 100%;
+}
+
+/* ω99-111 — the blink: swap to the closed-eye frame, steps(1,end)
+   hard-cut — sprite-sheet convention, no crossfade. Rides EVERY state as
+   the second animation in the state's shorthand (transform ≠
+   background-position, so state motion and life signs stack — never
+   mutually exclusive).
+   ω99-145 — 双眨（用户令 09-07「或者眨眼睛」）：周期 5.2s→15.6s，内含
+   2 次单眨 + 1 次双眨（两个紧邻闭眼窗、中间 ~190ms 短暂睁开）——纯单眨
+   撑 15.6s 会长得像不眨，双眨让长周期不显机械。每个闭眼窗 ~280ms
+   （1.8% of 15.6s，原 5.2s 的 ~210ms 同量级）。
+   ω99-146 — 密眨（用户令 09-07「间隔也比较长」）：15.6s→9.6s，3 次单眨
+   （~24%/~48%/~72%）+ 1 次双眨（~91.5% 与 ~95%），平均 ~2.4s 一眨
+   （人眼自然频段，陪伴感主体）。每闭窗 ~200ms（2.1% of 9.6s）。 */
+@keyframes pet-blink {
+  0%, 23.5% { background-position: 0% 0; }
+  24%, 25.6% { background-position: 100% 0; }   /* 单眨一 */
+  26.1%, 47.5% { background-position: 0% 0; }
+  48%, 49.6% { background-position: 100% 0; }   /* 单眨二 */
+  50.1%, 71.5% { background-position: 0% 0; }
+  72%, 73.6% { background-position: 100% 0; }   /* 单眨三 */
+  74.1%, 91% { background-position: 0% 0; }
+  91.5%, 93.1% { background-position: 100% 0; } /* 双眨·第一下 */
+  93.6%, 94.4% { background-position: 0% 0; }   /* 短暂睁开 */
+  94.9%, 96.5% { background-position: 100% 0; } /* 双眨·第二下 */
+  97%, 100% { background-position: 0% 0; }
+}
+
+/* Five steady states + the done transient + the drag event state — D8
+   打扰纪律: small amplitudes, one sprite-level motion per state, each
+   visually distinct from its neighbors. ω99-108: an image skin cannot
+   animate parts, so every state is a whole-sprite transform keyed off the
+   same [data-pet-state] seam. ω99-111: every rule is the `animation`
+   SHORTHAND carrying two entries — the state motion + pet-blink — because
+   each entry needs its own duration/iteration count (a longhand single
+   value would wrongly apply one duration/count to both). */
+/* ω99-145 — idle super-cycle（用户令 09-07「多设计点动作」）：单一 2.4s
+   呼吸太薄，拉长为 ~12s 有机循环——3 轮呼吸 + 1 次侧头看 + 1 次 squash-hop
+   + 落定回呼吸。全部 transform-only、落地语义（transform-origin 50% 100%
+   在 .pet-sprite-img）、D8 小幅值（旋转 4°≤6°、缩放 ±5% 内、跳高 5px≤6px）。
+   相邻停靠的函数列表长度不同时浏览器按恒等补位插值（scale↔translateY+scale
+   平滑过渡）。与 thinking（±3° 主摆）/working（0.6s 快弹）/waiting（摆尾式
+   1.6s 摇）节奏保持可辨——12s 里大部分是呼吸，偶发相才成「动作」。 */
+/* ω99-146 — 呼吸幅值 ±2.5%→±6-7%（用户令 09-07「要有一种呼吸感」）：
+   旧 (1.03,0.955)↔(0.985,1.03) 在 ~59px 精灵上只有 ~1.5px 位移，低于一眼
+   可感阈值；升到 (1.06,0.92)↔(0.95,1.07)——59px 上 ±4px 的果冻呼吸。
+   12s super-cycle 骨架（3 呼吸+侧头停拍+hop+落定）不动，仅呼吸停靠值随
+   幅值更新；侧头 -4° 与 sway ±2.5° 合成峰值 ≤6.5°（瞬时），可接受。 */
+@keyframes pet-idle {
+  0% { transform: scale(1.06, 0.92); }    /* 呼吸 1 起于落定压扁 */
+  9% { transform: scale(0.95, 1.07); }
+  18% { transform: scale(1.06, 0.92); }
+  27% { transform: scale(0.95, 1.07); }   /* 呼吸 2 */
+  36% { transform: scale(1.06, 0.92); }
+  42%, 48% { transform: scale(1.06, 0.92) rotate(-4deg); } /* 侧头看：停一拍 */
+  54% { transform: scale(1.06, 0.92); }
+  60% { transform: scale(0.95, 1.07); }   /* 呼吸 3 */
+  66% { transform: scale(1.06, 0.92); }
+  71% { transform: translateY(0) scale(1.05, 0.95); }       /* 蓄力压扁 */
+  74% { transform: translateY(-5px) scale(0.97, 1.05); }    /* 小跳（squash-hop）*/
+  77% { transform: translateY(0) scale(1.04, 0.96); }       /* 落地压扁 */
+  80% { transform: translateY(-2px) scale(1.0, 1.0); }      /* 微回弹 */
+  90% { transform: scale(0.95, 1.07); }   /* 落定回呼吸 */
+  100% { transform: scale(1.06, 0.92); }
+}
+@keyframes pet-thinking {
+  0%, 100% { transform: rotate(-3deg); } /* ±3° 主摆保留 */
+  25%, 75% { transform: rotate(1deg); }  /* ω99-111 加 ±1° 微摆（活而不夸张） */
+  50% { transform: rotate(3deg); }
+}
+@keyframes pet-working {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  35% { transform: translateY(0) scale(1.04, 0.94); }  /* 蓄力压扁 */
+  70% { transform: translateY(-7px) scale(0.97, 1.03); } /* 弹起微拉伸 */
+}
+@keyframes pet-answering {
+  0% { transform: scale(1, 1); }
+  30% { transform: scale(1.09, 0.93); } /* pop：压扁弹出 */
+  60% { transform: scale(0.96, 1.05); } /* 回弹拉高 */
+  100% { transform: scale(1, 1); }
+}
+@keyframes pet-waiting {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-6deg); }
+  40% { transform: rotate(6deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(4deg); }
+}
+@keyframes pet-done {
+  0% { transform: translateY(-10px) scale(0.98, 1.02); }
+  40% { transform: translateY(0) scale(1.06, 0.92); }   /* 落地压扁 */
+  70% { transform: translateY(-2px) scale(0.98, 1.02); } /* 微回弹 */
+  100% { transform: translateY(0) scale(1, 1); }        /* 落定 */
+}
+@keyframes pet-drag {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); } /* 抓起放大，forwards 钉住 */
+}
+
+/* ω99-278: #5 — 戳一戳 squash（pet-done 先例形，力度更大）：压扁→过冲→
+   落定。挂 .pet-poke-layer（figure 外的新内层——本表「两层 transform 跨
+   元素叠乘」纪律的第三落地）：与父层 .pet-figure 的 sway、子层 img 的态
+   动画各在各元素互不占位，任何皮肤/任何机器态下戳一戳都成立，换肤零适
+   配。pokeEpoch 重挂该层即重启本动画；0.6s = poke.ts 的 POKE_SQUASH_MS。 */
+@keyframes pet-squash {
+  0% { transform: scale(1, 1); }
+  35% { transform: scale(1.22, 0.78); }   /* 捏扁 */
+  65% { transform: scale(0.92, 1.08); }   /* 过冲回弹 */
+  100% { transform: scale(1, 1); }
+}
+/* ω99-278（续，标记 #5 见上）— 拖拽松手回弹（release 事件态）：drag
+   forwards 钉住的 1.05 落回 + 落地晃两下站稳。0% 承接 1.05（零突跳）；
+   0.45s 与 main.tsx 的 releaseFlash 450ms 定时同值。 */
+@keyframes pet-release {
+  0% { transform: scale(1.05); }          /* 承接 drag forwards 钉住的 1.05，零突跳 */
+  40% { transform: scale(0.94, 1.06); }   /* 落地压扁 */
+  70% { transform: scale(1.02, 0.98); }   /* 微回弹 */
+  100% { transform: scale(1, 1); }
+}
+
+/* ω99-146 — idle 常摆（用户令 09-07「还会左右摆动之类的效果」）：父层
+   .pet-figure 上的连续小幅摇摆——两个 transform 动画同元素互斥，挂到
+   闲置的父层与子层 img 的呼吸/动作跨元素叠乘。±2.5°、4.8s ease-in-out，
+   落地轴（transform-origin 50% 100% 在规则上钉——figure 本无 origin 声明）。
+   仅 idle 态挂：thinking/waiting 自有主摆，叠加会过躁。 */
+@keyframes pet-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(0deg); }
+  75% { transform: rotate(2.5deg); }
+}
+
+[data-pet-state="idle"] .pet-sprite-img {
+  /* ω99-145: idle 时长随 super-cycle 2.4s→12s（关键帧内含多相动作） */
+  animation: pet-idle 12s ease-in-out infinite, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+[data-pet-state="thinking"] .pet-sprite-img {
+  animation: pet-thinking 2.2s ease-in-out infinite, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+[data-pet-state="working"] .pet-sprite-img {
+  animation: pet-working 0.6s ease-in-out infinite, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+[data-pet-state="answering"] .pet-sprite-img {
+  animation: pet-answering 1s ease-in-out infinite, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+[data-pet-state="waiting-user"] .pet-sprite-img {
+  animation: pet-waiting 1.6s ease-in-out infinite, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+[data-pet-state="done"] .pet-sprite-img {
+  animation: pet-done 0.7s ease-out 1, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+[data-pet-state="drag"] .pet-sprite-img {
+  animation: pet-drag 0.16s ease-out 1 forwards, pet-blink 9.6s steps(1, end) infinite; /* ω99-146: 密眨同步 9.6s */
+}
+/* ω99-278（续，标记 #5 见上）— release 事件态（机器永不 emit，pet-state.ts
+   边界注）：真·拖拽释放后 450ms 的回弹窗；简写两动画同构——回弹一次性，
+   blink 恒伴律第二位照旧。 */
+[data-pet-state="release"] .pet-sprite-img {
+  animation: pet-release 0.45s cubic-bezier(.2, .8, .3, 1.15) 1, pet-blink 9.6s steps(1, end) infinite;
+}
+
+/* ω99-146 — idle 的父层常摆（规则排在七态 img 规则之后：img 的动画简写
+   仍是每态第一条命中——sway 是叠加层，不占位）。 */
+[data-pet-state="idle"] .pet-figure {
+  animation: pet-sway 4.8s ease-in-out infinite;
+  transform-origin: 50% 100%; /* 落地摆：裙边为轴（与 img 的落地语义同源） */
+}
+
+/* ω99-290 — 包装层的满格几何（0.3.78 回归修）：.pet-figure{height:100%}
+   需要确定高度的父级；本层不带几何时高度 auto，figure 的百分比解析回
+   auto，而其唯一子 .pet-sprite-img 是 absolute（不贡献流内高度）→ 整链
+   塌成 0 高，img 改以 0 高 figure 的 bottom:0 锚定，被整体顶出窗顶
+   （104×84 宠物窗实测零像素：真 WebKit rect 层/figure 96×0、img
+   y=-82.6 全在窗外；补本规则后与 0.3.77 几何逐位一致 y=13.4）。高视口
+   浏览器与无布局引擎的 jsdom 都测不出——height:100% 契约由
+   omega99-290 钉死。 */
+.pet-poke-layer {
+  width: 100%;
+  height: 100%;
+}
+
+/* ω99-278（续，标记 #5 见上）— Q 弹层规则：仅 data-poked 在场时挂 squash
+   （epoch 0=从未戳过，不带属性零动画）；落地轴与 sway 同源语义。 */
+.pet-poke-layer[data-poked] {
+  animation: pet-squash 0.6s cubic-bezier(.3, 1.2, .4, 1) 1;
+  transform-origin: 50% 100%;
+}
+
+/* 省电暂停 — the §3-frozen form, kept as UNBROKEN API: PetSprite's paused
+   prop stamps it (pet-skins pins the passthrough). ω99-145: pet/main.tsx no
+   longer sets it — the visibilitychange freeze line is replaced by the wake
+   nudge (hidden→visible remounts the sprite), because WKWebView misreports
+   document.hidden on this non-key floating window and parked the pet
+   forever (常活, 用户令 09-07). */
+[data-paused] * {
+  animation-play-state: paused !important;
+}
+
+/* D8 打扰纪律 — reduced motion, ω99-145 新形（用户令 09-07「动几下就停
+   下来了，成了静态的」）：旧形 `2` 封顶把 blink 与状态位移一起钳到 2 次
+   ——idle 动两轮（≈5s）后彻底静态，恰是实机「动几下就停」的头号嫌疑。
+   新形列表对位简写两动画：六个无限态 `0, infinite`（状态位移一次都不放
+   ——比旧形更保守；眨眼 infinite——换帧非位移，生命感保留）；done/drag
+   `1, infinite`（一次性位移照旧单次，眨眼常活）。运动学更严与生命感更
+   强同升，不是折衷。 */
+@media (prefers-reduced-motion: reduce) {
+  [data-pet-state="idle"] .pet-sprite-img,
+  [data-pet-state="thinking"] .pet-sprite-img,
+  [data-pet-state="working"] .pet-sprite-img,
+  [data-pet-state="answering"] .pet-sprite-img,
+  [data-pet-state="waiting-user"] .pet-sprite-img {
+    animation-iteration-count: 0, infinite !important;
+  }
+  [data-pet-state="done"] .pet-sprite-img,
+  [data-pet-state="drag"] .pet-sprite-img {
+    animation-iteration-count: 1, infinite !important;
+  }
+  /* ω99-146: idle figure 的 sway 是位移——reduce 下与六态位移同待遇零播放
+     （sway 为单动画，封顶值单个 0 无列表）；眨眼常活不受影响（在 img 上）。 */
+  [data-pet-state="idle"] .pet-figure {
+    animation-iteration-count: 0 !important;
+  }
+  .pet-bubble {
+    transition: none !important; /* linger 的淡出是装饰，reduce 下直切 */
+  }
+  /* ω99-201: 「思考中…」的呼吸是纯装饰（信息在词面）——reduce 下直切。 */
+  .pet-bubble-thinking,
+  .pet-bubble-hint[data-bubble-thinking] {
+    animation: none;
+  }
+  /* ω99-278（续，标记 #5 见上）— 豁免注：戳一戳（squash）/拖拽回弹
+     （release）是用户直接操纵的即时反馈（一次性 <0.6s，与 drag 0.16s
+     同族——上文 `1, infinite` 在列），表情气泡无入场动画（直出直收）。
+     D8 纪律管环境自发的打扰动作、不管用户亲手触发的回应——三者 reduce
+     下保持原样，不加封顶行。 */
+}
+
+/* ω99-99 — the quick-chat bubble (D1: 点击即会话，same-window overlay)。
+   窗口 220x320：精灵居下（96px 宽、高 96×238/390≈59px + 12px 底距），
+   气泡浮其上方、横向居中。ω99-111：精灵从 96 方框 letterbox 换成满幅
+   96×59，气泡底距按同一公式随行（12 底距 + 精灵高 + 8 间隙）。
+   119b — 浮层卡换血：--surface 面 + --elev-2（描边画进影里，271 的
+   1px 手写描边退役——框影不同用）；圆角 --radius-lg；字栈 --font。 */
+.pet-bubble {
+  position: fixed;
+  left: 50%;
+  bottom: 79px; /* 12 底距 + 59 精灵（96×238/390）+ 8 间隙 */
+  transform: translateX(-50%);
+  /* ω99-196: 窗口三态化后宽度对窗取 min——compact（104px 窗）下也不溢出 */
+  width: min(204px, calc(100vw - 16px));
+  max-height: min(176px, calc(100vh - 96px));
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--elev-2);
+  font: 12px/1.55 var(--font);
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 250ms ease; /* linger 到点挂 [data-bubble-fading] 走此过渡 */
+}
+.pet-bubble[data-bubble-fading] {
+  opacity: 0;
+}
+
+/* ω99-196 — stream（回答）形态加宽（用户令 09-08「弹出来的回答窗口比较
+   小，阅读很费劲」）：窗口已随形态机放大到 360×440，气泡流形态放宽到
+   344px、13px 字号、1.65 行高——可容 ~450 字（answerTail 截 500 字恰合，
+   想看全文走主窗，本弧不开新通路）。对窗 min()：compact 收回时立即随缩。
+   ω99-271: #16 — 阅读面随窗升级（用户令 09-10「渲染要更美观」+完整史）：
+   窗口 360×440 → 420×560（Rust pet_layout_size），流形态放宽到 396px、
+   高度上限 452px（79 底距 + 29 顶距）——2000 字尾窗与 30 轮史转写要的
+   是真实阅读面，不是挤在 340px 里的摘要条。 */
+.pet-bubble[data-bubble-state="stream"] {
+  width: min(396px, calc(100vw - 16px));
+  max-height: min(452px, calc(100vh - 104px));
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* ω99-272: #5 — 流面折叠样式族（用户令 09-10「加一个折叠的功能不就解决
+   了」）。held 自动阅读态退役：data-bubble-held 属性照常发出（测试钉它），
+   但 css 不再据它切阅读模式——272 起长文一律折叠态起步（尾窗），展开是用户
+   显式动作（展开全文钮）。展开态 [data-stream-expanded]：顶部对齐 + 纵向
+   内滚（从头通读全文，Bubble 的 streamExpanded state 钉此锚）；折叠态走
+   .pet-bubble-stream 基座的底对齐尾窗（最新恒在屏）——两者是同一份全文的
+   两个视图，不是两份内容。 */
+.pet-bubble[data-bubble-state="stream"] .pet-bubble-stream[data-stream-expanded] {
+  justify-content: flex-start;
+  overflow-y: auto;
+}
+
+/* ω99-196 — ✕ 浮角让位：stream 形态的正文块右侧留 22px，首行不被右上角
+   的关闭钮遮住——基础 160px 上限只在 delivery 形态保留（本条选择器钉死
+   stream 态）。
+   ω99-271（续，标记见上）— 左侧 3px 呼吸绿阅读引导线
+   （rgba(14,159,110,0.5)——accent 的族内 rgba 形）：长回答是线性阅读物，
+   竖线给眼睛一个「正文起点」的锚，delivery 的摘要格不走本选择器（其
+   data-bubble-state 是 delivery）。
+   ω99-272（续，标记见上）— 396px：为折叠钮行（展开全文/收起，长文时在
+   正文块下方）留 ~32px——428px 满高 + 钮会被气泡的 overflow hidden 裁
+   掉；短文（<600 字无钮）不受影响，max-height 只在内容超高时才约束。
+   119b — 引导线色改走品牌绿通道（rgb(var(--pet-accent) / .5)，
+   旧 rgba(14,159,110,.5) 同值）。 */
+.pet-bubble[data-bubble-state="stream"] .pet-bubble-stream {
+  max-height: 396px;
+  padding-right: 22px;
+  border-left: 3px solid rgb(var(--pet-accent) / 0.5);
+  padding-left: 10px;
+}
+
+/* ω99-196 — ✕ 关闭钮（回答的用户主动关通路，右上浮角）。低强调色走
+   --text-3（119b：旧 rgba(230,244,236,0.55) 的令牌形）；hover 提亮
+   --text-1。 */
+.pet-bubble-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  line-height: 18px;
+  cursor: pointer;
+}
+.pet-bubble-close:hover {
+  color: var(--text-1);
+}
+
+/* // ω99-201: #4 — 迷你聊天窗（用户令 09-08 三需求）：input 态加宽同
+   stream 态（chat 复合体需要阅读宽度，360×440 窗的 344px 内宽）；
+   .pet-bubble-chat = transcript + 输入行同窗复合体（回答与输入同窗——追问
+   时旧回答不消失）；.pet-bubble-transcript = 近 ≤3 轮问答纵向滚动
+   （overflow-y:auto + ::-webkit-scrollbar 置外观——WebKit 语义：置外观即
+   常显非 overlay）；.pet-bubble-q = 用户行（右对齐窄条，119b：中性
+   --bubble-user-bg）；.pet-bubble-a = 回答格（119b：平铺裸底）；
+   .pet-bubble-thinking = 「思考中…」格（hint 同族 --warn + 呼吸
+   pet-thinking-breath）；独立 thinking 形态复用
+   .pet-bubble-hint 加 data-bubble-thinking 锚（同呼吸）。 */
+/* // ω99-208: #1 — flex 高度链接通（0.3.56 验装回执「无滚动条+输入框被顶
+   走」）：input 态气泡本体容器化（display:flex + column），chat 复合体
+   由百分比高度改 flex 塌缩（flex:1 1 auto + min-height:0）——父级有了
+   flex 容器语义 + 复合体可收缩，.pet-bubble-transcript 的 flex:1 1 auto;
+   min-height:0; overflow-y:auto 才真正生效：内容超 340px 时 transcript
+   内滚（滚动条出现），输入行恒钉可视区。max-height 语义不变：内容少时
+   气泡小。其余形态零触（stream/delivery/hint/ask/selection 全保）。 */
+.pet-bubble[data-bubble-state="input"] {
+  width: min(396px, calc(100vw - 16px));
+  /* win32 兜底（0.3.81）：视口低于 104px（布局收缩未及生效的瞬态）时
+     calc 为负——max-height 塌 0，气泡只剩边框一条线。max() 地板保证
+     输入行（flex 链末位）永远可视：transcript 内滚，输入行钉底。 */
+  max-height: max(176px, min(452px, calc(100vh - 104px)));
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.65;
+  display: flex;
+  flex-direction: column;
+}
+.pet-bubble-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pet-bubble-transcript {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y:auto; /* 常显滚动（配合下方 ::-webkit-scrollbar 置外观） */
+  display: flex;
+  flex-direction: column;
+  /* ω99-271（续，标记见上）— 10px：史轮进 30 轮后转写是长列，轮间距
+     从「行距级」升「轮距级」，滚动时有节奏可循。 */
+  gap: 10px;
+  padding-right: 4px; /* 滚动条与正文之间留 4px 呼吸，不贴字 */
+}
+.pet-bubble-transcript::-webkit-scrollbar,
+.pet-bubble-stream[data-stream-expanded]::-webkit-scrollbar {
+  width: 8px;
+}
+.pet-bubble-transcript::-webkit-scrollbar-thumb,
+.pet-bubble-stream[data-stream-expanded]::-webkit-scrollbar-thumb {
+  /* 119b — 主窗 buddy 同款：hair-3 thumb；119a 已退役 --radius-pill，
+     满圆帽走 50%（与主窗滚动条归族后的圆帽同形）。 */
+  background: var(--hair-3);
+  border-radius: 50%;
+}
+.pet-bubble-transcript::-webkit-scrollbar-track,
+.pet-bubble-stream[data-stream-expanded]::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* ω99-274: #4 — 聊天 App 行式布局（用户令 09-10「聊天记录用小精灵头像
+   和聊天气泡」+「折叠太粗暴，直接只显示半行内容，太丑」）：
+   .pet-turn = 一轮容器（q 行 + 宠物行，行距 6px 小于轮距 10px——轮与轮
+   的节奏仍在 transcript 上）；.pet-msg-user = 用户行右对齐窄幅；
+   .pet-row-pet = 宠物行（头像 + 左气泡，「思考中…」同进此行——它也是
+   宠物在说话）；.pet-avatar = 当前肤 2 帧 sheet 的左帧（睁眼）小窗：
+   background-size:200% auto 使单帧恰=盒宽（零新资产，与精灵同图）；q 的
+   尾角右下、a 的尾角左下（微信/iMessage 通识形，271 的对话气泡语言延伸
+   到双侧）。折叠钳制重构见下方 [data-folded] 块。 */
+.pet-turn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pet-msg-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.pet-row-pet {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.pet-avatar {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  /* ω99-276: #2 — 无框化（用户令 09-11「头像不要有边框」）：框线、底色、
+     圆角、盒模型锁 全退役——肤帧自带透明底，裸帧直出（框线与衬底正是
+     用户点名的「边框」）。
+     整张 sheet 以盒宽 2 倍定尺寸 → 单帧恰=盒宽、原始纵横比零形变；
+     position 0 center = 左帧（睁眼）垂直居中。 */
+  background-size: 200% auto;
+  background-position: 0 center;
+  background-repeat: no-repeat;
+}
+.pet-bubble-q {
+  max-width: 85%;
+  box-sizing: border-box;
+  padding: 5px 10px;
+  /* 119b — 与主窗用户气泡同族：中性 wash（--bubble-user-bg/ink，气泡从
+     不用品牌色）+ --radius-md 8px 均匀角（119 规范：气泡复合角退役，
+     主窗/宠物两窗同族）。 */
+  border-radius: var(--radius-md);
+  background: var(--bubble-user-bg);
+  color: var(--bubble-user-ink);
+  /* 气泡=纵向 flex 容器（正文体 + 气泡内折叠钮）；钮右对齐=用户侧。 */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.pet-bubble-body {
+  /* 正文体（q 纯文本与 a 的 pet-md 共用）：pre-wrap 保 \n 形（210 的
+     para 依赖从 .pet-bubble-a 迁到本类——同一棵子树，语义不变）。 */
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.pet-bubble-a {
+  /* 119b — 大区同色：答行平铺裸底（与主窗 assistant 平铺同策——画布上
+     的区域分界交给头像行结构与发丝线，不做色块对撞）。271 的「读态卡
+     片轻底」退役（其防字墙职责由 ω99-274 的头像行距/轮距结构承担）。
+     ω99-274 — 气泡内纵向 flex（正文体 + 信息末尾折叠钮）保留；行内
+     宽度 hug 内容、上限让位头像。 */
+  box-sizing: border-box;
+  padding: 2px 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+.pet-row-pet > .pet-bubble-a,
+.pet-row-pet > .pet-bubble-thinking {
+  flex: 0 1 auto;
+  max-width: calc(100% - 40px); /* 34px 头像 + 6px 行距 */
+}
+/* ω99-272（续，标记见上）— 冻结轮折叠：全文恒在 DOM，这是视觉钳制不是
+   内容删减；live 轮永不出此态（Bubble 的 foldable 判定挡掉）。
+   ω99-274 — 钳制重构（「太粗暴/半行」病根修复）：旧 96px 在 1.65 行高
+   （13px×1.65≈21.45px/行）下落在 4.47 行=把第 5 行切半截——漂浮的半行
+   再叠 40% 渐隐，即「只显示半行内容」的丑态。新钳制三点：
+   ① 锚点移到内层 .pet-bubble-body（钮在气泡内、钳制不吞钮）；
+   ② 行量化——max-height 恒为行高的整倍数 calc(3 × 1.65em)，任何继承
+   字号下都按整行切，永不出半行；
+   ③ 渐隐只罩末段 ~1.4em（<1 行），不再从 60% 起雾——「展开全文」前只
+   有一小截呼吸式淡出。刻意不用 line-clamp（markdown 嵌套块在钳行渲染
+   下破相）。 */
+.pet-bubble-a[data-folded] .pet-bubble-body,
+.pet-bubble-q[data-folded] .pet-bubble-body {
+  max-height: calc(3 * 1.65em);
+  overflow: hidden;
+  /* 119b — mask 的黑→透明渐变是 alpha 斜坡不是着色，黑值走 --shade 令牌
+     （主窗 wizard scrim 同源），不再裸写 #000。 */
+  -webkit-mask-image: linear-gradient(180deg, var(--shade) calc(100% - 1.4em), transparent);
+  mask-image: linear-gradient(180deg, var(--shade) calc(100% - 1.4em), transparent);
+}
+/* 折叠钮（stream 的「展开全文/收起」与 transcript 的「查看全文/收起」
+   共用类）：低调文字钮，--text-2 + hover 提亮 --hover 洗（✕ 钮同范式，
+   119b 令牌形）。transcript 侧钮在气泡内信息末尾：a 气泡左起
+   （align-self 缺省），q 气泡右收（.pet-bubble-q 的 override）；stream
+   侧钮仍是气泡本体子级（flex-start 通宽防拉伸语义不变）。 */
+.pet-bubble-fold {
+  align-self: flex-start;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 2px;
+}
+.pet-bubble-q .pet-bubble-fold {
+  align-self: flex-end;
+}
+.pet-bubble-fold:hover {
+  color: var(--text-1);
+  background: var(--hover);
+}
+@keyframes pet-thinking-breath {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+/* ω99-274 — 「思考中…」格随行升格气泡形（它也是宠物在说话）：与 a 气泡
+   同形（119b：平铺裸底 + --radius-md）；琥珀色走 --warn（浅色侧的深琥珀
+   由令牌自动翻转，275 浅色行退役）。宽度/上限由上方 .pet-row-pet > 规则
+   统一。 */
+.pet-bubble-thinking {
+  color: var(--warn);
+  animation: pet-thinking-breath 1.2s ease-in-out infinite;
+  padding: 2px 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+.pet-bubble-hint[data-bubble-thinking] {
+  animation: pet-thinking-breath 1.2s ease-in-out infinite;
+}
+
+/* input 形态：单行输入 + 发送。
+   119b — 聊天区/输入区同画布：转写史与输入行以发丝线分界（不做色块
+   对撞）；输入框=阶梯内嵌面（--bg 比 --surface 卡面深/浅一档）+ hair-2
+   描边 + 品牌绿 focus；发送钮=品牌绿实心 + 近墨 ink（通道形）。 */
+.pet-bubble-input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--hair-1); /* 119b 区域分界发丝线 */
+  padding-top: 8px;
+}
+.pet-bubble-input textarea {
+  box-sizing: border-box;
+  width: 100%;
+  resize: none;
+  /* 用户报障（09-27）：底边框+深底色对比看起来像底下还藏了一个会话框——
+     撤边框+底色改同面（区域分界已有 .pet-bubble-input 的 border-top 发丝线，
+     textarea 不再是"内嵌小盒子"而是输入区的一部分）。 */
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  font: inherit;
+  outline: none;
+}
+.pet-bubble-input textarea:focus {
+  background: var(--surface-2);
+  box-shadow: 0 0 0 1.5px rgb(var(--pet-accent));
+}
+.pet-bubble-send {
+  align-self: flex-end;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 4px 12px;
+  background: rgb(var(--pet-accent));
+  color: rgb(var(--pet-accent-ink));
+  font: inherit;
+  cursor: pointer;
+}
+
+/* ω99-143 — 输入形态的按钮行（发送+取消）。用户实机反馈「问点什么」气泡
+   无法关闭：input 原本的关法只有 Esc（需键盘焦点）与发送。取消=确定性
+   关闭通路。
+   ω99-292 — 用户令 09-12「发送在最右边，取消按钮稍微离远点，并且不要太
+   显眼」：① DOM 换序（发送殿后=最右主位）；② 行 gap 6→14px（取消与发送
+   拉开一档，仍同族不是分区）；③ 取消从描边墨按钮退役为低调文字钮
+   （✕/fold 钮同范式：透明底 + 降透明度字 + hover 提亮，不发亮框不发底）。 */
+.pet-bubble-input-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+.pet-bubble-cancel {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  background: transparent;
+  color: var(--text-3); /* ✕ 钮同值低强调字（119b 令牌形） */
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.pet-bubble-cancel:hover {
+  color: var(--text-1);
+}
+
+/* stream 形态：纯文本、底部对齐——最新内容永远在可视区内（ω99-272 起
+   answerTail 是全文无截断，flex-end + overflow hidden 的尾窗折叠视图
+   （标记见上）；展开态由 [data-stream-expanded] 切从头通读）。 */
+.pet-bubble-stream {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  max-height: 160px;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* hint 行：waiting-user（在等你确认操作）——琥珀走 --warn（119b）。 */
+.pet-bubble-hint {
+  color: var(--warn);
+}
+
+/* ω99-109 — ask 卡：权限确认直达宠物气泡（「在等你确认操作」从可见变可
+   操作）。紧凑——气泡内宽 184px；119b：亮面板改 --surface-2（阶梯内升一
+   档，两主题令牌自动翻转），按钮对比清晰：允许=品牌绿实心、总是允许=品牌
+   绿描边、拒绝=hair-2 描边。summary 单行截断（ellipsis，不换行墙）。 */
+.pet-bubble-ask {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.pet-bubble-ask-tool {
+  align-self: flex-start;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bubble-user-bg);
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 18px;
+}
+.pet-bubble-ask-summary {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 单行截断：决策提示一行足够，深语义在主窗 */
+}
+.pet-bubble-ask-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pet-bubble-ask-actions button {
+  flex: 1 1 auto;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 4px 10px;
+  background: rgb(var(--pet-accent));
+  color: rgb(var(--pet-accent-ink));
+  font: inherit;
+  cursor: pointer;
+}
+.pet-bubble-ask-actions button[data-ask-always] {
+  background: transparent;
+  border: 1px solid rgb(var(--pet-accent)); /* 描边绿：与「允许」同族但次一级 */
+  color: var(--text-1);
+}
+.pet-bubble-ask-actions button[data-ask-deny] {
+  background: transparent;
+  border: 1px solid var(--hair-2);
+  color: var(--text-1);
+}
+.pet-bubble-ask-actions button[disabled] {
+  opacity: 0.5; /* 已应答：等服务器帧，连点免疫 */
+  cursor: default;
+}
+
+/* ω99-110 — 划词接单卡：复用 ask 卡骨架（面板 + 按钮组）。119b：旧冷调
+   变体色（#E8F1F4 vs ask 的 #E6F4EC）是同族不同调的色块对撞——两卡统一
+   走 --surface-2，身份区分交回标题与按钮组（信息结构不动）。选文摘录是
+   引文——内嵌条（--bg 阶梯）+ 高度钳制（≤12000 字的选段只看开头；完整文
+   本随 prompt 发出）。防连点禁用沿用 ask 的 [disabled] 姿势。 */
+.pet-bubble-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.pet-bubble-selection-text {
+  max-height: 64px; /* 引文只看开头——全文已进 prompt，卡面是确认不是阅读 */
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  background: var(--bg);
+  color: var(--text-2);
+}
+.pet-bubble-selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pet-bubble-selection button {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 4px 10px;
+  background: rgb(var(--pet-accent)); /* 主按钮实心绿（翻译/解释/发送/去设置） */
+  color: rgb(var(--pet-accent-ink));
+  font: inherit;
+  cursor: pointer;
+}
+.pet-bubble-selection button[data-selection-explain] {
+  background: transparent;
+  border: 1px solid rgb(var(--pet-accent)); /* 次级描边绿（chip 第二键；引导卡的「去设置」保持实心主按钮） */
+  color: var(--text-1);
+}
+.pet-bubble-selection button[data-selection-cancel] {
+  background: transparent;
+  border: 1px solid var(--hair-2); /* 取消描边墨——永不强调 */
+  color: var(--text-1);
+}
+.pet-bubble-selection button[disabled] {
+  opacity: 0.5; /* 已发出：本地清卡前的连点免疫 */
+  cursor: default;
+}
+.pet-bubble-selection-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.pet-bubble-selection-row input {
+  flex: 1 1 auto;
+  min-width: 0; /* flex 子项收缩下限——窄气泡内输入框不撑破 */
+  box-sizing: border-box;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--radius-md);
+  padding: 4px 8px;
+  background: var(--bg);
+  color: var(--text-1);
+  font: inherit;
+  outline: none;
+}
+.pet-bubble-selection-row input:focus {
+  border-color: rgb(var(--pet-accent));
+}
+
+/* // ω99-210: #5 — pet-md 轻渲染样式（小精灵回答 markdown 渲染；值域 census
+   已过时——119b 起本表全令牌化：mono 栈走 --mono 单一事实源、底/边/字全
+   var(--*)，历史字面量纪律见 git 史。类名一律 pet-md-*——不占主窗 .md-*
+   与 code.inline 命名域）。.pet-md = 块容器（flex column 小 gap，块间距不随
+   记号数变化）；.pet-md-pre 纯 mono 保形横滚（伴读面无高亮无复制钮）；
+   .pet-md-table display:block + overflow-x（窄气泡里宽表横滚，不撑破）。
+   para 不另设样式——.pet-bubble-body/.pet-bubble-stream 的 pre-wrap 保 \n 形
+   （ω99-274：a 格的 pre-wrap 随正文体迁入 .pet-bubble-body）。 */
+.pet-md {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pet-md-heading {
+  font-weight: 700;
+}
+.pet-md-heading[data-level="1"],
+.pet-md-heading[data-level="2"] {
+  font-size: 14px; /* stream/input 态正文 13px，头两档 +1px（现行字量级） */
+}
+.pet-md-pre {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  /* 119b — 代码域=阶梯内嵌面（--bg 比 --surface 气泡面深/浅一档）+
+     hair-1 描边（主窗 .pre 同族：surface+hair-1，此处卡面已是 surface
+     故内嵌一档）；mono 栈走 --mono 单一事实源。 */
+  background: var(--bg);
+  border: 1px solid var(--hair-1);
+  font: 11px/1.5 var(--mono);
+  white-space: pre; /* 代码块保形：不折行，超宽横滚 */
+}
+.pet-md-quote {
+  /* ω99-271（续，标记见上）— 引文左边线（210 落地时欠的规则）：renderer
+     的 "| " 前缀保 DOM 逐字契约不动，视觉上补齐引文语义——发丝竖线 +
+     --text-2，与主窗 .md-quote 同族（119b 令牌形）。 */
+  border-left: 2px solid var(--hair-1);
+  padding: 2px 0 2px 8px;
+  color: var(--text-2);
+}
+.pet-md-list {
+  padding-left: 2px; /* • 行轻缩进 */
+}
+.pet-md-table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+.pet-md-table th,
+.pet-md-table td {
+  padding: 2px 6px;
+  border: 1px solid var(--hair-1);
+  text-align: left;
+}
+.pet-md-table th {
+  /* ω99-271（续，标记见上）— 表头行底：宽表横滚时列身份随滚不离——
+     有底色的 th 是「列名行」，裸 th 在滚动中与数据行混同。119b：底走
+     --surface-2、字 --text-1（令牌形）。 */
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.pet-md-bold {
+  font-weight: 700;
+}
+.pet-md-code {
+  /* 119b — 与主窗 inline code chip 同族：--surface-2 底 + hair-1 线 +
+     --radius-sm + --mono + --tok-str（行内代码的语法色 idiom）。 */
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hair-1);
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--tok-str);
+}
+
+/* ω99-237: #8 — 斜杠早拦 toast（.pet-toast）：主窗 relay 拒令的宠物窗回执
+   面。独立浮层（不进 Bubble 形态机——input 态在场时也必须可见：用户刚在
+   输入框发的斜杠），窗顶居中窄条，与精灵（底）不重叠。119b：--surface 面
+   + --elev-2 + --radius-lg + --font（.pet-bubble 同族）；宽度对窗取 min
+   （compact 104px 窗也不溢出）。 */
+.pet-toast {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(204px, calc(100vw - 16px));
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--elev-2);
+  font: 12px/1.55 var(--font);
+  text-align: center;
+  z-index: var(--z-modal);
+}
+
+/* ω99-278（续，标记 #5 见上）— 戳一戳表情气泡（.pet-expr）：精灵头顶小
+   话泡（.pet-toast 的底部镜像位——toast 锚窗顶，expr 锚精灵头顶 +12px：
+   12 底距 + 59 精灵（96×238/390）+ 12 间隙），带指向精灵的小尾巴；
+   poke.ts 的 POKE_EXPR_MS(2.2s) 自消。119b：--surface + --elev-2，尾巴
+   随面走 var(--surface)；圆角入气泡族 --radius-md（8px 均匀角）；不设
+   入场动画（toast 同款直出，reduce 面零负担）。 */
+.pet-expr {
+  position: fixed;
+  bottom: 83px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--elev-2);
+  font: 12px/1.45 var(--font);
+  text-align: center;
+  white-space: nowrap;
+  z-index: var(--z-modal);
+}
+.pet-expr::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--surface);
+  border-bottom: none;
+}
+
+/* ω99-275: #11 — 浅色主题联动（用户令「主窗口切换主题，小精灵也要切换
+   主题，深色和浅色都要能切换」）。119b：pet/main.tsx 与主窗共享同一份
+   ../tokens.css 后，明暗由 html[data-theme] 上的令牌族自动翻转——本表
+   的 [data-theme="light"] 整块覆写退役（26 行零残留，census 钉死）；
+   boot stamp（入口读同源 localStorage）与 live 切换（wudao-pet-theme
+   事件 → signals.ts）两条既有通路不动。 */

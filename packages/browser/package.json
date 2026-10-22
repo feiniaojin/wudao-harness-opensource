@@ -1,0 +1,36 @@
+{
+  "name": "@wudao/browser",
+  "version": "0.3.46",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  },
+  "devDependencies": {
+    "@wudao/core": "workspace:*",
+    "typescript": "5.6.3",
+    "vitest": "2.1.8"
+  },
+  "description": "Controlled-browser foundation for wudao-harness (ω99-112): BrowserPort seam, launch-once runtime with idle reaping, snapshot refs, the six model tools, and first-use Chromium download. Zero core runtime dependency (type-only).",
+  "license": "MIT",
+  "author": "feiniaojin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feiniaojin/wudao-harness.git"
+  }
+}

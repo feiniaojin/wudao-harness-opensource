@@ -1,0 +1,312 @@
+/* ============================================================ */
+/* ω99-258: #11 — 分支面样式（岔开手势/徽标/横幅/chip+面板）。 */
+/* the branch face: hover 岔开 action, ⑂ badge, armed   */
+/* banner, 转录头 branch chip + leaf panel (advanced/buddy only). */
+/* ============================================================ */
+
+/* The hover action rides the user row's head — quiet until the row is
+   hovered (or focused via keyboard); pointer/focus-reveal keeps the transcript
+   visually identical when idle. */
+.fork-act {
+  flex: none;
+  align-self: center;
+  height: 20px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+  cursor: pointer;
+}
+.entry:hover .fork-act,
+.fork-act:focus-visible { opacity: 1; }
+.fork-act:hover { border-color: var(--hair-2); color: var(--text-1); } /* 116 弧 A：hover 去品牌色 */
+
+/* The branched turn's badge — a small accent ⑂ at the row head marks every
+   turn that entered on a branch (view-side keying; a replaced history drops
+   it — v1 boundary, the tree rendering is a pooled arc). */
+.fork-badge {
+  flex: none;
+  align-self: center;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: rgb(var(--accent-rgb) / .14);
+  color: var(--accent);
+  font-size: var(--fs-caption);
+  line-height: 1;
+}
+
+/* The armed-branch banner — action state above the composer it steers. */
+.armed-branch {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-2) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  max-width: 100%; /* 品牌弧补丁：横幅不溢出会话框（用户令「太长了两侧凸出来」） */
+  overflow-wrap: anywhere; /* 长中文串不撑破容器 */
+  flex-wrap: wrap; /* 窄窗时按钮换行不横溢 */
+  border: 1px solid rgb(var(--accent-rgb) / .45);
+  border-radius: var(--radius-md); /* 119：卡面归 md（lg=浮层专用） */
+  /* ω99-295: 原第二操作数引用的表面令牌全仓从未定义（var() 无效在
+     computed-value 期回落 transparent，静默失效），三处消费统一归队
+     --surface 卡面家族 */
+  background: rgb(var(--accent-rgb) / .07);
+}
+.armed-text { flex: 1 1 auto; min-width: 0; font-size: var(--fs-caption); color: var(--text-1); line-height: 1.5; }
+
+/* The transcript head's branch line — chip「第 N/M 条线」+ leaf panel. */
+.branch-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-3) 0;
+}
+.branch-chip {
+  align-self: flex-start;
+  height: 20px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.branch-chip:hover { border-color: var(--hair-2); color: var(--text-1); } /* 116 弧 A：hover 去品牌色 */
+/* 展开态 = 打开状态（选中族），accent 保留；hover 只是探查，中性。 */
+.branch-chip[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.branch-panel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-md); /* 119：卡面归 md（lg=浮层专用） */
+  background: var(--surface); /* ω99-295: 未定义令牌归队（见 .armed-branch 注） */
+  overflow: hidden;
+}
+.branch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--hair-1);
+  font-size: var(--fs-caption);
+}
+.branch-row:last-of-type { border-bottom: none; }
+.branch-row.cur { background: rgb(var(--accent-rgb) / .07); }
+.branch-row .row-n { flex: none; color: var(--text-2); font-family: var(--mono); }
+.branch-row .row-main { flex: 1; color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.branch-row .row-count { flex: none; color: var(--text-2); }
+.branch-row .row-cur { flex: none; color: var(--accent); }
+.branch-note {
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  border-top: 1px solid var(--hair-1);
+}
+
+/* ω99-260: #12 — the memory faces: the boot 待审卡 (chat-top, the recovery-banner
+   family's visual language) and the 管理记忆 rows (the branch-row language).
+   One .mem-row grammar shared by both faces; badges pill like branch-chip. */
+.memory-review-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: var(--sp-1) var(--sp-3) 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid rgb(var(--accent-rgb) / .3);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md); /* 119：卡面归 md（lg=浮层专用） */
+  background: var(--surface); /* ω99-295: 未定义令牌归队（见 .armed-branch 注） */
+}
+.memory-review-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.memory-review-title { flex: 1; font-size: var(--fs-caption); color: var(--text-1); font-weight: 600; }
+.memory-review-card .hint { margin: 0; }
+.mem-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+  font-size: var(--fs-caption);
+}
+.mem-badge {
+  flex: none;
+  height: 18px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--warn);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  color: var(--warn);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+}
+.mem-badge.ok { border-color: var(--ok); color: var(--ok); }
+/* ω99-273: #3 — gap 2px→4px：260 的手写 2px 悄悄破了 4px 间距网格（tokens 门
+   白名单只有 0/1/-1）；kind/content 两行的呼吸感交给网格值，不自造例外。 */
+.mem-main { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.mem-kind { color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mem-content { color: var(--text-1); overflow-wrap: anywhere; }
+.mem-acts { flex: none; display: flex; gap: var(--sp-1); }
+.mem-note { color: var(--text-2); font-size: var(--fs-caption); border-top: 1px solid var(--hair-1); padding-top: var(--sp-1); }
+.mem-empty { color: var(--text-2); font-size: var(--fs-caption); padding: var(--sp-1) 0; }
+/* The panel's rows sit in the settings section — lighter separators, the
+   list flows full-width under the hint. */
+.memory-manage .mem-row { padding: var(--sp-2) 0; border-bottom: 1px solid var(--hair-1); }
+.memory-manage .mem-row:last-of-type { border-bottom: none; }
+/* ω99-264: #6 — the inline 改写 state — the row's textarea replaces the content
+   display (prefilled with the current content); save/cancel ride the same
+   .mem-acts grammar. The persona-prompt textarea's field language. */
+.mem-edit textarea {
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: var(--fs-caption);
+  line-height: var(--lh-body);
+  padding: var(--sp-1) var(--sp-2);
+  resize: vertical;
+  min-height: 3.2em;
+  width: 100%;
+  overflow-wrap: anywhere;
+}
+.mem-edit textarea:focus { border-color: var(--accent); }
+.mem-edit textarea:disabled { opacity: .5; cursor: default; }
+.mem-edit .mem-acts { justify-content: flex-end; padding-top: var(--sp-1); }
+
+/* ω99-317 — 定时任务管理面（「定时 N」chip + 看板面板 + 双确认弹框）：
+   chip 复用 .tb-changes 既有视觉（.tb-sched 只是身份类，.tb-computer 先
+   例）；面板走 .scrim>.modal-card 家族（620px 宽组同 changes/computer）；
+   行 = prompt+状态徽标 / 触发·下次·上次·会话名 meta / 三动作钮。状态色全
+   走通道令牌 rgb(var(--X-rgb) / α)——0.3.88 律：禁色混函数（WKWebView 兼
+   容红线），熔断行的 danger 语义给徽标+行框两个面。 */
+.tb-changes.tb-sched { white-space: nowrap; }
+.schedules-panel .sch-head { flex: none; font-size: var(--fs-ui); }
+.schedules-panel .sch-rows {
+  /* 滚动区（.cap-runs 同约：overflow 归零 flex 自动最小尺寸，btnrow 常外） */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sch-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+}
+/* 熔断行：行框给 danger 弱描边——面板扫一眼就能找出停了的那条。 */
+.sch-row[data-state="breaker"] { border-color: rgb(var(--danger-rgb) / .4); }
+.sch-main { display: flex; align-items: baseline; gap: var(--sp-2); }
+.sch-prompt {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-ui);
+  color: var(--text-1);
+}
+.sch-badge {
+  flex: none;
+  font-size: var(--fs-caption);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  padding: 1px var(--sp-2);
+  color: var(--text-2);
+  background: var(--surface-2);
+}
+.sch-badge[data-state="active"] { color: var(--ok); background: rgb(var(--ok-rgb) / .1); }
+.sch-badge[data-state="breaker"] { color: var(--danger); background: rgb(var(--danger-rgb) / .1); }
+.sch-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sp-2);
+  row-gap: var(--sp-1);
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+}
+.sch-trig { color: var(--text-1); }
+.sch-last { color: var(--text-3); }
+.sch-last[data-ok="true"] { color: var(--ok); }
+.sch-row[data-state="breaker"] .sch-last { color: var(--danger); }
+.sch-session {
+  color: var(--accent);
+  background: rgb(var(--accent-rgb) / .08);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--sp-1);
+}
+.sch-acts { display: flex; align-items: center; gap: var(--sp-1); }
+.sch-act {
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: none;
+  padding: 1px var(--sp-2);
+  cursor: pointer;
+}
+.sch-act:hover { background: var(--surface); color: var(--text-1); border-color: var(--hair-2); } /* 119：画布律 hover=+1 档 */ /* hover 三信号中性（116 弧 A） */
+.sch-act.sch-del:hover { color: var(--danger); border-color: rgb(var(--danger-rgb) / .4); }
+/* ω99-317 sched panel end */
+
+/* ===== ω99-316 (/btw 侧问) — 「顺便问」chip + 旁路问答气泡 ===== */
+/* 通道令牌纪律（css-engine-compat 教训）：不用 color-mix，一律
+   rgb(var(--X-rgb) / α)——macOS 12 WKWebView 无 color-mix。 */
+/* 常态=中性 .chip 家族（与同排 auto/medium 同一视觉语言——用户报障：常态
+   绿被读成「永远像被选中」）；点击武装后由 .on 显 accent，见下。 */
+.chip.sideqa.on {
+  color: var(--accent-ink);
+  background: rgb(var(--accent-rgb) / .85);
+  border-color: rgb(var(--accent-rgb) / .9);
+}
+.sideqa-lane { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-2) 0; }
+.sideqa {
+  border: 1px dashed rgb(var(--accent-rgb) / .45);
+  border-radius: var(--radius-md);
+  background: rgb(var(--accent-rgb) / .05);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-body);
+}
+.sideqa-tag {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: var(--fs-mini);
+  letter-spacing: .04em;
+  margin-bottom: var(--sp-1);
+}
+.sideqa-q { color: var(--text-2); font-weight: 600; margin-bottom: var(--sp-1); }
+.sideqa-a { overflow-wrap: anywhere; white-space: pre-wrap; }
+.sideqa-foot { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); }
+.sideqa-rounds { color: var(--text-3); opacity: .7; }
+.sideqa-promote {
+  height: 24px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: var(--fs-mini);
+  color: var(--accent);
+  background: rgb(var(--accent-rgb) / .1);
+  border: 1px solid rgb(var(--accent-rgb) / .35);
+  cursor: pointer;
+}
+.sideqa-promote:hover { background: rgb(var(--accent-rgb) / .18); }

@@ -1,0 +1,23 @@
+{
+  "identifier": "pet-capability",
+  "description": "Pet window permissions: dragging via start-dragging (the decorations:false window has no title bar) and hide — remote: the shell navigates the pet window to the sidecar's http://127.0.0.1:<port> origin like main, so these permissions extend to that remote page",
+  "windows": [
+    "pet"
+  ],
+  "permissions": [
+    "core:window:allow-start-dragging",
+    "core:window:allow-hide",
+    "core:window:allow-set-focus",
+    "core:event:allow-emit",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-get-pet-skin",
+    "allow-open-accessibility-settings",
+    "allow-set-pet-layout"
+  ],
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:*"
+    ]
+  }
+}

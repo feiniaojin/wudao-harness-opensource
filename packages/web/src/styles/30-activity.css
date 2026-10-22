@@ -1,0 +1,577 @@
+/* --- 墨线活动卡（spec §2）：32px 折叠行，时间线元素不是卡片堆 ---
+       .act-row = button.act-row[data-status][aria-expanded] > .act-st +
+       .act-verb + .act-file + .act-tail + .act-chev；状态色走 data-status
+       属性驱动（ok/run/err → --ok/--accent/--danger，语义色 token 不变）；
+       chevron 旋转走 .act[data-open]。行几何由 .act-row 一处定义——高级
+       模式的折叠组行（M72 §3）复用同一个类，两模式同构。 --- */
+/* (border kept in LONGHAND form: the CSSOM-based token pins read
+   border-color off this rule; cssstyle does not expand the `border:`
+   shorthand when it carries var().) */
+.act {
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--hair-1);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.act-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 32px;
+  padding: 0 var(--sp-2);
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-ui);
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+.act-row:hover { background: var(--surface-2); color: var(--text-1); }
+.act-row[data-status="ok"] .act-st { color: var(--ok); }
+.act-row[data-status="run"] .act-st { color: var(--accent); }
+.act-row[data-status="err"] .act-st { color: var(--danger); }
+/* Red discipline (M63 §D): an errored row reads danger WITHOUT expanding —
+   the attribute drives the row + its tail (the error's first line), same
+   mechanism as the glyph color. */
+.act-row[data-status="err"] { color: var(--danger); }
+.act-row[data-status="err"] .act-tail { color: var(--danger); }
+.act-verb, .act-file, .act-tail { font-family: var(--mono); font-size: var(--fs-caption); letter-spacing: .4px; }
+/* ω99-296 (I2): flex 项 min-width:auto 是 min-content 地板 —— nowrap 文
+   本缩不到地板之下，ellipsis 永不触发（file 的三件套曾是无地板空转；
+   tail 的 flex:none 更是只硬切）。file 补地板；tail 弃 flex:none 换三件
+   套（右贴边由 margin-left:auto 承担：负空闲下 auto 边距归零，恰好退化
+   为与 file 的公平分缩）。err 行的尾行=错误首行，从此优雅省略而非硬切。 */
+.act-file { color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.act-tail { margin-left: auto; color: var(--text-3); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ω99-63: a busy row's live-output tail line — ONE dim mono line under the
+   row (the streaming call's most recent output, pre-truncated by the row). */
+.act-tail-line {
+  padding: var(--sp-1) var(--sp-3) var(--sp-1) calc(var(--sp-3) + var(--sp-4));
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.act-chev { color: var(--text-3); flex: none; transition: transform var(--dur-fast) var(--ease); }
+.act[data-open="true"] .act-chev { transform: rotate(180deg); }
+/* ω99-125: 交付物文件卡行 — one line between the head and the body of a
+   deliverable tool's card (make_xlsx/make_pptx receipts): type icon + name +
+   honest KB + the 「在访达中显示」 button. Same .act vocabulary (surface tier,
+   mono captions, hairline top border — .act-body's precedent); restrained
+   increment, nothing else changes. */
+.act-file-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--hair-1);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  color: var(--text-2);
+}
+/* 116 弧 C：.act-file-icon 从 emoji 换 Icon 细线字形（📊📽📄→chart/film/
+   file-text）——中性图标 text-2 色（此前 emoji 自带彩色位图色，无令牌）。 */
+.act-file-icon { flex: none; user-select: none; color: var(--text-2); }
+.act-file-name { color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-file-size { color: var(--text-3); flex: none; }
+.act-file-reveal {
+  margin-left: auto;
+  flex: none;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+}
+.act-file-reveal:hover { border-color: var(--hair-2); color: var(--text-1); }
+.act-body {
+  border-top: 1px solid var(--hair-1);
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  color: var(--text-2);
+  max-height: calc(8 * 1.65em);
+  overflow-y: auto;
+  /* UI-4 C5: the expand fade-in — the body MOUNTS on open (the card's
+     open ternary), so a mount keyframe IS the expand animation (the
+     .pop-in precedent); collapse stays instant (an exit needs a delayed
+     unmount — out of scope). Reuses the ONE fade keyframes (the .scrim
+     entry) on the fast tier; reduced-motion's global block collapses it.
+     Layout untouched: the cap stays the inline maxHeight (jsdom-asserted)
+     — no height/transform tricks anywhere near the cap. */
+  animation: fade var(--dur-fast) var(--ease);
+}
+/* The typed bodies' internals (the IN/OUT fallback's two blocks ride the
+   .act-body; the inline maxHeight on the node keeps the cap
+   jsdom-assertable). */
+.act .act-body .block { display: flex; flex-direction: column; gap: 0; }
+.act .act-body .blocklabel { color: var(--text-3); font-size: var(--fs-caption); user-select: none; }
+.act .act-body .block.err .blocktext { color: var(--danger); }
+.act .act-body .blocktext { white-space: pre-wrap; overflow-wrap: anywhere; }
+.activity-foot { color: var(--text-3); font-size: var(--fs-caption); user-select: none; }
+/* M76-ux2 §2 (spec #16): the cap's 展开/收起 toggle — one shared look for
+   both shells (the simple activity card's body and the advanced toolcard's
+   result line). Block so it breaks onto its own line inside the pre-wrap
+   result text. */
+.activity-toggle {
+  display: block;
+  margin-top: var(--sp-1);
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
+}
+.activity-toggle:hover { color: var(--accent); }
+/* Red discipline: the err card is one of --danger's enumerated homes — a
+   40% border tint + danger row text, everything else stays quiet. */
+.act.err { border-color: rgb(var(--danger-rgb) / .4); }
+/* IconSpinner (T3) is a STATIC arc — the .spin class supplies the rotation.
+   @keyframes spin did not exist (tree-spin-pulse / msg-ai-fade only). */
+.spin { animation: spin var(--dur-slow) linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- 墨线 T10 (spec §5): the live tool-flow TIMELINE PANEL — LiveArea's
+       list container, once loose .live lines, now .panel > .panel-head
+       (.panel-title 工具流 + right-edge .panel-count `N 项`) +
+       .panel-list. Rows REUSE the Task-5 .act/.act-row contract above (one
+       row geometry, both surfaces); the separators are the list's
+       adjacent-sibling hairline (Linear issue-list language, 非卡片堆 —
+       controller r1: the CSS-block border-top form beats the prose's
+       per-row border-bottom, no dangling line after the last row).
+       SECTION ORDER IS LOAD-BEARING: the strip below sits AFTER the .act
+       rules so the substring decl() seam keeps reading the CARD rule
+       first for .act-prefixed selectors. --- */
+/* (border-left in LONGHANDS — the .act precedent: cssstyle drops
+   var()-bearing border shorthands, so the pins read the longhands.) */
+.panel {
+  display: flex;
+  flex-direction: column;
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: var(--hair-1);
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  /* Longhands (not the padding shorthand) so the pins read through the
+     CSSOM — jsdom does not expand shorthands. */
+  padding-left: var(--sp-3);
+  padding-right: var(--sp-3);
+  border-bottom: 1px solid var(--hair-1);
+}
+.panel-title { font-size: var(--fs-ui); font-weight: 500; color: var(--text-1); }
+.panel-count { font-family: var(--mono); font-size: var(--fs-caption); letter-spacing: .4px; color: var(--text-3); }
+.panel-list { overflow-y: auto; }
+.panel-list > * + * { border-top: 1px solid var(--hair-1); }
+/* Reuse, not fork (T10): inside the timeline the .act CARD chrome yields to
+   the list seams — one scoped strip; the card rules stay the single source
+   for the history surface. */
+.panel-list > .act { border-width: 0; border-radius: 0; background: none; }
+/* A busy row has no body to expand — the row language stays (hover reads as
+   the timeline's affordance) but the pointer lies; say it doesn't. */
+.panel-list .act-row { cursor: default; }
+/* The timeline's non-tool children (reasoning head, the steering queue) pad
+   themselves to the row inset — the .act rows bring their own via
+   .act-row. The streaming answer left the list (2026-08-26 §3.2): it rides
+   below the panel in AssistantReply's card. */
+.panel-list > details.reasoning,
+.panel-list > .steer { padding: var(--sp-1) var(--sp-2); }
+/* The busy row's sidecar check rides the right-edge tail in the warn tone
+   (the retired .busytool .gating rule's signal, same slot in the row). */
+.panel-list .act-tail.gating { color: var(--warn); }
+/* 2026-08-26 §3.2 — the answer rides BELOW the panel (sibling, not a
+   timeline row): the same AssistantReply card the history commits, still
+   growing. pre-wrap is gone — the card renders markdown blocks now. */
+.live-answer { margin-top: var(--sp-2); }
+/* UI-3 C4: the live answer's typing cursor — ▌ in the accent tone, hard
+   on/off blink (steps(1), terminal cadence). The 1s literal is a LOOP
+   PERIOD like tree-spin-pulse's (whitelisted in the duration gate): the
+   120/180/240ms interaction tiers cannot express it — the nearest tier
+   would blink 4x too fast. The global reduced-motion block collapses the
+   loop to a single .01ms iteration that ends at the element's natural
+   opacity — a static cursor, never a flicker. Single consumer: no global
+   blink utility, exactly one keyframes. */
+.live-answer .caret { color: var(--accent); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+details.reasoning { color: var(--text-2); }
+details.reasoning > summary { cursor: pointer; user-select: none; list-style: none; }
+/* 0.3.10（用户反馈：思考过程左侧两个三角）：WebKit（Tauri 的
+   WKWebView、Safari）里 summary 的原生披露三角只认 ::-webkit-details-marker，
+   list-style:none 管不到它——于是原生 ▶ 与自绘 ▸ 同屏。显式关掉原生
+   标记，自绘 ▸/▾ 是唯一的三角。 */
+details.reasoning > summary::-webkit-details-marker { display: none; }
+details.reasoning > summary:hover { color: var(--text-1); }
+details.reasoning > summary::before { content: "▸ "; }
+details.reasoning[open] > summary::before { content: "▾ "; }
+/* 0.3.8: the thought is viewport-bounded (same 220px family as the notice
+   detail) — a long stream scrolls inside, tail-followed by the component. */
+details.reasoning .body { white-space: pre-wrap; border-left: 2px solid var(--hair-1); padding-left: var(--sp-2); margin-top: var(--sp-1); max-height: 220px; overflow-y: auto; }
+/* 0.3.8: the committed reply card carries the thought ABOVE the body — a
+   hairline seam so the two don't fuse. */
+.reply-card > details.reasoning { margin-bottom: var(--sp-2); }
+.steer { color: var(--text-2); }
+
+/* --- M63 §D: the recovery-instruction error card (research 35 #8) --- */
+.simple-error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(var(--danger-rgb) / .4);
+  border-radius: var(--radius-md);
+  padding: var(--sp-2); /* tokfinish: .45/.6rem→8px 单档 */
+}
+.simple-error .err-head { color: var(--danger); font-weight: 700; }
+.simple-error .err-text { color: var(--text-1); white-space: pre-wrap; overflow-wrap: anywhere; }
+.simple-error .err-recovery { display: flex; gap: var(--sp-2); align-items: baseline; flex-wrap: wrap; color: var(--warn); }
+.simple-error .err-recovery .label { font-weight: 700; user-select: none; }
+
+/* --- M64-visual §2: the approval card (research 35 #1) on the tokens ---
+   A warn-tinted card that takes over the composer's slot; the command block
+   is the ONLY scroll region — .btns stays outside it. */
+.approval {
+  width: min(calc(var(--content-max) + 32px), calc(100% - 2.5rem));
+  margin: var(--sp-2) auto var(--sp-4);
+  background: rgb(var(--warn-rgb) / .07);
+  border: 1px solid rgb(var(--warn-rgb) / .3);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  /* 页面永不滚动契约：视口帽——卡片是 .simple 的直接子级（顶栏下面的整个
+     剩余高度），100% 相对它；3.5rem 给 .approval-note（接管回执行）和上下
+     margin 留位。超长 summary/warn 不再顶出页面，改走 .ap-scroll 内滚；
+     溢出兜底 hidden（agent-root 变体短内容，实际到不了帽）。 */
+  max-height: calc(100% - 3.5rem);
+  overflow: hidden;
+}
+/* 119 用户指令（09-26）：极简模式贴边——审批卡跟流同宽（仅宽度/边距覆写，
+   视觉规则与基线 .approval 同源）。 */
+.simple .approval {
+  width: calc(100% - 2.5rem);
+  margin-left: var(--sp-2);
+  margin-right: var(--sp-2);
+}
+.approval .ap-scroll {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.approval .strip,
+.permission-card .strip {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: var(--fs-caption);
+  color: var(--warn);
+  letter-spacing: .3px;
+  margin-bottom: var(--sp-2);
+}
+.approval .why {
+  font-size: var(--fs-ui);
+  font-weight: 600;
+  color: var(--text-1);
+  margin-bottom: var(--sp-1);
+  overflow-wrap: anywhere;
+}
+/* Final-review F7: the caution line under the reason is the amber strip's
+   sibling — --warn, not --danger (the red stays on its enumerated sites:
+   error cards, diff deletes, the 需确认 badge, the deny hover).
+   ui-parity C: the .cmd block moved to the permission-card section below as
+   the SHARED `.approval .cmd, .permission-card .cmd` rule (one derivation,
+   both shells — the seam note there explains the placement). */
+.approval .warn { color: var(--warn); font-size: var(--fs-ui); overflow-wrap: anywhere; }
+.approval .sidecar { color: var(--warn); font-size: var(--fs-ui); overflow-wrap: anywhere; }
+.approval .btns { display: flex; gap: var(--sp-3); justify-content: flex-end; }
+.approval .btns button {
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: var(--fs-ui);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  cursor: pointer;
+}
+.approval .btns button:disabled { opacity: .5; cursor: default; }
+.approval .deny { border: 1px solid var(--hair-2); background: var(--surface); color: var(--text-2); }
+.approval .deny:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
+.approval .allow { border: 0; background: var(--accent); color: var(--accent-ink); }
+.approval .allow:hover:not(:disabled) { filter: brightness(1.08); }
+/* UI-5 顺手项 B (mockup v2:246): the takeover receipt under the simple
+   approval card — one centered, caption-size line telling the novice where
+   their input went and that it comes back. Tokens only (no literal color);
+   it rides BELOW the card in the composer wrap slot, per the mockup. */
+.approval-note {
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  margin-top: var(--sp-2);
+}
+
+/* --- workspace-ux B3: the agent-root confirm card — the approval card's
+   form (strip / why / right-aligned pill buttons), ACCENT-tinted: an
+   informational confirm, not a permission risk (the amber stays the ask's).
+   The deny hover also drops the ask's red (保持现状 is a keep, not a refuse). */
+.approval.agent-root {
+  background: rgb(var(--accent-rgb) / .06);
+  border-color: rgb(var(--accent-rgb) / .3);
+}
+.approval.agent-root .strip { color: var(--accent); }
+.approval.agent-root .deny:hover:not(:disabled) { color: var(--text-1); border-color: var(--text-3); }
+
+/* --- settings-trial r7: the permission ask as an INLINE conversation card
+       — the agent-root card's slot sibling (chatColumn, above the composer).
+       The approval card's geometry verbatim (same width cap / auto margins /
+       radius / padding — the column's centered-card discipline), warn-tinted
+       like the ask's amber (the accent tint above is the informational
+       confirm's); the interior carries what the old .modal-card scoping gave
+       the ask (column flex + gap, h3, .warn, .muted). No scrim, no entry
+       animation (the agent-root card enters still too); the focus ring is
+       the global :focus-visible. The .scrim/.modal-card family rules STAY —
+       ResumePicker/AskUserCards still ride them (ModelPicker retired with
+       the 2026-08-28 model-chip dropdown). --- */
+.permission-card {
+  width: min(calc(var(--content-max) + 32px), calc(100% - 2.5rem));
+  margin: var(--sp-2) auto var(--sp-4);
+  background: rgb(var(--warn-rgb) / .07);
+  border: 1px solid rgb(var(--warn-rgb) / .3);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  /* ui-parity A/C: the viewport cap — the card never grows past the window;
+     the .pc-scroll region below carries the overflow (the pill .btnrow and
+     the reason input sit outside it, always reachable). */
+  max-height: calc(100dvh - var(--sp-8));
+}
+/* 119 用户指令（09-26）：极简模式贴边——权限卡跟流同宽（仅宽度/边距覆写）。 */
+.simple .permission-card {
+  width: calc(100% - 2.5rem);
+  margin-left: var(--sp-2);
+  margin-right: var(--sp-2);
+}
+.permission-card h3 { margin: 0; font-size: var(--fs-title); } /* tokfinish: 1rem→16px 等值入档 */
+.permission-card .warn { color: var(--warn); overflow-wrap: anywhere; }
+.permission-card .muted { color: var(--text-2); }
+/* ui-parity C: the mockup .approval interior, shared with the simple card —
+   the amber strip label and the mono command block (76px ceiling, internal
+   scroll) ride the SAME rules the .approval card does (one derivation, two
+   shells); the scroll region is the ask's own — a long summary or command
+   wall scrolls instead of pushing the buttons off-screen. */
+.permission-card .pc-scroll { display: flex; flex-direction: column; gap: var(--sp-2); min-height: 0; overflow-y: auto; }
+/* The mono command wall — the mockup .cmd block, SHARED with the simple
+   card (one derivation, both shells; the shared selector sits AFTER the
+   .permission-card block above so the decl() first-match seam still reads
+   the CARD's own max-height from the block, not the cmd's 76px). */
+.approval .cmd,
+.permission-card .cmd {
+  font-family: var(--mono);
+  font-size: var(--fs-ui);
+  color: var(--text-2);
+  background: var(--surface-2); /* 119：警示卡内的嵌面小条归 surface-2（surface=浮层/卡面，卡内嵌面用 +1 档） */
+  border-radius: var(--radius-md); /* ui-sweep A: tokenized (was a bare 8px) */
+  padding: var(--sp-2) var(--sp-3);
+  max-height: 76px;
+  overflow: auto;
+  margin: var(--sp-2) 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* --- ω99-318: the visual-spoof reveal (both shells, one derivation — the
+       SpoofReveal component's classes). Reveal-not-block: warn-tinted
+       information, NEVER --danger (no red full-tint — the ask's semantics
+       are unchanged; the reveal only completes what the eye sees). Tokens
+       only; rgb(var(--X-rgb)/α) channel forms, no color-mix (WKWebView
+       macOS 12 lesson). --- */
+.approval .spoof,
+.permission-card .spoof {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  font-size: var(--fs-ui);
+  border-top: 1px dashed rgb(var(--warn-rgb) / .35);
+  padding-top: var(--sp-2);
+}
+.approval .spoof-title,
+.permission-card .spoof-title { color: var(--warn); font-weight: 600; }
+.approval .spoof-row,
+.permission-card .spoof-row { display: flex; flex-wrap: wrap; gap: var(--sp-1); align-items: baseline; }
+.approval .spoof-key,
+.permission-card .spoof-key {
+  font-family: var(--mono);
+  color: var(--text-2);
+  /* keep the key readable even when it itself carries spoofed bytes */
+  overflow-wrap: anywhere;
+}
+.approval .spoof-badge,
+.permission-card .spoof-badge {
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  color: var(--warn);
+  background: rgb(var(--warn-rgb) / .08);
+  border: 1px solid rgb(var(--warn-rgb) / .3);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--sp-2);
+  white-space: nowrap;
+}
+.approval .spoof-more,
+.permission-card .spoof-more { color: var(--text-3); }
+.approval .spoof-url,
+.permission-card .spoof-url { overflow-wrap: anywhere; }
+.approval .spoof-target,
+.permission-card .spoof-target {
+  font-family: var(--mono);
+  color: var(--warn);
+  overflow-wrap: anywhere;
+}
+.approval .spoof-note,
+.permission-card .spoof-note {
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  padding-left: var(--sp-3);
+}
+.permission-card .btnrow { justify-content: flex-end; }
+.permission-card .btnrow button { font-weight: 600; border-radius: var(--radius-sm); } /* 119：胶囊归 chip 档 */
+.permission-card .btnrow button.wudao.primary { background: var(--accent); color: var(--accent-ink); }
+
+/* --- M64-visual §3: empty hero (mockup §3) — 52px accent 悟 logo,
+       headline/subtitle, task chips (the prefill seam is unchanged). --- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  flex: 1;
+  text-align: center;
+  padding: calc(var(--sp-8) + var(--sp-2)) var(--sp-4); /* tokfinish: 2.5rem/1rem=40/16px 精确保留（40 无档，token 合成） */
+  color: var(--text-1);
+}
+.hero h1 { margin: var(--sp-2) 0 0; font-size: var(--fs-head); } /* ω99-295: 裸 20px 归队档令牌（tokfinish 同款） */
+.hero p { margin: 0; color: var(--text-3); font-size: var(--fs-ui); }
+/* ω99-167: the preset chip rows (.tasks / .hero-asks) are RETIRED by user
+   order (占高频区且太笼统) — the hero now introduces the buddy in benefits
+   terms; this hint line is the only addition (action prompt, 12.5px tier). */
+.hero .hero-hint { margin-top: var(--sp-3); } /* 4px 栅格（conformance 门） */
+
+/* ω99-251: #5 — 欢迎页点名行（.hero-await）：有会话在等你授权时，欢迎面
+   点名一行（N=0 零渲染——245 健康行同款零噪音门，缺席时 hero 字节同形）。
+   文案收益向（「等你授权」不露 blocked/permission 实现词）；点名字（.hero-
+   await-name）直达该会话——quiet 链接对：accent 字 + hover 下划线（表链路的
+   惯用视觉，无底无框），caption 级跟随 .hero p 的 12.5px 档。间距走 4px 栅格。 */
+.hero .hero-await {
+  margin-top: var(--sp-3); /* 4px 栅格（conformance 门，hero-hint 同款间隔层） */
+  color: var(--text-2);
+}
+.hero .hero-await-name {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+.hero .hero-await-name:hover { text-decoration: underline; }
+.hero .hero-await-name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* M64-visual §3: scoped visually-hidden text — status glyphs and other
+   icon-only marks carry their word for assistive tech (the .vh pattern,
+   reintroduced narrowly for these). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+
+/* --- 借鉴弧 α2（the upstream format2.1.269 思想）: the queued steer's recall button — the
+       parked-chip drop idiom (SimpleComposer 的 .parked-chip .drop 家族) on
+       the SERVER-side steering queue lines (.steer 高级面 / .queue-line 极简
+       面)。Ghost until hover on pointer devices; always visible where hover
+       cannot exist (none today — touch carries title-less tap targets fine
+       at this size). --- */
+.recall {
+  font-family: var(--font);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  background: none;
+  border: 0;
+  padding: 0 var(--sp-1);
+  margin-left: var(--sp-2);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.recall:hover { color: var(--danger); }
+.recall:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- 借鉴弧 δ（the upstream harness 367ab084 思想）: the busy tool row's 转入后台
+       button — the α2 recall idiom on the in-flight face (.act-row tail).
+       Accent tone (it is a navigation action, not a destructive one); the
+       row is data-status=run so the tail right-aligns via margin-left:auto.
+       Same no-color-mix law as every channel-token style (macOS 12 WKWebView
+       lesson). Ghost-quiet like .recall; title carries the semantics. --- */
+.act-row .detach {
+  font-family: var(--font);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  background: none;
+  border: 0;
+  padding: 0 var(--sp-1);
+  margin-left: auto;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.act-row .detach:hover { color: var(--accent); }
+.act-row .detach:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* --- 借鉴弧 α1（Codex 0.154 思想）: the ask_user clarification card as an
+       INLINE chat-column card (.ask-card) — the permission card's geometry
+       sibling (30-activity.css 的 .permission-card 同族：同宽帽/自动边距/圆
+       角/内边距——列内居中卡纪律), ACCENT-tinted (a question, not a risk —
+       the AgentRootCard informational precedent: 权限=warn 琥珀，提问=accent)。
+       Interior carries the modal family's own bits (h3 / .optioncards /
+       .wudao-input / .btnrow / .muted) unchanged — one derivation, two
+       shells. No scrim, no entry animation (the inline family's law). --- */
+.ask-card {
+  width: min(calc(var(--content-max) + 32px), calc(100% - 2.5rem));
+  margin: var(--sp-2) auto var(--sp-4);
+  background: rgb(var(--accent-rgb) / .06);
+  border: 1px solid rgb(var(--accent-rgb) / .3);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-height: calc(100dvh - var(--sp-8));
+}
+.ask-card h3 { margin: 0; font-size: var(--fs-title); }
+.ask-card .muted { color: var(--text-2); }

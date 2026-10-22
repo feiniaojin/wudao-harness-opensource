@@ -1,0 +1,529 @@
+/* --- inkline Task 7 (spec §2): the input card — 14px tool radius, the tools
+       row in-card, the chip language, the 28px send --- */
+.inputarea {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  /* M65-space §2: the composer wrap is the window's last block — a 12px
+     bottom inset (was 1rem), 16px gutters matching the flow's. */
+  padding: var(--sp-1) 0 var(--sp-1); /* 09-27：侧 padding 已撤；底也收紧 sp-3→sp-1（高级模式与中间预览面板底对齐） */
+}
+.composer {
+  max-width: calc(var(--content-max) + 32px);
+  width: 100%;
+  margin: 0 auto;
+  background: var(--surface);
+  /* 116 弧 A：1px 边 + 重投影的双重轮廓退役——elevation 中档把 0.5px 发丝
+     描边画进 box-shadow（tokens.css 的「边框与投影不同用」律），卡面零边框。
+     119 用户反馈修正：输入条圆角归卡片族 8px（旧 22px 胶囊是「不统一」
+     感主源之一——全站只剩 6/8/12 一套 scale）。 */
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--elev-2);
+  /* 8/12/8 网格档（纯 var，无 px 字面量）：22px 圆弧在底缘内收 ~5px，12px
+     横向 inset 恰好清出工具行的落位 */
+  padding: var(--sp-2) var(--sp-3) var(--sp-2);
+  display: flex;
+  flex-direction: column;
+}
+.composer-ta {
+  width: 100%;
+  /* M64-visual §4: prose input on the proportional stack (spec §2 .ta) —
+     form controls do NOT inherit, so the family is pinned here. */
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-1);
+  padding: var(--sp-2) 0 var(--sp-1);
+  background: none;
+  border: 0;
+  outline: 0; /* ω99-304: the composer card's :focus-within accent border is
+     the single focus indicator (the ui-review-r2 P2 carve-out at the sheet
+     tail keeps the ring AND halo off textareas) */
+  resize: none;
+  min-height: 22px;
+  max-height: 40vh;
+}
+.composer-ta::placeholder { color: var(--text-3); }
+.composer-tools { display: flex; align-items: center; gap: var(--sp-1); flex-wrap: wrap; }
+.composer-right { margin-left: auto; display: flex; align-items: center; gap: var(--sp-2); }
+
+/* spec §2: the chip — the tools row's universal control (paperclip, slash
+   menu, permission mode, shield tier, lanes, interrupt): 24px on the 4px
+   grid, radius-sm, a hairline --line border over the page bg. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 24px;
+  padding: 0 calc(var(--sp-2) + 1px);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hair-1);
+  background: var(--bg);
+  /* M64-visual §4: chips are UI labels — the prose stack (spec §2 .chip). */
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: calc(var(--fs-ui) - 1px);
+  color: var(--text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  /* ui-review-r1 P9: the enabled↔disabled opacity step (and any future
+     transform) eases — the only chip transition, per the round's scope. */
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+/* ui-sweep N2 (UI-1 defer): hover NEVER eats the selected state. The hover
+   affordance belongs to the UNSELECTED chip ("you can pick this"); a selected
+   chip's neutral fill + hairline edge IS its feedback, so the hover rules
+   EXCLUDE .on/.sel outright instead of racing specificity — the scoped
+   composer hover is (0,4,0) vs the scoped selected (0,3,0), so any later-than
+   trick loses on specificity and the state flickers. The
+   mockup encodes the same semantics source-order-wise (its .chip.sel,
+   equal-specificity and later in the sheet, beats .chip:hover); the
+   exclusion states it structurally. */
+.chip:hover:not(:disabled):not(.on):not(.sel) { border-color: var(--hair-2); color: var(--text-1); }
+/* The selected state (spec §2 `.on`); `.sel` is the runtime hook the shield
+   trigger still emits (outside this task's file set) — same look.
+   116 弧 A「accent 收权」：芯片底去品牌色 → 中性选中（surface-2 底 +
+   hair-2 边 + text-1）。选中态的 accent 配额留给菜单/列表行（.pop .mi.on
+   一族）——芯片是控件不是状态墙。 */
+.chip.on,
+.chip.sel {
+  background: var(--surface-2);
+  border-color: var(--hair-2);
+  color: var(--text-1);
+}
+.chip:disabled { opacity: .5; cursor: default; }
+/* composer chips（spec 2026-08-28 §2.2）: model labels run long
+   ("deepseek-chat-v3.1-…") — the chip caps and ellipsizes; the full name
+   rides the chip title. ω99-296 (I1): .chip 是 inline-flex，容器上的
+   text-overflow 对 flex 项是死代码（旧规则只会硬切、永不出现省略号）——
+   省略号下沉到 .chip-label 可缩项（min-width:0 + overflow 三件套），
+   caret 保持不缩。 */
+.chip.model { max-width: 12rem; }
+.chip.model .chip-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.chip.model .caret { flex: none; }
+/* ui-parity B: inside the composer card the chips speak the mockup's quiet
+   pill language — borderless and transparent at rest (the card IS their
+   container), surface-2 on hover; the global .chip keeps its bordered tool
+   look everywhere else (settings pickers, the wizard). NOTE: this scoped
+   base is (0,2,0) and sits AFTER the global `.chip.on/.sel` — the scoped
+   re-declaration below carries the selected state; the block sits BEFORE
+   the interrupt rules so the decl() first-match seam reads the base here. */
+.composer .chip { background: transparent; border-color: transparent; } /* 119：胶囊帽覆写退役——chip 角随全局 .chip 的 sm 档 */
+/* N2 (UI-1 defer): the exclusion — NOT a specificity bump on the selected
+   rule — because a selected chip keeps its neutral selected identity while
+   the pointer is over it; only an unselected chip advertises its
+   clickability with the surface-2 hover band. */
+.composer .chip:hover:not(:disabled):not(.on):not(.sel) { background: var(--surface-2); border-color: transparent; color: var(--text-1); }
+/* fix round 2 (review I1): the scoped quiet base above is (0,2,0) and LATER
+   than the global `.chip.on, .chip.sel` — it was eating the selected state
+   (the shield trigger's .sel chip and the busy lane buttons lost their
+   neutral fill inside the composer). The selected state re-declared
+   here, scoped and AFTER the quiet base, restores the sel look. */
+.composer .chip.on,
+.composer .chip.sel {
+  background: var(--surface-2);
+  border-color: var(--hair-2);
+  color: var(--text-1);
+}
+.composer .chip.interrupt { color: var(--danger); }
+.composer .chip.interrupt:hover:not(:disabled) {
+  background: rgb(var(--danger-rgb) / .1);
+  border-color: rgb(var(--danger-rgb) / .35);
+  color: var(--danger);
+}
+
+/* fix round 1 (mockup-v2): the send is the 34px accent CIRCLE (was the
+   墨线 28px square-round) — the pill card's right-edge commit button. */
+.send {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+.send:hover:not(:disabled) { filter: brightness(1.08); }
+.send.off { opacity: .4; pointer-events: none; }
+.send:disabled { cursor: default; }
+
+/* M64-visual §2: the chip's controlled popup menu (opens upward). */
+.pop { position: relative; display: inline-flex; }
+.pop .menu {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  background: var(--surface);
+  /* 116 弧 A：浮层菜单走 elevation 中档（描边入影），边框退役——浮起面
+     与描边不同用（tokens.css 成文律）。119：浮层圆角归 lg 12 档。 */
+  border: 0;
+  border-radius: var(--radius-lg);
+  padding: var(--sp-2);
+  min-width: 224px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  z-index: var(--z-float);
+  box-shadow: var(--elev-2);
+  /* UI-4 C6: the enter animation, finally real — the menu MOUNTS on open
+     (ShieldSelector never class-flips), so the opacity/transform TRANSITION
+     this rule used to declare could never fire on enter (dead since
+     M64-visual §2 collapsed the tier row into the chip) and exit is out of
+     scope under mount/unmount. The mount keyframe rides the pop family's
+     own @keyframes pop (scale .98 + fade, the modal-card's entry) on the
+     fast tier; reduced-motion's global block collapses it. */
+  animation: pop var(--dur-fast) var(--ease);
+}
+.pop .mi {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: var(--fs-ui);
+  color: var(--text-2);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.pop .mi:hover { background: var(--surface-2); }
+.pop .mi.on { background: var(--accent-weak); color: var(--accent); font-weight: 600; }
+/* Review LOW: the armed risk wording is a CAUTION, not an error — --warn (the
+   old UI's risk-confirm color), keeping --danger to its enumerated sites. */
+.pop .mi .confirm { color: var(--warn); font-size: var(--fs-caption); white-space: normal; }
+.pop .mi .warned {
+  font-size: var(--fs-caption);
+  color: var(--danger);
+  margin-left: var(--sp-1);
+  border: 1px solid rgb(var(--danger-rgb) / .35);
+  border-radius: var(--radius-sm);
+  padding:  0 var(--sp-1);
+}
+/* 模型 chip (2026-08-28 用户反馈: 模型弹窗 → 下拉): the model rows carry a
+   trailing lane badge (端点 = cross-provider /provider switch; env) — it hugs
+   the right edge so long model names keep the left. The model menu is wider
+   than the effort menu (provider/model rows) and may hold a footer behind a
+   separator (设为默认 — the R6 Ctrl+S lane made visible). */
+.pop .mi .msub { margin-left: auto; font-size: var(--fs-caption); color: var(--text-2); }
+.pop .menu.model-menu {
+  min-width: max-content;
+  max-width: min(40rem, 92vw);
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  /* 联动两栏 (2026-08-31 用户反馈第四报:两级「钻入」被否 —— 选了供应商后
+     供应商不该消失,要像下拉列表的联动一样): the menu is ONE surface — a
+     horizontal pair of columns, 左列供应商(常驻)、右列联动焦点家的模型行。
+     The menu is bottom-anchored (bottom: 40px above the chip) — unbounded
+     growth runs off the TOP of the viewport, so each column scrolls
+     internally instead. */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+.pop .menu.model-menu .mroot,
+.pop .menu.model-menu .mpane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  max-height: min(24rem, 60vh);
+  overflow-y: auto;
+  /* the columns take over the base .menu's scroll role (the menu itself is
+     overflow:hidden — only the panes scroll, each on its own). */
+  overscroll-behavior: contain;
+}
+.pop .menu.model-menu .mroot {
+  min-width: 11rem;
+  max-width: 13rem;
+  border-right: 1px solid var(--hair-1);
+}
+.pop .menu.model-menu .mpane {
+  min-width: 12rem;
+}
+/* .pop.down modifier (2026-08-31 用户反馈:设置页权限 chip 弹层默认向上,
+   内容看不到 —— 在中间视口的位置向上弹是反向的): the popup opens DOWNWARD
+   (below the chip) instead of the default bottom-anchored 40px above. The
+   composer chips (model / effort / language / mode) keep the upward default
+   — they sit at the bottom of the viewport, where "down" would run off-screen. */
+.pop.down .menu { bottom: auto; top: calc(100% + 4px); }
+/* 模型下拉供应商分组头 (2026-08-28 用户反馈第二报): the group header carries
+   the provider so the rows shrink to bare model names. 2026-08-29 用户反馈
+   「组头和模型行看起来一样」—— 头走 .lang-head 家族（11px + 字距 + 更暗的
+   text-3）并大写（deepseek → DEEPSEEK，字面即标签非选项），非首组上沿发丝
+   线作结构边界；模型行永远没有分隔线。 */
+.pop .menu.model-menu .mgroup {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-caption);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.pop .menu.model-menu .mgroup:not(:first-child) {
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-1);
+  border-top: 1px solid var(--hair-1);
+}
+/* 联动两栏 (2026-08-31 用户反馈第四报): 左列供应商行 —— 名称加重 + 右缘
+   模型数徽记(.msub),大矩阵一眼可扫;当前供应商行走 .pop .mi.on 的 accent
+   家族;联动焦点行(hover/click 所指,.mfoc)拿 hover 级底色 —— 但当前供应
+   商同时是焦点时 accent 优先(它已经是「这里」,不需要两条信号打架)。 */
+.pop .menu.model-menu .mi.mprov .mlabel { font-weight: 600; }
+.pop .menu.model-menu .mi.mprov.mfoc:not(.on) { background: var(--surface-2); }
+/* (ω99-218 #2 续) 「最近使用」虚拟组行:左列首位的伪供应商行——底缘发丝线
+   把虚拟组与真供应商列表分开(与 .mroot 右缘发丝线同族的结构边界),底角
+   归零让发丝线走直;「N 个」徽记沿 .msub 常规位(零新样式位)。 */
+.pop .menu.model-menu .mi.mrec {
+  border-bottom: 1px solid var(--hair-1);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.pop .menu .menu-sep { height: 1px; background: var(--hair-1); margin: var(--sp-1) 0; }
+/* 推理档/语言 chip (S5): the selector footers (设为 {provider} 默认 / 设为默认)
+   ride `.mf` — ModelSelector's `.mi.foot` idiom, but as their own class so the
+   row reads secondary to the pick rows; the lang menu stacks two knob groups
+   under `.lang-head` labels (回答/思考). */
+.pop .mf {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--sp-1) var(--sp-3);
+  border: 0;
+  border-top: 1px solid var(--hair-1);
+  margin-top: var(--sp-1);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.pop .mf:hover { background: var(--surface-2); color: var(--text-1); }
+.pop .menu.lang-menu { min-width: max-content; }
+.pop .lang-head {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-caption);
+  letter-spacing: .04em;
+  color: var(--text-3);
+  user-select: none;
+}
+.pop .lang-head + .mi { margin-top: 0; }
+
+textarea.wudao-input:focus { border-color: var(--accent); }
+.hint { color: var(--text-2); font-size: var(--fs-ui); user-select: none; }
+.inputarea > .hint { text-align: center; }
+/* The borderless textarea has no outline of its own — the CARD carries the
+   focus state (keyboard users still see where they are). 116 弧 A：卡面已无
+   边框，focus 态 = accent 环画进 box-shadow（换掉 elevation 的发丝描边，
+   柔光两层保留）——the upstream format 输入框 focus 重绑描边的等效实现。 */
+.composer:focus-within {
+  box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / .55), var(--elev-2-soft);
+}
+
+/* --- M79b §1: the composer's image rail + the drag-drop affordance --- */
+/* 拖放态同走 accent 环（比 focus 强半档）；旧虚线边随卡面边框一起退役。 */
+.composer.dragover {
+  box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / .8), var(--elev-2-soft);
+}
+.composer .img-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+.img-thumb {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hair-1);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.img-thumb .rm {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0 0 0 var(--radius-sm);
+  background: rgb(var(--bg-rgb) / .72);
+  color: var(--text-1);
+  cursor: pointer;
+}
+.img-thumb .rm:hover { color: var(--danger); }
+.img-thumb .rm:disabled { cursor: default; opacity: .6; }
+/* The 📎 chip's mounted-drafts count. 116 弧 A：计数徽字去 accent（accent
+   配额收权——计数是数据不是状态），中性 text-1。 */
+.chip.attach .n {
+  font-size: var(--fs-caption);
+  color: var(--text-1);
+}
+.img-notice { color: var(--warn); }
+
+/* --- ω99-55: the composer's file rail (name+size cards; no thumbs) --- */
+.composer .file-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+}
+/* // ω99-203: #3 — 旧「＋」pill 尾规则随一键短语行整族退役（用户令：
+   占输入框高度、无人用）；.composer .file-rail / .composer .chip 共享
+   规则留（119 intent 行在用）。 */
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: 260px;
+  min-height: 48px;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hair-1);
+  background: var(--surface-2);
+}
+.file-card .glyph { flex: none; font-size: 16px; line-height: 1; }
+.file-card .meta { display: flex; flex-direction: column; min-width: 0; }
+.file-card .name {
+  font-size: var(--fs-ui);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-card .size { font-size: var(--fs-caption); color: var(--text-3); }
+.file-card .rm {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.file-card .rm:hover { color: var(--danger); }
+.file-card .rm:disabled { cursor: default; opacity: .6; }
+/* The file chip's mounted-drafts count (the 📎 count shape) — neutral
+   text-1, the attach-count idiom (116 弧 A accent 收权). */
+.chip.attachfile .n {
+  font-size: var(--fs-caption);
+  color: var(--text-1);
+}
+/* --- ω99-55: history file chips (name+size, no fetch) --- */
+.hist-file-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  justify-content: flex-end;
+  margin-bottom: var(--sp-1);
+}
+.hist-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  max-width: 240px;
+  padding:  0 var(--sp-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--hair-1);
+  background: var(--surface-2);
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+}
+.hist-file-chip .name {
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hist-file-chip .size { color: var(--text-3); flex: none; }
+
+/* --- slash menu --- */
+.slashmenu {
+  background: var(--surface);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-lg); /* 119：浮层档（旧 md 归族前） */
+  padding: var(--sp-1) 0;
+  max-height: 12rem;
+  overflow-y: auto;
+  /* UI-5 顺手项 A (C6 家族补全): the slash menu mounts on open (the
+     suggest state flips to open, the box conditional) — the pop mount
+     keyframe, same tier as the .pop .menu; reduced-motion collapses it. */
+  animation: pop var(--dur-fast) var(--ease);
+}
+/* M64-visual §4: command surfaces stay mono under the prose body. */
+.slashmenu .row { padding: 0 var(--sp-2); white-space: pre; font-family: var(--mono); }
+.slashmenu .row.sel { color: var(--accent); }
+.slashmenu .row .args, .slashmenu .row .desc { color: var(--text-2); }
+.slashmenu .row.sel .args, .slashmenu .row.sel .desc { color: var(--accent); opacity: .8; }
+.slashmenu .more { color: var(--text-2); padding: 0 var(--sp-2); }
+
+/* statecover A4 — the pre-app connection screen: a centered surface card in
+   the token language (--surface + --radius-lg + elevation 中档). The 悟 logo
+   reuses EmptyHero's asset form at a TOKEN radius (--radius-lg) — the hero's
+   own 15px is an off-tier debt batch 2 owns, not a form to copy. Three
+   states share the shell: connecting/authenticating (spinner + hint),
+   auth-failed (error copy), closed (the reload escape). */
+.connect-shell { flex: 1; display: grid; place-items: center; padding: var(--sp-4); }
+.connect-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--surface);
+  /* 116 弧 A：浮卡走 elevation 中档（描边入影），边框退役。 */
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-2);
+  padding: var(--sp-8) var(--sp-6);
+  text-align: center;
+  max-width: 400px;
+}
+.connect-card .connect-title { color: var(--text-1); font-size: var(--fs-title); }
+.connect-card .connect-row { display: flex; align-items: center; gap: var(--sp-2); }
+.connect-card .connect-row .spin { color: var(--text-2); flex: none; } /* 116 弧 A：连接 spinner 中性化（live 态的 accent 留给会话内 run 标记） */
+.connect-card .connect-msg { color: var(--text-2); font-size: var(--fs-ui); }
+.connect-card .connect-msg.err { color: var(--danger); }
+.connect-card .connect-meta { color: var(--text-3); font-family: var(--mono); font-size: var(--fs-caption); }
+
+/* M65-space §1: the 简洁/高级 pill (.mode-toggle) is GONE with the topbar
+   redesign — the settings page's 偏好 section owns the ui.defaultMode pick. */
+.simple { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.simple .chat { flex: 1; }
+/* 119c 用户修正（09-27）：会话流宽度=输入框宽度（.composer 的
+   max-width:100%−左右 sp-4 留白），两侧有呼吸空间，不再贴到窗口边；
+   会话流区域也跟输入框一样有圆角边。 */
+.simple .chat { max-width: none; margin: 0; }
+.simple .composer { max-width: none; margin: 0; }
+/* 会话流视觉容器与输入框同形：等宽（.chat 内容区的宽度=100%−sp-4×2=
+   .composer 的 width 100% 在同 padding wrap 内的同宽）、圆角 md、
+   上下边 hair-1 分界（119 画布律：分界只靠发丝线不靠色块）。 */
+/* 09-27 报障根治：base .chat 已有圆角+同宽，simple 不再需要覆写 */
+/* 终端式会话流（用户契约）：流可以上下滚，但滚动条不可见——像终端一
+   样。scrollbar-width:none 覆盖标准实现（Firefox/新 WebKit），::-webkit-
+   scrollbar 覆盖桌面壳 WKWebView 的引擎实现；滚轮/触控板/键盘仍可滚，
+   jump-bottom 按钮承担"你不在底部"的提示职责。 */
+.simple .chat { scrollbar-width: none; }
+.simple .chat::-webkit-scrollbar { display: none; }
+

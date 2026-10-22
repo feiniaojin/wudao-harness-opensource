@@ -1,0 +1,41 @@
+/* --- 117 玻璃化（vibrancy）：桌面主窗的玻璃形态门控层 -----------------------
+   依据 docs/research/117-vibrancy-probe.md §6（真机定谳的三侧最小方案）+
+   116-the upstream format-desktop-design-study §3e（侧栏蓝洗范式）。形态事实：
+   · conf 侧主窗已 transparent:true + windowEffects sidebar/material state
+     active、backgroundColor 已删（探针 §1b：不删则实底盖死材质）。宠物窗
+     （pet）不动——探针未验它的合成路径，它也没有 windowEffects，无玻璃。
+   · 本 sheet 的每一条规则都挂 html.glass 前缀：该 class 只由桌面壳的主
+     入口（main.tsx，?shell=desktop）stamp；浏览器标签页打开 = 无 glass
+     类 = 与玻璃化之前逐字节同形（天然降级，零 @supports 分支）。
+   性能税的架构隔离（探针 §5 末条）：玻璃税 = 窗口每帧非不透明像素的
+   WindowServer 合成支出，所以聊天列/输入条/工具卡一律保持实底——流式
+   输出等 60fps 重绘全部落在不透明像素上，玻璃只在侧栏与窗缘显形（the upstream format
+   范式：中央列不透明承载正文）。侧栏本就是低对比区（探针 §7）。
+   蓝洗走 --accent-rgb 通道令牌（rgb(var(--accent-rgb) / .08)，Safari 12.1+
+   的现代空格语法；禁裸 hex——WKWebView 兼容层纪律，tokens.css 同款）。 */
+
+/* ① 窗底交材质：body 透明，桌面真模糊透过 NSVisualEffectView 显形。
+   探针的 62% 半透明实验值只是中间态，the upstream format 终态是全透给材质。 */
+html.glass body {
+  background: transparent;
+}
+
+/* ② 侧栏族（buddy 会话侧栏 .sb / 高级模式文件树列 / 设置页左导航）：
+   透明底 + 顶部 8% accent 蓝洗渐变（the upstream format「玻璃上的极淡色流」，116 §168；
+   60% 处淡出——不是装饰渐变，是「材质上的光」）。基座 .sb 的 var(--bg)
+   实底在本门内退役；hover/选中行等子元素规则不受影响（它们画在洗色之上）。 */
+html.glass .sb,
+html.glass .ide-cell.ide-left,
+html.glass .set-nav {
+  background-color: transparent;
+  background-image: linear-gradient(180deg, rgb(var(--accent-rgb) / .08), transparent 60%);
+}
+
+/* ③ 内容列保持实底（性能税隔离的承重墙）：会话流 .chat（居中列，两侧窗缘
+   露玻璃）、高级模式中栏（tabbar+viewer）、设置表单列。输入条与工具卡的
+   var(--surface) 实底是既有规则，本 sheet 不重复声明（收据 ③ 钉其零沾）。 */
+html.glass .chat,
+html.glass .ide-cell.ide-center,
+html.glass .set-body {
+  background: var(--bg);
+}

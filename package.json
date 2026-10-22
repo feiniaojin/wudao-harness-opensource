@@ -1,0 +1,35 @@
+{
+  "name": "wudao-harness",
+  "version": "0.2.7",
+  "private": true,
+  "type": "module",
+  "description": "A production-grade agent harness (wudao-harness).",
+  "scripts": {
+    "build": "pnpm --filter @wudao/core build && pnpm --filter @wudao/providers build && pnpm --filter @wudao/browser build && pnpm --filter @wudao/server build && pnpm --filter @wudao/web build && pnpm --filter wudao-harness build && pnpm --filter @wudao/slack build && pnpm --filter @wudao/evals build",
+    "test": "pnpm -r --filter './packages/*' run test",
+    "check": "pnpm -r --filter './packages/*' exec tsc --noEmit && pnpm run check:scripts",
+    "release:gate": "bash scripts/release-gate.sh",
+    "check:scripts": "tsc -p scripts --noEmit",
+    "verify-agent-notes": "node --experimental-strip-types scripts/verify-agent-notes.ts",
+    "verify-archived-agent-notes": "node --experimental-strip-types scripts/verify-archived-agent-notes.ts",
+    "demo": "pnpm --filter @wudao/core demo",
+    "eval": "node packages/evals/dist/index.js",
+    "start": "node --max-old-space-size=2048 packages/cli/dist/index.js",
+    "desktop:build": "pnpm --filter @wudao/desktop run desktop:build",
+    "desktop:sea": "pnpm --filter @wudao/desktop run desktop:sea",
+    "desktop:smoke": "pnpm --filter @wudao/desktop run desktop:smoke",
+    "desktop:dev": "pnpm --filter @wudao/desktop run desktop:dev",
+    "release": "pnpm -r --filter './packages/*' build && pnpm -r --filter './packages/*' test && pnpm -r --filter './packages/*' publish --access public"
+  },
+  "dependencies": {
+    "@wudao/slack": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "typescript": "5.6.3"
+  },
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=22.6"
+  }
+}

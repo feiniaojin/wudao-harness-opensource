@@ -1,0 +1,19 @@
+packages:
+  - "packages/*"
+  # M43-C: the desktop shell joins the workspace so its deps install with the
+  # rest — but every root script filters explicitly ('./packages/*' or named
+  # @wudao/* packages), so it stays OUT of `pnpm build` / `pnpm test` chains.
+  # Its own lifecycle runs only through the root `desktop:*` scripts.
+  - "apps/*"
+allowBuilds:
+  esbuild: true
+  node-pty: true
+patchedDependencies:
+  ink@7.1.1: patches/ink@7.1.1.patch
+overrides:
+  # @slack/web-api declares p-queue ^6; pnpm resolved 6.0.0 whose published
+  # package.json has NO "main"/"exports" (a genuinely broken tarball) — require
+  # fails on Node 22+. Pin the healthy 6.6.2.
+  "p-queue": "6.6.2"
+minimumReleaseAgeExclude:
+  - playwright-core@1.63.0
