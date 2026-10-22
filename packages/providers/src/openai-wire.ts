@@ -9,13 +9,13 @@ import { isCappedReasoning, toOpenAIMessage } from "./openai-messages.js";
 import { inputHasImages, imageWireMessages, type ImageRequestContext } from "./openai-images.js";
 
 // ---------------------------------------------------------------------------
-// ω99-42 — the mandatory-reasoning repair runtime. the upstream f6bd1633f7/63279301bc
+// ω99-42 — the mandatory-reasoning repair runtime. hermes f6bd1633f7/63279301bc
 // shape, wudao layering:
 //   flag  per-CLIENT (factory closure, shared by every fallback leg — the
 //         capability is endpoint-scoped): set only after a repaired request
 //         was SERVED (2xx); from then on every request of this client is
 //         pre-armed (reasoning fields built enabled, no 400 round-trip first).
-//         In-process only, never persisted — the upstream' root cause was exactly a
+//         In-process only, never persisted — hermes' root cause was exactly a
 //         per-process capability cache going stale, so the flag lives and dies
 //         with the process (restart re-probes the endpoint).
 //   call  per-CALL (created in the leg method, shared by every ladder attempt
@@ -99,7 +99,7 @@ export interface WireUsage {
   reasoning_tokens?: number;
 }
 
-/** Disjoint-count mapping (the upstream formatrule): `prompt_tokens` includes cache hits, and
+/** Disjoint-count mapping (dsh rule): `prompt_tokens` includes cache hits, and
  *  the two wire spellings report the SAME quantity — prefer details, fall back
  *  to the flat field, never sum them (no double counting). Miss = the rest
  *  (DeepSeek's explicit miss spelling wins when present).
@@ -131,7 +131,7 @@ export function toModelUsage(u: WireUsage): ModelUsage {
 }
 
 /** M56 §2: the receipt's client-side extras — the wall duration measured
- *  around the attempt (always set; the upstream's duration_ms-always rule) and
+ *  around the attempt (always set; CodeWhale's duration_ms-always rule) and
  *  the replayed-reasoning estimate (only when the replay contract sent bytes
  *  back out). */
 export function enrichUsage(usage: ModelUsage, durationMs: number, replayTokens: number): ModelUsage {
@@ -211,7 +211,7 @@ function assembleOpenAIBody(config: ProviderConfig, input: ModelInput, messages:
 /** The one request body builder (M79): the pre-M79 byte-identical
  *  construction when no images ride the input, the image walk above when
  *  they do. ω99-42: threads the mandatory-reasoning repair body through.
- *  ω99-55: FILE blocks project to handle text FIRST (the upstream formatLlmRuntime parity
+ *  ω99-55: FILE blocks project to handle text FIRST (dsh LlmRuntime parity
  *  — no wire ever receives file bytes); the projection is the identity when
  *  nothing rides files, so text/image request bytes are untouched. */
 export async function buildOpenAIRequestBody(

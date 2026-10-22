@@ -1,10 +1,10 @@
-// M56 §1 (the upstream project llm/key_pool.py) — the multi-key pool. Domestic providers
+// M56 §1 (hive llm/key_pool.py) — the multi-key pool. Domestic providers
 // rate-limit PER KEY (RPM quotas per credential), so a harness aimed at them
-// pools N keys and rotates. Semantics (the the upstream project contract, pinned by tests):
+// pools N keys and rotates. Semantics (the hive contract, pinned by tests):
 //
 //   round-robin   selection advances a cursor over the deduped key list;
 //   cooldown      a key that just took a KEY-SIDE failure is skipped — 夜移 007
-//                 (the upstream port) keys this by HTTP status class: 401/403 = the
+//                 (hermes port) keys this by HTTP status class: 401/403 = the
 //                 credential is dead → `authCooldownMs` (default 15min, it
 //                 must stop re-entering rotation); 429 = rate/fleet limit →
 //                 `cooldownMs` (default 60s, the M56 contract); provider-side
@@ -19,7 +19,7 @@
 //                 ladder). A dead key in a one-key pool thus fails every
 //                 request — correct: the retry ladder deliberately does NOT
 //                 retry 401/403 (a wrong key is a config problem, not a
-//                 transient; fail fast, diverging from the upstream's rotate-on-auth
+//                 transient; fail fast, diverging from hermes's rotate-on-auth
 //                 on purpose).
 //
 // Key selection happens per REQUEST (inside each HTTP attempt): the key rides
@@ -35,7 +35,7 @@ export interface KeyPoolSnapshot {
 }
 
 /**
- * 夜移 007 (the upstream credential-pool port): cooldowns are keyed by HTTP status
+ * 夜移 007 (hermes credential-pool port): cooldowns are keyed by HTTP status
  * class, not "was it a 429". `auth` (401/403 — the credential is dead) cools
  * LONG so a revoked key stops re-entering rotation; `rate` (429) keeps the M56
  * 60s contract; provider-side failures cool NOTHING (penalizing keys over the

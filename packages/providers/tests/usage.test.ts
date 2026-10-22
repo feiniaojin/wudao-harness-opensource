@@ -3,7 +3,7 @@
 //   AssistantMessage stay untouched; streaming and non-streaming both report
 //   through the callback (streaming via stream_options.include_usage).
 // - prompt_cache_hit_tokens and prompt_tokens_details.cached_tokens are two
-//   wire spellings of the same quantity (the upstream formatrule): prefer details, fall back,
+//   wire spellings of the same quantity (dsh rule): prefer details, fall back,
 //   NEVER sum — the counts stay disjoint (hit + miss = promptTokens).
 // - serializePrompt: fixed-key canonical bytes; same input twice → same bytes;
 //   semantically identical input built with shuffled key insertion → same
@@ -161,7 +161,7 @@ describe("usage channel (streaming)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// M56 §2 — turn_usage receipts (the upstream format AGENT_RUNTIME turn_usage): one
+// M56 §2 — turn_usage receipts (the reference harness AGENT_RUNTIME turn_usage): one
 // receipt per model call, optional fields OMITTED when unknown (never null,
 // never zero-backfilled), durationMs always measured around the attempt.
 // ---------------------------------------------------------------------------

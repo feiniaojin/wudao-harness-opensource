@@ -24,7 +24,7 @@ const INSTANT = { sleep: async (): Promise<void> => {}, random: (): number => 0.
 
 const CFG_OAI = { apiKey: "k", baseURL: "https://x/v1", model: "m" };
 const CFG_AN = { apiKey: "sk-an", baseURL: "https://api.anthropic.com", model: "claude-sonnet-5" };
-const CFG_RS = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-the upstream project" };
+const CFG_RS = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-codex" };
 
 /** Bytes with NO line/event boundary — the unbounded-buffer poison. Finite
  *  (cap + 50%) so a MISSING guard fails an assertion instead of hanging the

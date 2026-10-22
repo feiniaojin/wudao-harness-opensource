@@ -18,11 +18,11 @@ describe("runtime + apply", () => {
     expect(resolvePersona(def, { prompt: true }).layers).toEqual({ headers: false, body: false, prompt: true });
   });
   it("parsePersonaSpec: bare id / layer list / failures", () => {
-    expect(parsePersonaSpec("the upstream project")).toEqual({ ok: true, id: "the upstream project" });
-    expect(parsePersonaSpec("the upstream project:headers,prompt")).toEqual({ ok: true, id: "the upstream project", layers: { headers: true, prompt: true } });
-    expect(parsePersonaSpec("the upstream project:").ok).toBe(false);
-    expect(parsePersonaSpec("the upstream project:headers,headers").ok).toBe(false);
-    expect(parsePersonaSpec("the upstream project:wat").ok).toBe(false);
+    expect(parsePersonaSpec("openai-responses")).toEqual({ ok: true, id: "openai-responses" });
+    expect(parsePersonaSpec("openai-responses:headers,prompt")).toEqual({ ok: true, id: "openai-responses", layers: { headers: true, prompt: true } });
+    expect(parsePersonaSpec("openai-responses:").ok).toBe(false);
+    expect(parsePersonaSpec("openai-responses:headers,headers").ok).toBe(false);
+    expect(parsePersonaSpec("openai-responses:wat").ok).toBe(false);
     expect(parsePersonaSpec("BadId").ok).toBe(false);
   });
   it("resolveTemplate seeds deterministically", () => {

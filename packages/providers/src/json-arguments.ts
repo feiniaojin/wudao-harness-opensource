@@ -1,14 +1,14 @@
 // 拆分运动 C：从 openai-compatible.ts 原样外提的流式 tool-call 参数 JSON 修复梯子
-//（波次 7 #33，the upstream format parse_json_with_repair）。纯函数模块，零依赖。
-/** 波次 7 #33 (the upstream format parse_json_with_repair + truncation salvage): the
+//（波次 7 #33，the reference harness parse_json_with_repair）。纯函数模块，零依赖。
+/** 波次 7 #33 (the reference harness parse_json_with_repair + truncation salvage): the
  *  deterministic repair ladder for streamed tool-call arguments. Torn SSE
  *  fragments, literal control chars from local backends, and the 2M-cap
  *  marker all poison the accumulated JSON — the old catch{} returned {}
  *  SILENTLY (the tool ran with no arguments, or died on a misleading
  *  "missing required field" validation error). Ladder, cheapest first:
  *    1. strict parse (zero-change fast path)
- *    2. ```json fence strip (the upstream format: only when BOTH fence ends present)
- *    3. first balanced object payload in prose (the upstream format, ≤64 starts)
+ *    2. ```json fence strip (CodeWhale: only when BOTH fence ends present)
+ *    3. first balanced object payload in prose (CodeWhale, ≤64 starts)
  *    4. escape literal C0 controls inside strings (wudao extension — the
  *       local-backend trigger)
  *    5. truncation salvage: close an open string + the bracket stack, then
@@ -51,7 +51,7 @@ function tryParseObject(text: string): Record<string, unknown> | undefined {
   }
 }
 
-/** the upstream format repair_json_text_once: strip a ```json / ``` fence — only when
+/** the reference harness repair_json_text_once: strip a ```json / ``` fence — only when
  *  BOTH the prefix and the closing fence are present; anything else is
  *  returned trimmed, untouched. */
 function stripCodeFence(raw: string): string {
@@ -68,10 +68,10 @@ function stripCodeFence(raw: string): string {
 // the fallback bounded when malformed output contains a delimiter flood.
 const JSON_REPAIR_CANDIDATE_LIMIT = 64;
 
-/** the upstream format first_valid_json_payload: the first `{`/`[` start whose payload
+/** the reference harness first_valid_json_payload: the first `{`/`[` start whose payload
  *  is balanced AND parses as an object. Skips balanced-but-poisoned
  *  candidates (their content may still be recovered by stage 4 via the
- *  unfenced fallback — that is exactly the upstream's unwrap_or shape). */
+ *  unfenced fallback — that is exactly CodeWhale's unwrap_or shape). */
 function firstBalancedObjectPayload(raw: string): string | undefined {
   let attempted = 0;
   for (let start = 0; start < raw.length; start += 1) {

@@ -1,5 +1,6 @@
 // Persona IDs — the single source of truth for functional identifiers.
-// Both builtins and tests import from here; cleanup scripts skip this file.
+// Both builtins and tests reference these values; cleanup scripts skip this file.
+// IMPORTANT: these must be valid kebab-case (no spaces).
 export const PERSONA_IDS = {
   ANTHROPIC_CLI: "anthropic-cli",
   OPENAI_RESPONSES: "openai-responses",

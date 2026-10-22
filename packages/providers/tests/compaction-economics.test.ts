@@ -255,7 +255,7 @@ describe("two-tier timing (B5)", () => {
   });
 });
 
-describe("tier-2 warm replay (a ref-style)", () => {
+describe("tier-2 warm replay (dsh-style)", () => {
   it("the summary call replays the conversation's leading bytes, with one trailing instruction", async () => {
     const model = recordingModel([
       toolCallTurn("r1", fixturePath),

@@ -212,8 +212,8 @@ describe("retry trigger matrix (generate)", () => {
     expect(log.map((r) => r.n)).toEqual([1, 2]);
   });
 
-  // 133 #11（the upstream project07 核查项）——退避帽纪律：复位只许由成功或凭据
-  // 变化触发，永不由到达上限触发。the upstream project的锯齿 bug 是"到帽→复位 attempt→
+  // 133 #11（codex 5937592c07 核查项）——退避帽纪律：复位只许由成功或凭据
+  // 变化触发，永不由到达上限触发。codex 的锯齿 bug 是"到帽→复位 attempt→
   // 又从 500ms 快试"。我们的梯结构免疫（attempt 是循环局部量、到帽 throw
   // 上抛），这枚钉防将来有人在梯内加"到帽复位"逻辑：失败串里 attempt 序号
   // 必须严格递增 1..N 且到帽终止（calls 数有界），延误序列（去抖动前的
@@ -474,7 +474,7 @@ describe("isRetryableProviderError", () => {
   });
 });
 
-describe("波次8 #44 (the upstream #12): TLS certificate failures are deterministic — fail fast, never retry", () => {
+describe("波次8 #44 (hermes #12): TLS certificate failures are deterministic — fail fast, never retry", () => {
   const certErr = (code: string): TypeError =>
     new TypeError("fetch failed", { cause: Object.assign(new Error("unable to verify the first certificate"), { code }) });
 
@@ -509,7 +509,7 @@ describe("波次8 #44 (the upstream #12): TLS certificate failures are determini
   });
 });
 
-describe("波次8 #46 (the upstream #12): 5xx-wrapped request-validation failures are deterministic — never retry", () => {
+describe("波次8 #46 (hermes #12): 5xx-wrapped request-validation failures are deterministic — never retry", () => {
   // The typed error carries `.body` (the real classification source); a bare
   // Error only embeds it in the message — both paths must classify.
   const httpErr = (status: number, body: string) => new ProviderHttpError("request", status, body);

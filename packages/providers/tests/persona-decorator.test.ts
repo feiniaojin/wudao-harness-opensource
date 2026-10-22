@@ -6,11 +6,11 @@ import { createPersonaRuntime, resolvePersona } from "../src/persona/runtime.js"
 import type { PersonaDefinition } from "../src/persona/types.js";
 
 const def: PersonaDefinition = {
-  id: "cc-like", displayName: "the upstream format-like",
+  id: "cc-like", displayName: "CC-like",
   source: { kind: "workspace-source", provenance: "t", pinnedVersion: "1" },
   headers: {},
   prompt: {
-    system: { mode: "prefix", text: "You are the upstream harness, Anthropic's official CLI.\n" },
+    system: { mode: "prefix", text: "You are Claude Code, Anthropic's official CLI.\n" },
     toolNameMap: { read_file: "Read", write_file: "Write" },
   },
 };
@@ -45,7 +45,7 @@ describe("withPersona (layer 3)", () => {
     const inner = spyClient(cap, { role: "assistant", content: "done", toolCalls: [{ id: "t1", name: "Read", arguments: {} }] });
     const wrapped = withPersona(inner, rt);
     const out = await wrapped.generate(INPUT);
-    expect(cap[0].systemPrompt).toBe("You are the upstream harness, Anthropic's official CLI.\nbase sys");
+    expect(cap[0].systemPrompt).toBe("You are Claude Code, Anthropic's official CLI.\nbase sys");
     expect(cap[0].tools.map((t) => t.name)).toEqual(["Read", "bash"]); // 未映射的不动
     expect((cap[0].messages[1] as any).name).toBe("Read");            // tool 消息出向改名
     expect(INPUT.systemPrompt).toBe("base sys");                       // 原输入永不改写（M24 纪律）

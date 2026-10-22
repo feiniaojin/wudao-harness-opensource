@@ -1,8 +1,8 @@
 // 借鉴弧 β1 — adjacent byte-dedup inside the ω99-138/244 keep-K window
-// (the upstream 682b973b32, digest-b C2): the window bounds COUNT, not REDUNDANCE —
+// (hermes 682b973b32, digest-b C2): the window bounds COUNT, not REDUNDANCE —
 // a static capture→act→capture loop fills all K slots with byte-identical
 // frames. The projection seam now hashes each window member's transient data
-// URL (sha256(mime+bytes), the upstream's exact key) and collapses every identical
+// URL (sha256(mime+bytes), hermes's exact key) and collapses every identical
 // ADJACENT run to its NEWEST frame; older duplicates render a FIXED note
 // (literal-pinned), with the omission streak capped at 2. USER images and
 // non-adjacent duplicates never take the note; the JSONL keeps every ref

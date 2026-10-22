@@ -1,5 +1,5 @@
-// 133 #12（the upstream project 6d5eba9b1 补测试）— wire 工具结果批内连续性不变量。
-// the upstream project 的 bug 形状：工具结果里的图片被合成为 user 图片消息后，若内联
+// 133 #12（goose 6d5eba9b1 补测试）— wire 工具结果批内连续性不变量。
+// the reference project 的 bug 形状：工具结果里的图片被合成为 user 图片消息后，若内联
 // 插在同一个 assistant tool_calls 批的工具结果之间，严格 OpenAI 兼容
 // 端点直接拒收整个请求（批内 tool 结果必须连续，中间不许插 user）。
 // 我们结构免疫：合成 carrier 只在非 tool 消息到达时冲刷
@@ -12,7 +12,7 @@ import { describe, it, expect } from "vitest";
 import { createOpenAICompatibleProvider } from "../src/index.js";
 import type { ProviderConfig } from "../src/index.js";
 
-/** One assistant batch of N tool calls + N tool results (the the upstream project shape:
+/** One assistant batch of N tool calls + N tool results (the goose shape:
  *  MULTIPLE results in ONE batch — shotsWith-style one-batch-per-call does
  *  not exercise the interleaving hazard). */
 function batchOf(n: number, withImages: boolean): Record<string, unknown>[] {
@@ -66,7 +66,7 @@ function toolRuns(messages: WireMessage[]): Array<{ start: number; len: number }
   return runs;
 }
 
-describe("133 #12 — wire 批内工具结果连续性不变量（the upstream project 6d5eba9b1）", () => {
+describe("133 #12 — wire 批内工具结果连续性不变量（goose 6d5eba9b1）", () => {
   it("文本路径：单批 3 调用 → 3 条 tool 消息连续，紧随 assistant 批，user 轮在其后", async () => {
     const cap = captureFetch();
     const model = createOpenAICompatibleProvider(visionConfig, { fetch: cap.fetch });

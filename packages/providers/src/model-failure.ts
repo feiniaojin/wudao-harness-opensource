@@ -81,7 +81,7 @@ export class BackgroundOverloadError extends Error {
  *  r1a Task 4: carries the server's Retry-After deadline (ms) when the
  *  response headers had one — OMITTED otherwise (omit-never-null), so the
  *  serialized shape of every pre-existing error is byte-identical.
- *  v7 γ4 (the upstream project0c7bb7c5c 思想，digest-a C3 搭车件): carries the failing leg's
+ *  v7 γ4 (pi 0c7bb7c5c 思想，digest-a C3 搭车件): carries the failing leg's
  *  provider/model identity as STRUCTURED fields — wudao is multi-provider
  *  (悟道/DeepSeek/GLM/Qwen) on one OpenAI-compatible face, and a generic
  *  "provider request failed: 500 …" made every vendor one fingerprint family.
@@ -189,7 +189,7 @@ export function isKeyClassFailure(err: unknown): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// ω99-42 — the typed mandatory-reasoning rejection (the upstream f6bd1633f7 +
+// ω99-42 — the typed mandatory-reasoning rejection (hermes f6bd1633f7 +
 // 63279301bc, wudao layering). A reasoning-mandatory route (GLM-5.3 via
 // Nous/OpenRouter, kimi-k2.7-code-style deployments) answers a request that
 // disabled thinking with HTTP 400 "Reasoning is mandatory for this endpoint
@@ -198,7 +198,7 @@ export function isKeyClassFailure(err: unknown): boolean {
 // ---------------------------------------------------------------------------
 
 /** The mandatory-reasoning body vocabulary. The first pattern is the live
- *  recording from the upstream f6bd1633f7 (Nous Portal / OpenRouter z-ai/glm-5.3,
+ *  recording from hermes f6bd1633f7 (Nous Portal / OpenRouter z-ai/glm-5.3,
  * Sep 2026); the siblings are the same sentence family. Conservative on
  * purpose — the caller may override per provider (the `signatures` param of
  * {@link isMandatoryReasoningRejection}). */
@@ -209,7 +209,7 @@ export const MANDATORY_REASONING_BODY_SIGNATURES: readonly RegExp[] = [
 ];
 
 /** True iff the status/body pair is a mandatory-reasoning rejection: HTTP 400
- *  (the class the upstream matches in _classify_400; a 5xx/429 carrying the same
+ *  (the class hermes matches in _classify_400; a 5xx/429 carrying the same
  *  text keeps its existing transport path) plus a body signature. `signatures`
  *  overrides the default vocabulary (per-provider calibration seam). */
 export function isMandatoryReasoningRejection(
@@ -226,7 +226,7 @@ export function isMandatoryReasoningRejection(
  *     retry ladder re-sends ONCE with reasoning enabled (messages bytes
  *     untouched — the reasoning fields are request-level sampling params, so
  *     the prefix cache key is preserved by construction; the wudao reading of
- *     the upstream 63279301bc's "same cache key").
+ *     hermes 63279301bc's "same cache key").
  *   terminal — the disable WAS the user's explicit "none" (never silently
  *     rewritten), the repair already ran and failed, or the wire format
  *     cannot express enablement: the error surfaces with actionable guidance.

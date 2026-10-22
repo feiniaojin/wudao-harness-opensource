@@ -1,5 +1,5 @@
 /**
- * 波次 8 #42 (the upstream #24 `bounded_response.py`): bounded error-body read.
+ * 波次 8 #42 (hermes #24 `bounded_response.py`): bounded error-body read.
  *
  * The three protocol factories read a non-OK response's body for diagnostics.
  * A bare `await res.text()` is unbounded on BOTH axes:
@@ -19,7 +19,7 @@
  */
 
 /** Diagnostic bodies are shown truncated to a few hundred chars everywhere
- *  downstream; 64KB is generously past that and the upstream' chosen bound. */
+ *  downstream; 64KB is generously past that and hermes' chosen bound. */
 export const ERROR_BODY_MAX_BYTES = 64 * 1024;
 
 /** Generous for a healthy error answer, but finite for a stalled one. */

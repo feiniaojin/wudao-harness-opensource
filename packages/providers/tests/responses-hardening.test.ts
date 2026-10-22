@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import { createResponsesProvider } from "../src/responses.js";
 import { BackgroundOverloadError, type RetryObserver } from "../src/openai-compatible.js";
 
-const CFG = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-the upstream project" };
+const CFG = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-codex" };
 const INPUT = { systemPrompt: "s", messages: [{ role: "user" as const, content: "hi" }], tools: [] };
 
 /** Instant, deterministic ladder knobs (mirror retry.test.ts). */

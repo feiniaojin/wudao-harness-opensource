@@ -11,7 +11,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
   {
     // doc90 §1 (claude-code-sourcemap @ a8a678cb, npm 2.1.88)
     id: "anthropic-cli",
-    displayName: "Claude Code",
+    displayName: "Anthropic CLI",
     source: {
       kind: "workspace-source",
       provenance:
@@ -28,7 +28,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
         // 普通 CLI 运行下为空。模板原文会把未解析的 ${…} 发上线 — 按 UA 白名单
         // 认编程工具的供应商直接拒收 (用户反馈 2026-08-31, kimi 后台显示模板原文),
         // persona 等于不可用,故钉定求值常量。
-        "user-agent": "claude-cli/2.1.88 (external, cli)",
+        "user-agent": "wudao-harness/2.1.88 (external, cli)",
         "anthropic-version": "2023-06-01", // doc90 §1.1: 恒发, codeSessionApi.ts:16 等
         "x-app": "cli", // doc90 §1.1: client.ts:106, 恒发
         "X-Claude-Code-Session-Id": "{{sessionId}}", // doc90 §1.1: client.ts:108, 会话 UUID 恒发
@@ -48,7 +48,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     prompt: {
       system: {
         mode: "prefix", // billing 首块与各 section 未整体钉定,prefix 携带字节稳定头部
-        text: "You are Claude Code, Anthropic's official CLI for Claude.", // doc90 §1.3: constants/system.ts:10 (交互主前缀)
+        text: "You are Anthropic CLI, Anthropic's official CLI agent.", // doc90 §1.3: constants/system.ts:10 (交互主前缀)
       },
     },
   },
@@ -65,7 +65,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     confidence: "byte-verified",
     headers: {
       responses: {
-        originator: "codex_cli_rs", // doc90 §2.1: DEFAULT_ORIGINATOR (default_client.rs:40), 进程级 default_headers 恒发
+        originator: "wudao_harness", // doc90 §2.1: DEFAULT_ORIGINATOR (default_client.rs:40), 进程级 default_headers 恒发
         "session-id": "{{sessionId}}", // doc90 §2.1: build_session_headers (headers.rs:5-13), Responses 请求恒发 — 连字符头名,brief 草图的 session_id 以 doc90+源码为准
         // doc90 §2.1: get_codex_user_agent (default_client.rs:164-188) — 求值形:
         // originator/version 用钉定值 (workspace 0.0.0); os/arch/terminal 段为运行

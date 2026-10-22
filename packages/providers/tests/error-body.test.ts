@@ -17,7 +17,7 @@ function chunk(s: string): Uint8Array {
   return new TextEncoder().encode(s);
 }
 
-describe("波次8 #42 readErrorBody (the upstream #24: bounded error-body read)", () => {
+describe("波次8 #42 readErrorBody (hermes #24: bounded error-body read)", () => {
   it("① parity: a normal small body reads exactly like res.text()", async () => {
     const res = resWithStream((c) => {
       c.enqueue(chunk('{"error":{"message":"server busy"}}'));
@@ -38,7 +38,7 @@ describe("波次8 #42 readErrorBody (the upstream #24: bounded error-body read)"
 
   it("③ stalling body: the wall-clock deadline returns the received prefix instead of hanging, and cancels the stream", async () => {
     let cancelled = false;
-    // A stream that sends one chunk then stalls forever — the the upstream incident
+    // A stream that sends one chunk then stalls forever — the hermes incident
     // shape (server opens the error body, then stops sending).
     const res = new Response(new ReadableStream<Uint8Array>({
       start(c) { c.enqueue(chunk("partial")); },

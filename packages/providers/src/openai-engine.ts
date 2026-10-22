@@ -95,7 +95,7 @@ async function generateOnce(
     // trusted-parse observation rides the typed error when the body has one.
     if (isContextLengthFailure(res.status, detail)) throw classifyContextLength(res.status, detail, config, input);
     // ω99-42: the mandatory-reasoning rejection classifies BEFORE the generic
-    // HTTP error (the upstream matches it ahead of request-validation in
+    // HTTP error (hermes matches it ahead of request-validation in
     // _classify_400) — typed, attributed, and repairable only when the
     // disable on the wire was not the user's explicit "none".
     if (isMandatoryReasoningRejection(res.status, detail)) {
@@ -304,7 +304,7 @@ export async function* streamOnce(
     ...(streamIdle.onSoftWarning !== undefined ? { onSoftWarning: streamIdle.onSoftWarning } : {}),
     cancel: () => void reader.cancel().catch(() => {}),
   });
-  // 124b 项 1（the upstream projectinstant_interrupt）：显式 abort 面（同 anthropic 的
+  // 124b 项 1（codex instant_interrupt）：显式 abort 面（同 anthropic 的
   // sseDataLines）——本地 cancel 立刻解阻塞挂起读，标志位把 cancel 的
   // done:true 形态翻译回 AbortError（否则会走 TruncatedStreamError 被
   // 梯子当可重试运输类重放一个刚被用户中断的请求）。signal 已触发时
@@ -324,7 +324,7 @@ export async function* streamOnce(
         throw Object.assign(new Error("This operation was aborted"), { name: "AbortError" });
       }
       if (done) {
-        // ω99-44 (the upstream project64eeb82a4): EOF is a frame terminator — flush the decoder
+        // ω99-44 (pi 64eeb82a4): EOF is a frame terminator — flush the decoder
         // (multi-byte tails), then terminate a non-blank residual so the final
         // `data:` line WITHOUT its trailing newline is still parsed (it was
         // previously dropped on the floor). 残尾判界: the residual must still
@@ -468,7 +468,7 @@ export async function* streamOnce(
     idleGuard.dispose();
   }
 
-  // ω99-44 (the upstream projectebc374490): EOF without terminal semantics = the stream was
+  // ω99-44 (pi ebc374490): EOF without terminal semantics = the stream was
   // cut (proxy EOF, connection drop). Fail LOUD with the typed error — never
   // a synthetic done, never fabricated usage: finish_reason loss blinds the
   // M70 stop-reason guard, usage loss kills the metering row. The ladder
@@ -514,7 +514,7 @@ export async function* streamOnce(
 }
 
 /** ω99-42: classify one matched mandatory-reasoning rejection. The repair
- *  verdict (the upstream 63279301bc, wudao's two-row table):
+ *  verdict (hermes 63279301bc, wudao's two-row table):
  *    repairable — the effective "none"/disabled on the wire was NOT the
  *      user's explicit pin (default-sourced effort — no field sent; a
  *      thinkingLevelMap fold; or `softReasoningNone`, the code-defaulted
@@ -576,7 +576,7 @@ export async function generateOnceWithSelfRepair(
 }
 
 async function safeText(res: Response): Promise<string> {
-  // 波次 8 #42 (the upstream #24): bounded error-body read — byte cap + wall clock
+  // 波次 8 #42 (hermes #24): bounded error-body read — byte cap + wall clock
   // + cancel-on-abandon, so a stalled or huge error body can neither hang the
   // request nor buffer unbounded. Never throws (the old catch contract).
   return readErrorBody(res);

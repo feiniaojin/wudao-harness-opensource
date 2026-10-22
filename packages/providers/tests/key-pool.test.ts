@@ -1,4 +1,4 @@
-// M56 §1 — the multi-key pool (the upstream project llm/key_pool.py paradigm). Domestic
+// M56 §1 — the multi-key pool (hive llm/key_pool.py paradigm). Domestic
 // providers rate-limit PER KEY; a pool rotates round-robin and puts a key
 // that just took a 429 into a 60s cooldown, skipping it until the cooldown
 // lapses. When every key is cooling, selection returns the key whose
@@ -234,14 +234,14 @@ describe("provider key rotation on 429", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 夜移 007 (the upstream credential-pool port, hardened) — STATUS-CLASSED cooldowns.
-// the upstream keys cooldowns by HTTP status class; wudao's M56 pool only cooled on
+// 夜移 007 (hermes credential-pool port, hardened) — STATUS-CLASSED cooldowns.
+// the reference project keys cooldowns by HTTP status class; wudao's M56 pool only cooled on
 // 429 — a dead key (401/403) kept re-entering rotation, burning a full
 // round-trip + fail per request until its turn cycled away. Classes:
 //   auth (401/403) — credential dead/revoked → LONG cooldown (15min default);
 //                     deliberately NOT made ladder-retryable (fail fast: a
 //                     wrong key is a config problem, not a transient — the
-//                     divergence from the upstream's rotate-on-auth is intentional);
+//                     divergence from hermes's rotate-on-auth is intentional);
 //                     the cooldown exists so the NEXT request skips it.
 //   rate (429)     — existing 60s semantics, byte-for-byte unchanged.
 //   null (5xx/…)   — provider-side: never penalize the key (cooling every key

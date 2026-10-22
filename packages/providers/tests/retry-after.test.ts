@@ -362,7 +362,7 @@ describe("adapters honor the 429 retry-after header", () => {
     const { sleep, calls: slept } = recordingSleep();
     const { onRetry, log } = recordedRetries();
     const model = createResponsesProvider(
-      { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-the upstream project" },
+      { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-codex" },
       { fetch, onRetry, retry: { ...INSTANT, sleep } },
     );
     const msg = await model.generate(INPUT);

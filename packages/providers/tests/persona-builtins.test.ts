@@ -8,7 +8,7 @@ import { BUILTIN_PERSONAS } from "../src/persona/builtins.js";
 import { validatePersonaDefinition } from "../src/persona/schema.js";
 import { loadPersonaRegistry } from "../src/persona/registry.js";
 
-const EXPECTED_IDS = new Set(["the upstream format", "the upstream project", "cursor", "multi-wire", "the upstream format"]);
+const EXPECTED_IDS = new Set(["anthropic-cli", "openai-responses", "cursor", "multi-wire", "deepseek-native"]);
 
 const byId = (id: string) => {
   const p = BUILTIN_PERSONAS.find((p) => p.id === id);
@@ -45,7 +45,7 @@ describe("BUILTIN_PERSONAS", () => {
   });
 
   it("no builtin header value carries an unresolved ${…} template placeholder", () => {
-    // 2026-08-31 lesson: the the upstream format/the upstream projectUAs were transcribed as source
+    // 2026-08-31 lesson: the claude-code/codex UAs were transcribed as source
     // templates verbatim; their ${…} segments have no resolution slot, so they
     // reached the wire unresolved (kimi 后台显示模板原文) and UA-whitelisting
     // providers rejected the runs. Evaluated constants are pinned instead —
@@ -59,93 +59,93 @@ describe("BUILTIN_PERSONAS", () => {
     }
   });
 
-  // --- the upstream project(doc 90 §2; OpenAI Responses protocol) ---
+  // --- codex (doc 90 §2; OpenAI Responses protocol) ---
 
-  it("the upstream project pins the byte-verified originator and session-id slot", () => {
-    // doc90 §2.1: originator default `wudao_harness` (DEFAULT_ORIGINATOR,
+  it("codex pins the byte-verified originator and session-id slot", () => {
+    // doc90 §2.1: originator default `codex_cli_rs` (DEFAULT_ORIGINATOR,
     // default_client.rs:40) — process-level default header, always sent.
     // session-id: current session id on every Responses request
     // (headers.rs:5-13 build_session_headers). NOTE: the header name is
-    // hyphenated `session-id` in both doc 90 and the pinned the upstream project-rs source;
+    // hyphenated `session-id` in both doc 90 and the pinned codex-rs source;
     // the task brief's sketch used `session_id`, the doc governs.
-    const the upstream project = byId("the upstream project");
-    expect(the upstream project.headers.responses?.["originator"]).toBe("wudao_harness");
-    expect(the upstream project.headers.responses?.["session-id"]).toBe("{{sessionId}}");
-    expect(Object.keys(the upstream project.headers)).toEqual(["responses"]);
+    const codex = byId("openai-responses");
+    expect(codex.headers.responses?.["originator"]).toBe("wudao_harness");
+    expect(codex.headers.responses?.["session-id"]).toBe("{{sessionId}}");
+    expect(Object.keys(codex.headers)).toEqual(["responses"]);
   });
 
-  it("the upstream project user-agent is the doc-pinned evaluated form (no unresolved placeholders)", () => {
+  it("codex user-agent is the doc-pinned evaluated form (no unresolved placeholders)", () => {
     // doc90 §2.1: `{originator}/{CARGO_PKG_VERSION} ({os_type} {os_version};
     // {arch}) {terminal_token}` (default_client.rs:164-188); workspace
     // version pinned "0.0.0" (Cargo.toml:140-141). os/arch/terminal are
     // machine values with no slots — pinned to a common macOS/Apple Silicon
     // evaluated form. Unresolved ${…} placeholders on the wire get rejected
-    // by UA-whitelisting providers (2026-08-31), same as the the upstream format UA.
-    expect(testUA()).toBe("wudao_harness/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal");
-    expect(testUA()).not.toMatch(/\$\{/);
+    // by UA-whitelisting providers (2026-08-31), same as the the reference harness UA.
+    expect(codexUA()).toBe("codex_cli_rs/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal");
+    expect(codexUA()).not.toMatch(/\$\{/);
   });
-  function testUA(): string {
-    return byId("the upstream project").headers.responses?.["User-Agent"] as string;
+  function codexUA(): string {
+    return byId("openai-responses").headers.responses?.["User-Agent"] as string;
   }
 
-  it("the upstream project body: store=false (always sent, client.rs:946); no other body keys", () => {
+  it("codex body: store=false (always sent, client.rs:946); no other body keys", () => {
     // doc90 §2.2: `store: false` 恒发. reasoning is always-present but its
     // fields are config-determined — not encoded (宁缺毋滥).
-    expect(byId("the upstream project").body?.responses).toEqual({ store: false });
+    expect(byId("openai-responses").body?.responses).toEqual({ store: false });
   });
 
-  it("the upstream project prompt: prefix mode with the pinned base-instructions opening", () => {
+  it("codex prompt: prefix mode with the pinned base-instructions opening", () => {
     // doc90 §2.3: default.md:1 opening; the rest of default.md
     // ("+能力清单等") is not transcribed in doc 90, so prefix (identity
     // head), not a truncated snapshot.
-    expect(byId("the upstream project").prompt?.system).toEqual({
+    expect(byId("openai-responses").prompt?.system).toEqual({
       mode: "prefix",
       text: "You are a coding agent running in the Codex CLI, a terminal-based coding assistant. Codex CLI is an open source project led by OpenAI. You are expected to be precise, safe, and helpful.",
     });
   });
 
-  // --- the upstream format (doc 90 §1; Anthropic Messages protocol) ---
+  // --- the reference harness (doc 90 §1; Anthropic Messages protocol) ---
 
-  it("the upstream format headers live on the anthropic protocol and look like the upstream format", () => {
-    const cc = byId("the upstream format");
+  it("the reference harness headers live on the anthropic protocol and look like CC", () => {
+    const cc = byId("anthropic-cli");
     expect(Object.keys(cc.headers)).toEqual(["anthropic"]);
     expect(cc.headers.anthropic?.["anthropic-version"]).toBe("2023-06-01"); // doc90 §1.1
-    expect(cc.headers.anthropic?.["user-agent"]).toMatch(/^the default client\//); // doc90 §1.1 (http.ts:34)
+    expect(cc.headers.anthropic?.["user-agent"]).toMatch(/^wudao-harness\//); // doc90 §1.1 (http.ts:34)
     expect(cc.headers.anthropic?.["x-app"]).toBe("cli"); // doc90 §1.1 (client.ts:106)
-    expect(cc.headers.anthropic?.["X-the upstream harness-Session-Id"]).toBe("{{sessionId}}"); // doc90 §1.1 (client.ts:108)
+    expect(cc.headers.anthropic?.["X-Claude-Code-Session-Id"]).toBe("{{sessionId}}"); // doc90 §1.1 (client.ts:108)
   });
 
-  it("the upstream format user-agent is the doc-pinned evaluated form (no unresolved placeholders)", () => {
+  it("the reference harness user-agent is the doc-pinned evaluated form (no unresolved placeholders)", () => {
     // doc90 §1.1 row 1 (http.ts:34): getUserAgent() evaluated at the pinned
     // build — ${MACRO.VERSION}→npm 2.1.88, external=npm USER_TYPE, cli=
     // entrypoint default, empty agent-sdk/client-app/workload suffixes.
     // The template verbatim leaked unresolved ${…} to the wire (user report
     // 2026-08-31: kimi 后台显示模板原文) — UA-whitelisting providers reject
     // it, so the evaluated constant is pinned instead.
-    expect(byId("the upstream format").headers.anthropic?.["user-agent"]).toBe(
-      "wudao-harness/0.4.14 (external, cli)",
+    expect(byId("anthropic-cli").headers.anthropic?.["user-agent"]).toBe(
+      "wudao-harness/2.1.88 (external, cli)",
     );
-    expect(byId("the upstream format").headers.anthropic?.["user-agent"]).not.toMatch(/\$\{/);
+    expect(byId("anthropic-cli").headers.anthropic?.["user-agent"]).not.toMatch(/\$\{/);
   });
 
-  it("the upstream format anthropic-beta carries only the non-haiku-always beta", () => {
-    // doc90 §1.1 beta table: `the upstream format-20250219` is always sent for
+  it("the reference harness anthropic-beta carries only the non-haiku-always beta", () => {
+    // doc90 §1.1 beta table: `claude-code-20250219` is always sent for
     // non-haiku models (betas.ts:3); every other beta is model/identity/
     // feature-conditional and therefore not encoded.
-    expect(byId("the upstream format").headers.anthropic?.["anthropic-beta"]).toBe("the upstream format-20250219");
+    expect(byId("anthropic-cli").headers.anthropic?.["anthropic-beta"]).toBe("claude-code-20250219");
   });
 
-  it("the upstream format body: none (all §1.2 rows conditional or wire-mechanical)", () => {
-    expect(byId("the upstream format").body).toBeUndefined();
+  it("the reference harness body: none (all §1.2 rows conditional or wire-mechanical)", () => {
+    expect(byId("anthropic-cli").body).toBeUndefined();
   });
 
-  it("the upstream format prompt: prefix mode with the pinned interactive prefix", () => {
+  it("the reference harness prompt: prefix mode with the pinned interactive prefix", () => {
     // doc90 §1.3 (system.ts:10) — DEFAULT_PREFIX; the billing first block is
     // not transcribable (fingerprint component unpinned) and full sections
     // are not pinned, so prefix, not snapshot.
-    expect(byId("the upstream format").prompt?.system).toEqual({
+    expect(byId("anthropic-cli").prompt?.system).toEqual({
       mode: "prefix",
-      text: "You are the upstream harness, an upstream CLI.",
+      text: "You are Anthropic CLI, Anthropic's official CLI agent.",
     });
   });
 
@@ -175,9 +175,9 @@ describe("BUILTIN_PERSONAS", () => {
     expect(cursor.body).toBeUndefined();
   });
 
-  // --- the upstream project (doc 90 §4; multi-protocol) ---
+  // --- opencode (doc 90 §4; multi-protocol) ---
 
-  it("multi-wire spans anthropic/responses/openai-chat with session headers on each", () => {
+  it("opencode spans anthropic/responses/openai-chat with session headers on each", () => {
     // doc90 §4.1 rows 1-3 (llm.ts:209-211): every LLM request carries the
     // session headers regardless of protocol; x-parent-session-id is
     // child-session-conditional and omitted.
@@ -193,14 +193,14 @@ describe("BUILTIN_PERSONAS", () => {
     expect(Object.keys(anth).filter((k) => k !== "anthropic-beta")).toEqual(["x-session-affinity", "X-Session-Id"]);
   });
 
-  it("multi-wire anthropic-beta is the pinned pair", () => {
+  it("opencode anthropic-beta is the pinned pair", () => {
     // doc90 §4.1 row 4 (anthropic.ts:13-14) — @ai-sdk/anthropic providers.
     expect(byId("multi-wire").headers.anthropic?.["anthropic-beta"]).toBe(
       "interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
     );
   });
 
-  it("multi-wire body: responses store=false only (route-level default)", () => {
+  it("opencode body: responses store=false only (route-level default)", () => {
     // doc90 §4.2 (openai-responses.ts:990-991,1017-1019). reasoningEffort
     // 'medium' is gpt-5-model-gated in source, not a blanket protocol
     // default — omitted.
@@ -210,7 +210,7 @@ describe("BUILTIN_PERSONAS", () => {
     expect(oc.body?.["openai-chat"]).toBeUndefined();
   });
 
-  it("multi-wire prompt: prefix mode with the pinned BUILD_SYSTEM", () => {
+  it("opencode prompt: prefix mode with the pinned BUILD_SYSTEM", () => {
     // doc90 §4.3 (agent.ts:12-13); system assembly is [agent.system,
     // baseline] — the agent part leads, hence prefix.
     expect(byId("multi-wire").prompt?.system).toEqual({
@@ -219,36 +219,36 @@ describe("BUILTIN_PERSONAS", () => {
     });
   });
 
-  // --- the upstream format (doc 90 §3; OpenAI-compatible chat-completions) ---
+  // --- the reference harness (doc 90 §3; OpenAI-compatible chat-completions) ---
 
-  it("the upstream format rides openai-chat (relay scenario), not anthropic/responses", () => {
-    const a ref = byId("the upstream format");
-    expect(Object.keys(a ref.headers)).toEqual(["openai-chat"]);
+  it("the reference harness rides openai-chat (relay scenario), not anthropic/responses", () => {
+    const dsh = byId("deepseek-native");
+    expect(Object.keys(dsh.headers)).toEqual(["openai-chat"]);
   });
 
-  it("the upstream format attribution user-agent is the pinned resolved value", () => {
+  it("the reference harness attribution user-agent is the pinned resolved value", () => {
     // doc90 §3.1 (attribution.ts:53-54 template, :40-44 identity, package
-    // manifest 0.1.1-rc.2): `the upstream format/${version}
-    // (+https://github.com/deepseek-ai/the upstream format)`, always sent,
+    // manifest 0.1.1-rc.2): `deepseek-harness/${version}
+    // (+https://github.com/deepseek-ai/deepseek-harness)`, always sent,
     // cannot be suppressed.
-    expect(byId("the upstream format").headers["openai-chat"]?.["user-agent"]).toBe(
-      "the upstream format/0.1.1-rc.2 (+https://github.com/deepseek-ai/the upstream format)",
+    expect(byId("deepseek-native").headers["openai-chat"]?.["user-agent"]).toBe(
+      "deepseek-harness/0.1.1-rc.2 (+https://github.com/deepseek-ai/deepseek-harness)",
     );
   });
 
-  it("the upstream format session header uses the sessionId slot; no body overlay", () => {
-    // doc90 §3.1: x-the upstream format-session-id sent when a sessionId
+  it("the reference harness session header uses the sessionId slot; no body overlay", () => {
+    // doc90 §3.1: x-deepseek-harness-session-id sent when a sessionId
     // exists. thinking (§3.2) is outside the v1 openai-chat whitelist and is
     // not forced in (disclosed conflict, see task-4 report).
-    const a ref = byId("the upstream format");
-    expect(a ref.headers["openai-chat"]?.["x-the upstream format-session-id"]).toBe("{{sessionId}}");
-    expect(a ref.body).toBeUndefined();
+    const dsh = byId("deepseek-native");
+    expect(dsh.headers["openai-chat"]?.["x-deepseek-harness-session-id"]).toBe("{{sessionId}}");
+    expect(dsh.body).toBeUndefined();
   });
 
-  it("the upstream format prompt: prefix mode with the pinned harness identity", () => {
+  it("the reference harness prompt: prefix mode with the pinned harness identity", () => {
     // doc90 §3.3 (system-prompt/src/index.ts:358-363): harness:identity
     // section, order -100 — first section of the system prompt.
-    expect(byId("the upstream format").prompt?.system).toEqual({
+    expect(byId("deepseek-native").prompt?.system).toEqual({
       mode: "prefix",
       text: "You are an AI agent powered by DeepSeek Harness.",
     });

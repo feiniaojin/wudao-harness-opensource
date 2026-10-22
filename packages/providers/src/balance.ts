@@ -1,4 +1,4 @@
-// P0-4 (96 队列) — the provider wallet-balance face (the upstream harness
+// P0-4 (96 队列) — the provider wallet-balance face (DeepSeek-Reasonix
 // internal/billing/balance.go discipline): one dependency-free fetch every
 // frontend can share. The only documented shape today is DeepSeek's
 // GET /user/balance, so the parser speaks that schema.

@@ -49,7 +49,7 @@ export interface RetryLadderOptions {
    *  A background source never retries an overload-class failure — it bails
    *  immediately with BackgroundOverloadError (see the allowlist block). */
   readonly querySource?: string;
-  /** 121 项 1（the upstream format 498490680 形）— 容量观察者：catch 里判定为
+  /** 121 项 1（the reference harness 498490680 形）— 容量观察者：catch 里判定为
    *  overload-class（isOverloadClassFailure：429/503/529/overload 体）时同
    *  步发射一次——无论该失败随后走重试、后台 bail 还是重抛。纯观察：绝不
    *  影响梯子自身的任何决策；部署层把它接到 AIMD 并发门的 onThrottle，
@@ -306,7 +306,7 @@ export function parseContextLimitBody(
 }
 
 // ---------------------------------------------------------------------------
-// M70 §4 (the upstream format) — max_tokens overflow self-repair. A 400 whose body carries
+// M70 §4 (CC) — max_tokens overflow self-repair. A 400 whose body carries
 // parseable input_tokens/context_limit numbers (WITHOUT the context-length
 // vocabulary — that classifies as ContextLengthError and belongs to the
 // loop's compact-and-retry) means the COMPLETION cap pushed the total over
@@ -332,7 +332,7 @@ export function parseMaxTokensOverflow(body: string): { inputTokens: number; con
 
 /** The repaired completion cap: max(3000, contextLimit - inputTokens - 1000,
  * thinkingBudget + 1). No thinking budget is configured today (0 — the term
- * is the upstream's forward-looking floor: a thinking-capable model must keep at least
+ * is CC's forward-looking floor: a thinking-capable model must keep at least
  * budget+1 tokens or the request fails for a different reason). */
 export function selfRepairMaxTokensValue(
   parsed: { inputTokens: number; contextLimit: number },
@@ -361,7 +361,7 @@ export function classifyContextLength(
 }
 
 // ---------------------------------------------------------------------------
-// M70 §3 (the upstream format) — the foreground-only retry allowlist. API calls are classified
+// M70 §3 (CC) — the foreground-only retry allowlist. API calls are classified
 // by whether a HUMAN is blocking on the result (ModelInput.querySource):
 // sources in FOREGROUND_QUERY_SOURCES — and untagged calls, the backward-
 // compatible default — walk the ordinary ladder on overload; every OTHER
@@ -412,7 +412,7 @@ export class StreamOverflowError extends Error {
   }
 }
 
-/** ω99-44 (the upstream projectebc374490): the typed EOF-without-terminal abort. The stream
+/** ω99-44 (pi ebc374490): the typed EOF-without-terminal abort. The stream
  *  ended CLEANLY (read → done, no transport error) but no finish/stop
  *  semantics ever arrived — byte-indistinguishable from a proxy EOF cut, so
  *  it fails LOUD instead of completing: a synthetic done would lose
@@ -514,7 +514,7 @@ function hasFatalTlsCause(err: unknown, depth = 0): boolean {
   return hasFatalTlsCause((err as { cause?: unknown }).cause, depth + 1);
 }
 
-/** 波次 8 #46 (the upstream #12): the request-validation body vocabulary. */
+/** 波次 8 #46 (hermes #12): the request-validation body vocabulary. */
 const REQUEST_VALIDATION_BODY_SIGNATURES: readonly RegExp[] = [
   /unknown parameter/i,
   /unsupported parameter/i,
@@ -563,7 +563,7 @@ export function isRetryableProviderError(err: unknown): boolean {
   // bytes fail on every attempt. Fail fast (validatedInputEffort's M58 §C
   // discipline); the model-fallback chain skips it too (isModelFallbackEligible).
   if (err.name === "HeaderValidationError") return false;
-  // 波次 8 #44 (the upstream #12 ssl_cert_verification): a TLS certificate failure
+  // 波次 8 #44 (hermes #12 ssl_cert_verification): a TLS certificate failure
   // is DETERMINISTIC — the same handshake replays the same verification
   // error, so retrying the same endpoint burns the whole ladder for nothing
   // (and, on proxies, every extra TLS handshake is another slow failure).
@@ -576,7 +576,7 @@ export function isRetryableProviderError(err: unknown): boolean {
   const status = /^provider (?:request|stream) failed: (\d{3})/.exec(err.message)?.[1];
   if (status !== undefined) {
     if (RETRYABLE_STATUSES.has(Number(status))) {
-      // 波次 8 #46 (the upstream #12): some OpenAI-compatible gateways return
+      // 波次 8 #46 (hermes #12): some OpenAI-compatible gateways return
       // DETERMINISTIC request-validation errors with a 5xx status — the
       // generic "5xx → retryable" rule then hammers the identical rejection
       // once per ladder slot. When the body carries one of these unambiguous

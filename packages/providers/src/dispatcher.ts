@@ -2,7 +2,7 @@
 // (design 93 §4.2-2)。CLI 的每个生产构造点都走 `createProvider(config)`：
 // `switch (config.wire)` 三路派发到协议适配器，wire 缺省 = 历史
 // openai-compatible 引擎（字节等价——缺省路径的行为由既有 cli 测试守）。
-// 未知 wire 值在构造期抛错（the upstream project`apiFor` 先例：查不到即抛，绝不静默回落）。
+// 未知 wire 值在构造期抛错（pi `apiFor` 先例：查不到即抛，绝不静默回落）。
 //
 // 派发只挑适配器：Phase A 的梯子/看门狗在各适配器工厂内部，persona 层1/2
 // 在各适配器 fetch 入口传自己的协议，层3 `withPersona` 协议无关 —— 本函数

@@ -30,16 +30,16 @@ describe("ProviderConfig.persona + WUDAO_PERSONA", () => {
   it("bare id → {id} only; layer list → partial flags", () => {
     const a = resolveProviderConfigResult({
       ...BASE_ENV,
-      WUDAO_PERSONA: "the upstream project",
+      WUDAO_PERSONA: "openai-responses",
     } as any);
-    expect(a.ok && a.config.persona).toEqual({ id: "the upstream project" });
+    expect(a.ok && a.config.persona).toEqual({ id: "openai-responses" });
 
     const b = resolveProviderConfigResult({
       ...BASE_ENV,
-      WUDAO_PERSONA: "the upstream project:headers,prompt",
+      WUDAO_PERSONA: "openai-responses:headers,prompt",
     } as any);
     expect(b.ok && b.config.persona).toEqual({
-      id: "the upstream project",
+      id: "openai-responses",
       layers: { headers: true, prompt: true },
     });
   });
@@ -47,7 +47,7 @@ describe("ProviderConfig.persona + WUDAO_PERSONA", () => {
   it("bad spec fails closed with a reason", () => {
     const r = resolveProviderConfigResult({
       ...BASE_ENV,
-      WUDAO_PERSONA: "the upstream project:wat",
+      WUDAO_PERSONA: "openai-responses:wat",
     } as any);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toContain("WUDAO_PERSONA");

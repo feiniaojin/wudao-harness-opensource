@@ -1,7 +1,7 @@
 // dispatcher.test.ts — Persona Phase B wire routing (design 93 §4.2-2/3):
 // `createProvider(config, options)` is the CLI's single construction seam —
 // `switch (config.wire)` over the three protocol adapters, unknown wire
-// values throw (the upstream project`apiFor` precedent), and the absent field means the
+// values throw (pi `apiFor` precedent), and the absent field means the
 // historical openai-compatible engine BYTE-IDENTICALLY. Also pins:
 //   - the wire resolution chain in resolveProviderConfigResult
 //     (selection.wire > env WUDAO_WIRE > absent = openai-chat default),
@@ -94,7 +94,7 @@ describe("createProvider — wire dispatch (Phase B)", () => {
     });
   });
 
-  it("unknown wire throws at construction (the upstream project apiFor precedent — fail fast, name the valid values)", () => {
+  it("unknown wire throws at construction (pi apiFor precedent — fail fast, name the valid values)", () => {
     const bogus = { ...CFG, wire: "grpc" } as unknown as ProviderConfig;
     expect(() => createProvider(bogus)).toThrow(
       'unknown wire "grpc" (expected one of: openai-chat, anthropic, responses)',

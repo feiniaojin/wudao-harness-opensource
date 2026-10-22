@@ -1,4 +1,4 @@
-// ω99-42 — the typed mandatory-reasoning rejection (the upstream f6bd1633f7 +
+// ω99-42 — the typed mandatory-reasoning rejection (hermes f6bd1633f7 +
 // 63279301bc, wudao layering). A reasoning-mandatory route (GLM-5.3 via
 // Nous/OpenRouter, kimi-k2.7-code-style deployments) answers a request that
 // disabled thinking with HTTP 400. The six acceptance lanes:
@@ -26,10 +26,10 @@ import {
 // consumers are the protocol factories).
 import { isModelFallbackEligible } from "../src/openai-compatible.js";
 
-/** The RECORDED mandatory-400 body (the upstream f6bd1633f7, live on the Nous
+/** The RECORDED mandatory-400 body (hermes f6bd1633f7, live on the Nous
  * Portal / OpenRouter z-ai/glm-5.3 route): HTTP 400 + this message. ω99-42
  * T0: no Nous/OpenRouter credential exists in this environment (auth 401s
- * before body validation — probes in the arc report), so the the upstream live
+ * before body validation — probes in the arc report), so the hermes live
  * recording is the fixture of record. */
 const HERMES_MANDATORY_400 = JSON.stringify({
   error: { message: "Reasoning is mandatory for this endpoint and cannot be disabled", code: 400 },
@@ -123,7 +123,7 @@ const DEEPSEEK: ProviderConfig = {
 // ---------------------------------------------------------------------------
 
 describe("isMandatoryReasoningRejection — conservative 400 + body vocabulary", () => {
-  it("matches the recorded Nous/OpenRouter body (the upstream fixture of record)", () => {
+  it("matches the recorded Nous/OpenRouter body (hermes fixture of record)", () => {
     expect(isMandatoryReasoningRejection(400, HERMES_MANDATORY_400)).toBe(true);
   });
 
@@ -163,7 +163,7 @@ describe("mandatoryRepairReasoningBody — the format's explicit enable (map-str
     expect(mandatoryRepairReasoningBody({ format: "zai", thinkingLevelMap: glmMap, supportsReasoningEffort: false })).toEqual({ thinking: { type: "enabled" } });
   });
 
-  it("deepseek: {reasoning_effort: \"medium\"} (the upstream' own default effort)", () => {
+  it("deepseek: {reasoning_effort: \"medium\"} (hermes' own default effort)", () => {
     expect(mandatoryRepairReasoningBody({ format: "deepseek", supportsReasoningEffort: true })).toEqual({ reasoning_effort: "medium" });
   });
 

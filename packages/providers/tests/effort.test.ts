@@ -70,7 +70,7 @@ describe("reasoningFormatBody — the M16 per-profile transforms as enum impleme
   });
 });
 
-describe("reasoningFormatBody — additive formats (the upstream project-verified shapes)", () => {
+describe("reasoningFormatBody — additive formats (pi-verified shapes)", () => {
   it("none: no wire field at all", () => {
     for (const effort of ["low", "high", "none"] as const) {
       expect(reasoningFormatBody(ctx("none"), effort)).toEqual({});

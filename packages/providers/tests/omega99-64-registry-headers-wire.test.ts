@@ -31,7 +31,7 @@ import type { PersonaDefinition } from "../src/persona/types.js";
 const INPUT = { systemPrompt: "s", messages: [{ role: "user" as const, content: "hi" }], tools: [] };
 const OAI = { apiKey: "k", baseURL: "https://x/v1", model: "m" };
 const AN = { apiKey: "sk-an", baseURL: "https://api.anthropic.com", model: "claude-sonnet-5" };
-const RS = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-the upstream project" };
+const RS = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-codex" };
 
 type Cap = { url: string; init: RequestInit }[];
 

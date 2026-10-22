@@ -1,7 +1,7 @@
 // packages/providers/src/header-validation.ts — ω99-50：用户自定义 header 的
 // fetch 可表示性校验 + 凭证保留名可见性。
 //
-// 来源：the upstream format候选 9（assertValidHeaders，commit 25e4527f5e）经队列 105 §3 池
+// 来源：dsh 候选 9（assertValidHeaders，commit 25e4527f5e）经队列 105 §3 池
 // 第 6 项。wudao 裁定（brief §1，控制器预裁决）：
 //   - 只校验用户输入面 —— persona wire.headers（5 触点的唯一来源）与 registry
 //     行的 headers 列（持久化保留面，尚未上 wire）；适配器自带头不校验。
@@ -9,13 +9,13 @@
 //     请求时刻消费同一校验 —— LF/CR/NUL 值、>255 字节值（CJK）、空格/换行/
 //     制表/空/非 ASCII 名全部抛 TypeError；空值与 latin-1 内字符合法。
 //     加载期用它预测请求时刻的失败，错误早一步且指名（provider + header 名
-//     + 原始 TypeError 文案）——the upstream format形。
-//   - 保留名（authorization/x-api-key）不采纳 the upstream format的"harness 归属、拒绝用户"
+//     + 原始 TypeError 文案）——dsh 形。
+//   - 保留名（authorization/x-api-key）不采纳 dsh 的"harness 归属、拒绝用户"
 //     ——wudao 里这两个键在 persona schema 加载期已拒、resolve 期防御性跳过
 //     （FORBIDDEN_HEADER_KEYS —— ω99-69 起定义在本文件单一来源，schema.ts
 //     re-export），根本到不了 wire；本弧只对"程序化构造绕过 schema"的兜底
 //     路径加一次性 stderr 可见性（静默丢弃 → 告知丢弃），行为零变化。
-//     anthropic-version 不在警告集：内置 the upstream format persona 按设计钉它
+//     anthropic-version 不在警告集：内置 the reference harness persona 按设计钉它
 //     （builtins.ts 身份仿真），警告即常态噪音。
 //
 // 红线：合法 header 请求字节零变化；`...(wire?.headers)` 仍在 auth 后 spread。
@@ -23,7 +23,7 @@
  *  one of these names is SKIPPED (never sent) by resolvePersonaHeaders — the
  *  once-per-process notice below is visibility for that silent drop, not a
  *  behavior change. Deliberately excludes anthropic-version (pinned by design
- *  on the the upstream format builtin persona). */
+ *  on the the reference harness builtin persona). */
 export const RESERVED_CREDENTIAL_HEADER_KEYS: ReadonlySet<string> = new Set(["authorization", "x-api-key"]);
 
 /** ω99-69（64 停泊 C1 收口）：persona 永不控制、hand-built 配置也永不覆盖的
@@ -69,7 +69,7 @@ export function headerRepresentabilityError(name: string, value: string): string
   }
 }
 
-/** The typed load-time rejection (the upstream formatassertValidHeaders form). Deterministic
+/** The typed load-time rejection (dsh assertValidHeaders form). Deterministic
  *  — junk can never succeed on retry or on a sibling model — so BOTH error
  *  ladders fail fast on its name (isRetryableProviderError /
  *  isModelFallbackEligible), the validatedInputEffort/M58 §C discipline. */

@@ -1,4 +1,4 @@
-// v7 借鉴弧 γ4（digest-a 候选 3 搭车件，源 the upstream project0c7bb7c5c「identify
+// v7 借鉴弧 γ4（digest-a 候选 3 搭车件，源 pi 0c7bb7c5c「identify
 // Responses error providers」）——ProviderHttpError 的 provider/model 身份
 // RED 件：多 provider 一张 OpenAI 兼容面，泛型「provider request failed:
 // 500 …」把多家混成一族指纹。钉：结构化字段落位、消息尾的身份（钉前缀

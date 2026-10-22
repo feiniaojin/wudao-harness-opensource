@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { InbandThinkSplitter, resolveSplitInbandThinking } from "../src/split-inband-thinking.js";
 
-// 夜移 011 (the upstream harness internal/provider/openai/think.go:18-98): the
+// 夜移 011 (DeepSeek-Reasonix internal/provider/openai/think.go:18-98): the
 // in-band `<think>` splitter. vLLM chat-template lanes (qwen-chat-template
 // format) inline CoT into the CONTENT channel as `<think>…</think>` — without
 // the splitter that CoT pollutes the assistant content (replayed forever,

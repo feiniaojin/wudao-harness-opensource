@@ -1,4 +1,4 @@
-// packages/providers/tests/responses.test.ts — OpenAI Responses 协议适配器（spec §5，the upstream project原生）
+// packages/providers/tests/responses.test.ts — OpenAI Responses 协议适配器（spec §5，codex 原生）
 import { describe, it, expect } from "vitest";
 import { createResponsesProvider } from "../src/responses.js";
 import { createPersonaRuntime, resolvePersona } from "../src/persona/runtime.js";
@@ -6,9 +6,9 @@ import type { PersonaDefinition } from "../src/persona/types.js";
 import { ProviderHttpError, ContextLengthError } from "../src/openai-compatible.js";
 import { createKeyPool } from "../src/key-pool.js";
 
-const cfg = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-the upstream project" };
-const testPersona: PersonaDefinition = {
-  id: "the upstream project-test", displayName: "Codex",
+const cfg = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-codex" };
+const codexPersona: PersonaDefinition = {
+  id: "codex-test", displayName: "Codex",
   source: { kind: "workspace-source", provenance: "t", pinnedVersion: "1" },
   headers: { responses: { originator: "wudao_harness", session_id: "{{sessionId}}" } },
   body: { responses: { store: false, reasoning: { effort: "high" } } },
@@ -37,9 +37,9 @@ function sseFetch(lines: string[], captured?: { url: string; init: RequestInit }
 const EV = (o: unknown) => JSON.stringify(o);
 
 describe("responses adapter", () => {
-  it("generate: instructions/input items/tools + the upstream project persona headers/body", async () => {
+  it("generate: instructions/input items/tools + codex persona headers/body", async () => {
     const cap: { url: string; init: RequestInit }[] = [];
-    const rt = createPersonaRuntime(resolvePersona(testPersona), seeded);
+    const rt = createPersonaRuntime(resolvePersona(codexPersona), seeded);
     const payload = { output: [
       { type: "reasoning", summary: [{ type: "summary_text", text: "think" }] },
       { type: "message", content: [{ type: "output_text", text: "ok done" }] },
@@ -79,7 +79,7 @@ describe("responses adapter", () => {
   });
   it("stream: text deltas live, function_call aggregated from output_item.done, done from response.completed", async () => {
     const cap: { url: string; init: RequestInit }[] = [];
-    const rt = createPersonaRuntime(resolvePersona(testPersona), seeded);
+    const rt = createPersonaRuntime(resolvePersona(codexPersona), seeded);
     const model = createResponsesProvider(cfg, {
       fetch: sseFetch([
         EV({ type: "response.created", response: {} }),

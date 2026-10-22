@@ -1,4 +1,4 @@
-// 121 项 1（the upstream format 498490680 形）— the retry ladder's capacity observer
+// 121 项 1（the reference harness 498490680 形）— the retry ladder's capacity observer
 // (onOverload): fires on EVERY overload-class failure the catch classifies
 // (429/503/529/overload body), on every arm — ladder retry, background bail,
 // and rethrow past the cap — for both generate and stream. Pure observation:

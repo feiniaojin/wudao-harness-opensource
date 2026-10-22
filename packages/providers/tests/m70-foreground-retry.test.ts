@@ -1,4 +1,4 @@
-// M70 §3 (the upstream format) — the foreground-only retry allowlist. API calls are classified
+// M70 §3 (CC) — the foreground-only retry allowlist. API calls are classified
 // by whether a HUMAN is blocking on the result (ModelInput.querySource):
 // foreground sources (and untagged calls — backward compatible) retry on
 // overload-class failures; background sources (the compaction summarizer,

@@ -308,7 +308,7 @@ export async function* sseDataLines(res: Response, signal?: AbortSignal, idle?: 
     ...(idle?.onSoftWarning !== undefined ? { onSoftWarning: idle.onSoftWarning } : {}),
     cancel: () => void reader.cancel().catch(() => {}),
   });
-  // 124b 项 1（the upstream projectinstant_interrupt）：显式 abort 面。undici 在 fetch
+  // 124b 项 1（codex instant_interrupt）：显式 abort 面。undici 在 fetch
   // signal 触发时会拒绝挂起的 body read（既有中止语义依赖于此），但代理
   // 可以握住连接越过 abort——本地 reader.cancel() 让挂起读【立刻】解阻塞
   // （cancel 语义把挂起 read 解决为 done:true）。标志位随后把这次「EOF」
@@ -329,7 +329,7 @@ export async function* sseDataLines(res: Response, signal?: AbortSignal, idle?: 
         throw Object.assign(new Error("This operation was aborted"), { name: "AbortError" });
       }
       if (done) {
-        // ω99-44 (the upstream project64eeb82a4): EOF is a frame terminator — flush the decoder
+        // ω99-44 (pi 64eeb82a4): EOF is a frame terminator — flush the decoder
         // (multi-byte tails), then terminate a non-blank residual with the
         // event separator so the FINAL event missing its trailing "\n\n" is
         // still emitted (it was previously left in buf and silently dropped).
@@ -506,7 +506,7 @@ async function* streamAnthropicOnce(config: ProviderConfig, input: ModelInput, d
       break;
     }
   }
-  // ω99-44 (the upstream projectebc374490): EOF without terminal semantics = the stream was
+  // ω99-44 (pi ebc374490): EOF without terminal semantics = the stream was
   // cut. No synthetic done, no fabricated usage — the typed error walks the
   // ladder as retryable transport (pre-first-delta replays byte-identically;
   // a post-delta cut propagates to the loop untouched).
@@ -560,7 +560,7 @@ async function* reclassifyAbortStream(gen: AsyncGenerator<ModelStreamEvent>, inp
 export function createAnthropicProvider(config: ProviderConfig, options: ProviderOptions = {}): ModelClient {
   const doFetch = options.fetch ?? fetch;
   const keyPool = options.keyPool ?? createKeyPool(config.apiKeys ?? [config.apiKey]);
-  // 波次 7 #37 (the upstream format C1)：provider 级 429 暂停窗（同 openai-compatible 引擎）。
+  // 波次 7 #37 (the reference harness C1)：provider 级 429 暂停窗（同 openai-compatible 引擎）。
   const ratePause = options.ratePauseWindow ?? createRatePauseWindow();
   const persona = options.personaRuntime;
   // 加固移植（r8 §4.1）：梯子与看门狗选项此前被忽略 —— 现在与 openai 引擎同解析

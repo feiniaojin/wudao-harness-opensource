@@ -27,7 +27,7 @@ export interface ImageRequestContext {
 }
 
 // ---------------------------------------------------------------------------
-// M79 §2 — image-bearing requests (a ref a ref parity; research 40 §1).
+// M79 §2 — image-bearing requests (dsh parity; research 40 §1).
 //
 //   gate      images need a model that DECLARES the image input modality and
 //             an assembled attachment resolver; assistant history carrying
@@ -76,11 +76,11 @@ const TOOL_IMAGE_KEEP_K = 3;
 const TOOL_IMAGE_KEEP_K_STUB = `[更早的截图已略：仅保留最近 ${TOOL_IMAGE_KEEP_K} 张]`;
 
 /** The content a tool message shows when its bytes went to the following
- *  synthetic user message (a ref a ref wire shape). */
+ *  synthetic user message (dsh wire shape). */
 const TOOL_IMAGE_CONTENT_FALLBACK = "(see attached image)";
 
 // ---------------------------------------------------------------------------
-// 借鉴弧 β1 — adjacent byte-dedup inside the keep-K window (the upstream
+// 借鉴弧 β1 — adjacent byte-dedup inside the keep-K window (hermes
 // 682b973b32, digest-b C2). The incumbent window bounds COUNT, not
 // REDUNDANCE: a static capture→act→capture loop fills all K slots with
 // byte-identical frames and burns K× the visual tokens for ONE screen.
@@ -89,7 +89,7 @@ const TOOL_IMAGE_CONTENT_FALLBACK = "(see attached image)";
 // ω99-138/244 established (turn-boundary timing, per-request self-healing,
 // persisted history untouched). The window members' transient data URLs are
 // resolved once and hashed (sha256 over the full `data:<mime>;base64,…`
-// string ≡ sha256(mime+bytes) — the upstream's exact dedup key); a newest→oldest
+// string ≡ sha256(mime+bytes) — hermes's exact dedup key); a newest→oldest
 // walk keeps the NEWEST frame of every identical-ADJACENT run and replaces
 // older duplicates with the FIXED note below. USER images never take the
 // note (zero drift, same as the window).
@@ -106,7 +106,7 @@ const TOOL_IMAGE_CONTENT_FALLBACK = "(see attached image)";
 // ---------------------------------------------------------------------------
 
 /** β1 — max consecutive adjacent-duplicate frames rendered as the note
- *  before a re-anchor image is forced (the upstream's 省略连击上限: staleness guard
+ *  before a re-anchor image is forced (hermes's 省略连击上限: staleness guard
  *  — the kept frame can never drift arbitrarily far from the newest state,
  *  and a compaction/window eviction of the anchor degrades at most cap
  *  notes, not an unbounded run). At K=3 the cap admits the two older slots

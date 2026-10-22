@@ -4,7 +4,7 @@ import { RETRY_AFTER_FAIL_CAP_MS } from "../src/retry-after.js";
 import { createOpenAICompatibleProvider, createAnthropicProvider, createResponsesProvider } from "../src/index.js";
 import type { ProviderConfig } from "../src/index.js";
 
-// 波次 7 #37 (the upstream format C1): the provider-level 429 pause window. The key pool
+// 波次 7 #37 (the reference harness C1): the provider-level 429 pause window. The key pool
 // (M56) handles the KEY dimension — a 429 cools that key for everyone. The
 // remaining gap is the PROVIDER dimension under concurrency: with one key (or
 // all keys cooling), every concurrent request still enters its own retry

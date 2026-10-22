@@ -4,18 +4,18 @@ import { validatePersonaDefinition, effectiveLayers } from "../src/persona/schem
 import type { PersonaDefinition } from "../src/persona/types.js";
 
 const good = {
-  id: "the upstream project", displayName: "Codex CLI",
-  source: { kind: "workspace-source", provenance: "the upstream project-rs client.rs", pinnedVersion: "the upstream project-rs 0.x" },
+  id: "openai-responses", displayName: "Codex CLI",
+  source: { kind: "workspace-source", provenance: "codex-rs client.rs", pinnedVersion: "codex-rs 0.x" },
   headers: { responses: { originator: "wudao_harness", session_id: "{{sessionId}}" } },
   body: { responses: { store: false } },
 };
 
 describe("validatePersonaDefinition", () => {
   it("accepts a minimal valid persona and normalizes nothing", () => {
-    const r = validatePersonaDefinition({ id: "a ref", displayName: "a ref", source: { kind: "workspace-source", provenance: "p", pinnedVersion: "v" }, headers: {} });
+    const r = validatePersonaDefinition({ id: "dsh", displayName: "dsh", source: { kind: "workspace-source", provenance: "p", pinnedVersion: "v" }, headers: {} });
     expect(r.ok).toBe(true);
   });
-  it("accepts the the upstream project-shaped persona", () => {
+  it("accepts the codex-shaped persona", () => {
     expect(validatePersonaDefinition(good).ok).toBe(true);
   });
   it("rejects unknown top-level keys (fail-closed)", () => {
@@ -72,14 +72,14 @@ describe("validatePersonaDefinition", () => {
 });
 
 // SDD 2026-08-23 layer-selection fix round 1 — spec §10.1: an EXPLICIT layer
-// qualifier lists the COMPLETE enable set (`the upstream format:headers` = 只启用
+// qualifier lists the COMPLETE enable set (`claude-code:headers` = 只启用
 // headers). effectiveLayers therefore MASKS when a qualifier is present
 // (unlisted layers off, defaultLayers ignored); the unqualified path keeps
 // the historical defaults byte-identical.
 describe("effectiveLayers (spec §10.1: explicit qualifier = complete enable set)", () => {
   const def: PersonaDefinition = {
-    id: "the upstream project", displayName: "Codex CLI",
-    source: { kind: "workspace-source", provenance: "the upstream project-rs client.rs", pinnedVersion: "the upstream project-rs 0.x" },
+    id: "openai-responses", displayName: "Codex CLI",
+    source: { kind: "workspace-source", provenance: "codex-rs client.rs", pinnedVersion: "codex-rs 0.x" },
     headers: { responses: { originator: "wudao_harness" } },
     body: { responses: { store: false } },
   };

@@ -1,5 +1,5 @@
 // ω99-44 — SSE EOF 语义硬化（brief §2.1 的切分不变量性质测试）。
-// 上游证据：the upstream project64eeb82a4（EOF 当帧终结符）+ ebc374490（proxy EOF 无终态显式报错）。
+// 上游证据：pi 64eeb82a4（EOF 当帧终结符）+ ebc374490（proxy EOF 无终态显式报错）。
 //
 // 三件事钉死：
 //  1. 任意切分点等价 —— 完整 body 逐字节枚举全部切分点，两 chunk 喂入的事件
@@ -23,7 +23,7 @@ const INSTANT = { sleep: async (): Promise<void> => {}, random: (): number => 0.
 
 const CFG_OAI = { apiKey: "k", baseURL: "https://x/v1", model: "m" };
 const CFG_AN = { apiKey: "sk-an", baseURL: "https://api.anthropic.com", model: "claude-sonnet-5" };
-const CFG_RS = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-the upstream project" };
+const CFG_RS = { apiKey: "sk-oai", baseURL: "https://api.openai.com/v1", model: "gpt-5.3-codex" };
 
 // ---------------------------------------------------------------------------
 // Fixtures（≤ 2KB）

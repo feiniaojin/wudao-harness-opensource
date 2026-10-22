@@ -1,6 +1,6 @@
 import { resolveReasoningContext, type ProviderConfig } from "./config.js";
 
-// 夜移 011 (the upstream harness internal/provider/openai/think.go:18-98): the
+// 夜移 011 (DeepSeek-Reasonix internal/provider/openai/think.go:18-98): the
 // in-band `<think>` splitter. vLLM chat-template lanes (`qwen-chat-template`
 // format — `chat_template_kwargs.enable_thinking`) inline the model's CoT
 // into the CONTENT channel as a turn-initial `<think>…</think>` block instead

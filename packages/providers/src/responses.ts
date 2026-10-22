@@ -1,4 +1,4 @@
-// packages/providers/src/responses.ts — OpenAI Responses 协议适配器（spec §5，the upstream project原生）
+// packages/providers/src/responses.ts — OpenAI Responses 协议适配器（spec §5，codex 原生）
 import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao/core";
 import { UnsupportedContentError, offloadRequestFiles } from "@wudao/core";
 import { createKeyPool, cooldownClassForStatus } from "./key-pool.js";
@@ -226,7 +226,7 @@ async function* streamResponsesOnce(config: ProviderConfig, input: ModelInput, d
       if (Array.isArray(ev.response?.output) && items.length === 0) items.push(...ev.response.output);
     }
   }
-  // ω99-44 (the upstream projectebc374490): EOF without a terminal lifecycle event = the stream
+  // ω99-44 (pi ebc374490): EOF without a terminal lifecycle event = the stream
   // was cut. No synthetic done, no fabricated usage — the typed error walks the
   // ladder as retryable transport (same seam/streamOnce semantics).
   if (!sawTerminal) throw new TruncatedStreamError("responses", sawChars);
@@ -247,7 +247,7 @@ function isResponsesStreamTerminal(ev: { type?: unknown }): boolean {
 export function createResponsesProvider(config: ProviderConfig, options: ProviderOptions = {}): ModelClient {
   const doFetch = options.fetch ?? fetch;
   const keyPool = options.keyPool ?? createKeyPool(config.apiKeys ?? [config.apiKey]);
-  // 波次 7 #37 (the upstream format C1)：provider 级 429 暂停窗（同 openai-compatible 引擎）。
+  // 波次 7 #37 (the reference harness C1)：provider 级 429 暂停窗（同 openai-compatible 引擎）。
   const ratePause = options.ratePauseWindow ?? createRatePauseWindow();
   const persona = options.personaRuntime;
   // 加固移植（r8 §4.1）：梯子与看门狗选项此前被忽略 —— 现在与 openai 引擎同解析

@@ -32,7 +32,7 @@ export type ProviderName = string;
 
 export type ReasoningEffort = "low" | "medium" | "high" | "max" | "none";
 
-// M28 reasoning-format matrix (the upstream project-verified shapes): one enum value fixes BOTH
+// M28 reasoning-format matrix (pi-verified shapes): one enum value fixes BOTH
 // sides of the wire — the request fields an effort maps onto and which
 // response field carries the reasoning text. New OpenAI-compatible endpoints
 // plug in by selecting a format, not by editing the SSE parser.
@@ -249,7 +249,7 @@ export const PROVIDER_PROFILES: Readonly<Record<BuiltinProviderName, ProviderPro
     windowMode: "independent",
     wire: "anthropic",
     bearerAuth: true,
-    // platform.kimi.com/docs/guide/the upstream format-kimi AUTO_COMPACT_WINDOW
+    // platform.kimi.com/docs/guide/claude-code-kimi AUTO_COMPACT_WINDOW
     // table, verbatim numbers. kimi-k2.6 has NO documented window — left
     // unpinned (a wrong pin fires autocompact late → 413; env fallback is
     // safer). Known edge: kimi-k2.7-code demands explicit thinking — effort
@@ -301,7 +301,7 @@ export const PROVIDER_PROFILES: Readonly<Record<BuiltinProviderName, ProviderPro
       { name: "glm-5.3-flash", contextLength: 1_000_000 },
     ],
   },
-  // Kimi Coding Plan 订阅网关（0.3.30 重指向）：官方 the upstream harness 接入页
+  // Kimi Coding Plan 订阅网关（0.3.30 重指向）：官方 Claude Code 接入页
   // 的订阅路径——api.kimi.com/coding，模型 k3-256k、窗口 262144（用户
   // settings.json 的 AUTO_COMPACT_WINDOW 原数）。鉴权按官方配置走
   // ANTHROPIC_API_KEY（x-api-key only——省略 bearerAuth，与 glm-code/
@@ -443,7 +443,7 @@ export function reasoningFormatBody(
 }
 
 /** ω99-42: the repair body a mandatory-reasoning rejection re-sends with —
- *  the matrix's EXPLICIT enable, at the medium default level (the upstream' own
+ *  the matrix's EXPLICIT enable, at the medium default level (hermes' own
  *  default reasoning effort; every format in the tree can express it), with
  *  the thinkingLevelMap deliberately STRIPPED: the map is exactly what folds
  *  low/medium onto "disabled", so a mapped repair would resend the very
@@ -472,7 +472,7 @@ export function resolveReasoningContext(config: ProviderConfig): ReasoningReques
 }
 
 /** URL sniff (custom baseUrls): does this endpoint take a top-level
- *  `reasoning_effort`? Mirrors the upstream project's detection — the domestic and gateway
+ *  `reasoning_effort`? Mirrors pi's detection — the domestic and gateway
  *  endpoints known to reject the field say false, everything else true. */
 export function supportsReasoningEffort(baseURL: string): boolean {
   const url = baseURL.toLowerCase();

@@ -1,4 +1,4 @@
-// M70 §4 (the upstream format) — max_tokens overflow self-repair. A 400 whose body carries
+// M70 §4 (CC) — max_tokens overflow self-repair. A 400 whose body carries
 // parseable input_tokens/context_limit numbers means the COMPLETION cap
 // pushed the total over the window (the prompt itself fits): parse the
 // numbers, set retryContext.maxTokensOverride = max(3000, contextLimit -

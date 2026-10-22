@@ -1,5 +1,5 @@
 // packages/providers/tests/o99-50-header-validation.test.ts
-// ω99-50 — provider 自定义 header 的加载期/保存期校验（the upstream format候选 9 形 + wudao 裁定）。
+// ω99-50 — provider 自定义 header 的加载期/保存期校验（dsh 候选 9 形 + wudao 裁定）。
 // 验收映射（brief §2）：
 //   §2.1 坏 header 载入期拒 → "load-time named rejection"（fetch 零调用）
 //   §2.2 好 header 零变化   → "byte parity"（对拍 init.headers：auth 前、persona 后）

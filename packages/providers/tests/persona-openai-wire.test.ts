@@ -41,10 +41,10 @@ describe("openai-compatible persona injection", () => {
     expect(body.reasoning).toEqual({ effort: "high" });
     expect(body.model).toBe("m"); // base 键不受影响
   });
-  it("undefined protocol for this persona (the upstream format@openai-chat) = byte-identical request", async () => {
+  it("undefined protocol for this persona (CC@openai-chat) = byte-identical request", async () => {
     const base: { url: string; init: RequestInit }[] = [];
     const pers: { url: string; init: RequestInit }[] = [];
-    const cc = BUILTIN_PERSONAS.find((p) => p.id === "the upstream format");
+    const cc = BUILTIN_PERSONAS.find((p) => p.id === "anthropic-cli");
     const rt = createPersonaRuntime(resolvePersona(cc!), seeded);
     await createOpenAICompatibleProvider(cfg, { fetch: capturingFetch(base) }).generate(INPUT as any);
     await createOpenAICompatibleProvider(cfg, { fetch: capturingFetch(pers), personaRuntime: rt }).generate(INPUT as any);

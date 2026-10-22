@@ -55,7 +55,7 @@ export {
   parseContextLimitBody,
   // M48 §2: terminal-shape repair (one frozen replay per degenerate finish).
   terminalRepairKind,
-  // ω99-42: the typed mandatory-reasoning rejection (the upstream f6bd1633f7 +
+  // ω99-42: the typed mandatory-reasoning rejection (hermes f6bd1633f7 +
   // 63279301bc) — matcher + signatures alongside the class.
   ReasoningMandatoryError,
   isMandatoryReasoningRejection,
@@ -88,7 +88,7 @@ export { MaxTokensThinkingBudgetConflictError } from "./model-failure.js";
 // ladder honors (deadline wait within the 60s fail cap).
 export { parseRetryAfterMs, RETRY_AFTER_FAIL_CAP_MS } from "./retry-after.js";
 export type { RetryAfterHeadersLike } from "./retry-after.js";
-// 波次 8 #42 (the upstream #24): bounded error-body read — byte cap + wall clock +
+// 波次 8 #42 (hermes #24): bounded error-body read — byte cap + wall clock +
 // cancel-on-abandon, so a stalled or huge error body can neither hang the
 // request nor buffer unbounded.
 export { readErrorBody, ERROR_BODY_MAX_BYTES, ERROR_BODY_DEADLINE_MS } from "./error-body.js";
@@ -176,7 +176,7 @@ export type {
   RegistryLoadResult,
   EffectiveProfile,
 } from "./registry.js";
-// 借鉴弧 B1（the upstream project C1）— 价目面：目录 schema + 缓存经济学 ratio 的自动推导
+// 借鉴弧 B1（the reference project C1）— 价目面：目录 schema + 缓存经济学 ratio 的自动推导
 //（catalog pin > WUDAO_PRICE env > 保守缺省，来源类型化；不暴露为用户配置）。
 export { deriveCachePricing, isModelPrices, catalogPricesFor } from "./pricing.js";
 export type { ModelPrices, PriceSource } from "./pricing.js";
@@ -203,7 +203,7 @@ export {
   DEFAULT_AUTH_COOLDOWN_MS,
 } from "./key-pool.js";
 export type { KeyPool, KeyPoolOptions, KeyPoolSnapshot, CooldownClass } from "./key-pool.js";
-// 波次 7 #37 (the upstream format C1)：provider 级 429 暂停窗 —— 三协议工厂同享、可注入。
+// 波次 7 #37 (the reference harness C1)：provider 级 429 暂停窗 —— 三协议工厂同享、可注入。
 export { createRatePauseWindow, DEFAULT_RATE_PAUSE_MS, RATE_PAUSE_SLICE_MS } from "./rate-pause.js";
 export type { RatePauseWindow, RatePauseOptions } from "./rate-pause.js";
 // Persona layer exports (Task 5 / Task 6 / Task 7 / Task 8 / Task 9 / Task 11)
@@ -232,5 +232,3 @@ export type {
 } from "./persona/types.js";
 
 export const PACKAGE_NAME = "@wudao/providers";
-export { PERSONA_IDS } from "./persona/ids.js";
-export type { PersonaId } from "./persona/ids.js";

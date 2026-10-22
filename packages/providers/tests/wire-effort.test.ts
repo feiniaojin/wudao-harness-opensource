@@ -40,7 +40,7 @@ function neverFetch(): { fetch: typeof fetch; calls: () => number } {
 }
 
 const AN = { apiKey: "k", baseURL: "https://x", model: "claude-sonnet-5" };
-const RS = { apiKey: "k", baseURL: "https://x/v1", model: "gpt-5.3-the upstream project" };
+const RS = { apiKey: "k", baseURL: "https://x/v1", model: "gpt-5.3-codex" };
 const INPUT = { systemPrompt: "s", messages: [{ role: "user" as const, content: "hi" }], tools: [] };
 
 function genFetch(captured: Record<string, unknown>[], payload: unknown): typeof fetch {
