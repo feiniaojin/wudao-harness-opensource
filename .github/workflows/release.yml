@@ -87,10 +87,12 @@ jobs:
       - name: Build web frontend
         run: pnpm --filter @wudao/web build
 
-      - name: Build desktop app
-        run: |
-          cd apps/desktop
-          pnpm exec tauri build --target universal-apple-darwin
+      - name: Build desktop app (SEA sidecar + click helper + tauri bundle)
+        # desktop:build = build-sea.mjs (server sidecar per triple, darwin
+        # produces BOTH aarch64 + x86_64 for the universal dmg) followed by
+        # tauri-build.mjs (universal target + the swift click helper). The raw
+        # `tauri build` cannot work alone: externalBin expects the sidecar.
+        run: pnpm --filter @wudao/desktop run desktop:build
         env:
           # The SEA build needs the Node.js binary
           NODE_SEA_CWD: ${{ github.workspace }}
@@ -140,11 +142,9 @@ jobs:
       - name: Build web frontend
         run: pnpm --filter @wudao/web build
 
-      - name: Build desktop app
-        run: |
-          cd apps/desktop
-          pnpm exec tauri build
-        continue-on-error: true  # May fail if Swift helper is macOS-only
+      - name: Build desktop app (SEA sidecar + tauri bundle)
+        run: pnpm --filter @wudao/desktop run desktop:build
+        continue-on-error: true  # Desktop on Linux is best-effort
 
       - name: Upload Linux packages
         if: success()
