@@ -216,9 +216,14 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          # tag_name is REQUIRED on workflow_dispatch (a branch ref carries no
+          # tag — without this the action silently skips creating anything).
+          # On a tag push both spellings resolve to the same tag.
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
           files: |
             release/*
           generate_release_notes: true
+          fail_on_unmatched_files: true
           draft: false
           prerelease: ${{ contains(github.ref, 'rc') || contains(github.ref, 'beta') }}
         env:
