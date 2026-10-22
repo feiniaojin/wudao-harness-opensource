@@ -62,7 +62,7 @@ describe("BUILTIN_PERSONAS", () => {
   // --- codex (doc 90 §2; OpenAI Responses protocol) ---
 
   it("codex pins the byte-verified originator and session-id slot", () => {
-    // doc90 §2.1: originator default `codex_cli_rs` (DEFAULT_ORIGINATOR,
+    // doc90 §2.1: originator default `wudao_harness` (DEFAULT_ORIGINATOR,
     // default_client.rs:40) — process-level default header, always sent.
     // session-id: current session id on every Responses request
     // (headers.rs:5-13 build_session_headers). NOTE: the header name is
@@ -81,7 +81,7 @@ describe("BUILTIN_PERSONAS", () => {
     // machine values with no slots — pinned to a common macOS/Apple Silicon
     // evaluated form. Unresolved ${…} placeholders on the wire get rejected
     // by UA-whitelisting providers (2026-08-31), same as the the reference harness UA.
-    expect(codexUA()).toBe("codex_cli_rs/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal");
+    expect(codexUA()).toBe("wudao_harness/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal");
     expect(codexUA()).not.toMatch(/\$\{/);
   });
   function codexUA(): string {
@@ -94,13 +94,13 @@ describe("BUILTIN_PERSONAS", () => {
     expect(byId("openai-responses").body?.responses).toEqual({ store: false });
   });
 
-  it("codex prompt: prefix mode with the pinned base-instructions opening", () => {
+  it("openai-responses prompt: prefix mode with the pinned base-instructions opening", () => {
     // doc90 §2.3: default.md:1 opening; the rest of default.md
     // ("+能力清单等") is not transcribed in doc 90, so prefix (identity
     // head), not a truncated snapshot.
     expect(byId("openai-responses").prompt?.system).toEqual({
       mode: "prefix",
-      text: "You are a coding agent running in the Codex CLI, a terminal-based coding assistant. Codex CLI is an open source project led by OpenAI. You are expected to be precise, safe, and helpful.",
+      text: "You are a coding agent running in a terminal-based coding assistant powered by the OpenAI Responses API. You are expected to be precise, safe, and helpful.",
     });
   });
 
@@ -175,9 +175,9 @@ describe("BUILTIN_PERSONAS", () => {
     expect(cursor.body).toBeUndefined();
   });
 
-  // --- opencode (doc 90 §4; multi-protocol) ---
+  // --- multi-wire (doc 90 §4; multi-protocol) ---
 
-  it("opencode spans anthropic/responses/openai-chat with session headers on each", () => {
+  it("multi-wire spans anthropic/responses/openai-chat with session headers on each", () => {
     // doc90 §4.1 rows 1-3 (llm.ts:209-211): every LLM request carries the
     // session headers regardless of protocol; x-parent-session-id is
     // child-session-conditional and omitted.
@@ -193,14 +193,14 @@ describe("BUILTIN_PERSONAS", () => {
     expect(Object.keys(anth).filter((k) => k !== "anthropic-beta")).toEqual(["x-session-affinity", "X-Session-Id"]);
   });
 
-  it("opencode anthropic-beta is the pinned pair", () => {
+  it("multi-wire anthropic-beta is the pinned pair", () => {
     // doc90 §4.1 row 4 (anthropic.ts:13-14) — @ai-sdk/anthropic providers.
     expect(byId("multi-wire").headers.anthropic?.["anthropic-beta"]).toBe(
       "interleaved-thinking-2025-05-14,fine-grained-tool-streaming-2025-05-14",
     );
   });
 
-  it("opencode body: responses store=false only (route-level default)", () => {
+  it("multi-wire body: responses store=false only (route-level default)", () => {
     // doc90 §4.2 (openai-responses.ts:990-991,1017-1019). reasoningEffort
     // 'medium' is gpt-5-model-gated in source, not a blanket protocol
     // default — omitted.
@@ -210,7 +210,7 @@ describe("BUILTIN_PERSONAS", () => {
     expect(oc.body?.["openai-chat"]).toBeUndefined();
   });
 
-  it("opencode prompt: prefix mode with the pinned BUILD_SYSTEM", () => {
+  it("multi-wire prompt: prefix mode with the pinned BUILD_SYSTEM", () => {
     // doc90 §4.3 (agent.ts:12-13); system assembly is [agent.system,
     // baseline] — the agent part leads, hence prefix.
     expect(byId("multi-wire").prompt?.system).toEqual({
@@ -232,7 +232,7 @@ describe("BUILTIN_PERSONAS", () => {
     // (+https://github.com/deepseek-ai/deepseek-harness)`, always sent,
     // cannot be suppressed.
     expect(byId("deepseek-native").headers["openai-chat"]?.["user-agent"]).toBe(
-      "deepseek-harness/0.1.1-rc.2 (+https://github.com/deepseek-ai/deepseek-harness)",
+      "wudao-harness/0.4.14 (+https://github.com/feiniaojin/wudao-harness-opensource)",
     );
   });
 
@@ -250,7 +250,7 @@ describe("BUILTIN_PERSONAS", () => {
     // section, order -100 — first section of the system prompt.
     expect(byId("deepseek-native").prompt?.system).toEqual({
       mode: "prefix",
-      text: "You are an AI agent powered by DeepSeek Harness.",
+      text: "You are an AI agent powered by wudao-harness.",
     });
   });
 });

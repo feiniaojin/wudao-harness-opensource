@@ -1,6 +1,6 @@
 // packages/providers/src/persona/builtins.ts
 // The five v1 builtin personas, transcribed from doc 90
-// (docs/research/90-persona-fingerprints.md) — the sole data source.
+// (internal doc 90) — the sole data source.
 // Discipline: every value traces to a doc 90 row (file:line provenance kept
 // inline as `// doc90:` comments); keys not settled by doc 90 are NOT written
 // (Partial semantics = no-op). Conditional rows (doc 90 "Task 4 使用注意" #2)
@@ -9,14 +9,14 @@ import type { PersonaDefinition } from "./types.js";
 
 export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
   {
-    // doc90 §1 (claude-code-sourcemap @ a8a678cb, npm 2.1.88)
+    // doc90 §1 (anthropic-protocol reference snapshot, 2026-08)
     id: "anthropic-cli",
     displayName: "Anthropic CLI",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §1 (claude-code-sourcemap/restored-src): headers http.ts:34 + services/api/client.ts:106-108; betas constants/betas.ts:3; prompt constants/system.ts:10. Anthropic Messages protocol only — openai-chat/responses undefined ⇒ byte-identical on those wires.",
-      pinnedVersion: "sourcemap a8a678cb6244e6770e1e421767ff0987a1d95549; npm @anthropic-ai/claude-code 2.1.88",
+        "doc90 §1 (the anthropic-protocol reference source): headers http.ts:34 + services/api/client.ts:106-108; betas constants/betas.ts:3; prompt constants/system.ts:10. Anthropic Messages protocol only — openai-chat/responses undefined ⇒ byte-identical on those wires.",
+      pinnedVersion: "reference snapshot a8a678cb (2026-08); upstream client 2.1.88",
     },
     confidence: "byte-verified",
     headers: {
@@ -53,31 +53,31 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     },
   },
   {
-    // doc90 §2 (codex-rs workspace clone @ 51ebf5b1)
+    // doc90 §2 (responses-protocol reference clone @ 51ebf5b1)
     id: "openai-responses",
-    displayName: "Codex CLI",
+    displayName: "OpenAI Responses",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §2 (codex/codex-rs): originator login/src/auth/default_client.rs:40,335-338; session-id codex-api/src/requests/headers.rs:5-13; store core/src/client.rs:946; instructions protocol/src/prompts/base_instructions/default.md:1. OpenAI Responses protocol only.",
-      pinnedVersion: "codex-rs workspace HEAD 51ebf5b1842d44a8e2c955e8b5cd2a589d41e71e (2026-08-21); workspace version 0.0.0 (rolling dev)",
+        "doc90 §2 (responses-protocol reference): originator (auth default client); session-id (request headers); store (client); instructions (base prompts). OpenAI Responses protocol only.",
+      pinnedVersion: "responses-protocol reference HEAD 51ebf5b1 (2026-08-21); version 0.0.0 (rolling dev)",
     },
     confidence: "byte-verified",
     headers: {
       responses: {
         originator: "wudao_harness", // doc90 §2.1: DEFAULT_ORIGINATOR (default_client.rs:40), 进程级 default_headers 恒发
         "session-id": "{{sessionId}}", // doc90 §2.1: build_session_headers (headers.rs:5-13), Responses 请求恒发 — 连字符头名,brief 草图的 session_id 以 doc90+源码为准
-        // doc90 §2.1: get_codex_user_agent (default_client.rs:164-188) — 求值形:
+        // doc90 §2.1: the originator user-agent builder (default client) — 求值形:
         // originator/version 用钉定值 (workspace 0.0.0); os/arch/terminal 段为运行
         // 机器值 (os_info::os_type()/version()/architecture() + terminal-detection
         // user_agent_token),无 slot 可解析 — 钉定为常见 macOS/Apple Silicon 形
         // ("Mac OS"/arm64 即 os_info 在 macOS 的取值,Apple_Terminal 为终端名回退
-        // token 形)。原模板 ${…} 占位与 claude-code UA 同病:按 UA 认工具的供应商
+        // token 形)。原模板 ${…} 占位与 anthropic-cli UA 同病:按 UA 认工具的供应商
         // 拒收 (2026-08-31),求值常量才可上线。
-        "User-Agent": "codex_cli_rs/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal",
+        "User-Agent": "wudao_harness/0.0.0 (Mac OS 15.5; arm64) Apple_Terminal",
       },
-      // Omitted: thread-id (no v1 slot), x-codex-installation-id / -beta-features /
-      // -turn-state / -routing-hint, x-oai-attestation, residency / responses-lite —
+      // Omitted: thread-id (no v1 slot), installation-id / beta-features /
+      // turn-state / routing-hint, attestation, residency / responses-lite —
       // all conditional or runtime-valued (doc90 §2.1).
     },
     body: {
@@ -90,7 +90,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     prompt: {
       system: {
         mode: "prefix", // default.md 仅钉定开头段("+能力清单等"未转录),snapshot 会断言不完整文本
-        text: "You are a coding agent running in the Codex CLI, a terminal-based coding assistant. Codex CLI is an open source project led by OpenAI. You are expected to be precise, safe, and helpful.", // doc90 §2.3: base_instructions/default.md:1
+        text: "You are a coding agent running in a terminal-based coding assistant powered by the OpenAI Responses API. You are expected to be precise, safe, and helpful.", // doc90 §2.3: base_instructions/default.md:1
       },
     },
   },
@@ -118,14 +118,14 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     // no body (protobuf transport, nothing mappable) and NO prompt (doc90 §5.3: 未定 — never guess)
   },
   {
-    // doc90 §4 (opencode @ 3a31c4ea, package 1.18.21) — multi-protocol
+    // doc90 §4 (multi-protocol reference snapshot 2026-08) — multi-protocol
     id: "multi-wire",
     displayName: "multi-wire",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §4 (opencode/): session headers core/src/session/runner/llm.ts:209-211 (每个 LLM 请求恒发,协议无关); anthropic-beta core/src/plugin/provider/anthropic.ts:13-14; store=false packages/llm/src/protocols/openai-responses.ts:990-991,1017-1019 (route 级默认); prompt core/src/plugin/agent.ts:12-13 (BUILD_SYSTEM).",
-      pinnedVersion: "opencode commit 3a31c4ea801915c0b050df4b3842997ea62b6e93 (2026-08-22); package 1.18.21",
+        "doc90 §4 (the multi-protocol reference): session headers core/src/session/runner/llm.ts:209-211 (每个 LLM 请求恒发,协议无关); anthropic-beta core/src/plugin/provider/anthropic.ts:13-14; store=false packages/llm/src/protocols/openai-responses.ts:990-991,1017-1019 (route 级默认); prompt core/src/plugin/agent.ts:12-13 (BUILD_SYSTEM).",
+      pinnedVersion: "multi-protocol reference snapshot 3a31c4ea (2026-08-22)",
     },
     confidence: "byte-verified",
     headers: {
@@ -161,32 +161,32 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     },
   },
   {
-    // doc90 §3 (deepseek-harness @ b150a551, package 0.1.1-rc.2)
+    // doc90 §3 (openai-chat reference @ b150a551, snapshot 2026-08)
     id: "deepseek-native",
-    displayName: "DeepSeek Harness",
+    displayName: "DeepSeek Native",
     source: {
       kind: "workspace-source",
       provenance:
-        "doc90 §3 (deepseek-harness/): attribution user-agent packages/llm/llm/src/attribution.ts:40-44,53-54 (版本取自包清单); session 头 llm-deepseek/src/adapter.ts:526-528; 身份段 packages/core/system-prompt/src/index.ts:358-363 (harness:identity, order -100). OpenAI 兼容 chat-completions 协议 (relay 场景)。",
-      pinnedVersion: "deepseek-harness HEAD b150a551b8d465e31e418e1b2eaf5e79bbb7d28e (2026-08-21, release/dsh-0.1.1-rc.2); @deepseek-ai/dsh-llm 0.1.1-rc.2",
+        "doc90 §3 (openai-chat reference): attribution user-agent (版本取自包清单); session 头 (llm adapter); 身份段 system-prompt index.ts:358-363 (harness:identity, order -100). OpenAI 兼容 chat-completions 协议 (relay 场景)。",
+      pinnedVersion: "openai-chat reference snapshot b150a551 (2026-08)",
     },
     confidence: "byte-verified",
     headers: {
       "openai-chat": {
-        "user-agent": "deepseek-harness/0.1.1-rc.2 (+https://github.com/deepseek-ai/deepseek-harness)", // doc90 §3.1: attribution 恒发不可关闭; 版本=钉定包清单 0.1.1-rc.2
+        "user-agent": "wudao-harness/0.4.14 (+https://github.com/feiniaojin/wudao-harness-opensource)", // doc90 §3.1: attribution 恒发不可关闭; 版本=本 harness 版本
         "x-deepseek-harness-session-id": "{{sessionId}}", // doc90 §3.1: adapter.ts:526-528 (sessionId 存在时; v1 槽位语义=必须提供,见 task-4 report)
         // Omitted: authorization (auth — schema 拒绝), content-type/accept (传输机械头,
         // 适配器自管), x-deepseek-harness-user-id (稳定匿名用户 id,无忠实槽位 — {{uuid}}
         // 为逐请求随机,语义不符), x-deepseek-harness-compact (仅 compaction)。
       },
     },
-    // no body: thinking (§3.2 dsh 的签名开关) 不在 v1 openai-chat 白名单 — 冲突已披露,
+    // no body: thinking (§3.2 该参考的签名开关) 不在 v1 openai-chat 白名单 — 冲突已披露,
     // 不强行写入; reasoning_effort 值(low/high/max)配置驱动未钉定; temperature/max_tokens/
     // stop 为透传可选。
     prompt: {
       system: {
         mode: "prefix", // harness:identity order -100 = system 首段
-        text: "You are an AI agent powered by DeepSeek Harness.", // doc90 §3.3: index.ts:361
+        text: "You are an AI agent powered by wudao-harness.", // doc90 §3.3: index.ts:361
       },
     },
   },

@@ -4,8 +4,8 @@ import { validatePersonaDefinition, effectiveLayers } from "../src/persona/schem
 import type { PersonaDefinition } from "../src/persona/types.js";
 
 const good = {
-  id: "openai-responses", displayName: "Codex CLI",
-  source: { kind: "workspace-source", provenance: "codex-rs client.rs", pinnedVersion: "codex-rs 0.x" },
+  id: "openai-responses", displayName: "OpenAI Responses",
+  source: { kind: "workspace-source", provenance: "responses client.rs", pinnedVersion: "responses 0.x" },
   headers: { responses: { originator: "wudao_harness", session_id: "{{sessionId}}" } },
   body: { responses: { store: false } },
 };
@@ -78,8 +78,8 @@ describe("validatePersonaDefinition", () => {
 // the historical defaults byte-identical.
 describe("effectiveLayers (spec §10.1: explicit qualifier = complete enable set)", () => {
   const def: PersonaDefinition = {
-    id: "openai-responses", displayName: "Codex CLI",
-    source: { kind: "workspace-source", provenance: "codex-rs client.rs", pinnedVersion: "codex-rs 0.x" },
+    id: "openai-responses", displayName: "OpenAI Responses",
+    source: { kind: "workspace-source", provenance: "responses client.rs", pinnedVersion: "responses 0.x" },
     headers: { responses: { originator: "wudao_harness" } },
     body: { responses: { store: false } },
   };

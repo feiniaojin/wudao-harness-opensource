@@ -132,27 +132,27 @@ const chatCall = (wire: readonly WireCall[]): WireCall => {
 
 describe.skip("final-review C1 — REPL runtime slots (runRepl integration)", () => {
   it("/persona deepseek-harness: the wire carries the RESOLVED session header, never a literal {{sessionId}} (closes T13-M2)", async () => {
-    const { wire, out } = await driveRepl(["/persona deepseek-harness", "hello", "/exit"], { sessionId: "wire-sess-1" });
+    const { wire, out } = await driveRepl(["/persona deepseek-native", "hello", "/exit"], { sessionId: "wire-sess-1" });
     const call = chatCall(wire);
     // The Critical's exact pin: the openai-chat session header is the runtime
     // slot value — pre-fix this threw inside resolveTemplate on EVERY call.
     expect(call.headers["x-deepseek-harness-session-id"]).toBe("wire-sess-1");
     // The literal template layer: the pinned attribution header rides too.
-    expect(call.headers["user-agent"]).toBe("deepseek-harness/0.1.1-rc.2 (+https://github.com/deepseek-ai/deepseek-harness)");
+    expect(call.headers["user-agent"]).toBe("wudao-harness/0.4.14 (+https://github.com/feiniaojin/wudao-harness-opensource)");
     // No templated value ever reaches the wire unresolved.
     expect(Object.values(call.headers).some((v) => v.includes("{{"))).toBe(false);
     // The adapter's own headers stay intact (persona spreads after, adds only).
     expect(call.headers["authorization"]).toBe("Bearer sk-wire-test");
     expect(call.headers["content-type"]).toBe("application/json");
     // The switch confirmed (no mismatch note — this persona IS openai-chat).
-    expect(out).toContain("persona → deepseek-harness [headers+body] —— 下一个请求即生效"); // ω99-166f-ii: 钉随源演进
+    expect(out).toContain("persona → deepseek-native [headers+body] —— 下一个请求即生效"); // ω99-166f-ii: 钉随源演进
     expect(out).not.toContain("note: this persona defines no openai-chat headers/body");
   });
 
   it("default slot: a session-less REPL boot resolves {{sessionId}} to \"repl\" (the cron/monitor fallback)", async () => {
     // opts.sessionId omitted → createPersonaRuntime falls back to "repl"; the
     // header still resolves (pre-fix: every call threw).
-    const { wire } = await driveRepl(["/persona deepseek-harness", "hello", "/exit"], {});
+    const { wire } = await driveRepl(["/persona deepseek-native", "hello", "/exit"], {});
     expect(chatCall(wire).headers["x-deepseek-harness-session-id"]).toBe("repl");
   });
 });

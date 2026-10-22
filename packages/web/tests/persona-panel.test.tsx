@@ -49,14 +49,14 @@ afterEach(() => {
 
 const LIST = {
   personas: [
-    { id: "deepseek-native", displayName: "DeepSeek Harness", source: "builtin" as const, layers: "headers+prompt", editable: false },
+    { id: "deepseek-native", displayName: "DeepSeek Native", source: "builtin" as const, layers: "headers+prompt", editable: false },
     { id: "alpha", displayName: "Alpha", source: "global" as const, layers: "headers", editable: true },
   ],
 };
 
 const DEEPSEEK_DEF: PersonaDefinition = {
   id: "deepseek-native",
-  displayName: "DeepSeek Harness",
+  displayName: "DeepSeek Native",
   source: { kind: "workspace-source", provenance: "doc90 §3 (deepseek-harness/)", pinnedVersion: "b150a551" },
   headers: { "openai-chat": { "user-agent": "deepseek-harness/0.1.1-rc.2" } },
   prompt: { system: { mode: "prefix", text: "You are an AI agent powered by DeepSeek Harness." } },

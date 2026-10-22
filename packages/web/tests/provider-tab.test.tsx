@@ -832,7 +832,7 @@ describe("provider management iter6 — Persona 绑定 rides the create form", (
   // two-row fixture provider-detail's suite pins the wire contract with).
   const PERSONAS_REPLY = {
     personas: [
-      { id: "the upstream format", displayName: "DeepSeek Harness", source: "builtin", layers: "headers+prompt", editable: false },
+      { id: "the upstream format", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
       { id: "alpha", displayName: "Alpha", source: "global", layers: "headers", editable: true },
     ],
   };
