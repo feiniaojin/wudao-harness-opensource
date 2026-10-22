@@ -65,9 +65,9 @@ describe("personaList", () => {
     const { personas } = await ops().personaList();
     const byId = new Map(personas.map((p) => [p.id, p]));
     // builtins list, not editable
-    expect(byId.get("the upstream format")).toMatchObject({ source: "builtin", editable: false, layers: "headers+prompt" });
-    expect(byId.get("the upstream format")).toMatchObject({ source: "builtin", layers: "headers+prompt" });
-    expect(byId.get("the upstream project")).toMatchObject({ source: "builtin", layers: "headers+body+prompt" });
+    expect(byId.get("anthropic-cli")).toMatchObject({ source: "builtin", editable: false, layers: "headers+prompt" });
+    expect(byId.get("deepseek-native")).toMatchObject({ source: "builtin", layers: "headers+prompt" });
+    expect(byId.get("openai-responses")).toMatchObject({ source: "builtin", layers: "headers+body+prompt" });
     expect(byId.get("cursor")).toMatchObject({ source: "builtin", layers: "headers" });
     // the saved global persona: editable
     expect(byId.get("alpha")).toMatchObject({ source: "global", editable: true, layers: "headers", displayName: "Alpha" });
@@ -78,8 +78,8 @@ describe("personaList", () => {
 
 describe("personaGet", () => {
   it("returns a known persona's full definition (builtin here)", async () => {
-    const { definition } = await ops().personaGet("the upstream format");
-    expect(definition.id).toBe("the upstream format");
+    const { definition } = await ops().personaGet("anthropic-cli");
+    expect(definition.id).toBe("anthropic-cli");
     expect(definition.headers.anthropic?.["anthropic-version"]).toBe("2023-06-01");
   });
 
@@ -113,12 +113,12 @@ describe("personaSave", () => {
   });
 
   it("refuses an id colliding with a builtin persona", async () => {
-    const r = await ops().personaSave({ ...UI_DEF, id: "the upstream format", displayName: "Fake the upstream format" });
+    const r = await ops().personaSave({ ...UI_DEF, id: "anthropic-cli", displayName: "Fake CC" });
     expect(r.ok).toBe(false);
     if (r.ok) throw new Error("unreachable");
     expect(r.errors.length).toBe(1);
-    expect(r.errors[0]).toContain("the upstream format");
-    expect(existsSync(join(home, "personas", "the upstream format.json"))).toBe(false);
+    expect(r.errors[0]).toContain("anthropic-cli");
+    expect(existsSync(join(home, "personas", "claude-code.json"))).toBe(false);
   });
 
   it("refuses an id colliding with a workspace persona", async () => {
@@ -198,7 +198,7 @@ describe("personaDelete", () => {
 
   it("a builtin id refuses; a workspace id refuses; an unknown id refuses", async () => {
     const o = ops();
-    await expect(o.personaDelete("the upstream format")).rejects.toThrow(/内置/);
+    await expect(o.personaDelete("anthropic-cli")).rejects.toThrow(/内置/);
     writeWorkspacePersona("team-persona", {
       id: "team-persona",
       displayName: "Team",
@@ -230,7 +230,7 @@ describe("settingsSet persona.id (the 8th writable key)", () => {
   });
 
   it("a builtin id is a valid value too (defaults may pin builtins)", async () => {
-    await expect(ops().settingsSet("persona.id", "the upstream format")).resolves.toEqual({ key: "persona.id", saved: true });
+    await expect(ops().settingsSet("persona.id", "anthropic-cli")).resolves.toEqual({ key: "persona.id", saved: true });
   });
 
   it("an unknown id refuses; a non-string refuses; the whitelist still rejects foreign keys", async () => {
@@ -248,9 +248,9 @@ describe("settingsSet persona.id (the 8th writable key)", () => {
 describe("settingsSet persona.id layer-qualified (id:layers)", () => {
   it("accepts a qualified builtin id; stored verbatim; settingsStatus echoes it", async () => {
     const o = ops();
-    await expect(o.settingsSet("persona.id", "the upstream format:headers")).resolves.toEqual({ key: "persona.id", saved: true });
-    expect(readGlobalDefaultPersonaId(env())).toBe("the upstream format:headers");
-    expect((await o.settingsStatus()).settings.personaId).toBe("the upstream format:headers");
+    await expect(o.settingsSet("persona.id", "anthropic-cli:headers")).resolves.toEqual({ key: "persona.id", saved: true });
+    expect(readGlobalDefaultPersonaId(env())).toBe("anthropic-cli:headers");
+    expect((await o.settingsStatus()).settings.personaId).toBe("anthropic-cli:headers");
   });
 
   it("accepts a \"+\"-joined multi-layer qualified saved-global persona", async () => {
@@ -262,8 +262,8 @@ describe("settingsSet persona.id layer-qualified (id:layers)", () => {
 
   it("rejects bad layer name / empty layer list / unknown id with qualifier — nothing written", async () => {
     const o = ops();
-    await expect(o.settingsSet("persona.id", "the upstream format:bogus")).rejects.toThrow(/persona\.id/);
-    await expect(o.settingsSet("persona.id", "the upstream format:")).rejects.toThrow(/persona\.id/);
+    await expect(o.settingsSet("persona.id", "anthropic-cli:bogus")).rejects.toThrow(/persona\.id/);
+    await expect(o.settingsSet("persona.id", "anthropic-cli:")).rejects.toThrow(/persona\.id/);
     await expect(o.settingsSet("persona.id", "ghost-persona:headers")).rejects.toThrow(/persona\.id/);
     expect(readGlobalDefaultPersonaId(env())).toBeUndefined();
   });
@@ -287,8 +287,8 @@ describe("settingsSaveProvider persona layer-qualified (id:layers)", () => {
     const regOps = createProviderRegistryOps({ env: env(), workspaceRoot: root });
     await regOps.settingsSaveProvider("my-gw", { baseUrl: "https://gw.example.com/v1", persona: "alpha:headers" });
     expect(readProviderPersonaBinding("my-gw", env())).toBe("alpha:headers");
-    await regOps.settingsSaveProvider("my-gw", { baseUrl: "https://gw.example.com/v1", persona: "the upstream format:prompt+headers" });
-    expect(readProviderPersonaBinding("my-gw", env())).toBe("the upstream format:prompt+headers");
+    await regOps.settingsSaveProvider("my-gw", { baseUrl: "https://gw.example.com/v1", persona: "anthropic-cli:prompt+headers" });
+    expect(readProviderPersonaBinding("my-gw", env())).toBe("anthropic-cli:prompt+headers");
     // 三态不变：null = 强制无；键缺省 = 跟随全局。
     await regOps.settingsSaveProvider("my-gw", { baseUrl: "https://gw.example.com/v1", persona: null });
     expect(readProviderPersonaBinding("my-gw", env())).toBeNull();
