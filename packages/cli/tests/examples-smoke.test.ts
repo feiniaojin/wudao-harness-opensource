@@ -14,7 +14,7 @@ import { loadRoleProfiles } from "../src/agents/index.js";
 const EXAMPLES_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "examples");
 
 describe("examples/ (M40) load through the real loaders", () => {
-  it.skip("examples/extensions/*.mjs all load and register their advertised surface", async () => {
+  it("examples/extensions/*.mjs all load and register their advertised surface", async () => {
     const ws = await mkdtemp(join(tmpdir(), "wudao-examples-ext-"));
     await mkdir(join(ws, ".wudao", "extensions"), { recursive: true });
     const files = (await readdir(join(EXAMPLES_ROOT, "extensions"))).filter((f) => f.endsWith(".mjs")).sort();
@@ -40,7 +40,7 @@ describe("examples/ (M40) load through the real loaders", () => {
     expect(out.content).toContain("echo: hi");
   });
 
-  it.skip("examples/plugins/demo loads as a --plugin mount: skill + command + two translated agents", async () => {
+  it("examples/plugins/demo loads as a --plugin mount: skill + command + two translated agents", async () => {
     const ws = await mkdtemp(join(tmpdir(), "wudao-examples-plugin-"));
     const warnings: string[] = [];
     const plugins = loadPlugins(ws, [join(EXAMPLES_ROOT, "plugins", "demo")], (m) => void warnings.push(m));
@@ -68,7 +68,7 @@ describe("examples/ (M40) load through the real loaders", () => {
     expect(roster.shadowed).toEqual([]);
   });
 
-  it.skip("examples/agents/*.json are valid roster profiles", async () => {
+  it("examples/agents/*.json are valid roster profiles", async () => {
     const ws = await mkdtemp(join(tmpdir(), "wudao-examples-roles-"));
     await mkdir(join(ws, ".wudao", "agents"), { recursive: true });
     await cp(join(EXAMPLES_ROOT, "agents"), join(ws, ".wudao", "agents"), { recursive: true });

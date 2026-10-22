@@ -23,8 +23,11 @@ const SKILLS_ROOT = join(BUNDLE_DIR, "skills");
  *  must re-run this pin, not silent drift). */
 const PINNED_NAMES = ["acceptance-first", "code-map", "diff-replay", "repo-survey"] as const;
 
-describe("ω99-20A C2 — the repo copy loads through the REAL loader", () => {
-  it.skip("exactly four skills, names pinned verbatim, zero loader warnings, non-empty descriptions", () => {
+// Distribution guard: the migration bundle is internal tooling the
+// opensource distribution does not ship; run where it exists.
+const shipped = existsSync(BUNDLE_DIR);
+(shipped ? describe : describe.skip)("ω99-20A C2 — the repo copy loads through the REAL loader", () => {
+  it("exactly four skills, names pinned verbatim, zero loader warnings, non-empty descriptions", () => {
     expect(existsSync(SKILLS_ROOT), `bundle source root missing: ${SKILLS_ROOT}`).toBe(true);
     const warn: string[] = [];
     // the same seam production uses for a bundle root (origin "project",
@@ -39,8 +42,8 @@ describe("ω99-20A C2 — the repo copy loads through the REAL loader", () => {
   });
 });
 
-describe("ω99-20A — frontmatter contract (red line 2)", () => {
-  it.skip("each SKILL.md carries ONLY name + description — no mcp key, no extra fields", () => {
+(shipped ? describe : describe.skip)("ω99-20A — frontmatter contract (red line 2)", () => {
+  it("each SKILL.md carries ONLY name + description — no mcp key, no extra fields", () => {
     for (const name of PINNED_NAMES) {
       const text = readFileSync(join(SKILLS_ROOT, name, "SKILL.md"), "utf8");
       const lines = text.split(/\r?\n/);
@@ -62,8 +65,8 @@ describe("ω99-20A — frontmatter contract (red line 2)", () => {
   });
 });
 
-describe("ω99-20A — structural honesty (no bundle.json, clean skill dirs)", () => {
-  it.skip("the pack ships no bundle.json, so declare can never hit the mcp gate; each skill dir is exactly one SKILL.md", () => {
+(shipped ? describe : describe.skip)("ω99-20A — structural honesty (no bundle.json, clean skill dirs)", () => {
+  it("the pack ships no bundle.json, so declare can never hit the mcp gate; each skill dir is exactly one SKILL.md", () => {
     expect(existsSync(join(BUNDLE_DIR, "bundle.json"))).toBe(false);
     for (const entry of readdirSync(SKILLS_ROOT, { withFileTypes: true })) {
       expect(entry.name, "only skill directories live under skills/").not.toBe("bundle.json");
@@ -74,8 +77,8 @@ describe("ω99-20A — structural honesty (no bundle.json, clean skill dirs)", (
   });
 });
 
-describe("ω99-20A — body budget (brief §2.1: each skill ≤ 120 lines)", () => {
-  it.skip("every SKILL.md stays within the 120-line cap", () => {
+(shipped ? describe : describe.skip)("ω99-20A — body budget (brief §2.1: each skill ≤ 120 lines)", () => {
+  it("every SKILL.md stays within the 120-line cap", () => {
     for (const name of PINNED_NAMES) {
       const lineCount = readFileSync(join(SKILLS_ROOT, name, "SKILL.md"), "utf8").split(/\r?\n/).length;
       expect(lineCount, `${name}: ${lineCount} lines > 120`).toBeLessThanOrEqual(120);
