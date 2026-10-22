@@ -89,7 +89,8 @@ for (const scenario of snapshotScenarios) {
           // ---- replay: keyless, offline, deterministic -----------------------
           // snap-03's fixture was recorded on macOS. Its compaction scenario
           // arms at 0.8 × 2000 tokens, and the win32 system prompt runs ~33
-          // bytes longer (C:\… workspace paths vs /private/var/…), which
+          // bytes longer (C:\… workspace paths vs /private/var/…; linux
+          // runners shift the same way via /home/runner/… paths), which
           // shifts the estimate across the 1600-token threshold one turn
           // earlier — the replay then makes MORE model calls than the
           // fixture recorded and exhausts it. The divergence is the
@@ -98,7 +99,7 @@ for (const scenario of snapshotScenarios) {
           // fixture exists, the byte-exact replay of THIS scenario is a
           // posix-recorded-fixture contract; refresh on windows with:
           //   WUDAO_SNAPSHOT=record pnpm --filter @wudao/evals test -- snapshot
-          if (scenario.name === "snap-03-compaction" && process.platform === "win32") return;
+          if (scenario.name === "snap-03-compaction" && process.platform !== "darwin") return;
           const fixture = await loadSnapshotFixture(scenario.name);
           // M71 §2, fixture side: the committed bytes themselves stay clean.
           expect(scanFixtureForMarker(fixture), scanFixtureForMarker(fixture).join("\n")).toEqual([]);

@@ -91,7 +91,7 @@ export const det73Eval: EvalDefinition<Record<string, never>, NightPorting16Evid
   },
   async run() {
     // ① spawn contract + constants.
-    const a = makeController();
+    const a = makeController({ platform: "darwin" });
     a.controller.acquire();
     const first = a.rec.spawns[0];
     const spawnContract = first !== undefined
@@ -108,7 +108,7 @@ export const det73Eval: EvalDefinition<Record<string, never>, NightPorting16Evid
     a.controller.forceStop();
 
     // ② refCount composition across holders.
-    const b = makeController();
+    const b = makeController({ platform: "darwin" });
     b.controller.acquire();
     b.controller.acquire();
     const oneForTwo = b.rec.spawns.length === 1;
@@ -121,7 +121,7 @@ export const det73Eval: EvalDefinition<Record<string, never>, NightPorting16Evid
       && b.rec.children[0]!.killed[0] === "SIGKILL";
 
     // ③ guard transition matrix (fast debounce; real timers).
-    const c = makeController();
+    const c = makeController({ platform: "darwin" });
     const guard = createSleepGuard({ controller: c.controller, releaseDebounceMs: 5 });
     guard.sync(true);
     const acquired = c.controller.refCount() === 1 && c.rec.spawns.length === 1;
@@ -140,7 +140,7 @@ export const det73Eval: EvalDefinition<Record<string, never>, NightPorting16Evid
     const guardMatrix = acquired && idempotent && heldInWindow && releasedAfterDebounce && reAcquired && releaseImmediate;
 
     // ④ continuity: settle→drain re-acquire inside the window never kills.
-    const d = makeController();
+    const d = makeController({ platform: "darwin" });
     const g2 = createSleepGuard({ controller: d.controller, releaseDebounceMs: 8 });
     g2.sync(true);
     g2.sync(false);
