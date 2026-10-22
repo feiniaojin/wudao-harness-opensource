@@ -232,3 +232,5 @@ export type {
 } from "./persona/types.js";
 
 export const PACKAGE_NAME = "@wudao/providers";
+export { PERSONA_IDS } from "./persona/ids.js";
+export type { PersonaId } from "./persona/ids.js";

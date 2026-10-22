@@ -82,7 +82,7 @@ afterEach(() => {
   delete (navigator as { clipboard?: unknown }).clipboard;
 });
 
-const ROOT = "~/xdev/github/wudao-harness";
+const ROOT = "/Users/qinyujie/xdev/github/wudao-harness";
 
 // 墨线 T14: the menu family's raw-sheet pins (cssstyle drops var()-bearing
 // shorthands, so surface/radius/height ride regexes off the source).
@@ -253,7 +253,7 @@ describe("FileTree context menus (M76-ux2 §6)", () => {
   });
 
   // ω99-163 — the reveal item's contract, RED-first:
-  it.skip("在访达中显示 invokes reveal_path with the panel root joined path", async () => {
+  it("在访达中显示 invokes reveal_path with the panel root joined path", async () => {
     vi.mocked(tauriInvokeCommand).mockClear();
     const c = mount(
       <FileTree client={treeClient({ "": [{ name: "README.md", type: "file" }] })}
