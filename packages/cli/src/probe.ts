@@ -198,7 +198,7 @@ export function openProbeAudit(bus: UiProbeBusPort, path: string): ProbeAuditSin
   // The directory create HEADS the write chain: as a fire-and-forget it raced
   // the first event's appendFile (slow CI fs: append hit ENOENT before mkdir
   // landed — the catch swallowed it and the audit silently lost the event).
-  let tail: Promise<void> = mkdir(dirname(path), { recursive: true }).catch(() => {});
+  let tail: Promise<void> = mkdir(dirname(path), { recursive: true }).then(() => undefined, () => {});
   const unsubscribe = bus.subscribe("*", (e) => {
     tail = tail.then(() => appendFile(path, `${JSON.stringify(e)}\n`, "utf8")).catch(() => {});
   });
