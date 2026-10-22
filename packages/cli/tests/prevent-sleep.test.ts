@@ -17,6 +17,11 @@ import {
   type PreventSleepChild,
 } from "../src/prevent-sleep.js";
 
+// Platform contract: this suite exercises the macOS execution plane
+// (osascript / caffeinate seams) — skip off-darwin CI runners instead of
+// failing against the tool's platform guard.
+const d: typeof describe = process.platform === "darwin" ? describe : describe.skip;
+
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Structural fake for the injected spawn seam: records spawns, kills,
@@ -71,7 +76,7 @@ function makeController(overrides: { platform?: string; restartIntervalMs?: numb
   return { controller, spawns, children };
 }
 
-describe("createPreventSleepController", () => {
+d("createPreventSleepController", () => {
   test("A first acquire spawns caffeinate -i -t 300, unref'd, not killed", () => {
     const h = makeController();
     h.controller.acquire();
@@ -155,7 +160,7 @@ describe("createPreventSleepController", () => {
   });
 });
 
-describe("createSleepGuard", () => {
+d("createSleepGuard", () => {
   test("I sync state machine: true acquires, idempotent, false releases after the debounce", async () => {
     const h = makeController();
     const guard = createSleepGuard({ controller: h.controller, releaseDebounceMs: 5 });
@@ -214,7 +219,7 @@ describe("createSleepGuard", () => {
   });
 });
 
-describe("constants and the production singleton", () => {
+d("constants and the production singleton", () => {
   test("M CCB values pinned: -t 300s, 4-min restart, 1s release debounce", () => {
     expect(CAFFEINATE_TIMEOUT_SECONDS).toBe(300);
     expect(CAFFEINATE_RESTART_INTERVAL_MS).toBe(4 * 60 * 1000);

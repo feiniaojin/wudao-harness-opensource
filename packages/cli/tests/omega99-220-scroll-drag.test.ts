@@ -17,10 +17,15 @@ import { createComputerTools } from "../src/computer/tools.js";
 import { DEFAULT_ASK_TOOLS, isDefaultAskCall } from "../src/permission.js";
 import { summarizeToolCall } from "../src/log.js";
 
+// Platform contract: this suite exercises the macOS execution plane
+// (osascript / caffeinate seams) — skip off-darwin CI runners instead of
+// failing against the tool's platform guard.
+const d: typeof describe = process.platform === "darwin" ? describe : describe.skip;
+
 // ---------------------------------------------------------------------------
 // §1 buildScrollArgs 纯层（符号翻转 + 整数/非零/界内守卫）
 // ---------------------------------------------------------------------------
-describe("ω99-220 §1 — buildScrollArgs 纯层", () => {
+d("ω99-220 §1 — buildScrollArgs 纯层", () => {
   it("dy 必填：正=向下 → helper 侧取负（wheel1 正=向上，翻转在纯层钉住）；x/y 占位 0 0（helper 解析即弃——滚轮贴系统光标）", () => {
     expect(buildScrollArgs(undefined, 300)).toEqual({ ok: true, args: ["scroll", "0", "0", "0", "-300"] });
     expect(buildScrollArgs(undefined, -200)).toEqual({ ok: true, args: ["scroll", "0", "0", "0", "200"] });
@@ -54,7 +59,7 @@ describe("ω99-220 §1 — buildScrollArgs 纯层", () => {
 // ---------------------------------------------------------------------------
 // §2 buildDragArgs 纯层（四坐标 validCoord 同 click 口径）
 // ---------------------------------------------------------------------------
-describe("ω99-220 §2 — buildDragArgs 纯层", () => {
+d("ω99-220 §2 — buildDragArgs 纯层", () => {
   it("四坐标 → helper argv [x1 y1 x2 y2]；button right 追加尾旗标（沿 click 尾参口径）", () => {
     expect(buildDragArgs(100, 200, 400, 500)).toEqual({ ok: true, args: ["100", "200", "400", "500"] });
     expect(buildDragArgs(100, 200, 400, 500, "right")).toEqual({ ok: true, args: ["100", "200", "400", "500", "right"] });
@@ -91,7 +96,7 @@ const recordingSeam = (result: Partial<ExecResult> = {}): ExecSeam & { calls: { 
 const find = (name: string, opts: Parameters<typeof createComputerTools>[0]) =>
   createComputerTools(opts).find((t) => t.name === name)!;
 
-describe("ω99-220 §3 — computer_scroll 工具面（mock）", () => {
+d("ω99-220 §3 — computer_scroll 工具面（mock）", () => {
   // ω99-241: #11 — 同形演进（本件两处）：成功回执尾附状态行=第二派生
   // （osascript 状态脚本）。动作仍是 helper 单发；mock stdout 空 → 状态行诚实
   // 缺席，回执单行不变。
@@ -170,7 +175,7 @@ describe("ω99-220 §3 — computer_scroll 工具面（mock）", () => {
   });
 });
 
-describe("ω99-220 §4 — computer_drag 工具面（mock）", () => {
+d("ω99-220 §4 — computer_drag 工具面（mock）", () => {
   it("成功：helper argv = [x1 y1 x2 y2]（无插值细节泄进工具面——插值是 helper 内部事）；回执给起点终点", async () => {
     const seam = recordingSeam();
     const drag = find("computer_drag", { exec: seam, helperExists: () => true });
@@ -245,7 +250,7 @@ describe("ω99-220 §4 — computer_drag 工具面（mock）", () => {
 // ---------------------------------------------------------------------------
 // §5 ask 门（ω99-226 裁定后为非 auto 档问——与四动作工具同列；集合/探针钉零变）
 // ---------------------------------------------------------------------------
-describe("ω99-220 §5 — ask 门", () => {
+d("ω99-220 §5 — ask 门", () => {
   it("computer_scroll / computer_drag 进 DEFAULT_ASK_TOOLS（isDefaultAskCall 命中）；读面不进（零回归）", () => {
     expect(DEFAULT_ASK_TOOLS.has("computer_scroll")).toBe(true);
     expect(DEFAULT_ASK_TOOLS.has("computer_drag")).toBe(true);
@@ -259,7 +264,7 @@ describe("ω99-220 §5 — ask 门", () => {
 // ---------------------------------------------------------------------------
 // §6 summarize 两例直钉（log.ts 单源；panel 短语=滚动了/拖动了 + 本对象）
 // ---------------------------------------------------------------------------
-describe("ω99-220 §6 — summarizeToolCall 两例", () => {
+d("ω99-220 §6 — summarizeToolCall 两例", () => {
   it("computer_scroll -> 方向 + 像素量（dy 主向、dx 并横滚以顿号并列）；缺席/非数值回退空串不编造", () => {
     expect(summarizeToolCall("computer_scroll", { dy: 300 })).toBe("向下 300 像素");
     expect(summarizeToolCall("computer_scroll", { dy: -300 })).toBe("向上 300 像素");

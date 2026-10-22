@@ -18,6 +18,11 @@ import {
 import { createComputerTools } from "../src/computer/tools.js";
 import { createOpenAICompatibleProvider } from "@wudao/providers";
 
+// Platform contract: this suite exercises the macOS execution plane
+// (osascript / caffeinate seams) — skip off-darwin CI runners instead of
+// failing against the tool's platform guard.
+const d: typeof describe = process.platform === "darwin" ? describe : describe.skip;
+
 // ---------------------------------------------------------------------------
 // 缝 mock：一次缝四角色（screencapture / sips -g / sips -Z / osascript JXA），
 // 全程零真派生。sips -g 的「原始尺寸→缩后输出尺寸」按 -Z 是否已发生分流；
@@ -96,7 +101,7 @@ const helperCalls = (seam: { calls: { file: string; args: string[] }[] }) =>
 // ---------------------------------------------------------------------------
 // R1 缩放链：统一缩放 + 实测尺寸链（绝不假设 2x）
 // ---------------------------------------------------------------------------
-describe("ω99-244 R1 — capture 规范分辨率链（全 mock）", () => {
+d("ω99-244 R1 — capture 规范分辨率链（全 mock）", () => {
   it("长边超限 → sips 三段链 argv 钉：-g 实测 → -Z 1280 原地缩 → -g 实测输出；回执尺寸行逐字（全角括号/乘号）", async () => {
     const seam = coordinateSeam({ rawW: 2880, rawH: 1800, outW: 1280, outH: 800, screenW: 1440, screenH: 900 });
     const cap = toolset(seam).find((t) => t.name === "screen_capture")!;
@@ -172,7 +177,7 @@ describe("ω99-244 R1 — capture 规范分辨率链（全 mock）", () => {
 // R2 换算：有基准时 click/scroll/drag 的 helper argv 含换算后屏幕点
 // （数例钉死：屏 1440 点 / capture 输出宽 1280 → scale=1.125；640 → 720）
 // ---------------------------------------------------------------------------
-describe("ω99-244 R2 — 动作坐标换算（模型永不知 DPR）", () => {
+d("ω99-244 R2 — 动作坐标换算（模型永不知 DPR）", () => {
   /** 一套已 capture 的工具集（2880×1800 → 1280×800，主屏 1440×900 → scale=1.125）。 */
   const scaled = (): { seam: ReturnType<typeof coordinateSeam>; tools: ReturnType<typeof toolset> } => {
     const seam = coordinateSeam({ rawW: 2880, rawH: 1800, outW: 1280, outH: 800, screenW: 1440, screenH: 900 });
@@ -245,7 +250,7 @@ describe("ω99-244 R2 — 动作坐标换算（模型永不知 DPR）", () => {
 // ---------------------------------------------------------------------------
 // R3 无基准直通：零 capture 会话坐标按现状直通（屏幕点语义）——回执不动、不报错
 // ---------------------------------------------------------------------------
-describe("ω99-244 R3 — 无基准直通（现状语义零漂移）", () => {
+d("ω99-244 R3 — 无基准直通（现状语义零漂移）", () => {
   it("click (42,99) → argv 原值；scroll dy=300 → 现状 argv；drag 四坐标原值；零 sips/JXA 派生", async () => {
     const seam = coordinateSeam();
     const tools = toolset(seam);
@@ -271,7 +276,7 @@ describe("ω99-244 R3 — 无基准直通（现状语义零漂移）", () => {
 // ---------------------------------------------------------------------------
 // R4 口径：三工具描述进「最近一次 screen_capture 输出图」契约；零「折半」残留；M24 声明在代码注释
 // ---------------------------------------------------------------------------
-describe("ω99-244 R4 — 坐标口径（描述改写）", () => {
+d("ω99-244 R4 — 坐标口径（描述改写）", () => {
   it("click/scroll/drag 描述含「最近一次 screen_capture 输出图」；八件描述与参数描述全扫零「折半」零「2 倍像素」零 halve", () => {
     const tools = createComputerTools();
     const byName = new Map(tools.map((t) => [t.name, t]));
@@ -320,7 +325,7 @@ const carriersOf = (body: Record<string, unknown>): Record<string, unknown>[][] 
     .map((m) => m["content"] as Record<string, unknown>[])
     .filter((parts) => (parts[0] as { text?: string })?.text === "Attached image(s) from tool result:");
 
-describe("ω99-244 R5 — 截图史投影桩（只留最近 N=3，投影不删史）", () => {
+d("ω99-244 R5 — 截图史投影桩（只留最近 N=3，投影不删史）", () => {
   it("4 张 tool 截图 → 最近 3 张 image_url、最旧一张桩逐字「[更早的截图已略：仅保留最近 3 张]」；桩图字节零解析", async () => {
     const cap = captureFetch();
     const resolved: string[] = [];
@@ -365,7 +370,7 @@ describe("ω99-244 R5 — 截图史投影桩（只留最近 N=3，投影不删�
 // ---------------------------------------------------------------------------
 // R6 红线账本：删除调用面恒等（本弧零新增）+ 本件零删除调用；exec 全 mock（R1-R5 即证）
 // ---------------------------------------------------------------------------
-describe("ω99-244 R6 — 红线账本（开发/测试禁删用户文件）", () => {
+d("ω99-244 R6 — 红线账本（开发/测试禁删用户文件）", () => {
   it("computer 两源件删除 API 面：exec.ts 恒 0；tools.ts unlink 恒 6（import + capture 自清 + win32 层 8ca40407 三处 tmpdir 自清）；无 rmSync/rmdir/fs.rm", async () => {
     const execSrc = await readFile(fileURLToPath(new URL("../src/computer/exec.ts", import.meta.url)), "utf8");
     const toolsSrc = await readFile(fileURLToPath(new URL("../src/computer/tools.ts", import.meta.url)), "utf8");

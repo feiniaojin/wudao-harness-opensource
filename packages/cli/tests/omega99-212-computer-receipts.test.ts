@@ -24,10 +24,15 @@ import {
 } from "../src/computer/exec.js";
 import { createComputerTools } from "../src/computer/tools.js";
 
+// Platform contract: this suite exercises the macOS execution plane
+// (osascript seams) — skip off-darwin CI runners instead of failing
+// against the tool's platform guard.
+const d: typeof describe = process.platform === "darwin" ? describe : describe.skip;
+
 // ---------------------------------------------------------------------------
 // §1 AppleScript 构造（type/key/activate 的脚本文本 + 转义正确性）
 // ---------------------------------------------------------------------------
-describe("ω99-212 §1 — AppleScript 构造", () => {
+d("ω99-212 §1 — AppleScript 构造", () => {
   it("type：单块文本 → keystroke 脚本；中文原样进字面量", () => {
     const clean = sanitizeTypingText("你好，世界");
     expect(clean.ok).toBe(true);
@@ -73,7 +78,7 @@ describe("ω99-212 §1 — AppleScript 构造", () => {
 // ---------------------------------------------------------------------------
 // §2 注入防线（app 名/键码白名单）
 // ---------------------------------------------------------------------------
-describe("ω99-212 §2 — 注入防线", () => {
+d("ω99-212 §2 — 注入防线", () => {
   it("app 名含引号与换行 → 转义后单行安全（字面量不可逃逸）", () => {
     const evil = 'Ev"il\nApp';
     const escaped = applescriptEscape(evil);
@@ -106,7 +111,7 @@ describe("ω99-212 §2 — 注入防线", () => {
 // ---------------------------------------------------------------------------
 // §3 长文分块（>120 切块、块序正确、CJK 不劈 surrogate）
 // ---------------------------------------------------------------------------
-describe("ω99-212 §3 — 长文分块", () => {
+d("ω99-212 §3 — 长文分块", () => {
   it("恰 120 字符一块；121 → 两块；块序拼接还原原文", () => {
     const exact = "a".repeat(TYPE_CHUNK_CHARS);
     expect(chunkTypingText(exact)).toHaveLength(1);
@@ -147,7 +152,7 @@ import { DEFAULT_ASK_TOOLS, isDefaultAskCall, decidePermission, PLAN_DENY_REASON
 
 const NAMES = ["screen_capture", "computer_type", "computer_key", "computer_click", "app_activate", "app_list", "computer_scroll", "computer_drag", "screen_observe", "computer_wait"] as const;
 
-describe("ω99-212 §4 — 权限默认矩阵", () => {
+d("ω99-212 §4 — 权限默认矩阵", () => {
   const tools = createComputerTools();
   const byName = new Map(tools.map((t) => [t.name, t]));
 
@@ -222,7 +227,7 @@ const fakeStore = (): { saveImages: (inputs: readonly { data: string; mediaType:
   };
 };
 
-describe("ω99-212 §5 — 执行面（mock）", () => {
+d("ω99-212 §5 — 执行面（mock）", () => {
   // ω99-241: #10 — 同形演进：成功回执尾附状态行=第二派生（osascript 状态脚
   // 本）。动作仍是单发；mock stdout 空 → 状态行诚实缺席，回执单行不变。
   it("type：osascript 动作单发、-e 载脚本文本；成功收据给字符数", async () => {
@@ -406,7 +411,7 @@ describe("ω99-212 §5 — 执行面（mock）", () => {
 });
 
 // 键码表抽样（cmd+c=8 / return=36 / tab=48 / 箭头四向）——防表错位。
-describe("ω99-212 附录 — 键码表抽样", () => {
+d("ω99-212 附录 — 键码表抽样", () => {
   it("常用键码钉住", () => {
     expect(resolveKeyCombo("c").ok && (resolveKeyCombo("c") as { keyCode: number }).keyCode).toBe(8);
     expect(resolveKeyCombo("return").ok && (resolveKeyCombo("return") as { keyCode: number }).keyCode).toBe(36);
@@ -422,7 +427,7 @@ import { buildToolSet } from "../src/tools.js";
 const stubModel = { stream: async function* () { /* never invoked */ } } as unknown as never;
 const gate = async (): Promise<{ behavior: "allow" }> => ({ behavior: "allow" });
 
-describe("ω99-212 — buildToolSet 挂载", () => {
+d("ω99-212 — buildToolSet 挂载", () => {
   it("零配置 always-on：十工具钉在 make_docx 之后、task 之前（ω99-220 演进——尾后两员；ω99-247 演进——screen_observe 插在 computer_drag 后、read_xlsx 前，doc 名册整体顺移一位；ω99-250 演进——computer_wait 插在 screen_observe 后、read_xlsx 前，doc 名册整体再顺移一位；ω99-221 演进——read_xlsx 插在九件后；ω99-222 演进——read_docx/read_pptx 插在 read_xlsx 后；ω99-223 演进——append_docx/append_pptx 插在 read_pptx 后；ω99-228 演进——append_xlsx 插在 append_pptx 后；ω99-229 演进——replace_docx/replace_pptx 插在 append_xlsx 后；ω99-231 演进——replace_xlsx 插在 replace_pptx 后；ω99-238 演进——set_docx_header/set_pptx_notes 插在 replace_xlsx 后，task 再顺移两位）", () => {
     const names = buildToolSet({ workspaceRoot: "/tmp/ws", model: stubModel, canUseTool: gate, contextWindowTokens: 64_000 }).map((t) => t.name);
     expect(names.indexOf("screen_capture")).toBe(names.indexOf("make_docx") + 1);

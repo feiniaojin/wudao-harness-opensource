@@ -17,6 +17,11 @@ import {
   COMPUTER_STRATEGY_SECTION,
 } from "../src/prompt.js";
 
+// Platform contract: this suite exercises the macOS execution plane
+// (osascript / caffeinate seams) — skip off-darwin CI runners instead of
+// failing against the tool's platform guard.
+const d: typeof describe = process.platform === "darwin" ? describe : describe.skip;
+
 // ---------------------------------------------------------------------------
 // 缝 mock：动作与状态行按调用形状分流（状态脚本唯一带 AXFocusedUIElement；
 // click/scroll/drag 的动作走 helper 路径，type/key/activate 的动作是
@@ -46,7 +51,7 @@ const FULL_LINE = "当前状态：Safari · 窗口「Google」 · 焦点：文�
 // ---------------------------------------------------------------------------
 // R1-纯层：状态脚本 / 解析 / 行形
 // ---------------------------------------------------------------------------
-describe("ω99-241 R1 纯层 — 状态行三件", () => {
+d("ω99-241 R1 纯层 — 状态行三件", () => {
   it("buildStatusScript 钉住：System Events 前台进程 + 窗口 1 标题 + AXFocusedUIElement 角色，一次 osascript", () => {
     const s = buildStatusScript();
     expect(s).toContain('tell application "System Events"');
@@ -112,7 +117,7 @@ describe("ω99-241 R1 纯层 — 状态行三件", () => {
 // ---------------------------------------------------------------------------
 // R1-工具面：六动作面尾附状态行（全 mock——★零真实键鼠/截屏/osascript）
 // ---------------------------------------------------------------------------
-describe("ω99-241 R1 工具面 — 六动作面状态行", () => {
+d("ω99-241 R1 工具面 — 六动作面状态行", () => {
   it("click：成功回执尾新行状态行；状态是第二次派生（helper → osascript 状态脚本）", async () => {
     const seam = statusSeam({ stdout: FULL });
     const click = find("computer_click", { exec: seam, helperExists: () => true });
@@ -224,7 +229,7 @@ describe("ω99-241 R1 工具面 — 六动作面状态行", () => {
 // ---------------------------------------------------------------------------
 // R2：prompt.ts computer 策略节
 // ---------------------------------------------------------------------------
-describe("ω99-241 R2 — computer 策略节（挂载=computer 工具启用同门）", () => {
+d("ω99-241 R2 — computer 策略节（挂载=computer 工具启用同门）", () => {
   it("节在场：关键守则句逐字（批处理节奏/完成即停/键盘优先/直接导航/何时截图/复杂导航校验）", () => {
     const p = buildSystemPrompt("/tmp/ws", false, [], false, true);
     expect(p).toContain("# Computer operation");
