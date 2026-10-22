@@ -3823,10 +3823,15 @@ describe("AgentDriver — routed /clear (M80)", () => {
     const after = readFileSync(file, "utf8");
     // Append-only: the file grew and every earlier byte is untouched.
     expect(after.startsWith(before)).toBe(true);
-    const lines = after.split("\n").filter((l) => l.trim() !== "");
-    const marker = JSON.parse(lines[lines.length - 1] as string) as { type: string; data: { nextSessionId: string } };
-    expect(marker.type).toBe("clear_boundary");
-    expect(marker.data.nextSessionId).toBe(driver.getSessionId());
+    // T2d sibling: persistence is fire-and-forget — further events may land
+    // after the marker between the length-poll and this read. The boundary
+    // must exist exactly once in the appended region, not necessarily last.
+    const parsed = after.split("\n").filter((l) => l.trim() !== "").map((l) => {
+      try { return JSON.parse(l) as { type?: string; data?: { nextSessionId?: string } }; } catch { return null; }
+    });
+    const markers = parsed.filter((o) => o?.type === "clear_boundary");
+    expect(markers.length).toBe(1);
+    expect(markers[0]?.data?.nextSessionId).toBe(driver.getSessionId());
     // Resume of the PRE-clear id still reaches the old content — the marker
     // never reached the model-visible history.
     const loaded = await store.load("m80clr");
