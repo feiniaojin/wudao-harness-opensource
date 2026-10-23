@@ -17,7 +17,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # Billing: macOS meters at 10x, Windows at 2x. The per-push CI
+        # workflow already runs the full test suite on ubuntu; release runs
+        # tests once on the cheapest runner and spends mac/windows only on
+        # their platform packaging jobs.
+        os: [ubuntu-latest]
         node: [22]
 
     steps:
