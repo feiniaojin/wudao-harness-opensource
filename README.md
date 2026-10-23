@@ -2,6 +2,8 @@
 
 # wudao-harness
 
+English | [简体中文](README.zh-CN.md)
+
 A production-grade **agent harness** in TypeScript — the runtime scaffolding around an LLM (agent loop + tools + context + control).
 
 > Agent = LLM + Context + Tools. The harness is everything on the right side of that equation.
@@ -10,11 +12,12 @@ Built for **reasoning models** (DeepSeek / GLM / Qwen / Kimi / MiniMax) with a p
 
 ## Install
 
-### npm (recommended)
+### Desktop app (recommended)
 
-```bash
-npm install -g wudao-harness
-```
+Download the installer from [Releases](../../releases):
+
+- **macOS** — `Harness_<version>_universal.dmg` (Intel + Apple Silicon)
+- **Linux** — `Harness_<version>_amd64.deb`
 
 ### From source
 
@@ -25,13 +28,10 @@ pnpm install && pnpm build
 npm install -g packages/cli
 ```
 
-### Desktop app (macOS)
-
-Download the `.dmg` from [Releases](../../releases), or build from source:
+### npm
 
 ```bash
-pnpm install && pnpm build
-pnpm desktop:build
+npm install -g wudao-harness   # pending first publish — use a Release or source until it lands
 ```
 
 ## Setup
@@ -113,7 +113,7 @@ wudao --model deepseek-v4-pro "hello"      # specific model
 
 **Computer use** (macOS) — screen observation with stable element IDs, click/type/scroll/drag actions, settle verification (wait for UI to stabilize after actions).
 
-**Extensibility** — skills (markdown task templates), plugins (the upstream format), hooks (pre/post tool call interception), MCP servers, extensions (write TypeScript or Python code that runs inside the harness).
+**Extensibility** — skills (markdown task templates), plugins, hooks (pre/post tool call interception), MCP servers, extensions (write TypeScript or Python code that runs inside the harness).
 
 ## Packages
 
