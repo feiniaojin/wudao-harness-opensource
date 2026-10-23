@@ -227,6 +227,7 @@ jobs:
             release/*
           generate_release_notes: true
           fail_on_unmatched_files: true
+          overwrite_files: true  # re-running a version overwrites its assets instead of colliding
           draft: false
           prerelease: ${{ contains(github.ref, 'rc') || contains(github.ref, 'beta') }}
         env:
