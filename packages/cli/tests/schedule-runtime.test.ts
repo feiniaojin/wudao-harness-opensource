@@ -39,7 +39,7 @@ afterEach(async () => {
 
 const hermeticEnv = (): NodeJS.ProcessEnv => ({ WUDAO_GLOBAL_HOME: globalHome });
 
-describe.skip("113-C1 — 解析面：--runtime 尾缀", () => {
+describe("113-C1 — 解析面：--runtime 尾缀", () => {
   it("parses the tier off every add form and strips it from the prompt", () => {
     const quoted = parseScheduleCommand('add "*/10 * * * *" run the tests --runtime model=glm-5.3-air,effort=low');
     expect(quoted).toEqual({
@@ -48,7 +48,7 @@ describe.skip("113-C1 — 解析面：--runtime 尾缀", () => {
       prompt: "run the tests",
       runtime: { model: "glm-5.3-air", effort: "low" },
     });
-    const at = parseScheduleCommand("add @2026-10-01T03:00 night lint --runtime provider=deepseek,persona=claude-code");
+    const at = parseScheduleCommand("add @2026-10-01T03:00 night lint --runtime provider=deepseek,persona=anthropic-cli");
     expect(at.kind).toBe("add");
     if (at.kind === "add") {
       expect(at.prompt).toBe("night lint");

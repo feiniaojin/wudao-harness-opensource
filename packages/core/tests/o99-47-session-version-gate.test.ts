@@ -1,4 +1,4 @@
-// ω99-47 — session file version gate (the upstream projectC4 soft marker + the upstream formatcandidate 3
+// ω99-47 — session file version gate (pi C4 soft marker + dsh candidate 3
 // read/write gate). The store's first write stamps a `wudao_meta` generic
 // entry as line 1 (append-only friendly: old binaries skip it as an unknown
 // entry, forks byte-copy it); a file whose marker names a NEWER format

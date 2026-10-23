@@ -10,7 +10,7 @@ const cfg = { apiKey: "sk-an", baseURL: "https://api.anthropic.com", model: "cla
 const ccPersona: PersonaDefinition = {
   id: "cc-test", displayName: "CC",
   source: { kind: "workspace-source", provenance: "t", pinnedVersion: "1" },
-  headers: { anthropic: { "anthropic-version": "2023-06-01", "user-agent": "claude-cli/2.1.0 (external, cli)", "x-when": "{{iso8601}}" } },
+  headers: { anthropic: { "anthropic-version": "2023-06-01", "user-agent": "wudao-harness/2.1.0 (external, cli)", "x-when": "{{iso8601}}" } },
   body: { anthropic: { max_tokens: 777, thinking: { type: "enabled", budget_tokens: 2048 } } },
 };
 const seeded = { sessionId: "s1", uuid: () => "u1", now: () => new Date("2026-08-23T00:00:00.000Z") };
@@ -77,7 +77,7 @@ describe("anthropic generate", () => {
     const h = cap[0].init.headers as Record<string, string>;
     expect(h["x-api-key"]).toBe("sk-an");
     expect(h["anthropic-version"]).toBe("2023-06-01");
-    expect(h["user-agent"]).toBe("claude-cli/2.1.0 (external, cli)");
+    expect(h["user-agent"]).toBe("wudao-harness/2.1.0 (external, cli)");
     expect(h["x-when"]).toBe("2026-08-23T00:00:00.000Z");
     expect(h["authorization"]).toBeUndefined();
     const body = JSON.parse(cap[0].init.body as string);

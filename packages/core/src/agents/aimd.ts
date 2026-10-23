@@ -1,4 +1,4 @@
-// 121 项 1（the upstream format 498490680 + the upstream project 5362cf300 形）— AIMD 速率自适
+// 121 项 1（a reference harness 498490680 + prime-agent 5362cf300 形）— AIMD 速率自适
 // 应并发门：把 429/overload 从「人肉调参信号」变成「容量控制信号」。静态
 // 并发帽（registry 的 maxConcurrent）不能感知 provider 状态——429 风暴时该
 // 收敛、空闲时该扩张；quota-park 是停泊版（二进制：停/不停），本模块补的是

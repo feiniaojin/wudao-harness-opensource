@@ -1,4 +1,4 @@
-// M36: the upstream harness plugin compatibility. A plugin = a directory with
+// M36: Claude Code plugin compatibility. A plugin = a directory with
 // `.claude-plugin/plugin.json` ({name, version?, description?}). Discovery
 // (A2): `.wudao/plugins/<dir>/` (project scope) + `<globalHome>/plugins/<dir>/`
 // (user scope, after the project root) + `--plugin <path>` (one-shot mount);
@@ -61,7 +61,7 @@ export interface PluginCommand {
   readonly plugin: string;
 }
 
-/** An `agents/<name>.md` the upstream formatagent translated to our roster: frontmatter
+/** An `agents/<name>.md` CC agent translated to our roster: frontmatter
  *  name/description/tools?/model? + the markdown body as systemPrompt. */
 export interface PluginAgent {
   /** The translated profile (id = the frontmatter name). */
@@ -84,6 +84,11 @@ export interface LoadedPlugin {
    *  Stamped onto the plugin's skills as pluginScope, where it keys the
    *  dynamic-injection trust tier (skill-expand.skillInjectionTrusted). */
   readonly scope: "project" | "user" | "flag";
+  /** plugin-compat：清单格式。absent ≡ "claude-plugin"（M36 既有路径的
+   *  缺省）；"ccb-family" = 上游包格式（package.json 声明，经
+   *  plugin-compat 归一化装载）。仅供 `plugin list --json`/回执展示与测
+   *  试钉 — 不参与任何装载语义。 */
+  readonly format?: PluginFormat;
   readonly skills: readonly LoadedSkill[];
   readonly commands: readonly PluginCommand[];
   /** M40: translated agents/*.md — collected into the roster's plugin layer
@@ -102,6 +107,12 @@ export interface LoadedPlugin {
 // ---------------------------------------------------------------------------
 export { isBuiltinCommandName, parseAgentFrontmatter, mapAgentModel, HOOK_EVENT_MAP, isDir } from "./plugin-loaders.js";
 export type { ParsedAgentFrontmatter } from "./plugin-loaders.js";
+// plugin-compat：多格式声明门面 — 格式类型 + 上游包格式装载器 + 名字/
+// frontmatter 归一化纯函数（marketplace/命令面从这里取，不直连 compat 模块）。
+export { loadCcbFamilyPlugin, isCcbFamilyManifest, ccbPluginName, normalizeCcbSkillFrontmatter } from "./plugin-compat.js";
+export type { PluginFormat } from "./plugin-compat.js";
+import { loadCcbFamilyPlugin } from "./plugin-compat.js";
+import type { PluginFormat } from "./plugin-compat.js";
 import {
   isBuiltinCommandName, loadPluginSkills, loadPluginCommands, loadPluginAgents,
   loadPluginMcp, loadPluginHooks, scanUnsupportedAssets, isDir,
@@ -266,11 +277,16 @@ function loadOnePlugin(
   scope: "project" | "user" | "flag",
 ): LoadedPlugin | undefined {
   const manifestPath = join(dir, ".claude-plugin", "plugin.json");
-  let text: string | undefined;
+  let text: string;
   try {
     text = readFileSync(manifestPath, "utf8");
   } catch {
-    warn(`${dir} has no .claude-plugin/plugin.json; not a plugin`);
+    // plugin-compat：无 claude-plugin 清单 → 尝试上游 CCB 家族包格式
+    // （package.json 声明）。有标记按上游语义装载；无标记（普通 npm 包）
+    // 返回 undefined — 两种格式都不是才是「不是插件」。
+    const ccb = loadCcbFamilyPlugin(dir, workspaceRoot, source, warn, scope);
+    if (ccb !== undefined) return ccb;
+    warn(`${dir} has no .claude-plugin/plugin.json and no CCB-family package.json declaration (dsh/engines.dsh); not a plugin`);
     return undefined;
   }
   let parsed: unknown;
@@ -306,6 +322,7 @@ function loadOnePlugin(
     dir,
     source,
     scope,
+    format: "claude-plugin",
     skills,
     commands,
     agents,
@@ -321,6 +338,8 @@ export interface PluginInspect {
   readonly name: string;
   readonly detail: Readonly<{ skills: number; commands: number; agents: number; hooks: number; mcp: number }>;
   readonly version?: string;
+  /** plugin-compat：dry-run 识别出的清单格式（安装回执展示用）。 */
+  readonly format?: PluginFormat;
   readonly warnings: readonly string[];
 }
 
@@ -340,6 +359,7 @@ export function inspectPluginDir(dir: string, workspaceRoot: string): PluginInsp
       mcp: Object.keys(plugin.mcpServers).length,
     },
     ...(plugin.version !== undefined ? { version: plugin.version } : {}),
+    format: plugin.format ?? "claude-plugin",
     warnings: plugin.warnings,
   };
 }
@@ -504,8 +524,8 @@ export function mergeHooksSettings(user: HooksSettings, plugins: readonly Loaded
 /** Expand a command template through the D2 unified substitution expander
  *  (skill-expand.expandSubstitutions): `$ARGUMENTS` → the whole (trimmed)
  *  arg string, `$ARGUMENTS[N]`/`$N` → shell-quoted positional args
- *  (0-BASED — real the upstream harness semantics; the M36-era 1-based reading was
- *  the deviation, and the upstream's own plugin commands share the 0-based
+ *  (0-BASED — real Claude Code semantics; the M36-era 1-based reading was
+ *  the deviation, and CC's own plugin commands share the 0-based
  *  substituteArguments with skills), missing positions → "". Kept as the
  *  exported seam so existing callers/tests keep their surface. */
 export function expandCommandTemplate(body: string, args: string): string {

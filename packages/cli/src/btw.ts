@@ -1,4 +1,4 @@
-// 夜移 014 — /btw 缓存共享旁问（真 the upstream formatsideQuestion.ts + forkedAgent.ts 的
+// 夜移 014 — /btw 缓存共享旁问（真 CC sideQuestion.ts + forkedAgent.ts 的
 // wudao 适配）。共享常量与信封：driver（TUI/web/desktop）与 REPL 两条 lane
 // 用同一份，保证两个前端的 fork 请求字节一致。
 //

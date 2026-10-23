@@ -470,7 +470,7 @@ describe("settingsSet vs legal global escalation keys (review M1)", () => {
   });
 });
 
-// R6 quickwin (the upstream projectmodel-selector pattern) — the Ctrl+S pick defaults:
+// R6 quickwin (pi model-selector pattern) — the Ctrl+S pick defaults:
 // model.defaultModel ({provider, model}) and model.defaultEffort (a matrix
 // level) write through the SAME allowlisted settingsSet into a merged `model`
 // node of the GLOBAL tier; settingsStatus surfaces them (null = never

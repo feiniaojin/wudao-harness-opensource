@@ -1,4 +1,4 @@
-// 125 项 1（the upstream projectnew_context 形，125 报告 B3/落地序 #6）— the model-side
+// 125 项 1（codex new_context 形，125 报告 B3/落地序 #6）— the model-side
 // context-rotation tool. Compaction in wudao is HARNESS-decided (threshold,
 // boundary economics, overflow ladder); the one piece of information only the
 // model has — "my context is polluted / the subtask is done and the old window
@@ -6,7 +6,7 @@
 // for a fresh window with a rationale, optionally naming facts that MUST
 // survive (preserve); the harness answers with a tier-2 rotation boundary.
 //
-//   · 语义：the upstream project的 rotation-within-session 立场（125 §1.1 公理 1）——不换会
+//   · 语义：codex 的 rotation-within-session 立场（125 §1.1 公理 1）——不换会
 //     话，session 内开新窗。轮转走正常 tier-2 压缩边界（前缀本来就要重写，
 //     M24 零额外缓存代价）；摘要头部带 `[context rotated by agent: …]` 身份
 //     行（125b 窗口链落地前的窗口身份缝）；preserve 文本既织进摘要指令、又

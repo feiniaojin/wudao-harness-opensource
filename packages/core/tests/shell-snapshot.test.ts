@@ -43,7 +43,7 @@ describe("§5 case 1 — loginShellKindFromPath", () => {
     expect(loginShellKindFromPath("/usr/local/bin/bash")).toBe("bash");
     expect(loginShellKindFromPath("/bin/sh")).toBe("sh");
   });
-  it("reduces versioned stems (the upstream project detect_shell_type's file-stem recursion)", () => {
+  it("reduces versioned stems (codex detect_shell_type's file-stem recursion)", () => {
     expect(loginShellKindFromPath("/opt/zsh-5.9/bin/zsh-5.9")).toBe("zsh");
     expect(loginShellKindFromPath("/usr/bin/bash-5.2")).toBe("bash");
   });
@@ -84,7 +84,7 @@ describe("§5 case 2 — buildLoginShellCaptureScript", () => {
     }
   });
   it("uses no PATH-resolved command word an rc alias/function could shadow (builtin allowlist)", () => {
-    // the upstream projecthardening: `/usr/bin/env` by absolute path; everything else must be
+    // codex hardening: `/usr/bin/env` by absolute path; everything else must be
     // a keyword/builtin. Tokenize command segments and check each command word.
     const KEYWORDS = new Set(["if", "then", "else", "elif", "fi", "!"]);
     const BUILTINS = new Set(["[[", "[", ".", "source", "printf", "test", "true", "false"]);
@@ -294,7 +294,7 @@ describe("§5 case 10 — exclusions end-to-end through a real /bin/sh child", (
 });
 
 describe("constants", () => {
-  it("carries the upstream project's caps (512 KiB output budget)", () => {
+  it("carries codex's caps (512 KiB output budget)", () => {
     expect(LOGIN_SHELL_SNAPSHOT_MAX_BYTES).toBe(512 * 1024);
   });
 });

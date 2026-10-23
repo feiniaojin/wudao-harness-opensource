@@ -1,4 +1,4 @@
-// 夜移 005（2026-08-28 night porting，the upstream formatsession-title，设计加强）：
+// 夜移 005（2026-08-28 night porting，dsh session-title，设计加强）：
 // 首个成功 run 后，用一次独立小调用（querySource:"title"、低推理、短输出、
 // 不进主转录、不改任何前缀字节）给会话生成人类可读标题，写入 session_name
 // 条目（source:"llm"，last-wins）；手动 /rename（source:"manual"）永不覆盖；

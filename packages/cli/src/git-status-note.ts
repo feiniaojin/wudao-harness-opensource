@@ -4,7 +4,7 @@
 // PROJECTION channel — the same seam the M32 <file_changed> notes ride.
 //
 // HARD RULE (spec §C#8): the block goes through the projection channel ONLY
-// — it must NEVER enter the stable system-prompt prefix. the upstream formatputs its git
+// — it must NEVER enter the stable system-prompt prefix. CC puts its git
 // snapshot in the system prompt, which couples prefix-cache reuse to snapshot
 // identity: two sequential sessions in the same directory share the cached
 // prefix only when their snapshots match (docs/research/24, prompt-caching

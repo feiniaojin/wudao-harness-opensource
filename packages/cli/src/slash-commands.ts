@@ -49,7 +49,7 @@ const BUILTIN_COMMANDS: readonly SlashCommandInfo[] = [
   // M49 §1: the memory store command. M53 §4: sensitive — its args can quote
   // stored memory content, so autocomplete previews stay <redacted>.
   // M55 §A: + the `edit` verb (context files in $EDITOR).
-  { name: "memory", description: "记忆库：list / del <id> / ok <id> / edit（上下文文件在 $EDITOR 打开）", args: "[list|del <id>|ok <id>|edit]", isSensitive: true, source: "builtin", sources: ["builtin"] },
+  { name: "memory", description: "长期记忆（M-Memory）：search / save / forget / refresh / on / off；旧面 list / del <id> / ok <id> / edit", args: "[list|search <q>|save <kind> <text>|forget <id>|refresh|on|off|del <id>|ok <id>|edit]", isSensitive: true, source: "builtin", sources: ["builtin"] },
   // ω99-3a: /refine — the Continual Harness session refiner. Sensitive like
   // /memory: its args can quote stored content, and the proposal evidence
   // quotes trajectory text.
@@ -103,7 +103,7 @@ const BUILTIN_COMMANDS: readonly SlashCommandInfo[] = [
   // ω99-15: the task-campaign human face (REPL v1; the model drives tasks
   // through the mission_* tool quartet). Bare = status; clear abandons.
   { name: "mission", description: "任务战役（任务 DAG+台账+可续跑）：/mission <总目标> 启动 · 无参=状态 · clear 放弃 · 模型经 mission_plan/next/complete/fail 驱动", args: "[<objective>|clear]", source: "builtin", sources: ["builtin"] },
-  // ω99-5a: pause/unpause/run join the daemon verbs (run = the upstream project run_now).
+  // ω99-5a: pause/unpause/run join the daemon verbs (run = goose run_now).
   { name: "schedule", description: "定时任务与提醒（wudao ui 托管）：list | add \"<cron>\" <提示词> | rm <id> | pause/unpause <id> | run <id> 立即跑一次 | snooze <id> [分钟] 提醒稍后再响", args: "[list|add|rm|pause|unpause|run|snooze]", source: "builtin", sources: ["builtin"] },
   // cc-plugins B1: /plugin — the plugin/marketplace command face over the
   // A1/A2 engine (same one `wudao plugin` drives; notices 中文). Busy-safe

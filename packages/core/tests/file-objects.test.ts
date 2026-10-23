@@ -105,7 +105,7 @@ describe("saveFiles — visibility + git cleanliness (acceptance 2)", () => {
     expect(stdout.trim()).toBe("");
   });
 
-  it("the visible alias is read-only (0o400 — a ref a ref parity)", async () => {
+  it("the visible alias is read-only (0o400 — dsh parity)", async () => {
     const block = await saveOne("a.pdf", PDF_BYTES);
     const vis = join(root, fileVisibleRelPath(block));
     const mode = (await stat(vis)).mode & 0o777;

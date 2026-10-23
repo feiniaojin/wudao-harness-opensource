@@ -1,4 +1,4 @@
-// ω-1b — the loop-level generic large-result guard (the upstream project
+// ω-1b — the loop-level generic large-result guard (goose
 // large_response_handler.rs:5-14, digest 98a): EVERY tool's string result —
 // not just shell's (M46) — gets the head/tail + spill treatment before
 // it enters history, over looser thresholds (1000 lines / 50KB). read_file is

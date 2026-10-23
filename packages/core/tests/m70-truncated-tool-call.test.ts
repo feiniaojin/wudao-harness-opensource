@@ -1,4 +1,4 @@
-// M70 §1 — the truncated tool-call guard (the upstream project): when the provider response's
+// M70 §1 — the truncated tool-call guard (pi): when the provider response's
 // stop_reason is "length" (the token limit cut the generation mid-arguments),
 // EVERY tool call in that message fails with the explanatory error result —
 // never executed, never salvage-parsed. The loop continues to the next turn

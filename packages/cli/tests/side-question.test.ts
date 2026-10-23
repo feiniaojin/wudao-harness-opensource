@@ -1,5 +1,5 @@
 // ω99-316 — /btw 侧问引擎 + driver.sideQuestion（server op 的 driver 半边）。
-// the upstream project 三宝石的 wudao 落地契约：
+// prime-agent 三宝石的 wudao 落地契约：
 //   同表封禁   旁路声明与主线程完全相同的工具表（序列化字节同一）但 execute
 //              全部返回结构化冻结错误——空表会丢前缀缓存（M24）；
 //   每轮重克隆 follow-up 轮重新克隆最新主投影，早前侧问轮次追加其后；

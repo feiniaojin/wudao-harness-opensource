@@ -71,7 +71,7 @@ export function ReasoningBlock({ text, streaming = false }: { text: string; stre
  *  UI-3 C1: exported so the 简洁面 rides the SAME row (one contract, two
  *  surfaces — the advanced timeline strips the card chrome via .panel-list,
  *  the simple turnlive keeps it; both pin the cursor off the row).
- *  借鉴弧 δ (the upstream harness 367ab084): the row's ONE action — 转入后台 (the α2
+ *  借鉴弧 δ (penguin 367ab084): the row's ONE action — 转入后台 (the α2
  *  recall button's idiom on the busy face). Rendered only when the row
  *  carries a callId AND the surface wired a handler (old servers/rows
  *  without callId stay byte-identical); a typed refusal surfaces as a

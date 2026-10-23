@@ -1,4 +1,4 @@
-// 借鉴弧 β2 — HEIC/HEIF/AVIF 解码准入（the upstream 思想，digest-b C4）：
+// 借鉴弧 β2 — HEIC/HEIF/AVIF 解码准入（hermes 0a545f7fa5 思想，digest-b C4）：
 // ftyp 魔数嗅探（字节说了算，声称的 mediaType 永不信任；畸形盒 fail-closed
 // 归 null 走原白名单拒绝）→ macOS sips 转 JPEG → 按解码后格式（image/jpeg）
 // 准入。★测试红线：解码器全注入假件（零真 sips 子进程）；嗅探夹具为合成

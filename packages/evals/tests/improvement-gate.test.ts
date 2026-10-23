@@ -1,4 +1,4 @@
-// 永续 v6 wave2（the upstream project C1）——配对回放门的聚焦测试。全局层隔离沿
+// 永续 v6 wave2（reef C1）——配对回放门的聚焦测试。全局层隔离沿
 // setup-global-home.ts（真 ~/.wudao 的规则绝不渗进门的基线）；配对回放在
 // tmpdir 里跑真 loadContextRules/buildSystemPrompt（零网络）；骨干套件用
 // stub（真 5 套件的门禁冒烟在 gate-cli 的实跑里，不在单测里烧 4 秒）。
@@ -97,7 +97,7 @@ describe("improvement-gate — 完整门（配对 + 骨干套件）", () => {
     expect(bad.reason).toContain("det-b");
   });
 
-  it("套件 errored（非断言）同样不过门——the upstream project 律：报错排在一切真分数之下", async () => {
+  it("套件 errored（非断言）同样不过门——reef 律：报错排在一切真分数之下", async () => {
     const boom: EvalDefinition<unknown, unknown> = {
       name: "det-boom",
       kind: "deterministic",

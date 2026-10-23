@@ -1,4 +1,4 @@
-// ω99-3a — /refine: the session refiner (the upstream project Continual Harness,
+// ω99-3a — /refine: the session refiner (prime-agent Continual Harness,
 // wudao-native stage 1). The THIRD entry into memory formation, beside the
 // review fork (M49, transcript→assessed entries) and Dream (ω-4f, ledger→
 // curated ledger): /refine is ON-DEMAND, CURRENT-SESSION, EVIDENCE-CARRYING.
@@ -12,7 +12,7 @@
 //  2. update 必转 pending —— store.update 的语义就是"写 v+1 并转 pending",
 //     /memory ok 之前新版不进 recall 池。
 //  3. delete 只建议不执行 —— LLM 没有删除权。receipt 列出 id, 删除永远是
-//     人的 /memory del <id>。防的是 LLM 误删（the upstream project 把删除权留给
+//     人的 /memory del <id>。防的是 LLM 误删（prime-agent 把删除权留给
 //     rollback, wudao 更保守: 连 rollback 的 delete 逆推也只对 create 生效）。
 //
 // M24 (cache): /refine rides its OWN one-shot prompt (fresh system prompt,
@@ -20,7 +20,7 @@
 // cost, exactly like Dream's fresh child. ω-3b (stage 2) would add the
 // deterministic prompt-tail section + the one-cold-prefix compensation.
 //
-// 永续 v6 弧 A（the upstream project C3）——学习入口防污染在本文件的两处落点：①轨迹嵌入
+// 永续 v6 弧 A（reef C3）——学习入口防污染在本文件的两处落点：①轨迹嵌入
 // 加 nonce 围栏（会话文本里的工具输出/粘贴内容无法提前闭合围栏冒充提示词
 // 作者写「## Instructions」段——围栏只进本 fresh-child 提示词，M24 零代价，
 // 与上方声明同款）；②提案 create/update 过 store 的块档门（凭据值/指令
@@ -62,7 +62,7 @@ export interface RefineProposal {
   readonly edits: readonly ProposedEdit[];
 }
 
-/** The trajectory tail budget (98c's slice size; the upstream project refinement.ts
+/** The trajectory tail budget (98c's slice size; prime-agent refinement.ts
  *  ships the whole trajectory, wudao caps it like Dream caps its embed). */
 export const REFINE_TRAJECTORY_CHARS = 80_000;
 /** Per-tool-result truncation inside the serialized trajectory. */
@@ -81,7 +81,7 @@ export const REFINE_REJECTED_SUMMARY = "proposal rejected";
 /** The proposer's fixed system prompt (中文注释风格照 review.ts 的
  *  REVIEW_PROMPT: 中文定调 + 英文精确规格). Demands ONE JSON object, the
  *  exact edit shape, evidence per edit, minimal edits, and the no-op
- *  escape hatch. Mirrors the upstream project refinement.ts:123-173's four rules
+ *  escape hatch. Mirrors prime-agent refinement.ts:123-173's four rules
  *  (minimal edits / evidence / scope policy / base-prompt immutability →
  *  wudao's映射: kind 禁 fact, ≤5 edits, ≤500 chars). */
 export const REFINE_SYSTEM_PROMPT = [
@@ -94,7 +94,7 @@ export const REFINE_SYSTEM_PROMPT = [
 ].join("\n");
 
 // ---------------------------------------------------------------------------
-// Truncation-aware JSON extraction (the upstream project refinement.ts:570-631 思路,
+// Truncation-aware JSON extraction (prime-agent refinement.ts:570-631 思路,
 // wudao 收敛为"不 throw, 全败 → undefined"): ① 直接 parse; ② 剥 ```json 围栏;
 // ③ 首个 `{` 起做字符串感知的大括号平衡扫描, 深度归零处截断再 parse ——
 // 轨迹尾被输出预算截断时, 前面已完整的对象仍能被救回。
@@ -170,7 +170,7 @@ export function extractProposalJson(text: string): unknown {
 }
 
 // ---------------------------------------------------------------------------
-// Whole-case validation (the upstream project :673-714 validateEdit 的整案版: 动词
+// Whole-case validation (prime-agent :673-714 validateEdit 的整案版: 动词
 // 非法/形状不对 → 整案拒绝, 绝不静默丢条目).
 // ---------------------------------------------------------------------------
 
@@ -312,7 +312,7 @@ export async function planRefinement(
   store: MemoryStore,
   instructions?: string,
 ): Promise<RefineProposal> {
-  // 借鉴弧 C2（the upstream project C4）：heldout 标记条目在精化入口被过滤——密封套件
+  // 借鉴弧 C2（a reference project C4）：heldout 标记条目在精化入口被过滤——密封套件
   // 的结果永不进入任何精化输入（overview 不可见、update/delete 不可指——
   // 模型连它们的 id 都拿不到；/memory del 仍是人删除它们的唯一通道）。
   const entries = (await store.load()).filter((e) => !isHeldOutEntry(e));

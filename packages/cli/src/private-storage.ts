@@ -1,10 +1,10 @@
-// ω99-2b — 私有存储原语（the upstream project core/private_storage.py 的 TS 移植）。
+// ω99-2b — 私有存储原语（DeepCode core/private_storage.py 的 TS 移植）。
 //
 // 文件层 0600 早已在 credentials.ts / mcp/tokens.ts 落实（tmp+rename+chmod）；
 // 这一层补齐**目录与跨平台**面：
 //   - 目录 0700：`mkdir(recursive)` 吃默认 umask（桌面系统常见 0022），
 //     `~/.wudao/` 常见 0755 —— 这里逐组件 mkdir(0700)+chmod(0700)，且只收紧
-//     **本次新建**的组件（the upstream project was_missing 语义：已存在目录重复 icacls
+//     **本次新建**的组件（DeepCode was_missing 语义：已存在目录重复 icacls
 //     每次白跑两个子进程）。
 //   - Windows：chmod 是 no-op（无强制 POSIX 位）—— icacls 先 grant 当前用户
 //     再 strip 继承（fail-safe：grant 失败则继承 ACL 原样保留，路径仍可用），
@@ -12,7 +12,7 @@
 //   - 目录链接（symlink/junction）：拒绝 —— `~/.wudao` 若被指向攻击者目录，
 //     密钥文件会写进攻击者树。
 //
-// 明确不做（控制器裁决）：the upstream project 的 O_NOFOLLOW + lstat/samestat 私有 fd
+// 明确不做（控制器裁决）：DeepCode 的 O_NOFOLLOW + lstat/samestat 私有 fd
 // 竞态检查 —— Node 侧 rename-over 语义（落在链接上即替换链接本身）+ 父链
 // 目录链接拒绝已覆盖实际威胁面，fd 级 identity dance 在 TS 里成本高收益低。
 import { execFile as execFileCb, spawnSync } from "node:child_process";
@@ -58,7 +58,7 @@ export interface PrivateStorageOpts {
   readonly winRunner?: WindowsAclRunner;
 }
 
-/** icacls `/remove` 的三个宽泛内置主体（the upstream project 同款）：Everyone /
+/** icacls `/remove` 的三个宽泛内置主体（DeepCode 同款）：Everyone /
  *  Authenticated Users / BUILTIN\Users。`*` 前缀 = 按 SID 指定（locale 无关）。 */
 const WINDOWS_BROAD_ACCESS_SIDS = ["*S-1-1-0", "*S-1-5-11", "*S-1-5-32-545"] as const;
 
@@ -182,7 +182,7 @@ function createPrivateComponents(
   // 且发生在任何 mkdir 之前 —— 拒绝不能顺手把子目录建进链接目标）。锚点
   // 之上的更浅组件**不**逐段检查：macOS 的 /tmp→/private/tmp、
   // /var→/private/var 是系统级链接，逐段拒绝会废掉一切 tmpdir 用法；锚点
-  // 之上的世界本就不是这次要收紧的范围（the upstream project 同款“到 exists 为止”）。
+  // 之上的世界本就不是这次要收紧的范围（DeepCode 同款“到 exists 为止”）。
   if (lstatSync(cursor).isSymbolicLink()) {
     throw new UnsafePrivatePathError(
       `private storage path component is a directory link: ${cursor} (refusing to create ${dir})`,
@@ -206,7 +206,7 @@ function createPrivateComponents(
     chmodSync(component, PRIVATE_DIR_MODE); // umask 可能剥位（某些平台 mkdir 不完全尊重 mode）—— 显式兜底
     created.push(component);
   }
-  // the upstream project was_missing 语义：已存在且未 force → 不动（chmod 与 icacls 都
+  // DeepCode was_missing 语义：已存在且未 force → 不动（chmod 与 icacls 都
   // 不重复）；force → 连已存在的最终目录也收紧（修复遗留树）。
   if (opts.force === true && dirExisted) chmodSync(dir, PRIVATE_DIR_MODE);
   return { created, dirExisted };
@@ -253,7 +253,7 @@ export async function writePrivateFile(
   chmodSync(path, PRIVATE_FILE_MODE); // writeFile 的 mode 只在新建时生效 —— 显式兜底
   if ((opts.platform ?? process.platform) === "win32") {
     // rename 后这是一个全新 inode（继承自父目录 ACL 之外无显式条目）→ 每次写
-    // 都收紧文件自身（the upstream project open-on-create 同款）。
+    // 都收紧文件自身（DeepCode open-on-create 同款）。
     await restrictWindowsAcl(path, false, opts.winRunner ?? defaultWindowsRunner(), opts);
   }
 }
@@ -308,7 +308,7 @@ export function hardenPrivateTree(
       }
     }
   };
-  chmodSync(root, PRIVATE_DIR_MODE); // root 本身也在收紧面（the upstream project os.walk 含 base）
+  chmodSync(root, PRIVATE_DIR_MODE); // root 本身也在收紧面（DeepCode os.walk 含 base）
   if (winAcl) restrictWindowsAclSync(root, true, opts);
   dirs++;
   walk(root);

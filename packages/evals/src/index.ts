@@ -5,7 +5,7 @@
 // failure. Deterministic or live — a failure is a failure.
 //
 // M48 §4 subcommand: `pnpm eval --workloop <session.jsonl>` scores one real
-// session with the the upstream harness Agent Work Loop scorer (5 dims × 15
+// session with the better-harness Agent Work Loop scorer (5 dims × 15
 // checks) — observational only, never a CI gate (exit 0 unless the file
 // itself cannot be read).
 import { readFile } from "node:fs/promises";

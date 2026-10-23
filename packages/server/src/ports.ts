@@ -65,7 +65,7 @@ export interface UiDriverPort {
   resume(id: string): Promise<{ ok: boolean; not_found?: boolean; occupied?: { pid: number } }>;
   setMode(mode: string): void;
   answerPermission(allow: boolean, reason?: string, scope?: "session" | "always"): boolean;
-  /** 借鉴弧 α2（the upstream format2.1.269 思想）— recall ONE still-queued steering message
+  /** 借鉴弧 α2（CC 2.1.269 思想）— recall ONE still-queued steering message
    *  (CAS: index+text from the same status frame; consumed entries → false).
    *  User lane only. OPTIONAL like searchSessions: the ui host's ask-lane
    *  wrapper mounts it; a driver without it cleanly refuses (server op). */
@@ -75,7 +75,7 @@ export interface UiDriverPort {
    *  the model to decide itself). Returns false when nothing is parked.
    *  OPTIONAL — mounted by the same ask-lane wrapper. */
   answerAskUser?(answer?: string): boolean;
-  /** 借鉴弧 δ（the upstream harness 367ab084 思想）— move ONE in-flight tool call to the
+  /** 借鉴弧 δ（penguin 367ab084 思想）— move ONE in-flight tool call to the
    *  background (its result stops blocking the turn; the run closes at the
    *  turn boundary; the landed result merges later). callId from the status
    *  frame's busyTools rows; absent = the first detachable row. Typed
@@ -110,6 +110,16 @@ export interface UiDriverPort {
   // driver 的 busy/尾形门让 mid-flap 重放收敛 started:false——无需 vault；
   // isVaultedMutation 零动）。
   continueSession?(id: string): Promise<unknown>;
+  // 小精灵会话弧 — 会话级 fork 的驱动面（PROTOCOL "resume" 携 fork:true 时
+  // 调用）：字节复制源会话 JSONL 到全新 id，再把本 driver resume 到副本上
+  // （原会话文件永不以写模式打开——CLI --fork-session 的 forkSessionFile
+  // 能力经 op 通道复用）。回执联合 {ok:true,forkedId} | {ok:false,reason:
+  // "busy"|"not_found"|"occupied",holderPid?}（fork+resume 两段合一，一次
+  // op 一个回执）。vaulting 蹭既有 resume 条目（op 名不变，digest 覆盖整
+  // 个 op 对象含 fork 字段——mid-flap 重放重发原回执，绝不双 fork）。
+  // OPTIONAL like continueSession —— 无该方法的 driver 干净拒答（老 server
+  // 降级=web 追问入口收到失败回执）。
+  forkSession?(id: string): Promise<unknown>;
   // ω99-313: 定时任务与提醒的读面（PROTOCOL "schedulesList"）：零参直通
   // driver.schedulesList，行数组原样回（id/kind/prompt/trigger 人话/
   // nextRunAt/enabled/paused/sessionId?——侧栏 ⏰ 标记按 sessionId join）。
@@ -165,7 +175,7 @@ export interface UiDriverPort {
    *  content-equal replay (ok:true, zero writes) — a mid-flap replay lands
    *  exactly once. */
   memoryEdit?(id: string, content: string): Promise<unknown>;
-  // 永续 v6 wave2（the upstream project C1）：门控自改进面（improvementFace）——读+决定
+  // 永续 v6 wave2（reef C1）：门控自改进面（improvementFace）——读+决定
   // 一体 op。list 是纯读（memoryList 同形，never vaulted）；consent/ignore/
   // activate/reject/undo 是写副作用（VAULTED——consent 会起子代理+模型调用，
   // activate 写规则文件；重放恰一次，收敛在驱动状态机的 MISS 形）。

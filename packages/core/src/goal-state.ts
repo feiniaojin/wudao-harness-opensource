@@ -3,7 +3,7 @@
 // working toward, HOW MUCH budget remains, and WHY the work continues —
 // without the mission ledger and the goal ever becoming two truths.
 //
-// Design stance (240 five-repo recon ④; the upstream project goals.ts is the parity
+// Design stance (240 five-repo recon ④; prime-agent goals.ts is the parity
 // blueprint, our derivation discipline is the delta):
 //   - The entry rides the M35 §2 GENERIC session lane ({type:"goal_state",
 //     data}) — append-only like every session row: a state change APPENDS a
@@ -61,7 +61,7 @@ export interface GoalStateData {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lastReason?: string;
-  /** 121 §4（the upstream format budget death salvage）— the honest death cause. Set
+  /** 121 §4（a reference harness budget death salvage）— the honest death cause. Set
    *  ONCE at the budget crossing (applyGoalSettlement) and carried into every
    *  later row of the same goal (moveTo spreads it): a goal that died by
    *  budget NEVER terminal-izes as a bare "completed" — the row names its
@@ -69,7 +69,7 @@ export interface GoalStateData {
    *  carries no deathCause, by design). Additive lane: old readers never see
    *  the field; the writer omits it when absent. */
   readonly deathCause?: "budget_exhausted";
-  /** 125 项 3（the upstream project预算上卷 4761851ff3 形）— 扇出子代理的用量归账：本目标
+  /** 125 项 3（codex 预算上卷 4761851ff3 形）— 扇出子代理的用量归账：本目标
    *  生命周期内全部子代理模型调用的 token 合计 + 去重子代理数。**计入报告、
    *  不计入触发**（ω99-8b 分区不动：子代理/evaluator 用量永不进
    *  applyGoalSettlement 的 tokensUsed——预算穿越判定只看根 loop 的行）；
@@ -355,7 +355,7 @@ export function goalStatusLine(goal: GoalStateData, progress: { readonly done: n
     "<goal_context>",
     `当前目标（任务 ${goal.missionTaskId}）：${clampObjective(goal.objective)}`,
     budgetLine,
-    // 125 项 3（the upstream project预算上卷）：扇出成本对模型可见——「根预算显示健康、
+    // 125 项 3（codex 预算上卷）：扇出成本对模型可见——「根预算显示健康、
     // 子代理烧钱不可见」的盲区补上面；缺省隐藏（零子代理零噪音）。
     ...(subagentLine !== undefined ? [subagentLine] : []),
     ...(nearRemaining !== undefined
@@ -383,7 +383,7 @@ export function goalBudgetNote(
   }
   lines.push(
     `进度：${progress.done}/${progress.total} 任务完成（以任务台账为准）。`,
-    // 121 §4（the upstream format budget death salvage）— the wrap-up directive: budget
+    // 121 §4（a reference harness budget death salvage）— the wrap-up directive: budget
     // death must not stop mid-air with the work unsummarized. Advisory-only
     // (GoalState's standing semantics — nothing is killed or forced), but
     // this IS the final advice: the driver fires ONE salvage round whose

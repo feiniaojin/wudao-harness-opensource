@@ -1,4 +1,4 @@
-// M70 §3 (the upstream format) — querySource tags on core-originated model calls. The
+// M70 §3 (CC) — querySource tags on core-originated model calls. The
 // compaction summarizer is a BACKGROUND call (nobody is blocking on the
 // summary): it tags ModelInput.querySource = "summarizer" so the provider
 // retry ladder's foreground-only allowlist can bail immediately on overload

@@ -35,7 +35,7 @@ const SNAPSHOT = join(import.meta.dirname, "fixtures", "barrel-surface.txt");
  *  +5 是 ω99-315 turn-retry 面（4d449df4 加了 barrel 导出但 fixture 再生
  *  滞后——main 上本钉当时已红，此处按 census 撞车纪律一并吸收）；
  *  +11 是 ω99-318 unicode-security 面（unicode-security.ts 的导出）.
- *  借鉴弧 B1/B2（the upstream project C1/C2）— 372 = 365 + 6 + 1：压缩经济学面的 6 个
+ *  借鉴弧 B1/B2（a reference project C1/C2）— 372 = 365 + 6 + 1：压缩经济学面的 6 个
  *  类型名（CachePricing/CacheRatioSource/CompactionEconomics{Decision,Reason,
  *  Report}/EconomicsDecideInput）+ 1 个缺省 ratio 常量（providers 推导链与
  *  core tracker 共用的单一真值点）——其余运行面走 compaction.ts 域门面不进 barrel。

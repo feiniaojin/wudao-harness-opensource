@@ -12,7 +12,7 @@
 // 省 true，settings `docSuite.enabled` 显式 false 才关）；repo 双插件系统
 // （plugins.ts 纯配置 / extensions 真代码但 ext_ 前缀）不可走——重命名会
 // 破会话史；MCP 条件注册先例（工具列表稳定前缀+尾部追加）。行业对照：
-// the upstream formatplugins 面板列 builtin 可关项、ChatGPT tools 内置项可关——内置能力也
+// CC plugins 面板列 builtin 可关项、ChatGPT tools 内置项可关——内置能力也
 // 有开关与身份，不与核心熔死。web 设置页插件 tab 的「内置」段就是它的身
 // 份面（PluginTab）。
 //

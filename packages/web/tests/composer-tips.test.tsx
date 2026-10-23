@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// R6 quickwin (the upstream tips pattern) — the advanced/Buddy composer's idle
+// R6 quickwin (hermes tips pattern) — the advanced/Buddy composer's idle
 // placeholder rotates ONCE PER SESSION through short feature hints: a
 // module-level cursor advanced once per App MOUNT picks the tip (a page load
 // is one stable placeholder — never re-rolled per render; the composer's

@@ -1,4 +1,4 @@
-// 借鉴弧 α2（the upstream format2.1.269 思想）— /recall：撤回一条排队中尚未被读取的
+// 借鉴弧 α2（CC 2.1.269 思想）— /recall：撤回一条排队中尚未被读取的
 // steering 消息。TUI 的命令形状照 /find 的先例（find-core.ts）：TUI 自有命
 // 令，在共享 parseReplCommand 之前拦截——命令并集喂驱动的穷举 switch，本特
 // 性不需要驱动臂（recallSteer 是 driver 的方法面，不是 submit 路由）。REPL

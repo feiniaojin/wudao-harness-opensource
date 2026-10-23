@@ -7,14 +7,14 @@
 // writeVerify / longOutput / permissions watcher) asks it for the
 // EFFECTIVE record instead of reading the project file directly.
 //
-// Merge semantics (docs/research/20-config-layering.md — real the upstream harness):
+// Merge semantics (docs/research/20-config-layering.md — real Claude Code):
 //   - deep merge, more-specific tier wins on scalar conflicts;
 //   - arrays CONCAT + DEDUP across tiers in tier order (permissions.allow,
-//     hook lists — rules accumulate; the upstream formatsettings.ts:529-547
+//     hook lists — rules accumulate; CC settings.ts:529-547
 //     `uniq([...a, ...b])`);
 //   - precedence defaults < user(global) < project < local (M62 §3).
 //
-// TRUST GATE (the upstream formatRCE precedent, settings.ts:877-928): a PROJECT file is
+// TRUST GATE (CC RCE precedent, settings.ts:877-928): a PROJECT file is
 // attacker-controllable content — a cloned repo must never be able to grant
 // itself privileges. Privilege-escalation keys (bypass/auto-mode opt-ins,
 // protected-path relaxations, env injection into every spawned process, and
@@ -23,7 +23,7 @@
 // same keys from the GLOBAL tier is fine — the user wrote those.
 // M62 §3 ruling: the LOCAL tier is PHYSICALLY in the project directory, so a
 // clone can carry it — LOCAL FOLLOWS PROJECT-TRUST and the same gate drops
-// the same keys there (stricter than the upstream format; README documents the choice).
+// the same keys there (stricter than CC; README documents the choice).
 //
 // Credentials never live in settings — they live in `~/.wudao/.credentials.yaml`
 // (0600, M63 §B; see credentials.ts). Settings keep non-secret preferences.
@@ -50,7 +50,7 @@ export function projectSettingsPath(workspaceRoot: string): string {
 /** M62 §3 — the LOCAL tier: `.wudao/settings.local.json`, the highest
  *  USER-EDITABLE layer (global < project < local). Physically inside the
  *  project directory, so a cloned repo can carry it — LOCAL FOLLOWS
- *  PROJECT-TRUST: the same escalation-key gate applies (stricter than the upstream format;
+ *  PROJECT-TRUST: the same escalation-key gate applies (stricter than CC;
  *  see sanitizeUntrustedTier). */
 export function localSettingsPath(workspaceRoot: string): string {
   return join(workspaceRoot, ".wudao", "settings.local.json");
@@ -65,7 +65,7 @@ export function localSettingsPath(workspaceRoot: string): string {
  *  fail-closed: an unknown-but-privilege-shaped key is still listed here, so
  *  the gate does not silently open when the key ships. */
 const PROJECT_FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
-  // bypass / auto-mode opt-ins (the upstream format`skipDangerousModePermissionPrompt`,
+  // bypass / auto-mode opt-ins (CC `skipDangerousModePermissionPrompt`,
   // `autoMode` — "a malicious project could otherwise auto-bypass … (RCE)")
   "bypassPermissions",
   "dangerouslyBypassPermissions",
@@ -258,7 +258,7 @@ function canonicalArrayItem(v: unknown): string {
   return JSON.stringify(v) ?? "undefined";
 }
 
-/** Deep merge with the upstream formatsemantics: objects recurse (project wins), arrays
+/** Deep merge with CC semantics: objects recurse (project wins), arrays
  *  concat + dedup (global entries first — stable order), everything else
  *  project-wins. Pure; `global`/`project` are never mutated. */
 export function deepMergeSettings(

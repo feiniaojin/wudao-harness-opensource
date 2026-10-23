@@ -34,7 +34,7 @@ import { pendingActionsSection } from "./pending-actions.js";
 export interface Tier2Result {
   readonly messages: AgentMessage[];
   readonly summaryMessage: AgentMessage;
-  /** M70 §2 (the upstream project): the retained tail — the messages the compact kept VERBATIM
+  /** M70 §2 (pi): the retained tail — the messages the compact kept VERBATIM
    *  after the boundary. Carried on the compacted event (and from there on
    *  compaction entries) so future compactions can rebuild from it instead of
    *  re-deriving the boundary tail. */
@@ -117,14 +117,14 @@ export interface Tier2Options {
    *  (the M23 board restore carries the plan itself; this line carries the
    *  MODE). Absent = no line (status-quo bytes). */
   readonly planMode?: boolean;
-  /** 125 项 1（the upstream project窗口链）: the rotation identity riding the summary
+  /** 125 项 1（codex 窗口链）: the rotation identity riding the summary
    *  message header — `[context window #N | chain: … | first/prev]`. The
    *  model sees WHICH window it is in and where the chain began. Absent =
    *  no line (status-quo bytes; pre-125 callers byte-identical). Cache
    *  declaration (M24): the line lands on a boundary that rewrites the
    *  prefix anyway — ZERO additional cache surface. */
   readonly windowIdentity?: WindowIdentity;
-  /** 125 项 2（the upstream projectWorldState）: the pre-rendered world-diff body
+  /** 125 项 2（codex WorldState）: the pre-rendered world-diff body
    *  (worldStateDiff(prev, curr)) riding the summary header under the
    *  identity line. Absent/"" = no section (the first compaction has no
    *  previous snapshot — behavior unchanged). */
@@ -378,7 +378,7 @@ export function countSummaryMarkers(messages: readonly AgentMessage[]): number {
 // 估计共用；字节零演进。
 // ---------------------------------------------------------------------------
 
-/** Default char budget for the summarized turn prefix (the the upstream projectdual-summary
+/** Default char budget for the summarized turn prefix (the pi dual-summary
  *  split point: the prefix is summarized, the tail is kept verbatim). */
 export const DUAL_TURN_PREFIX_CHARS = 12_000;
 

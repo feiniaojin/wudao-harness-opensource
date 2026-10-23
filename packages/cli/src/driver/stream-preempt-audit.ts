@@ -1,4 +1,4 @@
-// 124b 项 1（the upstream projectinstant_interrupt）——流抢占的旁路审计。
+// 124b 项 1（codex instant_interrupt）——流抢占的旁路审计。
 //
 // 被弃 partial 的量与时刻只走这条旁路日志（.wudao/logs/stream-preempt-
 // audit.jsonl）：不进会话 JSONL 转录（M24：append-only 历史零接触）、不进

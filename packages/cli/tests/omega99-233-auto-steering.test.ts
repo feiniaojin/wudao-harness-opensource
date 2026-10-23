@@ -3,7 +3,7 @@
 // 引导：buildSystemPrompt 无 mode 参且 session 冻结，setMode 只设变量+emit+
 // peer tier——模型不知道托付已发生，仍在回复里反复向用户提问（09-09 用户指
 // 令 ③「开了auto模式，还是反复询问用户的问题」）。本弧把模式语义对模型一等
-// 公民化（超越点：行业 the upstream format/Codex 的 mode 都不对模型声明语义），走
+// 公民化（超越点：行业 CC/Codex 的 mode 都不对模型声明语义），走
 // <workspace_changed> 同款 MetaNote 信封（随下次首个模型调用冲刷、投影面零
 // 持久化，M24 缓存零代价）。本件钉死：
 //   纯层   modeSteeringNote 六向矩阵（进 auto 契约逐字 / 出 auto 三形 label 插值 / 档间互切 null）

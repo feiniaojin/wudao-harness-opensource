@@ -17,7 +17,7 @@
 //   ④ 推荐模型     the provider default, changeable (cardModels — the same
 //                 list the settings page shows)
 //   ⑤ 权限默认     the tier selector, default = the workspace tier (shown
-//                 as accept,0.3.13 起对齐 the upstream format词汇); 可改为 ask / auto /
+//                 as accept,0.3.13 起对齐 CC 词汇); 可改为 ask / auto /
 //                 plan(0.3.14 只读探查档)。0.3.11: 双写 — setMode 管本会
 //                 话, settingsSet("permissions.defaultMode") 持久化新会话
 //                 起步档

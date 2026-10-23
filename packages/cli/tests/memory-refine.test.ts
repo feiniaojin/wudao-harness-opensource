@@ -1,5 +1,5 @@
 // ω99-3a — /refine session refiner: truncation-aware JSON extraction (the
-// the upstream project refinement.ts:570-631 idea, wudao-native), the proposal
+// prime-agent refinement.ts:570-631 idea, wudao-native), the proposal
 // validator (fact 禁入 / ≤5 edits / shape), the planner (one fake-model call,
 // 80k trajectory tail bound), apply+audit+rollback integration, and the
 // /refine command face. The three safety disciplines run through every

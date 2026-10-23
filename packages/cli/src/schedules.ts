@@ -9,7 +9,7 @@
 // durable prompts run at the ASK permission tier — a spawned headless run is
 // non-interactive, so an ask denies (fail-closed, no human present; the
 // WUDAO_SCHEDULE_RUN marker names it in the deny reason).
-// ω99-5a (the upstream project scheduler parity): pause/unpause/run verbs + the triggeredBy
+// ω99-5a (goose scheduler parity): pause/unpause/run verbs + the triggeredBy
 // audit on every run. Negative rulings: (1) no job↔session foreign key — the
 // trigger source is audited only as schedule_run.triggeredBy ("cron" |
 // "manual") in the schedules session log; (2) no catch-up — unpause computes
@@ -326,7 +326,7 @@ export interface ScheduleDaemon {
   add(input: ScheduleAddInput): Promise<string>;
   /** Remove by id. */
   rm(id: string): Promise<string>;
-  /** ω99-5a: run a task now (the upstream project run_now — refuses a run already in
+  /** ω99-5a: run a task now (goose run_now — refuses a run already in
    *  flight; a manual run never advances the schedule). ω99-317: the
    *  management face adds two guards — a busy-session refusal (a bound task
    *  refuses while the host is mid-run, the 313 continue-lane skip semantics
@@ -746,7 +746,7 @@ export async function createScheduleDaemon(opts: ScheduleDaemonOptions): Promise
   // fire IS the notification), the bound-session CONTINUE lane (the ui
   // host's continueSession seam; same request prefix, cache law), and the
   // pre-313 SPAWN lane. Only a CRON fire advances the schedule; a manual
-  // run leaves it untouched (the upstream project run_now semantics).
+  // run leaves it untouched (goose run_now semantics).
   // 借鉴弧 α3: triggeredBy gains "miss-retry" — the bounded re-fire for a
   // consumed cron fire that never reached the model (the child stamped
   // UNREACHED on stderr). It shares manual's non-advancing semantics (the
@@ -937,8 +937,8 @@ export async function createScheduleDaemon(opts: ScheduleDaemonOptions): Promise
         if (triggeredBy !== "manual") await breakerStep(task.id, result.ok);
         // 借鉴弧 α3 — 漏火有界重跑：一次 cron fire 失败、子进程盖了 UNREACHED
         // 章（瞬态 provider 死 + 模型零接触——零 assistant/reasoning 字节 = 零
-        // 工具副作用，重跑安全性可证，the upstream session_api_calls==0 的对应判据），
-        // 且 armMissRetry 四门全过 → 武装 missRetryAt。通知抑制（the upstream「重跑
+        // 工具副作用，重跑安全性可证，hermes session_api_calls==0 的对应判据），
+        // 且 armMissRetry 四门全过 → 武装 missRetryAt。通知抑制（hermes「重跑
         // 期间不发失败通知」的对应件）：此刻不说「跑失败了」，说「没到达模型，
         // 将补跑」；补跑自身若再失败则走普通失败行（有界性不靠计数器，靠车道
         // 身份——miss-retry 的失败不再武装）。

@@ -55,7 +55,7 @@ export const ASK_REVIEW_DEFAULT_TIMEOUT_MS = 45_000;
  *  session in the same process inherits an open breaker) and resets only on
  *  process exit or the manual reset. Verdicts never count toward it (they
  *  carry no authority — there is no denial-storm threat to break, unlike
- *  the upstream projectreview.rs:240-299). */
+ *  codex review.rs:240-299). */
 export const ASK_REVIEW_FAILURE_BREAKER = 3;
 
 // ---------------------------------------------------------------------------
@@ -160,7 +160,7 @@ function canonicalReviewJson(value: unknown): string {
  *  message (the pre-rendered role-prefixed excerpt + the labeled asker block
  *  when an asker is present + the audited call as canonical JSON), and
  *  `tools: []` — no tool array means no MCP projection, so no executor MCP
- *  server availability can ever block or fail a review (the upstream projectae,
+ *  server availability can ever block or fail a review (codex e482cc66ae,
  *  inherited from ω-4e §3.5). The asker block rides per-line `task: `-prefixed
  *  inside delimiters only this builder emits: a brief line containing the
  *  literal `>>> CHILD TASK END` renders prefixed and cannot close the block
@@ -218,7 +218,7 @@ export type AskReviewTriggerResult =
  *  asker context. ALL conditions must hold; any miss = no model call and a
  *  byte-identical ask:
  *  1. child-originated ask (the ALS asker context — top-level asks never
- *     review: the upstream project's worker-only rule, inherited by ω-4e);
+ *     review: codex's worker-only rule, inherited by ω-4e);
  *  2. non-empty evidence excerpt (without genuine evidence there is nothing
  *     to judge authorization against — and intrinsic risk is the sidecar's
  *     job);

@@ -1,4 +1,4 @@
-// M70 §3 (the upstream format) — the /goal evaluator's model call is BACKGROUND (no human is
+// M70 §3 (CC) — the /goal evaluator's model call is BACKGROUND (no human is
 // blocking on the verdict): its ModelInput carries querySource "evaluator" so
 // the provider retry ladder's foreground-only allowlist bails immediately on
 // overload instead of amplifying a capacity cascade.

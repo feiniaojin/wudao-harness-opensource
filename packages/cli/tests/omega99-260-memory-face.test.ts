@@ -95,7 +95,7 @@ describe("ω99-260 R1 — memoryList()/memoryDecide()（面一 driver）", () =>
       systemPrompt: "s",
       summarize: summarizeToolCall,
     });
-    // 永续 v6 弧 A（the upstream project C3）钉随迁：回执多带 blocked=0（被拦学习输入计数，
+    // 永续 v6 弧 A（reef C3）钉随迁：回执多带 blocked=0（被拦学习输入计数，
     // 「已拦 N 条」的数据源；无工作区=无拦截，诚实 0）。
     expect(await driver.memoryList()).toEqual({ entries: [], blocked: 0 });
     // 决定缝同边界：无工作区的 ok/del 不抛——ok:false 的诚实拒答。
@@ -154,7 +154,11 @@ describe("ω99-260 R6 — 零演进源钉（session-engine / TUI /memory 零触�
     const engine = srcOf("driver/session-engine.ts");
     expect(engine).toContain("const pending = await surfacePendingReview(workspaceRoot);");
     expect(engine).toContain("memoryRecall: memoryRuntime.recall,");
-    expect(engine).toContain("memory: { store: openMemoryStore(workspaceRoot) },");
+    // M-Memory 弧第二半：模型工具面换轨长期记忆三件套（原 M49 挂载行
+    // memory: { store: openMemoryStore(workspaceRoot) } 退役；M49 的
+    // pending/recall/dream 面走 store 直连不受影响——上面两钉仍是本测试
+    // 的零演进证词）。钉随本提交再生：换轨行原样在场。
+    expect(engine).toContain("...(ltsMemory.enabled ? { longtermMemory: { store: ltsMemory.store } } : {}),");
   });
 
   it("TUI /memory 命令面零触碰：verb 族与用法行原样在场（web 缝绝不改命令面）", () => {

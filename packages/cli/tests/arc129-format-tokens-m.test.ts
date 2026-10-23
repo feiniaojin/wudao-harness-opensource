@@ -1,4 +1,4 @@
-// 129 弧（the upstream harness 8784a5946 同款 bug 引进修复）——formatTokensK 的 M 档。
+// 129 弧（OpenHands 8784a5946 同款 bug 引进修复）——formatTokensK 的 M 档。
 // 双镜像（cli/src/log.ts 与 web/src/log.ts 同式）双钉：本件钉 cli 侧，web 侧
 // 同形钉在 packages/web/tests/arc129-format-tokens-m.test.ts。
 // bug 形：≥999_950 时 k 路径印 "1000k"/"1050k"（无 M 档——DeepSeek V4 1M 窗下

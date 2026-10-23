@@ -1,7 +1,7 @@
-// 125 项 1（the upstream formatresolveCompactSpec 形）— 预留感知压缩触发线的钉子。
+// 125 项 1（dsh resolveCompactSpec 形）— 预留感知压缩触发线的钉子。
 //
 // 形状：threshold = min(thresholdRatio × window, window − outputReserve − headroom)
-// （the upstream formatpackages/compaction/compaction-basic/src/config.ts 的 resolveCompactSpec，
+// （dsh packages/compaction/compaction-basic/src/config.ts 的 resolveCompactSpec，
 // 1M 窗三次真实死亡的事故尸检背书）。三个不变量钉在本文件：
 //   1. reserve 缺席 = 平比 0.8（M24 行为锚点，字节不变）；
 //   2. ratio 帽是硬上限 —— 新公式永远 ≤ 旧公式（只在长输出时收紧）；

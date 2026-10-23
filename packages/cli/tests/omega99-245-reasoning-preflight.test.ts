@@ -324,7 +324,7 @@ describe("会话建立回执的健康摘要行（R5）", () => {
 });
 
 // ---------------------------------------------------------------------------
-// R4 — effort 窗口 pin 四转移（the upstream projectreasoning_effort.rs 范式；压缩不吞用户意图）。
+// R4 — effort 窗口 pin 四转移（codex reasoning_effort.rs 范式；压缩不吞用户意图）。
 // ①变更=轮界事件（next-turn-only 已有：运行中 /effort 只停泊 pendingModelApply）；
 // ②采样建 pin=轮起快照（run 内 modelLive 不变，采样与压缩共用——ω99-53 的
 // effortSent 桩是采样档位的可观测面）；③压缩只读快照绝不写状态（摘要请求携带

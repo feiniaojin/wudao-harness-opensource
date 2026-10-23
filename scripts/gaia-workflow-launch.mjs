@@ -6,8 +6,8 @@ import { execFileSync } from "node:child_process";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-const WUDAO = "external/packages/cli/dist/index.js";
-const RUNNER = "external/scripts/gaia-runner.js";
+const WUDAO = "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/index.js";
+const RUNNER = "~/xdev/github/wudao-harness-project/wudao-harness/scripts/gaia-runner.js";
 
 // Read tasks
 const tasksFile = process.argv[2];

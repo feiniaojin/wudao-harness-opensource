@@ -1,5 +1,5 @@
 // det-61-night-porting-4 — the deterministic behavior pins for 夜移 014
-// (/btw 缓存共享旁问, 真 the upstream formatsideQuestion.ts 的 wudao 适配). The feature
+// (/btw 缓存共享旁问, 真 CC sideQuestion.ts 的 wudao 适配). The feature
 // landed with cli unit tests (tests/btw-side-question.test.ts, 4 contracts);
 // this suite pays the det-44-style debt the same way det-57..det-60 did —
 // the behavior pinned inside the release-eval matrix, so a regression fails

@@ -1,4 +1,4 @@
-// 113-A4（the upstream format4ef97b92a9 裁决引进）——UTF-16 代理对安全截断原语。
+// 113-A4（dsh 4ef97b92a9 裁决引进）——UTF-16 代理对安全截断原语。
 //
 // 问题：`String.prototype.slice` 按 UTF-16 code unit 计数，cap 落在代理对
 // 的高位上时会把 emoji / CJK 扩展区字符（𠮷 类，U+20000 起的增补平面）

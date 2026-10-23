@@ -1,4 +1,4 @@
-// 121 §1 续章（the upstream projecthistory/notes 三仓收敛的第二面）— the model-side
+// 121 §1 续章（codex history/notes 三仓收敛的第二面）— the model-side
 // PROACTIVE-SAVE surface over long-task knowledge. search_history (the same
 // mining's first face) lets the model RETRIEVE what compaction swallowed, but
 // retrieval needs the model to remember to look; the missing half is the

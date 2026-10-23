@@ -1,5 +1,5 @@
 // det-76-night-porting-19 — the deterministic pins for 夜移 031 (torn-tail
-// JSONL self-heal + serialized session writes, ported from the upstream project's
+// JSONL self-heal + serialized session writes, ported from pi's
 // session/jsonl/storage.ts). A crash mid-append leaves a junk tail line that
 // pre-031 was silently skipped on every load FOREVER — and the next append
 // welded onto it, an unhealable mid-file break. The pure half of the port is
@@ -70,7 +70,7 @@ export const det76Eval: EvalDefinition<Record<string, never>, NightPorting19Evid
     need(e.missingNewline, "② a file whose final newline was lost must get it back before the next append welds");
     need(e.wholeFileTorn, "③ a single torn line as the whole file must heal to empty");
     need(e.trailingBlanks, "④ blank lines after the torn fragment must not rescue it");
-    need(e.midFileUntouched, "⑤ mid-file corruption must get NO verdict — history is never rewritten (the wudao divergence from the upstream project's fail-closed throw)");
+    need(e.midFileUntouched, "⑤ mid-file corruption must get NO verdict — history is never rewritten (the wudao divergence from pi's fail-closed throw)");
     need(e.healthyAndEmptyUntouched, "⑥ healthy and empty files must get no verdict");
 
     return errs;

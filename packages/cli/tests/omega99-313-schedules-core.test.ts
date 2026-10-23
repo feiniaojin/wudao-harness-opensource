@@ -1,7 +1,7 @@
 // ω99-313 — the structured-calendar scheduling pure layer's deterministic
 // acceptance: computeNextRun (at/every/weekly, LOCAL timezone Date math),
 // dueSchedules, and the missed-fire catch-up semantics (one fire per gap,
-// nextRun recomputed from NOW after the catch-up — the the upstream project paradigm).
+// nextRun recomputed from NOW after the catch-up — the nanobot paradigm).
 // Fixtures are pure values; the tmpdir store tests live in the daemon file.
 import { describe, it, expect } from "vitest";
 import {

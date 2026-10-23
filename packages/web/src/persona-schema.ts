@@ -67,7 +67,7 @@ export const PERSONA_ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 /** The layer-qualified reference syntax `<id>[:layers]` (iteration 2): the
  *  two PERSISTED persona references — settings.json persona.id (the global
  *  default) and a provider card's persona string — accept a layer qualifier:
- *  `the upstream format:headers` binds ONLY the headers layer, multi-layer joins
+ *  `a reference harness:headers` binds ONLY the headers layer, multi-layer joins
  *  with `+` (`headers+prompt`). The server's parsePersonaSpec is the gate;
  *  these helpers only compose/decompose the strings the pickers write. */
 export const PERSONA_LAYER_CHOICES: readonly { readonly value: string; readonly label: string }[] = [

@@ -1,19 +1,21 @@
-// 夜移 032 (the upstream projectturn_diff_tracker.rs port) — the per-run net file-change
+// 夜移 032 (codex turn_diff_tracker.rs port) — the per-run net file-change
 // ledger. Five sequential edits to one file leave five receipts and no answer
-// to "what did THIS run actually change?"; the tracker keeps the upstream project's
+// to "what did THIS run actually change?"; the tracker keeps codex's
 // baseline/current algebra: per path, the FIRST write's pre-state is the
 // baseline and the LAST write's bytes are the current, so the run's net diff
-// is one before→after pair no matter how many writes landed (the upstream project// baseline_by_path / current_by_path; the first-seen guard in apply_update).
-// Scope v1 (deliberate divergences from the upstream project):
+// is one before→after pair no matter how many writes landed (codex
+// baseline_by_path / current_by_path; the first-seen guard in apply_update).
+// Scope v1 (deliberate divergences from codex):
 //   * write_file/edit at the top-level session only — child sidechains and
-//     bookkeeping workspaces (agent memory, title calls) never report; the upstream project//     merges every environment keyed by environment_id.
+//     bookkeeping workspaces (agent memory, title calls) never report; codex
+//     merges every environment keyed by environment_id.
 //   * no rename pairs (wudao's write path has no move primitive) and no
 //     revision-keyed render cache (wudao renders once at run end, not
 //     continuously into a live pane) — both YAGNI here.
 //   * shell mutations are outside the ledger by construction; M32's
 //     external-change prober owns observing the filesystem, not this.
 //   * an identical-net write is still listed (evidence a run rewrote bytes
-//     to the same content); the upstream project's renderer drops left==right pairs.
+//     to the same content); codex's renderer drops left==right pairs.
 
 /** How the run first saw the file. */
 export type TurnDiffOp = "created" | "modified";

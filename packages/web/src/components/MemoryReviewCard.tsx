@@ -80,7 +80,7 @@ export function readMemoryEntries(r: unknown): readonly MemoryEntry[] | null {
  * unchanged = today's fetch-on-open bytes. */
 export function MemoryReviewCard({ client, memorySignature }: { readonly client: WudaoClient; readonly memorySignature?: string }): React.JSX.Element | null {
   const [entries, setEntries] = useState<readonly MemoryEntry[] | null>(null);
-  // 永续 v6 弧 A（the upstream project C3）：被拦学习输入计数（同一次 memoryList 回执捎带；
+  // 永续 v6 弧 A（reef C3）：被拦学习输入计数（同一次 memoryList 回执捎带；
   // 卡在场时随行显示「已拦 N 条」——被拦项绝不静默丢）。
   const [blocked, setBlocked] = useState(0);
   const [dismissed, setDismissed] = useState(false);

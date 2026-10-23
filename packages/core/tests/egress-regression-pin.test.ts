@@ -1,7 +1,7 @@
 // ω99-46 — the egress regression pin (brief §1.6): no package may install its
 // own undici dispatcher or construct a bare proxy agent outside the ONE
 // egress module — every outbound path must stay on the shared global seam so
-// the routing table (and its attribution) covers the whole process. a ref
+// the routing table (and its attribution) covers the whole process. dsh
 // enforces this with an AST gate; at wudao's M size the honest reduction is
 // a REGEX pin over src (documented in the arc report), which catches every
 // realistic drift shape (setGlobalDispatcher / new ProxyAgent /

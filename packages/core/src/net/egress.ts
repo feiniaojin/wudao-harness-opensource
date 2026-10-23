@@ -1,6 +1,6 @@
 // ω99-46 — egress proxy INSTALL: the transport half. It owns undici's global
 // dispatcher and the process-wide record of which policy is active — the
-// mechanism the the upstream formatstartup uses, with wudao's four additions (socks5
+// mechanism the dsh startup uses, with wudao's four additions (socks5
 // first-class, child-env overlay in scrubChildEnv's neighborhood, typed
 // proxy-failure attribution, atomic whole-table swap).
 //
@@ -14,7 +14,7 @@
 // seam or web_fetch's guard logic. (Raw `ws` sockets — Slack Socket Mode —
 // do not go through fetch/undici and stay direct; documented residual.)
 //
-// Disposal (the upstream formatinstall.ts semantics): dispose RESTORES the previous global
+// Disposal (dsh install.ts semantics): dispose RESTORES the previous global
 // dispatcher and policy, then CLOSES the routing agent — close, never
 // destroy, so a request already dispatched when the table swapped finishes
 // naturally. A swap is a whole-table replacement: the new agent is fully
@@ -35,7 +35,7 @@ type SocksModule = typeof import("fetch-socks");
 
 /** Test seams: inject recorders or a broken loader; defaults import the real
  *  packages (undici dynamically — the pure policy half carries no transport
- *  dependency, matching the the upstream formatsplit). */
+ *  dependency, matching the dsh split). */
 export interface EgressInstallSeams {
   readonly importUndici?: () => Promise<UndiciModule>;
   readonly importSocks?: () => Promise<SocksModule>;
@@ -165,7 +165,7 @@ function createRoutingAgent(policy: EgressPolicy & { kind: "routed" }, undici: U
       const proxy = route(String(origin));
       if (proxy === undefined) {
         // What undici's own default factory builds for these options (a
-        // direct Pool — a ref's direct arm, verbatim semantics).
+        // direct Pool — dsh's direct arm, verbatim semantics).
         return new undici.Pool(origin, opts);
       }
       return proxyDispatcherFor(proxy, opts, undici, socks);
@@ -178,7 +178,7 @@ export interface EgressInstallResult {
    *  red line) or when the install failed and the process stays direct. */
   readonly installed: boolean;
   /** Restores the previous global dispatcher + active policy, then closes
-   *  the routing agent (in-flight requests drain, the upstream formatclose-not-destroy). */
+   *  the routing agent (in-flight requests drain, dsh close-not-destroy). */
   readonly dispose: () => Promise<void>;
 }
 
@@ -189,7 +189,7 @@ export interface EgressInstallResult {
  * import, no dispatcher swap (byte-identical direct path). Over a previously
  * installed policy it installs a plain direct Agent, because recording `none`
  * while leaving the old agent routing would make `mode: off` a silent no-op
- * (a ref). Any install failure (import, agent construction) is the caller's to
+ * (dsh). Any install failure (import, agent construction) is the caller's to
  * warn about — this function never throws past the seams' own rejections;
  * on rejection the process simply stays direct.
  *
@@ -236,7 +236,7 @@ export async function installEgressProxy(policy: EgressPolicy, seams: EgressInst
     [undici, socks] = await Promise.all([importUndici(), importSocks()]);
   } catch {
     // A transport that cannot load leaves the process direct — the harness
-    // keeps starting (a ref: a proxy must not stop the agent).
+    // keeps starting (dsh: a proxy must not stop the agent).
     return { installed: false, dispose: async () => {} };
   }
   const previousDispatcher = undici.getGlobalDispatcher();

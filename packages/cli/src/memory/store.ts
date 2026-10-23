@@ -21,7 +21,7 @@ import { dirname } from "node:path";
 import { tokenSet, jaccard } from "../tokenize.js";
 import { appendRefinementAuditAt, readRefinementAuditAt } from "./refinements.js";
 import type { RefineEdit } from "./refinements.js";
-// 永续 v6 弧 A（the upstream project C3）——学习入口防污染的块档门：凭据值/指令覆盖形状在
+// 永续 v6 弧 A（reef C3）——学习入口防污染的块档门：凭据值/指令覆盖形状在
 // write()/update()（全部四条学习入口的汇聚点）之前硬拦。拦下的内容不落
 // 台账、不进 pending（pending 会把密钥明文持久化），改落可见的拦截台账。
 // 台账路径跟随本 store 自己的路径（会话自定 memoryDirectory 自动生效）。
@@ -139,7 +139,7 @@ export interface MemoryWriteInput {
    *  pure assessMemoryWrite is unchanged; the flag is consumed here, in
    *  write(), so every other caller keeps today's semantics. */
   readonly forcePending?: boolean;
-  /** 永续 v6 弧 A（the upstream project C3）：这条写入来自哪条学习入口（拦截台账的归因
+  /** 永续 v6 弧 A（reef C3）：这条写入来自哪条学习入口（拦截台账的归因
    *  维度；默认 memory_write——模型工具面、评审 fork、dream 子代理都从
    *  那道门进）。 */
   readonly source?: LearningSource;
@@ -191,7 +191,7 @@ function openMemoryStoreAt(path: string): MemoryStore {
   // ω-4f: the handle's seq counter. Initialized to max(seq)+1 at the first
   // readAll; `write()` then assigns `seq = next++` synchronously between its
   // readAll await and its append await, so interleaved write starts can never
-  // share a seq (single-threaded JS closes the upstream project's threading.Lock gap).
+  // share a seq (single-threaded JS closes nanobot's threading.Lock gap).
   // Per HANDLE by design — the driver opens one store (as the review fork
   // does); two live handles could double-assign (design 84 §6 risk 2).
   let nextSeq: number | undefined;
@@ -264,7 +264,7 @@ function openMemoryStoreAt(path: string): MemoryStore {
       await rewriteAll(entries.map((e) => (set.has(e.id) ? { ...e, surfaced: true } : e)));
     },
     async write(input) {
-      // 永续 v6 弧 A（the upstream project C3）——块档门在评估之前：凭据值/指令覆盖形状
+      // 永续 v6 弧 A（reef C3）——块档门在评估之前：凭据值/指令覆盖形状
       // 根本不进台账（pending 也会把密钥明文持久化）。拦下=留痕可见台账，
       // 绝不静默丢。台账落盘失败不掩盖拦截决定（决定已成立，日志尽力而为）。
       const screen = screenLearningInput(input.content);
@@ -347,7 +347,7 @@ function openMemoryStoreAt(path: string): MemoryStore {
       const target = trail.find((l) => l.refineId === refineId && l.outcome === "applied");
       if (target === undefined) return false;
       let entries = await readAll();
-      // Reverse-apply in REVERSE order (the upstream project rollbackProposal
+      // Reverse-apply in REVERSE order (prime-agent rollbackProposal
       // :813-845's discipline): create → remove; update → restore the
       // before snapshot at version+1 (a NEW ledger event, fresh seq — the
       // chain must show the restore, never pretend it didn't happen);
@@ -483,7 +483,7 @@ export function assessMemoryWrite(input: MemoryWriteInput, existing: readonly Me
 }
 
 // ---------------------------------------------------------------------------
-// 借鉴弧 C2（the upstream project C4）— 盲 held-out 的精化入口标记。
+// 借鉴弧 C2（a reference project C4）— 盲 held-out 的精化入口标记。
 // 纪律：从盲 held-out 评估结果派生的记忆条目必须携带 heldout 标签；
 // /refine 与 Dream 的输入组装处（refine.ts / dream.ts）以此标签过滤——
 // 密封套件的结果永不进入任何精化输入。套件名单本身密封在

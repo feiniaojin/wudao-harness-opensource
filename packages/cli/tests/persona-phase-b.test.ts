@@ -7,7 +7,7 @@
 //      full model turn of the live REPL loop (stream path).
 //   ④ /persona --off — the mismatch note the switch path already prints
 //      (final-review I1) was MISSING on the bootstrap fallback: a
-//      protocol-mismatched config persona (openai-responses = responses-only) fell back
+//      protocol-mismatched config persona (codex = responses-only) fell back
 //      silently. The --off confirmation must carry the same note, naming the
 //      protocol the LIVE wire speaks (openai-chat default, or wire=anthropic).
 import { describe, it, expect } from "vitest";
@@ -161,7 +161,7 @@ describe("Phase B ① — wire=anthropic reaches the anthropic adapter through t
 });
 
 describe("Phase B ④ — /persona --off mismatch note (protocol-mismatched bootstrap persona)", () => {
-  // openai-responses defines headers/body ONLY on `responses` — a protocol-mismatched
+  // codex defines headers/body ONLY on `responses` — a protocol-mismatched
   // bootstrap persona under every wire this test speaks.
   const CODEX_BOOT = { ...CFG, persona: { id: "openai-responses" } } as ProviderConfig;
 

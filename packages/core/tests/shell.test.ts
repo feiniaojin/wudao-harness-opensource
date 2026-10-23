@@ -107,7 +107,7 @@ describe("shell", () => {
     expect(res.content).toContain("[timeout after 0.1s]");
   });
 
-  // 波次 8 #43 (the upstream): exec()'s timeout kills ONLY the
+  // 波次 8 #43 (hermes kill_process_tree): exec()'s timeout kills ONLY the
   // direct child (the `sh -c` shell) — a backgrounded grandchild is reparented
   // and keeps running (writing, holding locks, eating the port). The fix kills
   // the whole PROCESS GROUP on POSIX. Witness: the command leaves its
@@ -132,7 +132,7 @@ describe("shell", () => {
     },
   );
 
-  // 借鉴弧 δ (the upstream harness 367ab084): the detached lane's stop path. The per-call
+  // 借鉴弧 δ (penguin 367ab084): the detached lane's stop path. The per-call
   // signal fires the SAME group TERM→KILL escalation as the timeout, but a
   // stop must never wear the timeout label — its own [stopped by user]
   // receipt lands instead, and the whole group (grandchild included) dies.

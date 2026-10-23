@@ -1,4 +1,4 @@
-// 133 #4（the upstream format collection-planner 轻量形）— todo 板生成器治理收据：
+// 133 #4（a reference harness collection-planner 轻量形）— todo 板生成器治理收据：
 // 四闸矩阵（frontier 帽/新完成门槛+首扩豁免/轮数帽/无增长熔断）、
 // 轮后归约、封盘终因二分、指令与通知文本有界。
 import { describe, expect, it } from "vitest";
@@ -48,7 +48,7 @@ describe("133 #4 — 四闸矩阵", () => {
   it("frontier 帽：在飞 ≥ frontierTarget 不扩；在飞 < 帽才扩", () => {
     const busy = census({ pending: 3, inProgress: 0, total: 5, incomplete: 3 });
     expect(checkTodoExpansion(busy, INITIAL_TODO_GENERATOR_STATE)).toEqual({ expand: false, suppressed: "frontier-busy" });
-    // 边界：incomplete 恰好 = frontierTarget → 不扩（the upstream format 的 < 语义）
+    // 边界：incomplete 恰好 = frontierTarget → 不扩（a reference harness 的 < 语义）
     const atCap = census({ pending: 3, incomplete: 3 });
     expect(checkTodoExpansion(atCap, INITIAL_TODO_GENERATOR_STATE).expand).toBe(false);
     // 在飞 2 < 3 → 首扩豁免 → 扩

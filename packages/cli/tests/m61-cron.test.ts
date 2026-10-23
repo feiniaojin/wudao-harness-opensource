@@ -299,7 +299,7 @@ describe("M61 §1 — fire semantics (idle-only, no catch-up, expiry)", () => {
   });
 });
 
-// ω-1 — the the upstream project dirty-flag pattern for fire persistence: mark the store
+// ω-1 — the nanobot dirty-flag pattern for fire persistence: mark the store
 // dirty BEFORE mutating in-memory fire state, clear only on a successful
 // save, flush a dirty store at the TOP of the tick (before anything
 // executes), and never let an older on-disk snapshot resurrect an

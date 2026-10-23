@@ -1,4 +1,4 @@
-// 夜移 003（2026-08-28 night porting，the upstream projecttime_reminder，设计加强）：
+// 夜移 003（2026-08-28 night porting，codex time_reminder，设计加强）：
 // 周期性把当前时间注入模型视野 —— 走既有 MetaNote 通道（projection-only、
 // 尾部追加、KV 前缀缓存安全、不落盘）；按墙钟漂移阈值触发（run 首轮必注入，
 // 其后 drift ≥ intervalMs 才再注入），时间串用确定性手排格式（无 locale 依赖）。

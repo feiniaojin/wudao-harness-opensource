@@ -142,7 +142,7 @@
    scroll threshold changed the content-box width, shifting the whole
    provider grid. A reserved gutter pins the content width. No-op (and
    harmless) where scrollbars overlay (macOS default).
-   116 弧 B：正文列同步自适应（the upstream format 配方，同 .chat 的 --content-max 派生）——
+   116 弧 B：正文列同步自适应（dsh 配方，同 .chat 的 --content-max 派生）——
    大屏表单不再满宽铺开（满宽表单列是 §3.e「窄死宽」的对偶病：宽了散、
    窄了挤），列帽随窗口舒展并在导航右侧居中；max-width 帽住 flex 项后
    margin auto 吸收剩余空隙（flex 行内 auto 边距=居中，flex:1 的 grow 停在
@@ -227,19 +227,19 @@
    该覆写退役，三选芯片的选中态走全局 .chip.on 的中性语（surface-2 + hair-2
    + text-1），芯片底不再是 accent 的消费角色。 */
 /* —— 120 弧「选择语言」（用户令 09-28：选中/未选中区分度太低，参考
-   the upstream format/claude.ai/the upstream project 重做）——116 的收权矫枉过正：三选芯片两态只差一级
+   dsh/claude.ai/codex 重做）——116 的收权矫枉过正：三选芯片两态只差一级
    几乎不可见的中性阶梯（bg+hair-1 ↔ surface-2+hair-2，同字重），设置页
-   tabs 又被撤了选中标记。120 定稿的选择规范（对齐 the upstream format SegmentedControl/
+   tabs 又被撤了选中标记。120 定稿的选择规范（对齐 dsh SegmentedControl/
    Switch + claude.ai 设置行）：
-   ① 分段选择（多选一）=「凹槽轨道 + 浮起药丸」——形态对比区分（the upstream format 的
+   ① 分段选择（多选一）=「凹槽轨道 + 浮起药丸」——形态对比区分（dsh 的
       elevation 语），不靠颜色：轨道是 surface-2 凹面（读作「一个地方」
       而非第二排按钮），选中段 = surface 实底 + elev-1 浮起 + text-1 +
       字重 600；未选中安静透明 + text-3。旧 .pick 芯片语言整体退役。
-   ② 二元开关（开/关状态）= 定制 switch，**on = accent 实底**（the upstream format 律：
+   ② 二元开关（开/关状态）= 定制 switch，**on = accent 实底**（dsh 律：
       状态才配得上颜色）——轨道 36×20 胶囊（角走 radius-sm 与全站 scale
       一致，999px 胶囊帽仍是退役项；thumb 走 50% 圆档），off = hair-3
       中性灰。原生 checkbox 全面替换。
-   ③ 设置行 = 标题+说明左 / 控件右 / hairline 分隔（claude.ai·the upstream format 行
+   ③ 设置行 = 标题+说明左 / 控件右 / hairline 分隔（claude.ai·dsh 行
       节奏）：.setrow 取代 .prefrow 的左对齐混排——说明文字降为 caption
       次行而不是括号挤在标题里。 */
 .segctl {
@@ -286,7 +286,7 @@
 .segctl-opt[data-swatch="green"] .segctl-dot { background: rgb(var(--swatch-jade-rgb)); }
 
 /* ② switch：原生 checkbox 的定制面（appearance:none 保留键盘/无障碍语义，
-   checked 态读 ARIA 原生真值——the upstream format「视觉态不可与 AT 读数失约」律）。 */
+   checked 态读 ARIA 原生真值——dsh「视觉态不可与 AT 读数失约」律）。 */
 input.wudao-switch {
   appearance: none;
   -webkit-appearance: none;
@@ -533,7 +533,7 @@ input.wudao-input.key-input:focus { border-color: var(--accent); }
 }
 @keyframes pop { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
 /* 116 弧 A「进度条按语义重审」的裁决：向导步进条保留 accent——首跑 onboarding
-   是 the upstream format 也放行品牌色的「仪式时刻」（116 §3.g-4），且全 app 只此一条非语义
+   是 dsh 也放行品牌色的「仪式时刻」（116 §3.g-4），且全 app 只此一条非语义
    进度线。工具卡的 .todo-bar 则迁 ok 语义色（完成度≠品牌）。 */
 .wiz-bar { height: 2px; background: var(--accent); transition: width var(--dur-med) var(--ease); }
 .wiz-head { display: flex; align-items: baseline; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--hair-1); }

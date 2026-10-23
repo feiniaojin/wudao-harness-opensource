@@ -338,7 +338,7 @@ describe("M61 §4 — the durable ask tier (re-review item 8 + ruling)", () => {
   });
 });
 
-// ω99-5a — the the upstream project daemon verbs: pause/unpause/run (run_now) + the
+// ω99-5a — the goose daemon verbs: pause/unpause/run (run_now) + the
 // triggeredBy audit on every spawned run. Pause never kills an in-flight
 // run; a manual run never advances the schedule.
 describe("ω99-5a — /schedule pause/unpause/run", () => {
@@ -472,7 +472,7 @@ describe("ω99-5a — /schedule pause/unpause/run", () => {
       await new Promise((r) => setTimeout(r, 25));
     }
     expect(runs).toEqual([id]);
-    // Still in the running set: a second manual run is refused (the upstream project run_now).
+    // Still in the running set: a second manual run is refused (goose run_now).
     expect(await daemon.runNow(id)).toMatch(/^⚠️.*已在运行/); // ω99-185: 钉随源演进（brief 漏列，census 兜出）
     expect(await daemon.runNow("zzzzzzzz")).toMatch(/^⚠️/);
     release?.();

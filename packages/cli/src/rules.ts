@@ -333,7 +333,7 @@ function normalizeRelPath(workspaceRoot: string, rawPath: string): string {
 
 /** True when one glob matches a workspace-relative posix path. A pattern
  *  with no `/` also matches the path's basename (`CLAUDE.md` matches
- *  `pkg/foo/CLAUDE.md`) — the friendly the upstream formatspelling. Pure. */
+ *  `pkg/foo/CLAUDE.md`) — the friendly CC spelling. Pure. */
 export function globMatchesPath(glob: string, relPath: string): boolean {
   const re = globToRegex(glob);
   if (re.test(relPath)) return true;

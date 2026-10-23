@@ -1,4 +1,4 @@
-// 125 项 1（the upstream projectnew_context 形）— the model-side context-rotation tests.
+// 125 项 1（codex new_context 形）— the model-side context-rotation tests.
 // Four contract faces pinned here:
 //   1. the loop-level fire: a new_context call lands a tier-2 rotation
 //      boundary (header + verbatim preserve + the summarizer instruction

@@ -102,7 +102,7 @@ const BOX_PROPS = {
 // --- §1: pure admission -------------------------------------------------------
 
 describe("ω99-55 §1 — the file lane's pure admission", () => {
-  it("any file kind attaches (no type kind — a ref: no whitelist)", () => {
+  it("any file kind attaches (no type kind — dsh: no whitelist)", () => {
     expect(fileRejectionKind({ type: "application/pdf", size: 10 }, [])).toBeNull();
     expect(fileRejectionKind({ type: "", size: 10 }, [])).toBeNull();
     expect(fileRejectionKind({ type: "application/octet-stream", size: 10 }, [])).toBeNull();

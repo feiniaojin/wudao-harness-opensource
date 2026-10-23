@@ -4,7 +4,7 @@
 // lands on the child's per-spawn FIFO mailbox and is consumed by the core
 // loop's EXISTING steering drain — the same path, the same onPromptSubmit
 // gate, the same `steered` event, the same append-only user turn (and the
-// child sidechain records it for free). Zero new loop concepts: a ref's
+// child sidechain records it for free). Zero new loop concepts: dsh's
 // child-side "safe step / inbox" is wudao's model-call boundary + steering
 // seam, reused verbatim.
 //

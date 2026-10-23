@@ -539,7 +539,7 @@ describe("runAgentLoop", () => {
 
     expect(terminal.reason).toBe("aborted");
     expect(Date.now() - t0).toBeLessThan(100); // settles promptly, doesn't wait for the hung tool
-    // 波次 8 #41 (the upstream format#13+#18): the hung tool's call is paired with the
+    // 波次 8 #41 (dsh #13+#18): the hung tool's call is paired with the
     // UNKNOWN-outcome synthetic so resume replays a paired history instead of
     // hitting repairOrphanedToolCalls' blind backfill. The model can tell
     // "may have side-effected — verify" from "never ran — safe to re-issue".
@@ -631,7 +631,7 @@ describe("runAgentLoop", () => {
 
     expect(terminal.reason).toBe("aborted");
     // The completed call's REAL result is no longer discarded by the abort
-    // skip — burning a finished side effect's output is the the upstream format#13 complaint.
+    // skip — burning a finished side effect's output is the dsh #13 complaint.
     const toolMsgs = state.messages.filter((m) => m.role === "tool");
     expect(toolMsgs).toHaveLength(2);
     expect(toolMsgs[0]).toMatchObject({ toolCallId: "c1", name: "fast" });
@@ -1138,10 +1138,10 @@ describe("tool_call_started precedes the gate (M45 §1.6)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 波次8 #45 (the upstream formatsession-checkpoint-policy): pre-dispatch durability barrier
+// 波次8 #45 (dsh session-checkpoint-policy): pre-dispatch durability barrier
 // ---------------------------------------------------------------------------
 
-describe("波次8 #45 (a ref #17): onBeforeToolDispatch — the tool phase runs only after the session barrier", () => {
+describe("波次8 #45 (dsh #17): onBeforeToolDispatch — the tool phase runs only after the session barrier", () => {
   const probe = (name: string) => buildTool({
     name, description: "test probe",
     parameters: { type: "object", properties: {}, additionalProperties: false },

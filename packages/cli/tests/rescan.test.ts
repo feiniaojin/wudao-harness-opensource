@@ -80,7 +80,7 @@ function writeSkill(ws: string, name: string, description = `the ${name} skill`)
   writeFileSync(join(dir, "SKILL.md"), `---\nname: ${name}\ndescription: ${description}\n---\n\n${name} body\n`, "utf8");
 }
 
-/** A minimal the upstream formatplugin under the project root: manifest + optional assets. */
+/** A minimal CC plugin under the project root: manifest + optional assets. */
 function writePlugin(ws: string, dir: string, assets: { hooks?: boolean; mcp?: boolean; skill?: string }): string {
   const pluginDir = join(ws, ".wudao", "plugins", dir);
   mkdirSync(join(pluginDir, ".claude-plugin"), { recursive: true });

@@ -1,5 +1,5 @@
 // 96 队列 P1-6 — durable delivery-obligation ledger for the Slack gateway's
-// FINAL replies (the upstream format gateway/delivery_ledger.py paradigm). A final
+// FINAL replies (a reference harness gateway/delivery_ledger.py paradigm). A final
 // response that was generated but not yet platform-ACKed is the one artifact
 // the gateway loses without a trace: the turn already burned its tokens and
 // the text lives only in a local. Three checkpoints bracket the send:
@@ -24,7 +24,7 @@
 //
 // EVERYTHING here is best-effort by design (红线 1): a ledger failure must
 // never block or delay the real send, so all IO exceptions are swallowed
-// inside the module with one log line each — unlike the upstream, which makes
+// inside the module with one log line each — unlike hermes, which makes
 // callers wrap every call, wudao keeps the try/catch inside so the call face
 // stays clean.
 //

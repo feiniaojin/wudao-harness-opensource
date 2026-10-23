@@ -4,7 +4,7 @@
 // blob-URL drafts (browser-only), exchanges them for durable refs through
 // attachmentSave at submit, and history thumbnails re-fetch refs through
 // attachmentGet into a generation-guarded blob-URL cache that is disposed
-// wholesale when the session id changes (a ref's Chat UI pattern).
+// wholesale when the session id changes (dsh's Chat UI pattern).
 //
 // Mirrors the store's admission numbers (packages/core/src/attachments.ts):
 // maxImages 9, cumulative base64 budget 20MiB. The pre-flight here is UX, not
@@ -187,7 +187,7 @@ export function readFileAsBase64(file: File): Promise<string> {
 // attachment domain, two lanes: images keep the thumbnail pipeline above;
 // ANY other file kind enters here. Mirrors core's saveFiles admission
 // numbers (packages/core/src/attachments.ts): maxFiles 9, cumulative base64
-// budget 50MiB, NO type whitelist (a ref: the harness stores bytes and lets
+// budget 50MiB, NO type whitelist (dsh: the harness stores bytes and lets
 // the model read them lazily — a cap would govern transfer policy, not
 // request safety). Pre-flight here is UX; the driver's store re-checks
 // fail-closed.
@@ -320,7 +320,7 @@ export interface AttachmentRefLike {
 export type AttachmentFetcher = (ref: AttachmentRefLike) => Promise<{ readonly data: string; readonly mediaType: string }>;
 
 /** The blob-URL cache for history images, guarded by a session generation
- *  counter (the upstream formatresearch 40 §2). One generation = one session id: switching
+ *  counter (dsh research 40 §2). One generation = one session id: switching
  *  sessions revokes every URL wholesale, and a load that lands after the
  *  bump is dropped (its blob URL revoked immediately) — a slow fetch for the
  *  OLD session can never hand the new session a stale URL. */

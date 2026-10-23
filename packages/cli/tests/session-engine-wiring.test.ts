@@ -209,7 +209,7 @@ describe("defaultPermissionMode boot chain (0.3.11; 0.3.12 trio)", () => {
   });
 });
 
-// 夜移 032 (the upstream projectturn-diff) — the engine-side wiring pin: createDriverSession
+// 夜移 032 (codex turn-diff) — the engine-side wiring pin: createDriverSession
 // threads ONE tracker instance into BOTH its buildToolSet (the engine-built
 // write_file records committed writes) and the driver (reset at run start,
 // receipt at run settle). A scripted write run through the ENGINE's own tool

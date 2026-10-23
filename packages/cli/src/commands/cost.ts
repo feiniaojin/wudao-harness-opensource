@@ -109,7 +109,7 @@ export function formatCostReport(
 }
 
 // ---------------------------------------------------------------------------
-// M56 §3 — the cost stack core (the upstream format cost_status, pragmatic v1).
+// M56 §3 — the cost stack core (a reference harness cost_status, pragmatic v1).
 //
 // Per-session ledger of per-call rows; the price table comes from env
 // WUDAO_PRICE_<MODEL> = "in,out,cacheRead,cacheWrite" (per-M-USD). The
@@ -163,7 +163,7 @@ function priceFor(table: ReadonlyMap<string, PriceEntry>, model: string): PriceE
 }
 
 // ---------------------------------------------------------------------------
-// 借鉴弧 B1（the upstream project C1）— 压缩经济学的定价解析。ratio 不手填（N7 负裁决的
+// 借鉴弧 B1（a reference project C1）— 压缩经济学的定价解析。ratio 不手填（N7 负裁决的
 // 正面侧）：catalog pin（registry models[].prices，文档核实才钉）>
 // WUDAO_PRICE_<MODEL> env（/cost 的既有价目约定）> 保守缺省；来源类型化在
 // ratioSource 上，不暴露为用户配置。纯函数。
@@ -209,7 +209,7 @@ export interface CostRow {
   readonly costUsd: number | null;
 }
 
-/** Session-cumulative cost + completeness (the upstream's priced/unpriced split). */
+/** Session-cumulative cost + completeness (a reference harness's priced/unpriced split). */
 export interface CostSummary {
   readonly calls: number;
   readonly pricedTurns: number;

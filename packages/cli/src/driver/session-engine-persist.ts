@@ -91,7 +91,7 @@ export function createSessionPersistenceSeams(ctx: SessionPersistCtx): Pick<
         persistFailed(e);
       });
     },
-    // 波次 8 #45 (the upstream formatsession-checkpoint-policy): the pre-dispatch durability
+    // 波次 8 #45 (dsh session-checkpoint-policy): the pre-dispatch durability
     // barrier — the ORDERED PREFIX (everything selectMessagesToPersist would
     // pick from the messages the loop hands us, i.e. the user turn and each
     // tool-carrying assistant plus any real messages before it) lands on the

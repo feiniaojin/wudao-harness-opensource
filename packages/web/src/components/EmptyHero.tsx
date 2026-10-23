@@ -28,12 +28,19 @@ export interface AwaitingSessionName {
   readonly title: string;
 }
 
-export function EmptyHero({ awaiting, onOpenSession }: {
+export function EmptyHero({ awaiting, onOpenSession, onResumeLatest, onAskFromHistory }: {
   /** The sessions waiting on your authorization (optional — absent mounts
    *  render no naming line, byte-identical to the pre-251 hero). */
   awaiting?: readonly AwaitingSessionName[];
   /** The existing selection lane a named session's click rides. */
   onOpenSession?: (id: string) => void;
+  /* 小精灵会话弧 — 空态双入口（OPTIONAL——prop 缺席挂载零按钮，字节同形，
+   * 251 点名行同款零噪音门；App 只在有历史会话时接线）：「继续上次会话」=
+   * 恢复最近一条（既有 resume 通路）；「从历史会话提问」=打开会话选择器，
+   * 选中后走追问流（fork 副本继续问，原对话不动）。文案收益向——「副本/
+   * fork」是实现词，行内不出现。 */
+  onResumeLatest?: () => void;
+  onAskFromHistory?: () => void;
 } = {}): React.JSX.Element {
   const names = awaiting !== undefined && onOpenSession !== undefined && awaiting.length > 0 ? awaiting : null;
   return (
@@ -41,6 +48,20 @@ export function EmptyHero({ awaiting, onOpenSession }: {
       <h1>你好呀，我是悟道Harness</h1>
       <p>你的桌面 AI 搭子——读文件、写代码、改 bug、查资料，都能直接在你电脑上替你干完；聊出来的东西也能顺手做成文档和表格。</p>
       <p className="hero-hint">想到什么，直接打字吩咐我就行。</p>
+      {onResumeLatest !== undefined || onAskFromHistory !== undefined ? (
+        <div className="hero-actions">
+          {onResumeLatest !== undefined ? (
+            <button type="button" className="hero-act" onClick={onResumeLatest}>
+              继续上次会话
+            </button>
+          ) : null}
+          {onAskFromHistory !== undefined ? (
+            <button type="button" className="hero-act" onClick={onAskFromHistory}>
+              从历史会话提问
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {names !== null ? (
         <p className="hero-await" role="status">
           有 {names.length} 个会话在等你授权：

@@ -78,6 +78,9 @@ import { mcpRuntimeSnapshot } from "../mcp/tools.js";
 import { redactUrl } from "../mcp/http.js";
 import type { Mode } from "../permission.js";
 import type { AgentDriver } from "./agent-driver.js";
+// 小精灵会话弧 — 会话级 fork 复用 CLI --fork-session 的实现（字节复制 +
+// 120-a A3 的 rewind lineage 继承），经 op 通道（resume 携 fork:true）暴露。
+import { forkSessionFile } from "../fork-session.js";
 import type { UiDriverPort } from "@wudao/server";
 import { createAttachmentOps } from "./attachment-ops.js";
 // cc-plugins C1 — the plugin-management ops ride the SAME A1/A2 marketplace
@@ -402,7 +405,7 @@ export function personaReferenceId(raw: string): string {
   return parsed.ok ? parsed.id : raw;
 }
 
-// R6 quickwin (the upstream projectmodel-selector pattern) — the Ctrl+S-persisted pick
+// R6 quickwin (pi model-selector pattern) — the Ctrl+S-persisted pick
 // defaults. The web pickers apply a pick session-scoped (Enter/click rides
 // /model or /effort — next turn only); Ctrl/Cmd+S ALSO writes it here, and
 // the `wudao ui` boot applies it when no explicit flag/env pins the field
@@ -1477,7 +1480,7 @@ export function withSettingsOps(driver: AgentDriver, deps: SettingsOpsDeps): UiD
     // boundary translation, not trust.
     submit: (text, opts) => driver.submit(text, opts as Parameters<AgentDriver["submit"]>[1]),
     interrupt: () => driver.interrupt(),
-    // 借鉴弧 δ（the upstream harness 367ab084）— the mid-flight detach face over the port
+    // 借鉴弧 δ（penguin 367ab084）— the mid-flight detach face over the port
     // (both faces ride this wrapper: the CLI REPL's injected driver and the
     // desktop server's). Verbatim verdict relay; the typed refusals are the
     // web busy-row button's disable/reply surface.
@@ -1507,6 +1510,23 @@ export function withSettingsOps(driver: AgentDriver, deps: SettingsOpsDeps): UiD
     // 漏了这条转发，server 会误答 not supported 而续跑车道死路——283 #7
     // 教训重演）。
     continueSession: (id) => driver.continueSession(id),
+    // 小精灵会话弧 — 会话级 fork（server 的 resume 携 fork:true 时调用）：
+    // forkSessionFile 字节复制源会话到全新 id（原会话永不以写模式打开），
+    // 再把本 driver resume 到副本上（fork+resume 两段合一，一次回执）。
+    // busy 拒（主车道换血不能打断运行中的回合——老 server resume 的 UI
+    // busy 门同判据，这里是服务端底线）；源不存在/不可读拒 not_found
+    // （回执联合镜像见 ports.ts 的 forkSession 注释）。
+    forkSession: async (id: string): Promise<unknown> => {
+      if (driver.getStatus().busy) return { ok: false, reason: "busy" };
+      let fork: { readonly newId: string };
+      try {
+        fork = await forkSessionFile(join(deps.workspaceRoot, ".wudao", "sessions"), id);
+      } catch {
+        return { ok: false, reason: "not_found" };
+      }
+      const outcome = await driver.resume(fork.newId);
+      return outcome.ok ? { ok: true, forkedId: fork.newId } : outcome;
+    },
     resume: (id) => driver.resume(id),
     rewind: (target) => driver.rewind(target),
     beginEdit: (n) => driver.beginEdit(n),

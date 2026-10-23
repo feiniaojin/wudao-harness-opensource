@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// 永续 v6 wave2（the upstream project C1）——改进提案门禁的子进程入口（CLI 侧 gate.ts 以
+// 永续 v6 wave2（reef C1）——改进提案门禁的子进程入口（CLI 侧 gate.ts 以
 // `node …/dist/gate-cli.js --proposal <json> --out <json>` 拉起）。为什么是
 // 子进程而不是 cli 直接 import：工作区依赖图必须无环（server/ports.ts 的
 // 既律——@wudao/evals 依赖 wudao-harness（要用真套件），cli 不能反向依赖

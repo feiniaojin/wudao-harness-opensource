@@ -3,7 +3,7 @@
 // construction (kill switch / $SHELL / supported kind — zero cost when the
 // feature is absent) and otherwise returns a memoized provider:
 //   - LAZY: nothing spawns until the first host-path shell asks;
-//   - SINGLE-FLIGHT: concurrent callers share one spawn (the upstream project's OnceCell);
+//   - SINGLE-FLIGHT: concurrent callers share one spawn (codex's OnceCell);
 //   - FAILURE-CACHED: a spawn error, non-zero exit, timeout, over-cap
 //     (>512 KiB) or unparseable output resolves undefined FOR THE REST OF
 //     THE SESSION (never retried) with one warn line — worst case is 10 s
@@ -46,7 +46,7 @@ export type SpawnShellFn = (
 ) => SpawnShellChild;
 
 /** Test/injection seams. `env` defaults to the process env (also what the
- *  ablation check reads); `timeoutMs` defaults to the the upstream project10 s bound
+ *  ablation check reads); `timeoutMs` defaults to the codex 10 s bound
  *  (shrinkable for the §5 timeout case). */
 export interface ShellSnapshotDeps {
   readonly env?: NodeJS.ProcessEnv;
@@ -61,7 +61,8 @@ const errMsg = (err: unknown): string =>
   (err instanceof Error ? err.message : String(err)).replace(/\s+/g, " ").trim();
 
 // The real capture spawn: $SHELL -c <script>, cwd pinned to the workspace
-// root, stdout piped, stderr ignored, killed with SIGKILL on timeout (the upstream project// kills on drop). Non-zero exit and spawn errors surface as a rejection.
+// root, stdout piped, stderr ignored, killed with SIGKILL on timeout (codex
+// kills on drop). Non-zero exit and spawn errors surface as a rejection.
 const defaultSpawnShell: SpawnShellFn = (shellPath, args, options) => {
   const child = spawn(shellPath, [...args], {
     cwd: options.cwd,

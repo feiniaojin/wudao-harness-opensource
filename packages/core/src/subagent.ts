@@ -12,7 +12,7 @@ import { repairOrphanedToolCalls } from "./session/validate.js";
 // ω99-57: child→parent mail — the ambient scope + the global tool's
 // delivery/format constants (agents/mail.ts owns the model-visible face).
 import { runWithMailScope, formatMailText, MAIL_FORK_REFUSAL, SUBAGENT_MESSAGE_TYPE } from "./agents/mail.js";
-// 128-3（the upstream project3d 引进）— per-chain 压缩所有权的投影件过滤所需前缀。
+// 128-3（codex 21eb35513d 引进）— per-chain 压缩所有权的投影件过滤所需前缀。
 import { SUMMARY_MARKER, COMPACTION_STUB_PREFIX, CLEARED_MARKER, EMERGENCY_DROP_PREFIX, SKILL_PRUNED_PREFIX } from "./compaction-markers.js";
 import type { MailScope } from "./agents/mail.js";
 
@@ -92,7 +92,8 @@ export interface RunSubagentOptions {
    *  first message is the steering seam over an existing transcript) —
    *  both combinations fail closed below. */
   readonly promptImages?: readonly ImageBlock[];
-  /** ω99-55: files NEVER ride child input — the child domain law (the upstream format   *  mirror: "subagents do not upload files independently"). The option
+  /** ω99-55: files NEVER ride child input — the child domain law (dsh
+   *  mirror: "subagents do not upload files independently"). The option
    *  exists only to make the refusal STRUCTURAL: any caller reaching for it
    *  fails closed here, before a session is created or the loop runs. The
    *  supported hand-off is by PATH — the parent's attachment handle names
@@ -147,7 +148,7 @@ export interface RunSubagentOptions {
   /** M63-C §3: the subagent-position hooks (from the role profile's
    *  frontmatter/hooks node) — armed for THIS child's run only. */
   readonly runHooks?: import("./loop.js").AgentHooks;
-  /** ω99-5b §B: the structured finishing tool's name (the upstream project final_output
+  /** ω99-5b §B: the structured finishing tool's name (goose final_output
    *  parity). When set and the transcript carries a tool_use of that name,
    *  the report is that call's arguments as canonical JSON — providers shape
    *  tool arguments far more reliably than free text, so the captured call
@@ -204,7 +205,7 @@ export interface SubagentRunInfo {
    *  prefix-cache savings — a multi-agent run's cache numbers sum across its
    *  nodes (Strands accumulates the same counters). */
   readonly usage: { readonly promptTokens: number; readonly completionTokens: number; readonly cacheHitTokens: number };
-  /** 133 #6（the upstream projectce 形）— the run's terminal shape, additive: the
+  /** 133 #6（codex 63475131ce 形）— the run's terminal shape, additive: the
    *  reason (completed runs read "completed"), and on a loop-safety abort
    *  the evidence + the denial-circuit flag. The PARENT's Task tool consumes
    *  these to select the behavioral-contract notification. */
@@ -346,7 +347,7 @@ export async function runSubagent(options: RunSubagentOptions): Promise<string> 
   // `state` is assigned as the first statement inside the try; flush() can
   // only run after that (the initial flush call is the next statement).
   let state: AgentState;
-  // 128-3（the upstream project3d 引进）— per-chain 压缩所有权：sidechain 持久化
+  // 128-3（codex 21eb35513d 引进）— per-chain 压缩所有权：sidechain 持久化
   // 从索引基改为身份基 + 投影件过滤（TUI 主链 persist.ts 的同律）。
   //
   // 旧索引基的静默证据损毁（本弧的测试亲证 9/12）：tier-2 压缩把
@@ -451,7 +452,7 @@ export async function runSubagent(options: RunSubagentOptions): Promise<string> 
       // 夜移 036: the session-tree budget is SHARED (same instance — the
       // child's responses draw from the parent's pool) but the child gets
       // its OWN threadId, so reminder dedup is per-thread: a reminder the
-      // root just received does not suppress the child's (the upstream project: every
+      // root just received does not suppress the child's (codex: every
       // thread observes crossed thresholds). Both passes below spread this
       // same object — the grace turn is the same thread.
       ...(options.loopOptions.sessionBudget !== undefined
@@ -611,7 +612,7 @@ export async function runSubagent(options: RunSubagentOptions): Promise<string> 
             role: mailRole,
             send: async (content: string): Promise<void> => {
               // (a)+(b): deliver to the parent lane FIRST — lane acceptance
-              // is the commitment (a ref: inbox acceptance precedes everything).
+              // is the commitment (dsh: inbox acceptance precedes everything).
               options.parentMail!.deliver(formatMailText(childIdentity, mailRole, content));
               // (c): the child-side record rides its own sidechain (M35 §2
               // generic entry, the ω99-43 receipts' channel shape). Best

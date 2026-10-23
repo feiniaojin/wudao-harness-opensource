@@ -1,4 +1,4 @@
-// M36: the upstream harness plugin compatibility — discovery (`.wudao/plugins/*/` +
+// M36: Claude Code plugin compatibility — discovery (`.wudao/plugins/*/` +
 // `<globalHome>/plugins/*/` (A2 user scope) + `--plugin <path>`), read-only
 // asset mapping (skills / commands / mcp / hooks), warn+skip for unsupported
 // assets, and the config merges the CLI feeds into its existing seams.
@@ -341,7 +341,7 @@ describe("expandCommandTemplate", () => {
   it("$ARGUMENTS expands to the whole trimmed arg string (inner spacing preserved)", () => {
     expect(expandCommandTemplate("run $ARGUMENTS now", " fix  the bug ")).toBe("run fix  the bug now");
   });
-  it("$ARGUMENTS[N]/$N are 0-BASED positionals (the upstream format parity — the unified D2 expander); missing positions expand to empty", () => {
+  it("$ARGUMENTS[N]/$N are 0-BASED positionals (CC parity — the unified D2 expander); missing positions expand to empty", () => {
     expect(expandCommandTemplate("first=$0 second=$1 third=$2", "alpha beta")).toBe("first=alpha second=beta third=");
     expect(expandCommandTemplate("a=$ARGUMENTS[0] b=$ARGUMENTS[1]", "x y")).toBe("a=x b=y");
   });
@@ -380,7 +380,7 @@ describe("buildPluginCommandMessage", () => {
 // ---------------------------------------------------------------------------
 
 describe("plugin MCP config", () => {
-  it("accepts the the upstream format mcpServers key and our servers key; .mcp.json wins over mcp.json", () => {
+  it("accepts the CC mcpServers key and our servers key; .mcp.json wins over mcp.json", () => {
     const { ws, cleanup } = tmpWs();
     const warnings: string[] = [];
     try {
@@ -436,13 +436,14 @@ describe("plugin MCP config", () => {
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// E1 — the the upstream formathook-event-name mapping, widened to the full 21-event canonical
+// E1 — the CC hook-event-name mapping, widened to the full 21-event canonical
 // set (superpowers' SessionStart must compile onto our onSessionStart face).
 // ---------------------------------------------------------------------------
 
-/** The the upstream format→canonical vocabulary, pinned HERE as independent test data — not
+/** The CC→canonical vocabulary, pinned HERE as independent test data — not
  *  imported from the loader — so the matrix fails if either side drifts.
- *  (onTeammateIdle IS canonical since the M64 fleet merge but has NO the upstream format *  spelling — the loader excludes it from alias derivation, pinned in the
+ *  (onTeammateIdle IS canonical since the M64 fleet merge but has NO CC
+ *  spelling — the loader excludes it from alias derivation, pinned in the
  *  matrix test below.) */
 const CC_EVENT_NAMES: Readonly<Record<string, string>> = {
   UserPromptSubmit: "onPromptSubmit",
@@ -468,12 +469,12 @@ const CC_EVENT_NAMES: Readonly<Record<string, string>> = {
 };
 
 describe("plugin hooks", () => {
-  it("HOOK_EVENT_MAP: every canonical key self-maps, every the upstream format name lands on its canonical, v1 aliases kept, no strays", () => {
+  it("HOOK_EVENT_MAP: every canonical key self-maps, every CC name lands on its canonical, v1 aliases kept, no strays", () => {
     // canonical names are themselves accepted keys
     for (const event of CANONICAL_HOOK_EVENTS) {
       expect(HOOK_EVENT_MAP[event]).toBe(event);
     }
-    // every the upstream formatspelling maps to its canonical face
+    // every CC spelling maps to its canonical face
     for (const [cc, canonical] of Object.entries(CC_EVENT_NAMES)) {
       expect(HOOK_EVENT_MAP[cc]).toBe(canonical);
     }
@@ -483,12 +484,12 @@ describe("plugin hooks", () => {
     // exactly the three families — no stray aliases
     const expectedKeys = [...new Set([...CANONICAL_HOOK_EVENTS, "preToolUse", "postToolUse", ...Object.keys(CC_EVENT_NAMES)])];
     expect(Object.keys(HOOK_EVENT_MAP).sort()).toEqual(expectedKeys.sort());
-    // the wudao-specific canonical face grows no bogus "minus-on" the upstream formatalias
+    // the wudao-specific canonical face grows no bogus "minus-on" CC alias
     expect("TeammateIdle" in HOOK_EVENT_MAP).toBe(false);
     expect(HOOK_EVENT_MAP["onTeammateIdle"]).toBe("onTeammateIdle");
   });
 
-  it("round-trip: every the upstream format event name compiles onto its canonical face (the full event surface)", () => {
+  it("round-trip: every CC event name compiles onto its canonical face (the full event surface)", () => {
     const { ws, cleanup } = tmpWs();
     const warnings: string[] = [];
     try {
@@ -501,7 +502,7 @@ describe("plugin hooks", () => {
       const [p] = load(ws, [], (m) => warnings.push(m));
       expect(warnings).toEqual([]);
       for (const canonical of CANONICAL_HOOK_EVENTS) {
-        // onTeammateIdle has no the upstream formatspelling (loader exclusion) — nothing was
+        // onTeammateIdle has no CC spelling (loader exclusion) — nothing was
         // written for it, so it stays undefined; every other face is covered.
         if (canonical === "onTeammateIdle") {
           expect(p?.hooks[canonical]).toBeUndefined();
@@ -556,7 +557,7 @@ describe("plugin hooks", () => {
   });
 
   // cc-plugins E4: every plugin hook entry carries pluginRoot (the install
-  // dir) — the upstream's ${CLAUDE_PLUGIN_ROOT} convention depends on it at fire time.
+  // dir) — CC's ${CLAUDE_PLUGIN_ROOT} convention depends on it at fire time.
   it("pluginRoot stamped: flat and group-nested entries both carry the plugin's install dir", () => {
     const { ws, cleanup } = tmpWs();
     const warnings: string[] = [];
@@ -750,8 +751,8 @@ describe("formatPluginList / pluginMain", () => {
 });
 
 // ---------------------------------------------------------------------------
-// M40 §2 — the upstream formatplugin agents/*.md translation. Frontmatter name/description/
-// tools?/model? + body → AgentRoleProfile; tools map through the the upstream formatalias
+// M40 §2 — CC plugin agents/*.md translation. Frontmatter name/description/
+// tools?/model? + body → AgentRoleProfile; tools map through the CC alias
 // table (unknown names warn + drop); model pins only for known providers;
 // unsupported frontmatter fields warn. Roster precedence: builtin < plugin <
 // workspace (pinned in core's roster tests + the task-tool threading test).
@@ -803,7 +804,7 @@ describe("plugin agents translation", () => {
       expect(a.profile.id).toBe("code-reviewer");
       expect(a.profile.description).toBe("Reviews code changes line by line");
       expect(a.profile.systemPrompt).toBe("You are a meticulous code reviewer.\nCite file paths.\n");
-      // the upstream formataliases translate; native names pass through.
+      // CC aliases translate; native names pass through.
       expect(a.profile.toolNames).toEqual(["read_file", "grep", "read_file"]);
       expect(warnings).toEqual([]);
     } finally {

@@ -71,7 +71,7 @@ import { det53Eval } from "./det-53-m63-provider-desktop.js";
 import { det50Eval } from "./det-50-m64-fleet.js";
 // M81: workspace-ux dual-root boundary matrix (det-51 — the acceptance gate).
 import { det51Eval } from "./det-51-workspace-dual-root.js";
-// cc-plugins E2: the the upstream formatplugin compatibility fixture eval — the Batch A-E
+// cc-plugins E2: the CC plugin compatibility fixture eval — the Batch A-E
 // surface end to end (det-52).
 import { det52Eval } from "./det-52-cc-plugins.js";
 // 2026-08-23 persona 层（det-55 — 分层 wire 字节纪律 + 双向工具名映射）。
@@ -2982,7 +2982,7 @@ const deferredToolsEval: EvalDefinition<{ workspaceRoot: string }, DeferToolsEvi
 
 
 // ---------------------------------------------------------------------------
-// det-26: the upstream formatplugin compatibility (M36) — a fixture plugin dir (1 skill +
+// det-26: CC plugin compatibility (M36) — a fixture plugin dir (1 skill +
 // 1 command + mcp + agents) loads read-only onto our mechanisms:
 // the skill feeds the SAME LoadedSkill list (prompt manifest + /skill:), the
 // command expands its template through the /skill: submission pipeline, the
@@ -3013,7 +3013,7 @@ const PLUGIN_SKILL_TEXT =
   "---\nname: greet\ndescription: Plugin greeting conventions\n---\n\n# Greet\n\nThe plugin greeting sentinel is PLUGIN-SKILL-2601.\n";
 const PLUGIN_COMMAND_TEXT =
   // cc-plugins D2: `$0` — the FIRST positional under the unified expander's
-  // 0-based the upstream formatsemantics (the M36-era 1-based `$1` was the deviation).
+  // 0-based CC semantics (the M36-era 1-based `$1` was the deviation).
   "---\ndescription: Say hello\n---\n\nSay hello to $ARGUMENTS (first: $0).";
 
 const pluginCompatEval: EvalDefinition<{ workspaceRoot: string }, PluginCompatEvidence> = {
@@ -4639,7 +4639,7 @@ interface M49Evidence {
     readonly duplicateStatus: string | undefined;
     readonly userScopeStatus: string | undefined;
     readonly sensitiveReason: string | undefined;
-    /** 永续 v6 弧 A（the upstream project C3）：块档门证据（凭据值拒而不入；台账留痕脱敏带来源）。 */
+    /** 永续 v6 弧 A（reef C3）：块档门证据（凭据值拒而不入；台账留痕脱敏带来源）。 */
     readonly blockedTier: { readonly refused: boolean; readonly reasons: string; readonly ledgerCount: number; readonly ledgerRedacted: boolean; readonly ledgerSource: string };
   };
   readonly pendingFlow: {
@@ -4671,7 +4671,7 @@ const m49MemoryEval: EvalDefinition<{ workspaceRoot: string }, M49Evidence> = {
     const root = ctx.workspaceRoot;
 
     // ---- Lane 1: the write-assessment matrix + the pending flow ------------
-    // 永续 v6 弧 A（the upstream project C3）钉随迁：sensitive 改凭据话题 prose（值形状现被块档门拒，见 blockedTier）。
+    // 永续 v6 弧 A（reef C3）钉随迁：sensitive 改凭据话题 prose（值形状现被块档门拒，见 blockedTier）。
     const entryOf = (r: MemoryWriteResult): MemoryEntry => { if (!r.ok) throw new Error(`eval write unexpectedly blocked: ${r.reasons.join("; ")}`); return r.entry; };
     const store = openMemoryStore(root);
     const auto = await store.write({ kind: "fact", content: "run pnpm eval before merging any milestone", tags: ["build"] });
@@ -4735,7 +4735,7 @@ const m49MemoryEval: EvalDefinition<{ workspaceRoot: string }, M49Evidence> = {
     if (!sensitiveReason.includes("sensitive")) errors.push(`the sensitive rejection must name itself, got "${sensitiveReason}"`);
     if (a.duplicateStatus !== "pending") errors.push(`a Jaccard-duplicate must land pending, got ${String(a.duplicateStatus)}`);
     if (a.userScopeStatus !== "pending") errors.push(`user-scope writes never auto-allow, got ${String(a.userScopeStatus)}`);
-    // 永续 v6 弧 A（the upstream project C3）：凭据值形状拒而不入（连 pending 都不落）；台账留痕脱敏带来源。
+    // 永续 v6 弧 A（reef C3）：凭据值形状拒而不入（连 pending 都不落）；台账留痕脱敏带来源。
     const b = a.blockedTier;
     if (!b.refused) errors.push("a credential-VALUE payload must be blocked outright (never even pending)");
     if (!b.reasons.includes("credential-value")) errors.push(`the block must name credential-value, got "${b.reasons}"`);
@@ -7652,7 +7652,7 @@ const det45Eval: EvalDefinition<{ dir: string }, M59Evidence> = {
 // = the property a line-index cursor cannot have), the completion gate
 // (RegistryResult.ok → the cursor advances ONLY through the captured batch;
 // entries written mid-run stay past it), the diff-grounded audit (the child's
-// self-report NEVER enters the numbers — the upstream project memory.py:747-762's rule),
+// self-report NEVER enters the numbers — nanobot memory.py:747-762's rule),
 // and crash replay dedup (an aborted run leaves the cursor; the replayed
 // near-duplicate lands pending, never active).
 // ---------------------------------------------------------------------------

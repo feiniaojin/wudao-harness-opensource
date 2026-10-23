@@ -1,8 +1,8 @@
-// 125 项 1/项 2（the upstream projectauto_compact_window.rs / world_state 形）— 窗口身份链 +
+// 125 项 1/项 2（codex auto_compact_window.rs / world_state 形）— 窗口身份链 +
 // WorldState 差分，两个 baton-pass 件的纯函数域。设计依据：
 // docs/research/125-infinite-task-architecture.md §1.1。
 //
-// 窗口身份链：每次 tier-2 压缩都是一次窗口轮转。the upstream project给每个新窗口一个 UUID
+// 窗口身份链：每次 tier-2 压缩都是一次窗口轮转。codex 给每个新窗口一个 UUID
 // 身份（first/prev/current 链）且对模型可见；wudao 的等价物不需要独立 UUID——
 // 同一 session 内窗口链由「session id 短前缀 + 序号」唯一标识（uuid8#N 形），
 // 序号 N = 已落盘 compact_boundary 条目数 + 1。身份行骑在 summary message 头部

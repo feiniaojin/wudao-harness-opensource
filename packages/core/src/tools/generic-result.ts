@@ -1,5 +1,5 @@
-// ω-1b — the loop-level generic large-result guard (the upstream project
-// crates/the upstream project/src/agents/large_response_handler.rs:5-14, digest 98a). M46
+// ω-1b — the loop-level generic large-result guard (goose
+// crates/goose/src/agents/large_response_handler.rs:5-14, digest 98a). M46
 // gave shell its own head/tail + spill shaping (200 lines / 10KB), but
 // every OTHER tool's oversized string result — web_fetch pages, grep floods,
 // custom/MCP tools — still entered context whole. This module is the LOOP's

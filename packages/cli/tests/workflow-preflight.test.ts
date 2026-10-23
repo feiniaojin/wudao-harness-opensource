@@ -1,4 +1,4 @@
-// M56 §5 — route preflight (the upstream format fleet_preflight): everything that must
+// M56 §5 — route preflight (a reference harness fleet_preflight): everything that must
 // be true for a spawn is checked AT ADMISSION, decided LOCALLY from
 // configuration — no network probe (a preflight that hit the API would spend
 // money and leak the run before the operator's gates were evaluated).

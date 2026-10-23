@@ -18,11 +18,3 @@ __pycache__/
 # SDD per-plan workspaces (briefs/reports/review diffs are scratch; the
 # ledger + committed specs/plans are the durable record)
 docs/superpowers/sdd/
-
-# Build artifacts
-apps/desktop/src-tauri/target/
-apps/desktop/src-tauri/binaries/
-**/dist/
-**/node_modules/
-
-.cache/

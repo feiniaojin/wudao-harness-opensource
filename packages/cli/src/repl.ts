@@ -51,6 +51,9 @@ import { gitRiskAskWarning } from "./git-safety.js";
 import { runExtensionCommand } from "./extensions/dispatch.js";
 import type { ExtensionCommand } from "./extensions/api.js";
 import { createMemoryRuntime, runMemoryCommand, surfacePendingReview, runRefineCommand, refineAutoRuntimeFor, observeAutoRefineOnHooks } from "./memory/index.js";
+// M-Memory 弧第二半 — 长期记忆：首轮注入缝 + rescan 保尾 + /memory 新动词 +
+// 会话终了沉淀（runtime 单例由 index.ts 的 REPL 装配写入）。
+import { longtermMemoryRuntimeFor, runLongtermMemoryVerb } from "./longterm-memory.js";
 import { spawnBackgroundReview, REVIEW_MIN_TOOL_CALLS } from "./memory/review.js";
 // ω-4f (design 84): Dream consolidation — stage 2 (ledger→curated ledger).
 import { spawnDreamRun } from "./memory/dream.js";
@@ -97,7 +100,7 @@ import { readGlobalDefaultPersonaId } from "./driver/settings-ops.js";
 import { loadLayeredSettings, resolveGlobalHome } from "./settings-layer.js";
 // ω99-315: the stream idle watchdog budget (settings → ProviderOptions).
 import { loadStreamSettings, streamIdleProviderOptions } from "./stream-idle-config.js";
-// 125 项 1：预留感知触发线的 misc 旋钮 + 装配缝（the upstream formatresolveCompactSpec 形）。
+// 125 项 1：预留感知触发线的 misc 旋钮 + 装配缝（dsh resolveCompactSpec 形）。
 import { compactionSettingsFromNode, compactionThresholdFields } from "./misc-config.js";
 // P2-15 (96 队列 #15): the OTel export runtime (events-seam observer; absent
 // telemetry settings ⇒ undefined ⇒ zero egress, zero hot allocations).
@@ -327,7 +330,7 @@ export async function runRepl(opts: {
    *  creation — the REPL's live source is the session-live config, not a
    *  run-scoped snapshot). Absent → no key, byte-identical spawns. */
   readonly effortLiveBox?: { get?: () => string | undefined };
-  /** 125 项 2（the upstream projectget_context_remaining 形）：水位线查询工具的触发线晚绑
+  /** 125 项 2（codex get_context_remaining 形）：水位线查询工具的触发线晚绑
    *  盒（effortLiveBox 同款形状）——调用方（index.ts）把 SAME 实例交进自己的
    *  buildTools 闭包（buildToolSet 的 contextRemaining 缝读它），runRepl 在
    *  liveConfig/windowRef 就绪后武装。缺省 → 工具读 buildTools 侧的 boot 兜底。 */
@@ -486,14 +489,14 @@ export async function runRepl(opts: {
   const attachments = createFileAttachmentStore(opts.workspaceRoot);
   // ω99-315: the dual-tier idle watchdog budget (settings → ProviderOptions).
   const streamIdleOpts = streamIdleProviderOptions(await loadStreamSettings(opts.workspaceRoot));
-  // 125 项 1（the upstream formatresolveCompactSpec 形）— 预留感知触发线的 misc 旋钮（boot
+  // 125 项 1（dsh resolveCompactSpec 形）— 预留感知触发线的 misc 旋钮（boot
   // 一次读；窗口语义/请求帽在每次 run 从 liveConfig 重读——/model //provider
   // 切换自然生效）。
   const compactionSettings = compactionSettingsFromNode(
     (await loadLayeredSettings(opts.workspaceRoot, () => {}, process.env)).effective["compaction"],
     (line) => stdout.write(`${line}\n`),
   );
-  // 125 项 2（the upstream projectget_context_remaining 形）：水位线查询工具的触发线晚绑盒
+  // 125 项 2（codex get_context_remaining 形）：水位线查询工具的触发线晚绑盒
   // （effortLiveBox 同款纪律）——index.ts 的 buildTools 闭包把盒交进
   // buildToolSet，runRepl 在此武装：live 窗口（/model //provider 切换时
   // windowRef 跟随）+ live config 的 ratio/headroom/reserve（项 1 装配缝）。
@@ -845,7 +848,11 @@ export async function runRepl(opts: {
     // boot prompt used (the state's construction above); the default-false
     // 3-arg call dropped the "# Peer messaging" tail on every rescan — the
     // campaign's undeclared turn-3 header break (18.4k).
-    replaceSystemPrompt(state, buildSystemPrompt(opts.workspaceRoot, hasMcpTools, live.skills, peerRuntime.refusal === undefined, hasComputerTools));
+    // M-Memory 弧第二半：appendTo 保尾——rescan 重建后的 prompt 尾部仍带冻结
+    // 的 <long-term-memory> 块（boot 注入与 rescan 两位点字节一致）。
+    const lts = longtermMemoryRuntimeFor();
+    const rebuiltPrompt = buildSystemPrompt(opts.workspaceRoot, hasMcpTools, live.skills, peerRuntime.refusal === undefined, hasComputerTools);
+    replaceSystemPrompt(state, lts === undefined ? rebuiltPrompt : lts.appendTo(rebuiltPrompt));
   });
 
   // M63-A: the REPL drives the loop directly (no AgentDriver), so it fires
@@ -1158,7 +1165,7 @@ export async function runRepl(opts: {
   // permission dialog); with NO question pending — a running turn, or a (ω99-166d-ii 表外-1：措辞随 #12 暂存回执中文化同族清零)
   // command's await window — the "line" event had no consumer and the input
   // was silently DROPPED. The handler below parks such lines in ONE FIFO
-  // (single list, no 'now'-priority preemption — the the upstream formatsteer/followUp
+  // (single list, no 'now'-priority preemption — the dsh steer/followUp
   // split waits until the REPL grows a consumption lane); the main loop
   // replays them FIFO-first after the turn settles, through the SAME parsing
   // path as a typed line (commands, mentions, the submitTurn chain). Parked
@@ -1194,7 +1201,7 @@ export async function runRepl(opts: {
     compactAbort?.abort();
     if (activeGen) {
       interrupted = true;
-      // Report 95 R3 (the upstream project's "the queue never orphans" rule, editor-less form):
+      // Report 95 R3 (pi's "the queue never orphans" rule, editor-less form):
       // an interrupted turn CLEARS the parked-input FIFO — the abort rejects
       // the turn, so its typed-while-busy lines go with it; no orphan replay
       // at the next prompt.
@@ -1288,6 +1295,10 @@ export async function runRepl(opts: {
       // the JSONL before the first model call of THIS run (the engine's
       // early-user discipline; see persistUserTurn above).
       persistUserTurn(userTurnMessage);
+      // M-Memory 弧第二半：首轮召回注入缝（幂等——冻结后零操作；REPL 直接驱动
+      // loop 无 driver onRunStart，此处即「首轮前」唯一合法时机；追加语义 =
+      // 前缀字节不动，注入块进本 run 第一个请求）。
+      longtermMemoryRuntimeFor()?.injectAtFirstRun(state);
       // M49 §1: bounded auto-recall rides this turn's FIRST model call via
       // the MetaNote queue (projection-only — state.messages stays clean).
       const recallNote = memoryRuntime.recall(turnText);
@@ -1338,13 +1349,13 @@ export async function runRepl(opts: {
           : {
               compaction: {
                 contextWindowTokens: windowRef.current,
-                // 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线 ——
+                // 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线 ——
                 // 平比帽（ratio×window）永远在；outputReserveTokens 在场
                 // （已画像窗口语义 + 请求帽已知）时触发线收紧到
                 // min(ratio×window, window − reserve − headroom)。每次 run 从
                 // liveConfig 重读（/model //provider 切换自然生效）。
                 ...compactionThresholdFields(liveConfig, compactionSettings),
-                // 借鉴弧 B1（the upstream project C1）：压缩经济学定价（catalog > env > 缺省；
+                // 借鉴弧 B1（a reference project C1）：压缩经济学定价（catalog > env > 缺省；
                 // 每次 run 重解析，/provider 切换自然生效）。
                 cachePricing: resolveSessionCachePricing(liveConfig.provider, liveConfig.model),
                 classifySkillRead: createSkillReadClassifier(live.skills),
@@ -2010,8 +2021,18 @@ export async function runRepl(opts: {
       }
       // M49 §1: /memory [list|del <id>|ok <id>] — the memory store's command
       // face (same engine the driver-level command uses).
+      // M-Memory 弧第二半：新动词面（search/save/forget/list/refresh/on/off）
+      // 先走长期记忆；旧动词（del/ok/edit/dream）回落 M49 原面。
       if (cmd.kind === "memory") {
         try {
+          const lts = longtermMemoryRuntimeFor();
+          const ltsText = lts === undefined
+            ? undefined
+            : await runLongtermMemoryVerb({ workspaceRoot: opts.workspaceRoot, verbArgs: cmd.args, runtime: lts, state });
+          if (ltsText !== undefined) {
+            stdout.write(`${ltsText}\n\n`);
+            continue;
+          }
           // ω-4f: the dream verb needs the session model + registry (other
           // verbs ignore it; a registry-less session gets the usage line).
           stdout.write(`${await runMemoryCommand(
@@ -2052,7 +2073,7 @@ export async function runRepl(opts: {
       }
       // ω99-62: /find — the TUI overlay's graceful degradation, REPL lane.
       // The readline REPL owns no overlay surface, so the line answers with
-      // the shared degradation copy (a ref's front-end capability discipline:
+      // the shared degradation copy (dsh's front-end capability discipline:
       // a command unsupported HERE gets deterministic local feedback, never
       // a wasted model round trip). Works mid-run for free — nothing starts.
       // The headless batcher's isImmediate probe (createHeadlessLineBatcher)
@@ -2983,6 +3004,14 @@ export async function runRepl(opts: {
       await telemetry?.close();
     } catch {
       /* best-effort — telemetry never blocks teardown */
+    }
+    // M-Memory 弧第二半：REPL 会话终了确定性沉淀（保守 lesson 提炼，静默；
+    // best-effort 同 wallet flush——失败绝不阻塞 teardown）。
+    try {
+      const ltsRt = longtermMemoryRuntimeFor();
+      if (ltsRt !== undefined) await ltsRt.captureAtSessionEnd({ sessionId: persistSid(), messages: state.messages }).catch(() => {});
+    } catch {
+      /* best-effort */
     }
     process.off("SIGINT", onSigint);
     rl.off("SIGINT", onSigint);

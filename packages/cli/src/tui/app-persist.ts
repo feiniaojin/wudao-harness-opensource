@@ -98,7 +98,7 @@ const onRunComplete = useCallback((messages: readonly AgentMessage[]): void => {
   void S.memoryRuntime.refresh().catch(() => {});
 }, [persistFailed, S.memoryRuntime]);
 
-// 波次8 #45 (the upstream formatsession-checkpoint-policy): the pre-dispatch durability
+// 波次8 #45 (dsh session-checkpoint-policy): the pre-dispatch durability
 // barrier — a tool-carrying assistant turn persists BEFORE any tool body
 // runs, so a crash mid-tool leaves a durable unmatched tool_use (the input
 // repairOrphanedToolCalls answers with the UNKNOWN-outcome text instead of

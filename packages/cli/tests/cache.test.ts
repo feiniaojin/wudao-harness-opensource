@@ -196,7 +196,7 @@ describe("detectCacheBreak (B3)", () => {
   it("夜移 008 — a divergence INSIDE the system line reports the header (was silently swallowed)", () => {
     // line 0 divergence: the old `line <= 0` guard lumped "identical" and
     // "system line changed" together — the single worst prefix killer went
-    // unattributed. the upstream format forensics: attribute it.
+    // unattributed. a reference harness forensics: attribute it.
     const grown = [...base, { role: "user", content: "again" }];
     const warning = detectCacheBreak({
       prevSerialized: serializePrompt({ systemPrompt: "sys", tools, messages: base }),

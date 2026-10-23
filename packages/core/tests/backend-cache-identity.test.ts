@@ -1,5 +1,5 @@
-// 120-a A4 (the upstream harness #16699/#17430 形) — the backend-identity permutation
-// pin over the run's learned caches. the upstream harness' live bug class: caches keyed
+// 120-a A4 (OpenHands #16699/#17430 形) — the backend-identity permutation
+// pin over the run's learned caches. OpenHands' live bug class: caches keyed
 // without the answering backend's identity silently fed one backend's data
 // to another (subscription cache, settings cache). wudao has no client-side
 // prompt-cache keys at all (prefix caching is provider-side over byte-stable
@@ -106,7 +106,7 @@ describe("backend-keyed learned caches — the permutation matrix (120-a A4)", (
   });
 
   it("off-diagonal (cross backend): rows stamped by a DIFFERENT answering model never drive this run's occupancy — no compaction, run completes cleanly", async () => {
-    // driver A, answered by B (the the upstream harness shape: backend B's numbers fed
+    // driver A, answered by B (the OpenHands shape: backend B's numbers fed
     // toward backend A's decisions — the guard must kill them at read time)
     const r1 = await matrixRun({ driverModel: "modelA", answererFor: () => "modelB", toolCallTurns: 1 });
     expect(tier2Compacted(r1.events)).toBeUndefined();

@@ -22,7 +22,7 @@ import type { SlashCommandInfo } from "./slash.js";
 // ---------------------------------------------------------------------------
 
 /** setMode values (the harness's modes; PROTOCOL "setMode"). 0.3.12: the
- *  three-mode redesign (对齐 the upstream harness 模式设计) — workspace(默认,工作区可
+ *  three-mode redesign (对齐 Claude 模式设计) — workspace(默认,工作区可
  *  读写)/ask(每次执行工具都问)/auto(完全权限); 0.3.14 adds plan(只读探查
  *  — reads and safe read-only commands only, everything else denied). The
  *  retired read-only and the 0.3.11 default/acceptEdits pair are gone, and
@@ -57,6 +57,7 @@ export type {
   SessionDeleteResult,
   SessionRestoreResult,
   ResumeOutcome,
+  ResumeForkOutcome,
   ProviderCard,
   SettingsStatus,
   SaveKeyResult,
@@ -111,6 +112,7 @@ import {
   SessionDeleteResult,
   SessionRestoreResult,
   ResumeOutcome,
+  ResumeForkOutcome,
   SettingsStatus,
   SaveKeyResult,
   TestConnectionResult,
@@ -194,7 +196,7 @@ import {
   PluginInstallResult,
   PluginUninstallResult,
   PluginToggleResult,
-  // 永续 v6 wave2（the upstream project C1）：门控自改进面的回执形状 + 外提归位的
+  // 永续 v6 wave2（reef C1）：门控自改进面的回执形状 + 外提归位的
   // WudaoClientOptions（纯移动，protocol-wire.ts 现为唯一定义点）。
   ImprovementFaceResult,
   WudaoClientOptions,
@@ -547,7 +549,7 @@ export class WudaoClient {
     return this.sendOp<boolean>({ op: "answerPermission", allow, ...(reason !== undefined ? { reason } : {}), ...(scope !== undefined ? { scope } : {}) });
   }
 
-  /** 借鉴弧 α2（the upstream format2.1.269 思想）— recall ONE still-queued steering message
+  /** 借鉴弧 α2（CC 2.1.269 思想）— recall ONE still-queued steering message
    *  (CAS: index+text from the same state frame; consumed → false). */
   recallSteer(index: number, text: string): Promise<boolean> {
     return this.sendOp<boolean>({ op: "recallSteer", index, text });
@@ -559,7 +561,7 @@ export class WudaoClient {
     return this.sendOp<boolean>({ op: "answerAskUser", ...(answer !== undefined ? { answer } : {}) });
   }
 
-  /** 借鉴弧 δ（the upstream harness 367ab084 思想）— move ONE in-flight tool call to the
+  /** 借鉴弧 δ（penguin 367ab084 思想）— move ONE in-flight tool call to the
    *  background (the turn unblocks; the run closes at the turn boundary;
    *  the landed result merges later). Typed verdict: ok, or refused with
    *  not_detachable (block family) / not_in_flight. */
@@ -671,6 +673,13 @@ export class WudaoClient {
     return this.sendOp<ResumeOutcome>({ op: "resume", id, ...(sid !== undefined ? { sid } : {}) });
   }
 
+  /** 小精灵会话弧 — 追问形 resume：字节复制该会话到全新 id 后 resume 副本
+   *  （原会话永不改写）。回执联合=ResumeForkOutcome（busy/not_found/
+   *  occupied 三路拒答各有 toast 文案）。不带 sid——fork 永远落在主车道。 */
+  resumeFork(id: string): Promise<ResumeForkOutcome> {
+    return this.sendOp<ResumeForkOutcome>({ op: "resume", id, fork: true });
+  }
+
   rewind(target: number | "last" | "list"): Promise<string> {
     return this.sendOp<string>({ op: "rewind", target });
   }
@@ -703,7 +712,7 @@ export class WudaoClient {
   }
 
   /** ω99-260: the full memory ledger (the 待审卡/管理面's data — file order,
-   *  active + pending). 永续 v6 弧 A（the upstream project C3）: blocked = 被拦学习输入计数
+   *  active + pending). 永续 v6 弧 A（reef C3）: blocked = 被拦学习输入计数
    *  （凭据值/指令注入形状，未入库）——「已拦 N 条」提示行的数据源；老
    *  server 不回该字段（undefined=零渲染，静默降级）。Rejects on old
    *  servers — callers degrade (faces hidden), never crash. */
@@ -725,7 +734,7 @@ export class WudaoClient {
     return this.sendOp<MemoryEditResult>({ op: "memoryEdit", id, content });
   }
 
-  /** 永续 v6 wave2（the upstream project C1）：门控自改进面——list 拉全部提案记录卡（设置→
+  /** 永续 v6 wave2（reef C1）：门控自改进面——list 拉全部提案记录卡（设置→
    *  偏好→改进提案 的数据）；决策动作用同一方法（consent/ignore/activate/
    *  reject/undo + id）。老 server 缺 op → reject，调用面隐藏整节。 */
   improvementFace(action: "list"): Promise<ImprovementFaceResult>;

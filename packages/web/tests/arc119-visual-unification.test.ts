@@ -7,7 +7,7 @@
 //      标签条 .tabbar / 查看器 .fileviewer / 面包屑条 .breadcrumb）全部落在
 //      --bg 同色上，区域分界只靠 hair-1 发丝线（topbar「去实底」律推广到
 //      全部页面级条带）；arc116 的 3~5 HSL-L 大区阶梯自 page 尺度退役——
-//      阶梯令牌本身不动（the upstream format的步进是给浮起小卡的，卡片/浮层照旧消费）。
+//      阶梯令牌本身不动（dsh 的步进是给浮起小卡的，卡片/浮层照旧消费）。
 //   ② surface 归口：--surface=浮层与卡面专用；--surface-2=卡内嵌面（菜单行
 //      hover / chip 选中 / 警示卡内 cmd 嵌条）；画布上的 hover=+1 档
 //      （surface）——旧「画布 surface-2 双步 hover」是大区阶梯的遗留。

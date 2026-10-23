@@ -4,17 +4,17 @@
 // integration config.
 //
 // M57 §1 layering: `~/.wudao/mcp.json` (WUDAO_GLOBAL_HOME-aware) merges
-// under the project file with PER-SERVER-NAME REPLACEMENT (the upstream formatsemantics —
+// under the project file with PER-SERVER-NAME REPLACEMENT (CC semantics —
 // a project server with the same name fully replaces the global one; no
 // field-level merging of server commands).
 //
-// the upstream format-format compatibility: every tier ALSO accepts the the upstream harness/Cursor
+// CC-format compatibility: every tier ALSO accepts the Claude Code/Cursor
 // shape — a top-level `mcpServers` object instead of our `servers` — so a
-// config copied verbatim from a the upstream formatsetup just works (the per-server entries
-// are already shape-identical: {command, args, env}; unknown the upstream formatfields like
+// config copied verbatim from a CC setup just works (the per-server entries
+// are already shape-identical: {command, args, env}; unknown CC fields like
 // `type`/`cwd` are tolerated by the whitelist validation). `servers` wins
-// when a file carries both. The project root additionally reads the upstream harness
-// Code's own project file `.mcp.json` — an existing the upstream formatproject lights up
+// when a file carries both. The project root additionally reads Claude
+// Code's own project file `.mcp.json` — an existing CC project lights up
 // with zero copying. Full layer order (later replaces same-name):
 //   ~/.wudao/mcp.json  →  <root>/.mcp.json  →  <root>/.wudao/mcp.json
 //
@@ -84,9 +84,9 @@ export function mcpConfigPath(cwd: string): string {
   return join(cwd, ".wudao", "mcp.json");
 }
 
-/** The project-root `.mcp.json` — the upstream's own project-tier filename.
+/** The project-root `.mcp.json` — Claude Code's own project-tier filename.
  *  Read as the tier BETWEEN global and `.wudao/mcp.json`, so a wudao-native
- *  entry always wins the name clash and the upstream formatprojects migrate by osmosis. */
+ *  entry always wins the name clash and CC projects migrate by osmosis. */
 export function ccMcpConfigPath(cwd: string): string {
   return join(cwd, ".mcp.json");
 }
@@ -183,8 +183,8 @@ function readMcpFile(path: string, label: string, warn: (msg: string) => void): 
     warn(`${label} is not valid JSON (${err instanceof Error ? err.message : String(err)}); ignoring it`);
     return {};
   }
-  // the upstream format-format compat: `mcpServers` is accepted wherever `servers` is (paste
-  // a the upstream harness/Cursor config verbatim). `servers` wins when both appear.
+  // CC-format compat: `mcpServers` is accepted wherever `servers` is (paste
+  // a Claude Code/Cursor config verbatim). `servers` wins when both appear.
   const record = (parsed ?? {}) as { servers?: unknown; mcpServers?: unknown };
   let servers = record.servers;
   if (servers === undefined) servers = record.mcpServers;
@@ -192,7 +192,7 @@ function readMcpFile(path: string, label: string, warn: (msg: string) => void): 
     warn(`${label} has both "servers" and "mcpServers"; using "servers"`);
   }
   if (typeof servers !== "object" || servers === null || Array.isArray(servers)) {
-    warn(`${label} must have a {"servers": {...}} (or the upstream harness-style {"mcpServers": {...}}) object; ignoring it`);
+    warn(`${label} must have a {"servers": {...}} (or Claude Code-style {"mcpServers": {...}}) object; ignoring it`);
     return {};
   }
   const result: Record<string, McpServerConfig> = {};
@@ -224,7 +224,7 @@ export function loadMcpTiers(cwd: string, warn: (msg: string) => void = () => {}
 }
 
 /** The effective MCP config: global tier first, then the project-root
- *  `.mcp.json` (the upstream formatcompat), then the wudao project tier — each REPLACING
+ *  `.mcp.json` (CC compat), then the wudao project tier — each REPLACING
  *  same-name servers (M57 §1 — per-server-name replacement, not merge). */
 export function loadMcpConfig(cwd: string, warn: (msg: string) => void = () => {}): McpConfig {
   const tiers = loadMcpTiers(cwd, warn);

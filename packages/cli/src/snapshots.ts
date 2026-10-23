@@ -6,7 +6,7 @@
 // 一份），settle 时随 217 收据批落 file_snapshot 索引条目，恢复 op（驱动侧
 // fileRevert）把指定文件恢复到指定快照。
 //
-// 设计纪律（the upstream format PR#6111 安全设计 + 本仓惯用法）：
+// 设计纪律（a reference harness PR#6111 安全设计 + 本仓惯用法）：
 //   * 快照是尽力而为——捕获/落盘失败 fail-open 记 warn，绝不阻断正常写。
 //   * ★红线：LRU 淘汰只删 `.wudao/snapshots/` 内 blob，绝不触碰工作区任何
 //     用户文件；被淘汰 blob 的索引条目照留（诚实报「快照已被清理」）。

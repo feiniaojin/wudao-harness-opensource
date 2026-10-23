@@ -49,7 +49,7 @@ export interface RetryLadderOptions {
    *  A background source never retries an overload-class failure — it bails
    *  immediately with BackgroundOverloadError (see the allowlist block). */
   readonly querySource?: string;
-  /** 121 项 1（the reference harness 498490680 形）— 容量观察者：catch 里判定为
+  /** 121 项 1（a reference harness 498490680 形）— 容量观察者：catch 里判定为
    *  overload-class（isOverloadClassFailure：429/503/529/overload 体）时同
    *  步发射一次——无论该失败随后走重试、后台 bail 还是重抛。纯观察：绝不
    *  影响梯子自身的任何决策；部署层把它接到 AIMD 并发门的 onThrottle，

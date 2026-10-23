@@ -76,7 +76,7 @@
 .ide-drag[data-side="left"] { left: max(calc(var(--tree-w, 240px) - 2px), 0px); }
 .ide-drag[data-side="right"] { right: max(calc(var(--chat-w, 400px) - 2px), 0px); }
 /* 116 弧 A：拖拽条的 hover 提示去品牌色 → 中性 hover 洗色（alpha 白，
-     the upstream format 悬停令牌路线）。 */
+     dsh 悬停令牌路线）。 */
 .ide-drag:hover { background: var(--hover); }
 
 /* --- M78-buddy §1/§5 (spec §1/§5): the Buddy 模式 two-panel shell — a
@@ -296,6 +296,25 @@
 .sb-i:hover .sb-act, .sb-arch-i:hover .sb-act,
 .sb-i .sb-act:focus-visible, .sb-arch-i .sb-act:focus-visible { opacity: 1; }
 .sb-i .sb-act:hover, .sb-arch-i .sb-act:hover { color: var(--text-1); background: var(--surface-2); }
+/* 小精灵会话弧 — 行内「追问」动作（.sb-follow）：.sb-act 的同款 quiet hover
+   语义，独立类名（214 归档弧把 .sb-act 钉成归档专属）。与归档共存（一行可
+   同时有 ✎/追问/归档）；活跃行也有（对自己岔一条线合法）。 */
+.sb-i .sb-follow {
+  flex: none;
+  color: var(--text-3);
+  opacity: 0;
+  padding: 1px var(--sp-1);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.sb-i:hover .sb-follow, .sb-i.on .sb-follow, .sb-i .sb-follow:focus-visible { opacity: 1; }
+.sb-i .sb-follow:hover { color: var(--text-1); background: var(--surface-2); }
 .sb-arch {
   flex: none;
   display: flex;

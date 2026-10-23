@@ -96,7 +96,7 @@ describe("spawnBackgroundReview — the scripted full flow", () => {
           content: "",
           toolCalls: [
             { id: "r1", name: "memory_write", arguments: { kind: "fact", content: "run pnpm eval before merging any milestone", tags: ["build"] } },
-            // 永续 v6 弧 A（the upstream project C3）钉随迁：凭据话题（无值）走 M49 pending
+            // 永续 v6 弧 A（reef C3）钉随迁：凭据话题（无值）走 M49 pending
             // 人审——原 sk- 值夹具现会被块档门拒（memory-guard.test.ts 覆盖）。
             { id: "r2", name: "memory_write", arguments: { kind: "fact", content: "deploy password policy is rotating monthly" } },
           ],

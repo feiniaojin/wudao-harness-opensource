@@ -579,7 +579,7 @@ describe("M79b §3 — App: attachmentSave then submit with images, in op order"
 
 // --- §4: the generation-counter cache ---------------------------------------
 
-describe("M79b §4 — the history-image cache (generation counter, a ref a ref pattern)", () => {
+describe("M79b §4 — the history-image cache (generation counter, dsh pattern)", () => {
   it("same id, same session: one fetch, two bubbles share the URL", async () => {
     const get = vi.fn().mockResolvedValue({ data: btoa("hello"), mediaType: "image/png" });
     const source: AttachmentSourceValue = { client: { attachmentGet: get }, sessionId: "s1" };

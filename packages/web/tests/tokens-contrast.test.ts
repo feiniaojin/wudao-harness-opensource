@@ -93,7 +93,7 @@ describe("ui-review-r1 I2 — WCAG AA contrast gate (tokens.css)", () => {
 
   // 116 弧 A「accent 收权」：用户气泡去品牌色 → 中性灰。浅色对单一源自
   // light 块（#E9EAEF/#1B1C22 ≈14.1:1）；三个 accent 块不再覆写气泡——
-  // 气泡从此与主色选择无关（a ref：气泡从不用品牌色）。暗色气泡 = 白 alpha
+  // 气泡从此与主色选择无关（dsh：气泡从不用品牌色）。暗色气泡 = 白 alpha
   // 叠层（对 --bg 合成后校对比，非裸 hex）。
   it("the LIGHT user-bubble pair is NEUTRAL, single-sourced, and clears 4.5:1; no accent block overrides it (116 弧 A)", () => {
     const ink = light.get("bubble-user-ink");

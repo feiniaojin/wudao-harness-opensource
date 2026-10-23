@@ -102,7 +102,7 @@ describe("M25-B2 HistoryItem turn structure", () => {
     expect(inst.lastFrame() ?? "").toContain(sgr("36") + "› "); // accent prefix
   });
 
-  it("renders a tool entry the upstream format-style: marker name(params) + indented dim result preview", () => {
+  it("renders a tool entry CC-style: marker name(params) + indented dim result preview", () => {
     const inst = render(
       <HistoryItem entry={{ kind: "tool", name: "read_file", summary: "a.ts", resultPreview: "file body" }} />,
     );

@@ -28,7 +28,7 @@ describe("inkline tokens v2", () => {
     expect(css).not.toMatch(/--radius-pill:\s*22px/);
   });
   // 116 弧 A：单档重投影 --shadow-2 退役（廉价感 TOP5 #2），elevation 三件套
-  // 接位——0.5px 发丝描边画进 box-shadow + 两层 .02~.05 柔光（the upstream format配方）。
+  // 接位——0.5px 发丝描边画进 box-shadow + 两层 .02~.05 柔光（dsh 配方）。
   // re-pin 到精确值（不是删断言）：三档双主题都定义；旧名零出现（防复活）。
   it("elevation trio replaces the retired single heavy shadow (116 弧 A)", () => {
     expect(css).not.toMatch(/--radius-(card|chip)/);

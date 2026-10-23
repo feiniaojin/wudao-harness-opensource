@@ -57,7 +57,7 @@ export interface MicrocompactOptions {
 }
 
 // ---------------------------------------------------------------------------
-// M48 §3 — ghost-skill markers (the upstream). A skill the model loaded via
+// M48 §3 — ghost-skill markers (hermes). A skill the model loaded via
 // read_file whose message later falls into a compaction span would silently
 // vanish: the agent stops obeying the skill with no signal why. Every tier
 // now swaps a pruned skill-read tool result for the canonical marker (the

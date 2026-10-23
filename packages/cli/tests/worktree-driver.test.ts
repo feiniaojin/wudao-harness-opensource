@@ -3,7 +3,7 @@
 // the worktree; exit → back to the original root), while the SESSION root
 // stays pinned — the worktree_enter/worktree_exit entries and every .wudao
 // write land in the ORIGINAL repo, never inside the worktree. remove is
-// refused on uncommitted changes (the upstream format同款防丢) and while a run is in flight;
+// refused on uncommitted changes (CC 同款防丢) and while a run is in flight;
 // enter in a worktree refuses (no nesting); a busy enter QUEUES to the run's
 // settle (the /provider discipline).
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

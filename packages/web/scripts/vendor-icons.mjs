@@ -4,7 +4,7 @@
 // 从 node_modules/lucide-static/icons 拷贝清单内的 SVG 到
 // src/assets/icons/，并做三步归一（收据测试 arc116c-icon-system 钉 (b)）：
 //   ① stroke-width 2 → 1.5（与 components/icons.tsx 既有自绘集同宽——细线
-//      图标是 116 报告 §3.d「高级感」的关键一笔，the upstream format全集 1px，我们全库
+//      图标是 116 报告 §3.d「高级感」的关键一笔，dsh 全集 1px，我们全库
 //      统一 1.5px：两套 SVG（自绘 + lucide vendor）在同一屏必须同宽）；
 //   ② stroke="currentColor" 原样保留（四主题由 CSS 令牌着色，零裸 hex）；
 //   ③ 剥 width/height/class（Icon.tsx 控制尺寸与类名，防止 24px 缺省渗入）。

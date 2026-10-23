@@ -34,7 +34,7 @@ export interface HookCommandConfig {
   readonly tool?: string;
   readonly input?: Record<string, unknown>;
   /** cc-plugins E4: the install dir of the plugin this entry came from —
-   *  the upstream's ${CLAUDE_PLUGIN_ROOT} convention: the token (braced or bare) is
+   *  CC's ${CLAUDE_PLUGIN_ROOT} convention: the token (braced or bare) is
    *  substituted into the command before tokenization (execFile runs no
    *  shell) and the dir is exported as the child's CLAUDE_PLUGIN_ROOT env
    *  for the command's own children to read at runtime. Absent on every
@@ -113,7 +113,7 @@ export type HookWarn = (message: string) => void;
 /** M63-A: THE canonical hook-event key list — the single source of truth.
  *  Every surface that enumerates event keys derives from this constant: the
  *  loader's KNOWN_EVENTS, plugins.ts's mergeHooksSettings, and (the
- *  values of) its the upstream format-name HOOK_EVENT_MAP. A batch-B/C event lands HERE and
+ *  values of) its CC-name HOOK_EVENT_MAP. A batch-B/C event lands HERE and
  *  in the HooksSettings interface — nowhere else — so no fixed list can
  *  silently strip events again (review fix: the list was triplicated and the
  *  plugin merge's copy had already dropped the batch-A keys once). */

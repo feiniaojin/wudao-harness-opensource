@@ -1,4 +1,4 @@
-// M30 §E — the Runner/Middleware seam (the upstream format 2). Core exports the
+// M30 §E — the Runner/Middleware seam (a reference harness 2). Core exports the
 // types and ONE combinator; the CLI does not consume them yet. This is a
 // pure library seam: telemetry, budgeting, persistence, and other
 // third-party extensions get a place to live WITHOUT forking the loop.

@@ -19,8 +19,8 @@ import subprocess
 import sys
 import time
 
-REPO = "./wudao-harness"
-BENCH = "./wudao-bench"
+REPO = "~/xdev/github/wudao-harness-project/wudao-harness"
+BENCH = "~/xdev/github/wudao-harness-project/wudao-bench"
 LITE = f"{BENCH}/swebench-lite"
 REPOS = f"{BENCH}/swe-docker-repos"
 CLI = f"{REPO}/packages/cli/dist/index.js"

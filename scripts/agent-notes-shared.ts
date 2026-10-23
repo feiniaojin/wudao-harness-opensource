@@ -9,7 +9,7 @@
  *   - scripts/verify-archived-agent-notes.ts — M73 §3: frozen-archive gate
  *
  * The rules themselves are defined in .agents/notes/README.md; this file
- * mechanizes them, it does not own them. Mirrors the upstream's
+ * mechanizes them, it does not own them. Mirrors a reference harness's
  * agent-note-tree.ts + archived-agent-notes.ts pair (docs/research/36 §1).
  */
 

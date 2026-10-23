@@ -1,5 +1,5 @@
 // det-65-night-porting-8 — the deterministic behavior pins for 夜移 020
-// (monitor_read: on-demand incremental output, real the upstream's BashOutput
+// (monitor_read: on-demand incremental output, real CC's BashOutput
 // paradigm). The feature landed with core + cli unit tests (the tool's
 // formatting/error/refusal surface over a scripted registry; the runtime's
 // absLen/readCursor math over fakes incl. ring-overflow skippedBytes and

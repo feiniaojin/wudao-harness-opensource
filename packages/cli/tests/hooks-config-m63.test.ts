@@ -113,11 +113,11 @@ describe("loader accepts the batch-A event keys", () => {
   });
 });
 
-// cc-plugins E4 — the upstream's plugin-hook convention: plugin-sourced entries carry
+// cc-plugins E4 — CC's plugin-hook convention: plugin-sourced entries carry
 // pluginRoot; firing substitutes ${CLAUDE_PLUGIN_ROOT}/$CLAUDE_PLUGIN_ROOT
 // into the command (execFile does no shell expansion) AND exports the env var
 // so the command's own children can read it at runtime.
-describe("plugin-root convention", () => {
+describe("CC plugin-root convention", () => {
   it("pluginRoot entry: token substituted AND env exported to the child", async () => {
     const root = await tmpWorkspace();
     const log = collector();
@@ -169,7 +169,7 @@ describe("plugin-root convention", () => {
   });
 
   // cc-plugins E4: superpowers ships run-hook.cmd — a shebang-less
-  // batch/shell POLYGLOT. Real the upstream formatruns hook commands through a shell, where
+  // batch/shell POLYGLOT. Real CC runs hook commands through a shell, where
   // execve(ENOEXEC) makes the shell interpret the file itself. Our execFile
   // runner needs the same fallback: direct exec fails ENOEXEC → retry via
   // /bin/sh interpreting the file.
@@ -189,7 +189,7 @@ describe("plugin-root convention", () => {
     }
   });
 
-  // cc-plugins E4: the upstream's SessionStart is a CONTEXT hook — the superpowers
+  // cc-plugins E4: CC's SessionStart is a CONTEXT hook — the superpowers
   // bootstrap's whole purpose is its hookSpecificOutput.additionalContext
   // reaching the model. The bridge returns it (driver parks it on the
   // MetaNote projection); plain stdout stays log-only (M62 §5 house rule).

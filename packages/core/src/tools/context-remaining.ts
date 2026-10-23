@@ -1,4 +1,4 @@
-// 125 项 2（the upstream projectget_context_remaining 形）— context_remaining：模型第一次
+// 125 项 2（codex get_context_remaining 形）— context_remaining：模型第一次
 // 能「查」自己的上下文水位线。ctx_inspect（M52 §3）给占用明细；本工具给的是
 // 决策面——还剩多少、离压缩线还有多少，长任务中模型据此主动外化/收尾。
 //
@@ -67,7 +67,7 @@ export function createContextRemainingTool(getSnapshot: () => ContextRemainingSn
         `remainingTokens: ${remainingTokens} (remainingRatio: ${pct(remainingRatio)})`,
         `compressionThreshold: ${threshold} (tokensUntilThreshold: ${tokensUntilThreshold})`,
       ];
-      // the upstream project的水位线广播语义收进工具本体：低于 20% 时给一条行动建议
+      // codex 的水位线广播语义收进工具本体：低于 20% 时给一条行动建议
       // （外化/收尾——advisory-only，同 GoalState 的只建议不强制纪律）。
       if (remainingRatio < 0.2) {
         lines.push(`⚠ 剩余已低于 20%：建议用 note_write 外化重要状态，并考虑提前收尾（建议，非强制）。`);

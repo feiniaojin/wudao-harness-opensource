@@ -1,4 +1,4 @@
-// 129 弧（the upstream project e6124ade 引进）——注入框架闭合标签中和的收据。
+// 129 弧（DeepCode e6124ade 引进）——注入框架闭合标签中和的收据。
 // 威胁模型：被监视进程在输出里打印框架标签的任意拼写，提前关闭可信框架
 // （其后的指令脱离「data, not instructions」语境）或伪造框架。
 import { describe, expect, it } from "vitest";

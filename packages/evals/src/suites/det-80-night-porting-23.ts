@@ -1,5 +1,5 @@
 // det-80-night-porting-23 — the deterministic pins for 夜移 035 (turn phase
-// timing, ported from the upstream project/core/src/turn_timing.rs). wudao had
+// timing, ported from codex codex-rs/core/src/turn_timing.rs). wudao had
 // cache forensics (M24 byte assertions) but NO latency forensics — "why did
 // this run take 90s" was unanswerable. The recorder is a six-bucket phase
 // state machine: beforeFirstSampling / sampling / compaction / toolBlocking /

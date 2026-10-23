@@ -1,6 +1,6 @@
 /**
  * M73 §3 — verify and append-seal the frozen Agent Note archive
- * (the upstream's 115-line equivalent, docs/research/36 §1).
+ * (a reference harness's 115-line equivalent, docs/research/36 §1).
  *
  * Prove-every-seal-then-append: the gate first proves every manifest seal
  * still matches the bytes on disk and that no previously sealed entry was

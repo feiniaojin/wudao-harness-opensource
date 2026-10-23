@@ -114,7 +114,7 @@ describe("openMemoryStore — append-only JSONL + pending flow", () => {
     const a = await store.write(write("run pnpm eval before merging"));
     expect(a.decision).toBe("auto");
     expect(a.entry.status).toBe("active");
-    // 永续 v6 弧 A（the upstream project C3）钉随迁：凭据**话题**（无值）保持 pending 人审；
+    // 永续 v6 弧 A（reef C3）钉随迁：凭据**话题**（无值）保持 pending 人审；
     // 含 sk- 值的写入现被块档门拒之门外（不入 pending——见 memory-guard.test.ts）。
     const b = await store.write(write("the password policy is rotating monthly"));
     expect(b.decision).toBe("pending");
@@ -217,7 +217,7 @@ describe("recallMemories — bounded greedy recall (≤4 items / 2400 chars)", (
 
 // ---------------------------------------------------------------------------
 // ω99-6a — recall 相对分地板 (MiMo memory_search_score_floor 的无 SQLite 落法,
-// the upstream project .../memory/service.ts:83)。score>0 即入选让纯 overlap 弱尾巴与
+// MiMo-Code .../memory/service.ts:83)。score>0 即入选让纯 overlap 弱尾巴与
 // 强 tag 匹配同池占预算; 地板 = top * 0.15 (top 恒保留)。整数分域效果:
 // best=10 (5 tag 命中) → 纯 overlap 尾巴 (≤1 分) 被裁; 相对非绝对, 弱 query
 // 不至于全空。(6b 起 cutoff 由 recallCutoff 复合计算, 下方 ω99-6b。)
@@ -351,12 +351,12 @@ describe("ω99-6b — tier 感知断崖地板 (max(relative, tierMin))", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 夜移 015 (#22) — 真 the upstream formatmemdir 读侧召回的 wudao 适配切片: memoryAge 陈旧
+// 夜移 015 (#22) — 真 CC memdir 读侧召回的 wudao 适配切片: memoryAge 陈旧
 // 注记（模型不做日期算术——条目带 created ISO 但模型从未见过"多旧"），
 // 读侧池 200 帽，hits 每会话一次。见 ledger 候选 #22 行。
 // ---------------------------------------------------------------------------
 
-describe("memoryAge — staleness annotation (真 the upstream format memoryAge.ts adaptation)", () => {
+describe("memoryAge — staleness annotation (真 CC memoryAge.ts adaptation)", () => {
   const NOW = Date.parse("2026-08-28T12:00:00.000Z");
 
   it("memoryAgeDays floors whole days, clamps clock skew to 0, tolerates junk", () => {
@@ -440,7 +440,7 @@ describe("createMemoryRuntime — 夜移 015: pool cap + once-per-session hits",
     expect(hits).toBe(1);
   });
 
-  it("caps the recall pool at the newest 200 entries (真 the upstream format memoryScan MAX_MEMORY_FILES adaptation)", async () => {
+  it("caps the recall pool at the newest 200 entries (真 CC memoryScan MAX_MEMORY_FILES adaptation)", async () => {
     const lines: string[] = [];
     for (let i = 0; i < 6; i += 1) lines.push(line({ id: `old-${i}`, content: `old high-scorer ${i}`, tags: ["build", "merge"] }));
     for (let i = 0; i < 200; i += 1) lines.push(line({ id: `new-${i}`, content: `new regular note ${i}`, tags: ["build"] }));

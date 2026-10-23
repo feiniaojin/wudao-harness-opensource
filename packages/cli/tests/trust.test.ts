@@ -1,5 +1,5 @@
 // P1-5 (96 队列) — the workspace trust gate's decision store + status math.
-// the upstream projecttrust-manager lineage: canonical path keys, nearest-ancestor decision
+// pi trust-manager lineage: canonical path keys, nearest-ancestor decision
 // lookup, trust-requiring project-resource detection (user global tiers NEVER
 // count), fail-closed default (no decision = untrusted when resources exist).
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

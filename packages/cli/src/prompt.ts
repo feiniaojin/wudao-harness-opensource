@@ -1,5 +1,5 @@
 // System prompt for wudao-harness — modeled on production coding-agent prompts
-// (the upstream's sectioned structure). Computed ONCE per run from stable inputs
+// (Claude Code's sectioned structure). Computed ONCE per run from stable inputs
 // (cwd/platform) so the prefix stays byte-stable → provider prefix-cache friendly.
 //
 // Architecture (M26 P1): one const per static section, assembled by

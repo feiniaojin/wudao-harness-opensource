@@ -1,5 +1,5 @@
 // det-62-night-porting-5 — the deterministic behavior pins for 夜移 015
-// (候选 #22: 真 the upstream formatmemdir 读侧召回的 wudao 适配切片). The feature landed
+// (候选 #22: 真 CC memdir 读侧召回的 wudao 适配切片). The feature landed
 // with cli unit tests (tests/memory.test.ts, 5 new contracts); this suite
 // pays the det-44-style debt the same way det-57..det-61 did — the behavior
 // pinned inside the release-eval matrix, so a regression fails the release

@@ -5,7 +5,7 @@
 // 中文旁白。PURE TS, no imports：pet-frame.ts（主窗 distill 侧）引它，
 // 落主壳 index 与 pet 两个 chunk，体积必须克制。
 //
-// v7 γ1（the upstream format pet v2「工作种类→表达」思想）：映射从 6 个 browser_*
+// v7 γ1（a reference harness pet v2「工作种类→表达」思想）：映射从 6 个 browser_*
 // 动词扩到全工具分类——读写/检索/命令/网络/office/电脑操作/等待/编排各
 // 配一句中文旁白 + 一个工作种类（workKind，随帧跨窗的形态分类锚）。113
 // 自注的「非 browser 返回 null 是弧内取舍非终态」在此兑现。边界纪律不变：

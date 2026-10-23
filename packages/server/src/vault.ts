@@ -88,7 +88,7 @@ export function isVaultedMutation(o: Record<string, unknown>): boolean {
     case "schedulesSetEnabled":
     case "schedulesRunNow":
       return true;
-    // 永续 v6 wave2（the upstream project C1）：改进提案面的五个决策是写副作用（consent 起
+    // 永续 v6 wave2（reef C1）：改进提案面的五个决策是写副作用（consent 起
     // 子代理+模型调用、activate 写规则文件）——vaulted 恰一次；list 是读，
     // 与 schedulesList 同形不 vault。
     case "improvementFace":
@@ -103,7 +103,7 @@ export function isVaultedMutation(o: Record<string, unknown>): boolean {
 }
 
 /** Deterministic serialization for the vault digest: object keys sorted at
- *  every depth, compact separators (the same canonical form the upstream project's vault
+ *  every depth, compact separators (the same canonical form nanobot's vault
  *  hashes — key order in a JSON frame must never change the digest). */
 export function canonicalJson(v: unknown): string {
   if (Array.isArray(v)) return `[${v.map(canonicalJson).join(",")}]`;

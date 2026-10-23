@@ -11,10 +11,10 @@ import {
 } from "../src/commands/persona.js";
 
 const def: PersonaDefinition = {
-  id: "cc", displayName: "the upstream harness",
+  id: "cc", displayName: "Anthropic CLI",
   source: { kind: "workspace-source", provenance: "t", pinnedVersion: "1" },
-  headers: { anthropic: { "user-agent": "wudao-harness/0.4.14 (external, cli)" } },
-  prompt: { system: { mode: "prefix", text: "You are the upstream harness.\n" } },
+  headers: { anthropic: { "user-agent": "wudao-harness/2.0.0 (external, cli)" } },
+  prompt: { system: { mode: "prefix", text: "You are Claude Code.\n" } },
 };
 const registry: PersonaRegistry = { personas: [def], errors: [] };
 

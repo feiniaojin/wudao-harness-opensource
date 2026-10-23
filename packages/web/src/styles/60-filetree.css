@@ -11,7 +11,7 @@
   /* 119 用户反馈修正（「背景和工作区域的颜色对比过于强烈」）：文件树域是
      页面级大区，归 --bg 同色画布——区域分界只靠 hair-1 发丝线（右侧缘）。
      旧 --surface 实底是 arc116 大区阶梯的遗留：3~5 HSL-L 步进在整页尺度
-     生硬（the upstream format 的步进是给浮起小卡的）。行 hover 仍是 surface（+1 档），
+     生硬（dsh 的步进是给浮起小卡的）。行 hover 仍是 surface（+1 档），
      选中 accent-weak——.sb 侧栏同一律。 */
   background: var(--bg);
   border-right: 1px solid var(--hair-1);

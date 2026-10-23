@@ -3,7 +3,7 @@
 // session, providers) are added in later milestones and re-exported here.
 
 export { runAgentLoop, STOP_BLOCK_CAP, PERSIST_FAILED_TOOL_RESULT, isZeroOutputOverflow, TURN_RECOVERY_NOTE, MAX_TURN_RECOVERY_ATTEMPTS, classifyTurnRetryError } from "./loop.js";
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— 运行中工具调用转后台。
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— 运行中工具调用转后台。
 export { BACKGROUNDED_TOOL_RESULT, formatDetachedResultInjection, DETACH_LANDING_NOTICE_PREFIX, createToolDetachHub } from "./detach.js";
 export type { ToolDetachPort, ToolDetachHub, DetachedCall } from "./detach.js";
 export type { TurnRetryClass, RecoveryLeg } from "./loop.js";
@@ -24,18 +24,18 @@ export {
   REFLECTION_DEFAULT_TIMEOUT_MS,
 } from "./loop-reflection.js";
 
-// 夜移 035 — turn phase timing (the upstream projectturn_timing.rs): opt-in six-bucket
+// 夜移 035 — turn phase timing (codex turn_timing.rs): opt-in six-bucket
 // latency forensics for a run (see turn-profile.ts).
 export { createTurnProfileRecorder } from "./turn-profile.js";
 export type { TurnProfileRecorder } from "./turn-profile.js";
-// 夜移 036 (the upstream projectrollout_budget.rs): the session-tree token budget — shared
+// 夜移 036 (codex rollout_budget.rs): the session-tree token budget — shared
 // accounting across the root loop and every subagent, weighted units (cached
 // input free), threshold reminders per {thread, window}, sticky exhaustion.
 export { createSessionBudget } from "./session-budget.js";
 export type { SessionBudget } from "./session-budget.js";
 
 export { createScriptedModel } from "./model-client.js";
-// 120-a A2 (the upstream format #6540 形): the summary-call prefix-freeze contract —
+// 120-a A2 (a reference harness #6540 形): the summary-call prefix-freeze contract —
 // the pure comparator every summary/review-class call's test pins through.
 export { summaryPrefixDrift } from "./model-client.js";
 export type { PrefixFreezeContract } from "./model-client.js";
@@ -59,7 +59,7 @@ export { hasConfigCapConflict, CONFIG_CAP_ALSO_CONFLICTS_FIELD } from "./model-c
 export { buildTool, validateToolArguments, toModelToolDefinition } from "./tool.js";
 // M52 §3 — the model-visible context occupancy tool.
 export { createCtxInspectTool } from "./tools/ctx-inspect.js";
-// 125 项 2（the upstream projectget_context_remaining 形）— 上下文水位线查询工具（只读；
+// 125 项 2（codex get_context_remaining 形）— 上下文水位线查询工具（只读；
 // 与 ctx_inspect 同缝的 occupancy + 项 1 预留感知触发线的查询面）。
 export { createContextRemainingTool } from "./tools/context-remaining.js";
 export type { ContextRemainingSnapshot } from "./tools/context-remaining.js";
@@ -112,7 +112,7 @@ export type {
   ContinueTaskToolOptions, ContinueTaskScheduleFace, ContinueTaskScheduleInput,
   ContinueTaskPendingRow, TaskChainHeader, TaskChainBaton, TaskChainStatus,
 } from "./tools/continue-task.js";
-// 125 项 1（the upstream projectnew_context 形）— the model-side context-rotation tool: the
+// 125 项 1（codex new_context 形）— the model-side context-rotation tool: the
 // model asks for a fresh window (rationale + optional must-keep preserve);
 // the loop's late-bound port fires the tier-2 rotation boundary inside the
 // tool's execute (honest receipt + window number), and the per-session budget
@@ -159,7 +159,7 @@ export {
   LOGIN_SHELL_SNAPSHOT_TIMEOUT_MS,
 } from "./tools/shell-snapshot.js";
 
-// ω99-46 — egress proxy policy + install (the upstream formatstartup mechanism + socks5
+// ω99-46 — egress proxy policy + install (dsh startup mechanism + socks5
 // first-class + typed attribution). The policy half is pure (object-literal
 // testable); the install half owns undici's global dispatcher and is the ONLY
 // place in the workspace allowed to call setGlobalDispatcher or construct a
@@ -223,7 +223,7 @@ export type { LongOutputConfig } from "./tools/long-output.js";
 export { DEFAULT_GENERIC_RESULT_CONFIG } from "./tools/generic-result.js";
 export type { GenericResultShaping } from "./tools/generic-result.js";
 
-// 借鉴弧 C1（the upstream project C3）— evidence-preserving log slimming: the verified
+// 借鉴弧 C1（a reference project C3）— evidence-preserving log slimming: the verified
 // cheap-tier first-read for oversized diagnostic logs. The seam is shell.ts's
 // finish() (spill/M46 相邻处); every gate failure fails open to the exact
 // pre-C1 bytes. Feature is opt-in at the wiring layer (default OFF).
@@ -251,7 +251,7 @@ export type {
 // the target's pre-write state under .wudao/history/<session>/ so /rewind can
 // restore the workspace to before any step (reverse-order rollback).
 export { createFileHistory } from "./tools/file-history.js";
-// 夜移 032 (the upstream projectturn-diff): the per-run net file-change ledger — pure
+// 夜移 032 (codex turn-diff): the per-run net file-change ledger — pure
 // baseline/current aggregation (first write's pre-state vs last write's
 // bytes) + the receipt preview line.
 export { createTurnDiffTracker, formatTurnDiffPreview } from "./turn-diff.js";
@@ -326,7 +326,7 @@ export { newSessionId } from "./session/id.js";
 // the skip-contract counter on the store. Exported constants, NOT config:
 // no env var or settings surface ever moves the supported version.
 export { isFormatMarker } from "./session/format-version.js";
-// #48: the cross-process session RUN lease (the upstream turn-lease slice).
+// #48: the cross-process session RUN lease (hermes#4 turn-lease slice).
 export { sessionLeaseBoxFor } from "./session/lease.js";
 export type { SessionLeaseBox } from "./session/lease.js";
 // 多 driver 并发弧 A — the multi-slot lease box (N concurrent lanes, each
@@ -440,7 +440,7 @@ export {
   // routine tier may stub/clear/summarize past, and the clamped boundary
   // (min with the M52 walk) the four routine seams share.
   stubFloor, floorCutoff,
-  // 夜移 030 — the file-operations ledger riding tier-2 summaries (the upstream project):
+  // 夜移 030 — the file-operations ledger riding tier-2 summaries (pi):
   // mechanical extraction + cross-compaction re-parse + capped tag blocks.
   extractFileOps, parseFileOpsFromSummary, mergeFileOps, formatFileOperations,
   FILE_LEDGER_READ_TAG, FILE_LEDGER_MODIFIED_TAG, FILE_LEDGER_CAP,
@@ -449,10 +449,10 @@ export {
   cumulativeModifiedFiles,
   // 波次 7 #39 (OH B1) — the verified-work carryover + plan-mode restatement.
   formatVerifiedWork,
-  // 113-B1（the upstream project #2385 形）— the kept-tail recency anchor riding the
+  // 113-B1（prime-agent #2385 形）— the kept-tail recency anchor riding the
   // tier-2 summary instruction + the summary message's authority line.
   recencyAnchorOf, summaryAuthorityLine, SUMMARY_AUTHORITY_LINE, RECENCY_ANCHOR_CAP_CHARS,
-  // 125 项 1/项 2（the upstream project窗口链/WorldState）— the rotation identity chain +
+  // 125 项 1/项 2（codex 窗口链/WorldState）— the rotation identity chain +
   // the world-diff pure functions riding tier-2 summary headers.
   windowIdentityLine, windowIdentitySection, windowId,
   worldStateDiff, worldDiffSection, WORLD_DIFF_CAP_CHARS,
@@ -460,7 +460,7 @@ export {
 } from "./compaction.js";
 export type { OccupancyBreakdown } from "./compaction.js";
 export type { WindowIdentity, WorldState } from "./window-chain.js";
-// 借鉴弧 B1/B2（the upstream project C1/C2）— 压缩经济学决策层的类型面 + 缺省 ratio 常量
+// 借鉴弧 B1/B2（a reference project C1/C2）— 压缩经济学决策层的类型面 + 缺省 ratio 常量
 //（providers 的推导链与 core 的 tracker 共用同一缺省——单一真值点）。其余
 // 运行面（tracker/常量）走 compaction.ts 域门面与 core 内部直连，不进 barrel
 //（ω99-96 钉的面纪律：表面增长要可辩护——外部消费者只需要事件与配置的
@@ -470,7 +470,7 @@ export type {
   CachePricing, CacheRatioSource, CompactionEconomicsDecision,
   CompactionEconomicsReason, CompactionEconomicsReport, EconomicsDecideInput,
 } from "./compaction-economics.js";
-// 125 项 1（the upstream formatresolveCompactSpec 形）— 预留感知触发线的单一真值点：loop 的
+// 125 项 1（dsh resolveCompactSpec 形）— 预留感知触发线的单一真值点：loop 的
 // effectiveThreshold 与 CLI 的 context_remaining 工具/装配缝共用；常量是
 // misc-config 家族 compaction.thresholdRatio/headroomTokens 的缺省锚。
 export {
@@ -485,7 +485,7 @@ export type {
   ForkContext,
   ChildSessionOptions, ParentMailSink,
 } from "./subagent.js";
-// 124b 项 1（the upstream projectinstant_interrupt）——流抢占通道（loop 的 streamPreempt
+// 124b 项 1（codex instant_interrupt）——流抢占通道（loop 的 streamPreempt
 // 选项面；驱动侧 request() 即时中断在飞模型流）。loop.ts 已 re-export 类
 // 型；这里补工厂的公共面。
 export { createStreamPreemptChannel } from "./stream-preempt.js";
@@ -623,7 +623,7 @@ export type { ProbeEvent, ProbeCategory, ProbeBus } from "./probe.js";
 export type { ProbeBusStatsEntry } from "./probe.js";
 export { createProbeBus, probeBus, probeEnabled, probeModelClient, probeModelRetry, PROBE_ENV } from "./probe.js";
 
-// 113-A4 — UTF-16 代理对安全截断原语（全仓唯一文本截断入口，the upstream format4ef97b92a9
+// 113-A4 — UTF-16 代理对安全截断原语（全仓唯一文本截断入口，dsh 4ef97b92a9
 // 引进裁决）。barrel 放出两件（头帽/尾帽）供 cli/slack/providers 收编位点
 // 使用；core 内部经相对路径 import。表面增长声明：+2（truncateSafe/
 // truncateTailSafe），barrel-surface 钉随本提交再生。
@@ -650,7 +650,7 @@ export type {
   ColdCacheOffer,
 } from "./cache-clock.js";
 
-// 133 #4（the upstream format collection-planner 引进，轻量形）— todo 板生成器治理四闸
+// 133 #4（a reference harness collection-planner 引进，轻量形）— todo 板生成器治理四闸
 // （frontier 帽/新完成门槛+首扩豁免/轮数帽/无增长熔断→显式封盘）。barrel
 // 放出全件（goal 续跑缝与测试复用）；表面增长声明：+8 函数/常量、+4 类型。
 export {
@@ -670,5 +670,13 @@ export type {
   TodoExhaustionReason,
   TodoExpansionGate,
 } from "./todo-generator.js";
+
+// M-Memory 弧 — 长期记忆库（core 纯库）：per-root memory.jsonl（append-only
+// + tombstone forget + 内容哈希去重即 useCount 强化 + 词面门槛检索 + 字节
+// 稳定的 <long-term-memory> 注入渲染）。cli 层的装配（工具三件套 / boot
+// 召回注入 / /memory 动词 / 会话终了沉淀）在 packages/cli/src/longterm-memory.ts。
+// 表面增长声明：+4 函数/常量、+5 类型，barrel-surface 钉随本提交再生。
+export { openMemoryStore, readMemoryFile, memoryId, MEMORY_KINDS } from "./memory.js";
+export type { MemoryEntry, MemoryKind, MemoryStore, MemorySaveInput, MemorySearchOptions } from "./memory.js";
 
 export const PACKAGE_NAME = "@wudao/core";

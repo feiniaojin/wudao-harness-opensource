@@ -327,7 +327,7 @@ textarea.wudao-input:focus { border-color: var(--accent); }
 /* The borderless textarea has no outline of its own — the CARD carries the
    focus state (keyboard users still see where they are). 116 弧 A：卡面已无
    边框，focus 态 = accent 环画进 box-shadow（换掉 elevation 的发丝描边，
-   柔光两层保留）——the upstream format 输入框 focus 重绑描边的等效实现。 */
+   柔光两层保留）——dsh 输入框 focus 重绑描边的等效实现。 */
 .composer:focus-within {
   box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / .55), var(--elev-2-soft);
 }

@@ -1,4 +1,4 @@
-// 夜移 014 — /btw 缓存共享旁问（真 the upstream formatsideQuestion.ts + forkedAgent.ts 的
+// 夜移 014 — /btw 缓存共享旁问（真 CC sideQuestion.ts + forkedAgent.ts 的
 // wudao 适配）。关键契约：旁问 fork 与主会话**共享前缀字节**（systemPrompt、
 // 消息前缀、工具列表全同——唯一差异是尾部追加的旁问 user 消息），所以它
 // 命中主会话的前缀缓存，近乎免费。答案走 driver history 的 notice 通道：

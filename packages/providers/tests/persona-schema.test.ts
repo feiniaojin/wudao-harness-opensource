@@ -12,10 +12,10 @@ const good = {
 
 describe("validatePersonaDefinition", () => {
   it("accepts a minimal valid persona and normalizes nothing", () => {
-    const r = validatePersonaDefinition({ id: "dsh", displayName: "dsh", source: { kind: "workspace-source", provenance: "p", pinnedVersion: "v" }, headers: {} });
+    const r = validatePersonaDefinition({ id: "owire", displayName: "owire", source: { kind: "workspace-source", provenance: "p", pinnedVersion: "v" }, headers: {} });
     expect(r.ok).toBe(true);
   });
-  it("accepts the codex-shaped persona", () => {
+  it("accepts the responses-shaped persona", () => {
     expect(validatePersonaDefinition(good).ok).toBe(true);
   });
   it("rejects unknown top-level keys (fail-closed)", () => {
@@ -72,7 +72,7 @@ describe("validatePersonaDefinition", () => {
 });
 
 // SDD 2026-08-23 layer-selection fix round 1 — spec §10.1: an EXPLICIT layer
-// qualifier lists the COMPLETE enable set (`claude-code:headers` = 只启用
+// qualifier lists the COMPLETE enable set (`anthropic-cli:headers` = 只启用
 // headers). effectiveLayers therefore MASKS when a qualifier is present
 // (unlisted layers off, defaultLayers ignored); the unqualified path keeps
 // the historical defaults byte-identical.

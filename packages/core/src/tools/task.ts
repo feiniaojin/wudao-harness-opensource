@@ -7,8 +7,8 @@ import type { ForkContext, SubagentRunInfo } from "../subagent.js";
 import { truncateSafe } from "../text-truncate.js";
 
 /**
- * 133 #6（the upstream projectce 形）— 子代理因否决墙终止时给父链的行为契约。
- * the upstream project的硬编码契约直译 + wudao 中文定制：通知父模型（1）子代理因何停
+ * 133 #6（codex 63475131ce 形）— 子代理因否决墙终止时给父链的行为契约。
+ * codex 的硬编码契约直译 + wudao 中文定制：通知父模型（1）子代理因何停
  * （连续被权限系统否决，evidence 点名工具与次数——注入卫生：不引用原始
  * 否决详情/参数），（2）在用户明确确认前不要重启此子代理或重试其被封锁
  * 的工作，（3）向用户报告并等待。有界（≤512B）。

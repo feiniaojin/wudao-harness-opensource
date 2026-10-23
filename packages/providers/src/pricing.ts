@@ -1,7 +1,7 @@
-// 借鉴弧 B1（the reference project C1）— providers 的价目面：模型价格目录 schema + 缓存
+// 借鉴弧 B1（a reference project C1）— providers 的价目面：模型价格目录 schema + 缓存
 // 经济学 ratio 的自动推导。
 //
-// 立场（对 the reference project 的 N7 负裁决的正面侧）：cacheWriteReadRatio 不做用户配置
+// 立场（对 a reference project 的 N7 负裁决的正面侧）：cacheWriteReadRatio 不做用户配置
 // 项、不手填常量（他们的 12.5 抄 GPT-5.6 定价）。推导链：
 //   catalog pin（registry 行的 models[].prices——用户 overlay，builtin 只有
 //   文档核实的数字才钉）> WUDAO_PRICE_<MODEL> env（CLI /cost 的既有约定，

@@ -5,7 +5,7 @@ import { TODO_LINE_MARKS } from "./board.js";
 
 /** `formatTokensK`: 1234 → "1.2k", 987 → "1k" (same rounding as the TUI). */
 export function formatTokensK(n: number): string {
-  // 129 弧（the upstream harness 8784a5946 同款 bug）：≥999_950 时 k 路径会印出
+  // 129 弧（OpenHands 8784a5946 同款 bug）：≥999_950 时 k 路径会印出
   // "1000k"/"1050k"（无 M 档——DeepSeek V4 1M 窗下 StatusBar 真可命中）。
   // 阈值 999_950 = k 路径四舍五入到 1000.0k 的确切起点（n/100 进位边界）。
   if (n >= 999_950) return Math.round(n / 100_000) / 10 + "M";

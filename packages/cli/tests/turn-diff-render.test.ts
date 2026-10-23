@@ -1,4 +1,4 @@
-// 夜移 032 — the cli-side net-diff renderer (the upstream project's git-style unified
+// 夜移 032 — the cli-side net-diff renderer (codex's git-style unified
 // output over the core tracker's ledger; LCS reuse from M32's
 // file-changes.ts). The preview rides the run's notice text, the full diff
 // rides the notice detail.

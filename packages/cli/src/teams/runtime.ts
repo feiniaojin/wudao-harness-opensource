@@ -16,7 +16,7 @@
 // action never relays: the teammate's tool calls go through the SAME lead
 // gate, so a deny stops at the teammate exactly as it would at the lead.
 //
-// Constraints (照抄 the upstream format): one team per session, no team nesting, no
+// Constraints (照抄 CC): one team per session, no team nesting, no
 // background subagents under teammates, resume does not restore teammates.
 import { runSubagent, toSubagentType, intersectToolNames, buildTool, createJsonlSessionStore, newSessionId } from "@wudao/core";
 import type { AgentHooks, ChildSessionOptions, LoopOptions, ModelClient, Tool } from "@wudao/core";

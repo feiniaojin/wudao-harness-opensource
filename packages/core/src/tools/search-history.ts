@@ -1,5 +1,5 @@
 // 121 挖掘 TOP5 #1 — the model-side retrieval surface over COMPACTED history
-// (the upstream projecthistory/notes · the upstream format retained-evidence handles · qm type#seq —
+// (codex history/notes · a reference harness retained-evidence handles · qm type#seq —
 // three repos converged on the same quarter; this is wudao's take). Long
 // sessions compact, and everything the summarizer swallowed used to be gone
 // from the model's reach exactly when long-range tasks need it most — "what

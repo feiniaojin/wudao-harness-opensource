@@ -3,7 +3,7 @@
 // the four tiers map onto ask/workspace/auto/plan and collapse into a 26px
 // chip that opens a popup menu; the risky tier commits only after an inline
 // confirm click, and Esc / outside closes without change. 0.3.13: the LABELS
-// are the the upstream formatvocabulary ask/accept/auto (no emoji, no shield stack); 0.3.14
+// are the CC vocabulary ask/accept/auto (no emoji, no shield stack); 0.3.14
 // adds plan (只读探查) as the fourth stop; the mode values stay
 // workspace/ask/auto/plan.
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -33,7 +33,7 @@ afterEach(() => {
 });
 
 describe("SHIELD_TIERS (the mapping)", () => {
-  it("four tiers map onto ask / workspace / auto / plan with the upstream format labels (ask/accept/auto/plan)", () => {
+  it("four tiers map onto ask / workspace / auto / plan with CC labels (ask/accept/auto/plan)", () => {
     expect(SHIELD_TIERS.map((t) => [t.mode, t.label])).toEqual([
       ["ask", "ask"],
       ["workspace", "accept"],
@@ -79,7 +79,7 @@ describe("ShieldSelector interaction", () => {
   it("renders the chip (current tier + caret); the menu is closed until clicked", () => {
     const c = mount(<ShieldSelector value="ask" onChange={() => {}} />);
     const chip = c.querySelector(".pop .chip") as HTMLButtonElement;
-    expect(chip.textContent).toContain("ask"); // the the upstream format label — no emoji
+    expect(chip.textContent).toContain("ask"); // the CC label — no emoji
     expect(chip.textContent).toContain("▾");
     expect(chip.className).toContain("sel"); // a non-default tier highlights
     expect(chip.getAttribute("aria-expanded")).toBe("false");

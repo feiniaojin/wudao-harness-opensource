@@ -1,4 +1,4 @@
-// 借鉴弧 B1（the upstream project C1）— 压缩经济学决策层的表驱动验收（the upstream project 的
+// 借鉴弧 B1（a reference project C1）— 压缩经济学决策层的表驱动验收（a reference project 的
 // economics.test.ts 是 88 行表驱动；这里同形收窄到 wudao 的差异面：
 // fail-open 压力回落 / writeTokens 用压缩后重读前缀 / 免费缓存 Infinity /
 // 债的替换语义与连本带息门）。

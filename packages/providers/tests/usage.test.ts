@@ -161,7 +161,7 @@ describe("usage channel (streaming)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// M56 §2 — turn_usage receipts (the reference harness AGENT_RUNTIME turn_usage): one
+// M56 §2 — turn_usage receipts (a reference harness AGENT_RUNTIME turn_usage): one
 // receipt per model call, optional fields OMITTED when unknown (never null,
 // never zero-backfilled), durationMs always measured around the attempt.
 // ---------------------------------------------------------------------------

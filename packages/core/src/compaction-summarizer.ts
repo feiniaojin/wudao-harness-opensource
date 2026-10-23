@@ -14,13 +14,13 @@ export interface SummaryReplayInput {
   readonly focus?: string;
   /** M58 §C#2: standing compact instructions woven into the instruction. */
   readonly compactInstructions?: string;
-  /** 113-B1 (the upstream project #2385 形): the kept-tail recency anchor — the
+  /** 113-B1 (prime-agent #2385 形): the kept-tail recency anchor — the
    *  latest retained assistant text, woven into the instruction's TAIL so
    *  the summary describes the world the kept messages live in (the summary
    *  alone only ever sees the compacted span). The replayed prefix above the
    *  instruction is untouched — cache cost zero. */
   readonly recencyAnchor?: string;
-  /** 125 项 1（the upstream projectnew_context 形）: the agent-rotation context — WHY the
+  /** 125 项 1（codex new_context 形）: the agent-rotation context — WHY the
    *  model rotated plus the facts it demanded survive (preserve). Woven into
    *  the instruction's TAIL beside the focus/anchor riders (cache cost zero).
    *  The preserve block ALSO rides the frozen summary message verbatim
@@ -42,7 +42,7 @@ const SUMMARY_SPAN_CAP_CHARS = 24000;
 // is the pipeline's only long step; a user cancel (TUI Esc / WS interrupt /
 // headless signal) must CANCEL it, never degrade it: the static fallback
 // exists for a DOWN provider, and running it after an abort would be MORE
-// work exactly when the user asked for LESS (the upstream projectfindings C2). Abort-shaped
+// work exactly when the user asked for LESS (pi findings C2). Abort-shaped
 // errors propagate untouched; every other error keeps the M47 fallback
 // semantics byte-for-byte. The signal is optional at every seam — absent
 // means exactly today's behavior.

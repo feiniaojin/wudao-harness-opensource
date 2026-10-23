@@ -196,7 +196,7 @@ describe("T1 — classifier registry completeness", () => {
 });
 
 // ---------------------------------------------------------------------------
-// T2 — filter-then-bound order (the upstream projectuser_authorization.rs:33-63)
+// T2 — filter-then-bound order (codex user_authorization.rs:33-63)
 // ---------------------------------------------------------------------------
 
 describe("T2 — filter-then-bound order", () => {

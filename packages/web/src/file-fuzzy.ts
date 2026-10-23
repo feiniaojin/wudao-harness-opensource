@@ -1,6 +1,6 @@
 // 夜移 019 (#30 native-ts file-index, wudao 适配切片) — the Ctrl+P palette's
 // path matcher, extracted from App.tsx's inline greedy scan into a pure
-// module with real the upstream's file-index paradigms (restored-src/src/native-ts/
+// module with real CC's file-index paradigms (restored-src/src/native-ts/
 // file-index/index.ts — itself a TS port of the Rust nucleo wrapper):
 //
 //   • smart-case        — a lowercase query matches case-insensitively; ANY
@@ -13,7 +13,7 @@
 //   • fused scoring     — the greedy indexOf positions ARE the score input:
 //                         consecutive bonus, gap penalty, boundary (/ - _ .
 //                         space) and camel bonuses accrue during the scan —
-//                         no second pass (real the upstream's fused-scan insight).
+//                         no second pass (real CC's fused-scan insight).
 //   • time-chunk build  — buildPathIndexAsync yields on ELAPSED ms
 //                         (CHUNK_MS, not a path count: slow machines get
 //                         smaller chunks and stay responsive), and search
@@ -27,7 +27,7 @@
 //     term; wudao's palette is file-first UX, and r3 shipped this for
 //     exactly that reason.
 //   • ties break by path ascending (determinism over "whatever order").
-//   • the 'test' demotion from real the upstream formatis a mild pre-sort multiplier (0.95)
+//   • the 'test' demotion from real CC is a mild pre-sort multiplier (0.95)
 //     rather than their post-position ×1.05 — our cap slices by score.
 export interface RankedHit {
   readonly path: string;
@@ -41,7 +41,7 @@ export interface PathIndex {
   readonly size: number;
 }
 
-// nucleo-style constants (values from real the upstream's TS port).
+// nucleo-style constants (values from real CC's TS port).
 const SCORE_MATCH = 16;
 const BONUS_BOUNDARY = 8;
 const BONUS_CAMEL = 6;
@@ -53,7 +53,7 @@ const MAX_QUERY_LEN = 64;
 const CHUNK_MS = 4;
 // ui-review-r3 P3: the basename class separation (see header).
 const BASENAME_BONUS = 1000;
-// Real the upstream's 'test' demotion (×1.05 on a lower-is-better position score) →
+// Real CC's 'test' demotion (×1.05 on a lower-is-better position score) →
 // here a ×0.95 pre-sort multiplier on a higher-is-better fuzz score.
 const TEST_PATH_FACTOR = 0.95;
 
@@ -236,7 +236,7 @@ export function searchPathIndex(index: PathIndex, query: string, limit: number):
   const state = stateOf.get(index)!;
   const ready = state.ready;
 
-  // Smart-case (real the upstream format): lowercase query → case-insensitive.
+  // Smart-case (real CC): lowercase query → case-insensitive.
   const caseSensitive = query !== query.toLowerCase();
   const needle = caseSensitive ? query : query.toLowerCase();
   const nLen = Math.min(needle.length, MAX_QUERY_LEN);
@@ -274,7 +274,7 @@ export function searchPathIndex(index: PathIndex, query: string, limit: number):
 
     // Gap-bound reject: when the cap is full, a path whose best-case score
     // (every bonus) minus known gap penalties can't beat the threshold
-    // skips the boundary pass entirely (real the upstream's pruner).
+    // skips the boundary pass entirely (real CC's pruner).
     const ceiling = nLen * (SCORE_MATCH + BONUS_BOUNDARY) + BONUS_FIRST_CHAR + 32;
     if (best.length === limit && ceiling + consecBonus - gapPenalty <= threshold) continue;
 
@@ -282,7 +282,7 @@ export function searchPathIndex(index: PathIndex, query: string, limit: number):
     let score = nLen * SCORE_MATCH + consecBonus - gapPenalty;
     score += scoreBonusAt(path, positions[0]!, true);
     for (let j = 1; j < nLen; j++) score += scoreBonusAt(path, positions[j]!, false);
-    // Short paths win ties (real the upstream format) — and wudao's basename class rides on
+    // Short paths win ties (real CC) — and wudao's basename class rides on
     // top (ui-review-r3): a match starting inside the basename separates
     // from the same shape buried in a dirname (higher-is-better → the
     // dirname shape PAYS, it does not earn).

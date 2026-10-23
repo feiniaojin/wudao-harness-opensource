@@ -1,4 +1,4 @@
-// 永续 v6 wave2（the upstream project C1 门控自改进）聚焦测试。夹具全写 tmpdir（红线）；
+// 永续 v6 wave2（reef C1 门控自改进）聚焦测试。夹具全写 tmpdir（红线）；
 // 提案器/门禁全程注入 fake（零真模型调用、零真子进程——computer-use 弧同
 // 律：测试不碰真键鼠/网络）。状态机、触发器、提案管线、门禁运行器四段。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -256,7 +256,7 @@ describe("improve/trigger — 触发器（人工同意第一道）", () => {
     expect(notices.length).toBe(1);
     expect(notices[0]).toContain("已出现 3 次");
     const again = await maybeOfferImprovements({ workspaceRoot: root, env: {}, now: () => NOW });
-    expect(again.length).toBe(0); // 同指纹抑制（the upstream project rejected/offer 记忆）
+    expect(again.length).toBe(0); // 同指纹抑制（reef rejected/offer 记忆）
     const off = await maybeOfferImprovements({ workspaceRoot: root, env: { WUDAO_IMPROVE: "off" }, now: () => NOW });
     expect(off.length).toBe(0);
   });

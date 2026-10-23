@@ -15,9 +15,9 @@ import { resolveGlobalHome } from "./settings-layer.js";
 export interface MarketplaceEntry {
   readonly name: string;
   readonly description?: string;
-  /** Where the plugin comes from — the upstream formatsemantics: a path RELATIVE to the
+  /** Where the plugin comes from — CC semantics: a path RELATIVE to the
    *  market root (`./plugins/x`) or a git location; resolution is A2's
-   *  pluginInstall job, the entry just carries the string. the upstream formatalso ships
+   *  pluginInstall job, the entry just carries the string. CC also ships
    *  OBJECT sources ({source:"url"|"git"|"github", …}) — parseEntry
    *  normalizes those into this string form (url passthrough, `url#ref`,
    *  `owner/repo[#ref]`); `local` objects are v1-out-of-scope bad entries. */
@@ -118,8 +118,8 @@ export function parseMarketSource(input: string): MarketSource | undefined {
   const raw = input.trim();
   if (raw === "") return undefined;
 
-  // GitHub shorthand first: `foo/bar` keeps the upstream's GitHub meaning even when a
-  // same-shaped relative path happens to exist (the upstream formatdocs use ./ or absolute
+  // GitHub shorthand first: `foo/bar` keeps CC's GitHub meaning even when a
+  // same-shaped relative path happens to exist (CC docs use ./ or absolute
   // paths for local sources). cc-plugins E4 final-review M1: the shorthand
   // also carries `#ref` — E1b's object-form normalization emits
   // `owner/repo#ref`, which must round-trip back through install.
@@ -221,7 +221,7 @@ export function parseMarketplaceText(text: string, label: string): MarketplaceFi
 
 /** One plugins[] entry, or undefined when it is malformed (dropped + counted
  *  — a bad entry must not take the whole market down). The `source` is the
- *  string grammar OR the upstream's object forms (E1b: real markets like obra/
+ *  string grammar OR CC's object forms (E1b: real markets like obra/
  *  superpowers-marketplace ship objects), normalized by
  *  normalizeEntrySource into the string semantics every downstream consumer
  *  already speaks. */
@@ -241,7 +241,7 @@ function parseEntry(item: unknown): MarketplaceEntry | undefined {
   };
 }
 
-/** the upstream's per-entry source field: the string form we ship natively (kept
+/** CC's per-entry source field: the string form we ship natively (kept
  *  verbatim — relative paths and git locations ride unchanged), or one of the
  *  three object kinds, normalized INTO the string grammar: `url` → the url
  *  passthrough; `git` → `url` (+ `#ref` when given); `github` →

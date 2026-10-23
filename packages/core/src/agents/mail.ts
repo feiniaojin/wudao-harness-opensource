@@ -8,7 +8,7 @@
 // child the call fails with a deterministic typed error — the top-level
 // session needs no child-specific prompt section to explain an absent tool.
 //
-// The the upstream formatlesson (2026-08-27-adjacent-agent-steer-messaging): a child-only
+// The dsh lesson (2026-08-27-adjacent-agent-steer-messaging): a child-only
 // `report` tool + a child-side prompt section made the child's request head
 // differ from its parent's, killing prefix-cache reuse. Here the tool is
 // global and the child guidance rides the child's OWN brief (the isolated
@@ -18,7 +18,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { buildTool } from "../tool.js";
 import type { Tool } from "../tool.js";
 
-/** The reserved tool name. NOTE (T0, discovered): the upstream formatnames this operation
+/** The reserved tool name. NOTE (T0, discovered): dsh names this operation
  *  `send_message`, but wudao's M64-A peer pair already registers a top-level
  *  `send_message {to,text}` and the M64-C teams runtime registers its own
  *  intra-team flavor — the loop dispatches by first name match, so a third
@@ -74,7 +74,7 @@ export function currentMailScope(): MailScope | undefined {
 }
 
 /** The model-visible steering line: source attribution derived by the
- *  runtime (a ref: "Agent <sender-id> sent a message:"). */
+ *  runtime (dsh: "Agent <sender-id> sent a message:"). */
 export function formatMailText(childId: string, role: string, content: string): string {
   return `[message from subagent ${childId} (${role})]\n${content}`;
 }

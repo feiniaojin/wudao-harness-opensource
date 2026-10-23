@@ -2,7 +2,7 @@
 // pump consults gate.current() (not the frozen maxConcurrent), settlement
 // feeds the gate (ok → onSuccess; overload-class death via the injected
 // classifier → onThrottle), and a shrink only bars NEW admissions (running
-// children are never killed — the upstream's pause-new-admissions law). Gate
+// children are never killed — a reference harness's pause-new-admissions law). Gate
 // ABSENT must stay byte-equal to the pre-121 static cap (the default every
 // embedder keeps) — that half is pinned by the whole existing registry suite.
 import { describe, it, expect } from "vitest";

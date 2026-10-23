@@ -148,7 +148,7 @@ export function sessionGroup(iso: string, now: number = Date.now()): string {
   return "更早";
 }
 
-export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, onOpenSettings, onOpenSearch, onRenameSession, sessionsEpoch, awaitingIds, busySessionIds }: {
+export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, onOpenSettings, onOpenSearch, onRenameSession, sessionsEpoch, awaitingIds, busySessionIds, onFollowUp }: {
   client: SessionsClient;
   /** The live driver session (status.sessionId) — its row highlights. */
   activeSessionId: string | null;
@@ -181,6 +181,13 @@ export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, o
      旋转标记（IconSpinner+.spin——与主车道各 busy 面同一视觉语）。可选
      prop：undefined=老 server（无 lanes）→ 面隐藏，字节同形；pet 行永不。 */
   busySessionIds?: ReadonlySet<string>;
+  /* 小精灵会话弧 — 行内「追问」动作（OPTIONAL——prop 缺席挂载零按钮，字节
+     同形，✎ 同款纪律）：fork 该会话进入副本、聚焦输入框，用户输入即追问
+     （原会话保持原样）。与行点击的「恢复」（继续原会话）并存——两个动作
+     语义不同：恢复=接着聊原会话；追问=基于这段开新副本问。App 走
+     client.resumeFork（resume 的 fork 形 op）。pet 行永不（精灵会话在精灵
+     窗口活着，租约互斥——行点击 toast 同判据）。 */
+  onFollowUp?: (id: string) => void;
 }): React.JSX.Element {
   /* ω99-243: #3 — 侧栏三态完备：rows 三值（null=首载在途 → 3 行 CSS 骨架，
    * 非「暂无会话」谎言；[]=空态；有值=正常）+ 失败态从裸「加载失败」升为
@@ -561,6 +568,24 @@ export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, o
                         }}
                       >
                         <IconPencil size={12} />
+                      </button>
+                    ) : null}
+                    {/* 小精灵会话弧 — hover「追问」（.sb-follow，.sb-act 的同款
+                        quiet hover 语义但独立类名——214 归档弧把 .sb-act 钉成
+                        归档专属；点击不顺带 resume）：fork 该会话进副本继续问，
+                        原会话不动。活跃行也有（对自己岔一条线是合法动作——归
+                        档才是 v1 禁自指的那个）；pet 行永不。 */}
+                    {onFollowUp !== undefined && r.lane !== "pet" ? (
+                      <button
+                        type="button"
+                        className="sb-follow"
+                        title="基于这段对话开一份副本继续问，原对话保持不变"
+                        onClick={(e) => {
+                          e.stopPropagation(); // 追问不顺带 resume
+                          onFollowUp(r.id);
+                        }}
+                      >
+                        追问
                       </button>
                     ) : null}
                     {/* ω99-214: #2 — hover 归档（quiet，✎ 同款；点击不顺带

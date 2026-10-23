@@ -1,6 +1,6 @@
 // cc-plugins D2 — the unified skill/command substitution expander + the
 // !`cmd` / ```! dynamic injection. Byte-exact pins: the substitution matrix
-// follows real the upstream harness semantics (0-based $N, shell-quoted multi-word
+// follows real Claude Code semantics (0-based $N, shell-quoted multi-word
 // args, named-arg positional mapping), and the injector's one-pass law
 // (output never rescanned) is a security property, not a nicety.
 import { describe, it, expect } from "vitest";
@@ -84,7 +84,7 @@ describe("expandSubstitutions", () => {
   it("$ARGUMENTS expands to the whole trimmed arg string (inner spacing preserved)", () => {
     expect(expandSubstitutions("run $ARGUMENTS now", ctx(" fix  the bug "))).toBe("run fix  the bug now");
   });
-  it("$ARGUMENTS[N] is 0-BASED (the upstream format semantics); a missing index → empty", () => {
+  it("$ARGUMENTS[N] is 0-BASED (CC semantics); a missing index → empty", () => {
     expect(expandSubstitutions("a=$ARGUMENTS[0] b=$ARGUMENTS[1] c=$ARGUMENTS[9]", ctx("x y"))).toBe("a=x b=y c=");
   });
   it("$N is the 0-based shorthand of $ARGUMENTS[N]; missing → empty", () => {
@@ -93,7 +93,7 @@ describe("expandSubstitutions", () => {
   it("quoted multi-word args land as single positional values", () => {
     expect(expandSubstitutions("hello $0 $1", ctx("\"two words\" tail"))).toBe("hello two words tail");
   });
-  it("a declared $name maps POSITIONALLY onto the parsed args (the upstream format mapping)", () => {
+  it("a declared $name maps POSITIONALLY onto the parsed args (CC mapping)", () => {
     expect(expandSubstitutions("$topic then $style", ctx("chairs modern", ["topic", "style"]))).toBe("chairs then modern");
   });
   it("a declared $name with a missing position → empty", () => {
@@ -188,7 +188,7 @@ describe("expandInjections", () => {
     });
     expect(out).toBe("a !` ` b");
   });
-  it("exec rejection propagates to the caller (the upstream's fail-loud posture)", async () => {
+  it("exec rejection propagates to the caller (CC's fail-loud posture)", async () => {
     await expect(
       expandInjections("!`boom`", async () => {
         throw new Error("denied");
@@ -433,7 +433,7 @@ describe("buildSubstitutedSkillMessage / buildExpandedSkillMessage", () => {
     expect(seen).toEqual(["shell:echo gated"]);
     expect(out).toContain("X gated");
   });
-  it("expanded: a DENIED injection rejects (the invocation fails loud, like the upstream format)", async () => {
+  it("expanded: a DENIED injection rejects (the invocation fails loud, like CC)", async () => {
     const s = skill({
       origin: "plugin",
       pluginScope: "project",

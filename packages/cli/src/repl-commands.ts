@@ -562,7 +562,7 @@ export function createProgrammaticSubmitGate(
 // there (a monitor wake through the gate, a /loop first round) raced the
 // interactive turn into two concurrent runTurns over the single-owner turn
 // state (state.messages, activeGen/activeAbort, the /loop re-arm). The chain
-// collapses admission to one entry point — real the upstream's "reserve before the
+// collapses admission to one entry point — real CC's "reserve before the
 // first await" discipline (QueryGuard) in plain-REPL form: entering the chain
 // reserves the slot synchronously, so a submit arriving while a turn is
 // queued or in flight queues with a one-line notice instead of racing. The
@@ -589,7 +589,7 @@ export function createTurnSerializer(
   return {
     submitTurn(text, plan, branchLink) {
       if (turnInFlight) onQueued?.(text);
-      turnInFlight = true; // sync reserve — BEFORE the first await (the the upstream format discipline)
+      turnInFlight = true; // sync reserve — BEFORE the first await (the CC discipline)
       const run = turnChain.then(() => {
         // Re-assert at turn start: the previous turn's reset and this start
         // are adjacent microtasks, and turnInFlight must stay true across them.

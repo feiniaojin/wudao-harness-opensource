@@ -1,4 +1,4 @@
-// ω-1b — the repetition circuit breaker (the upstream project tool_monitor.rs:34-82, digest
+// ω-1b — the repetition circuit breaker (goose tool_monitor.rs:34-82, digest
 // 98a): N consecutive IDENTICAL tool calls (same name + JSON-stringified
 // arguments) trip an error tool result instead of executing; any different
 // call resets the streak; the trip itself resets the counter (the breaker

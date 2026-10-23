@@ -44,7 +44,7 @@ export interface McpServerRow {
   /** P2-16b: a token exists in the store for this server (authed vs
    *  "auth needed"). Only meaningful with oauth: true. */
   readonly authed?: boolean;
-  /** Which tier's entry this row renders (the upstream format-format compat's three tiers);
+  /** Which tier's entry this row renders (CC-format compat's three tiers);
    *  undefined = runtime-only (not in any mcp.json). */
   readonly source?: "user" | "root" | "project";
   /** The tiers whose same-name entry this row's tier REPLACED (the
@@ -69,7 +69,7 @@ export function mcpTierLabel(tier: "user" | "root" | "project"): string {
 /** Fold the three sources into one row per known server (config order first,
  *  runtime-only stragglers after). `authStatus` (P2-16b) answers whether a
  *  server's OAuth token exists (the token store lookup — injected so the
- *  fold stays pure). `tiers` (the the upstream format-format three-tier read) annotates each
+ *  fold stays pure). `tiers` (the CC-format three-tier read) annotates each
  *  configured row with its source tier and the tiers it replaced; absent,
  *  rows render without the source detail line (byte-stable pre-compat). */
 export function buildMcpRows(args: {
@@ -163,7 +163,7 @@ export function formatMcpReport(rows: readonly McpServerRow[], opts: { readonly 
     lines.push(`  ${r.name}: ${state} · ${transportTag}${r.tools} 个工具 · ${latency.join(" · ")}${traffic}${oauthTag}`); // ω99-180: #12
     if (r.transport === "http") lines.push(`    (${r.command})`);
     if (r.source !== undefined) {
-      // The the upstream format-format tier read: where this entry came from + which earlier
+      // The CC-format tier read: where this entry came from + which earlier
       // same-name entries it replaced (one line, the http-url idiom).
       const replaced = r.replaces !== undefined && r.replaces.length > 0
         ? ` · 取代 ${r.replaces.map(mcpTierLabel).join(", ")}` // ω99-180: #14（mcpTierLabel 调用不动）

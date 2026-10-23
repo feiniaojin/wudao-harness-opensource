@@ -105,7 +105,7 @@ export interface MissionState {
    *  distinct from "abandoned" (user/模型 intent) so the archaeology layer
    *  can tell a deliberate close from a dangling shell. */
   readonly status: "active" | "completed" | "abandoned" | "stale";
-  /** v7 γ2（the upstream format #6162 思想）——终态成因：status 只说「成了什么态」，
+  /** v7 γ2（a reference harness #6162 思想）——终态成因：status 只说「成了什么态」，
    *  不说「谁/什么结束了它」。abandoned 带 user-abort（用户/模型 deliberate
    *  放弃）；stale 带 shutdown（会话边界结算=前端卸载/关窗的空壳悬空）。
    *  可选、additive——legacy 台账无此字段照常加载（无因记录降级为无

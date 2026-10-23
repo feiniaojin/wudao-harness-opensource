@@ -1,4 +1,4 @@
-// 125 项 2（the upstream projectget_context_remaining 形）— context_remaining 工具的钉子。
+// 125 项 2（codex get_context_remaining 形）— context_remaining 工具的钉子。
 // 模型第一次能「查」自己的上下文水位线：{ windowTokens, promptTokens,
 // remainingTokens, remainingRatio, compressionThreshold, tokensUntilThreshold }。
 // compressionThreshold 与 loop 的 effectiveThreshold 读同一条线（125 项 1 的

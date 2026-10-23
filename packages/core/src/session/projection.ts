@@ -1,4 +1,4 @@
-// ω99-51 — session projection seam (the upstream formatcandidate 5, pilot): the framework
+// ω99-51 — session projection seam (dsh candidate 5, pilot): the framework
 // half of "domain state derived from the session". A domain registers a PURE
 // unit (key + init + a synchronous fold apply(event, state) → state) and gets
 // subscription, change notification, and snapshots for free; every consumer

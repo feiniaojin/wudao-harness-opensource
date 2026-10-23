@@ -517,7 +517,7 @@ export interface AgentDriverOptions {
   tools: Tool[];
   systemPrompt: string;
   canUseTool?: RuleGate;
-  /** 125 项 1（the upstream projectnew_context 形）：模型侧轮转的端口盒——session-engine
+  /** 125 项 1（codex new_context 形）：模型侧轮转的端口盒——session-engine
    *  构造并传入，driver 把它接到 loop 的 contextRotation 端口。缺省=不接
    *  （new_context 工具 fail-absent，行为不变）。 */
   contextRotationBox?: import("@wudao/core").NewContextPortBox;
@@ -546,7 +546,7 @@ export interface AgentDriverOptions {
   /** Session id of the resumed history — heads the initial history as the
    *  `resumed <id8> · N messages` divider. A fresh id is generated otherwise. */
   sessionId?: string;
-  /** 夜移 005 (the upstream formatsession-title): after the first successful run, upgrade the
+  /** 夜移 005 (dsh session-title): after the first successful run, upgrade the
    *  derived session name to an LLM title via one tiny background call
    *  (querySource "title", low reasoning, capped output — never in the main
    *  transcript, never touching prefix bytes). Tried once per driver
@@ -642,7 +642,7 @@ export interface AgentDriverOptions {
    *  once the repair actually armed). In-process only, never persisted.
    *  Absent → no key, /status bytes identical. */
   mandatoryRepairArmed?: { current: boolean };
-  // #48 (the upstream turn-lease slice): the cross-process session RUN lease.
+  // #48 (hermes#4 turn-lease slice): the cross-process session RUN lease.
   // Optional override for tests; the default is the memoized box for this
   // workspace's sessions root — every driver with a workspaceRoot is leased
   // with zero frontend wiring (read-only drivers without one run unleased).
@@ -694,7 +694,7 @@ export interface AgentDriverOptions {
    *  mid-run never loses the one un-regenerable message; identity-based
    *  selection then skips it at onRunComplete (no duplicate line). */
   onUserTurn?: (message: AgentMessage) => void;
-  /** 波次 8 #45 (the upstream formatsession-checkpoint-policy): forwarded to runAgentLoop —
+  /** 波次 8 #45 (dsh session-checkpoint-policy): forwarded to runAgentLoop —
    *  the pre-dispatch durability barrier. Called once per tool-carrying turn
    *  (after the assistant(tool_use) lands, before gates/execution). The
    *  frontend makes the session record durable HERE (ordered-prefix append:
@@ -745,17 +745,17 @@ export interface AgentDriverOptions {
    *  uses). Present → each model call probes it for externally changed files
    *  and injects <file_changed> notes through the MetaNote channel. */
   readState?: ReadStateTable;
-  /** 夜移 032 (the upstream projectturn-diff): the per-run net file-change ledger — the
+  /** 夜移 032 (codex turn-diff): the per-run net file-change ledger — the
    *  SAME instance the tool set records into. Reset at run start; the
    *  run-settle seam renders the receipt (preview text + full diff detail).
    *  Absent → no net-change notice, unchanged behavior. */
   turnDiff?: import("@wudao/core").TurnDiffTracker;
-  /** 夜移 035 (the upstream projectturn_timing.rs): the run's phase recorder — threaded
+  /** 夜移 035 (codex turn_timing.rs): the run's phase recorder — threaded
    *  verbatim into the loop's options. Consumer-owned (created before the
    *  run; completed+read at the consumer's settle seam — complete is
    *  idempotent/memoized). Absent → the loop's hot path is untouched. */
   turnProfile?: import("@wudao/core").TurnProfileRecorder;
-  /** 夜移 036 (the upstream projectrollout_budget.rs): the SESSION-tree token budget —
+  /** 夜移 036 (codex rollout_budget.rs): the SESSION-tree token budget —
    *  one instance for the whole driver (root loop + every subagent share
    *  the accounting; subagents rebind the reminder threadId). Threaded as
    *  { budget, threadId: "root" }. Exhaustion ends runs through

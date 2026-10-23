@@ -22,7 +22,7 @@ import type { ModelClient } from "@wudao/core";
 import type { AgentRegistry } from "../agents/index.js";
 import { memoryDirectory, openSessionMemoryStore, isHeldOutEntry, type MemoryEntry } from "./store.js";
 import { createMemoryWriteTool, createMemorySearchTool } from "./tools.js";
-// 永续 v6 弧 A（the upstream project C3）：学习输入的 nonce 围栏（见 buildDreamPrompt）。
+// 永续 v6 弧 A（reef C3）：学习输入的 nonce 围栏（见 buildDreamPrompt）。
 import { fenceUntrusted } from "./guard.js";
 
 export const DREAM_ROLE_ID = "memory-dream";
@@ -30,9 +30,9 @@ export const DREAM_ROLE_ID = "memory-dream";
 export const DREAM_MAX_TURNS = 4;
 /** A hung child must not pin a registry slot (registry.ts timeoutMs). */
 export const DREAM_TIMEOUT_MS = 120_000;
-/** Batch size: entries past the cursor per run (the upstream project memory.py:579 default). */
+/** Batch size: entries past the cursor per run (nanobot memory.py:579 default). */
 export const DREAM_BATCH_MAX_ENTRIES = 20;
-/** Whole-embed cap (the upstream project :67), applied to the WHOLE embedded ledger section. */
+/** Whole-embed cap (nanobot :67), applied to the WHOLE embedded ledger section. */
 export const DREAM_EMBED_MAX_CHARS = 8000;
 /** Per-entry truncation (pending entries can exceed 500 at full length). */
 export const DREAM_EMBED_ENTRY_CHARS = 400;
@@ -82,7 +82,7 @@ export function dreamAuditPath(workspaceRoot: string): string {
 }
 
 /** Unreadable/corrupt/absent → {lastSeq:0} — fail toward REPROCESSING the
- *  ledger, never toward silently skipping it (D9; the upstream project's skip-to-latest
+ *  ledger, never toward silently skipping it (D9; nanobot's skip-to-latest
  *  upgrade default was explicitly declined). */
 export async function readDreamCursor(workspaceRoot: string): Promise<DreamCursor> {
   let raw: unknown;
@@ -143,7 +143,7 @@ function dreamLine(e: MemoryEntry): string {
 
 /** The ground-truth ledger embed (§3(c)): every entry one line, per-entry
  *  truncation, whole section ≤ DREAM_EMBED_MAX_CHARS with a `...[truncated]`
- *  footer when entries drop — the upstream project `_render_current_memory_files`'s
+ *  footer when entries drop — nanobot `_render_current_memory_files`'s
  *  guarantee translated: the model edits the real ledger, not a stale mental
  *  model. Exported pure for T3. */
 export function renderDreamLedgerEmbed(entries: readonly MemoryEntry[]): string {
@@ -182,10 +182,10 @@ export interface DreamPrompt {
  *  file order, first DREAM_BATCH_MAX_ENTRIES) and the embedded current
  *  ledger. `lastSeq` is the batch's last seq — entries appended during the
  *  run (the child's own memory_write output included) stay eligible next run
- *  (the upstream project memory.py:1190-1192: advance only through the captured batch).
+ *  (nanobot memory.py:1190-1192: advance only through the captured batch).
  *  Nothing unprocessed → undefined.
  *
- *  借鉴弧 C2（the upstream project C4）：heldout 标记条目不进批也不进 ground-truth 嵌入
+ *  借鉴弧 C2（a reference project C4）：heldout 标记条目不进批也不进 ground-truth 嵌入
  *  ——密封套件的结果永不进入精化输入。lastSeq 取自「seq 批」（过滤前），
  *  游标照常越过密封条目（它们永不阻塞、永不反复计数）；若批在过滤后为
  *  空，返回 undefined（不出模型调用），且 due-gate 的计数同样排除它们，
@@ -203,7 +203,7 @@ export function buildDreamPrompt(input: DreamPromptInput): DreamPrompt | undefin
       DREAM_PROMPT,
       "",
       "## Unprocessed batch (ledger entries since the last consolidation pass)",
-      // 永续 v6 弧 A（the upstream project C3）：台账条目=不可信文本（pending 条目可含任意
+      // 永续 v6 弧 A（reef C3）：台账条目=不可信文本（pending 条目可含任意
       // 模型产出），nonce 围栏防块内文本冒充提示词作者。围栏只进本 fresh
       // child 提示词——M24 零代价（Dream 自有前缀，父会话字节不动）。
       fenceUntrusted(unprocessed.map(dreamLine).join("\n"), "dream-batch"),
@@ -314,7 +314,7 @@ async function settleDream(
   result: { readonly ok: boolean; readonly aborted?: boolean; readonly error?: string; readonly report: string },
 ): Promise<string> {
   // 1. Snapshot diff — machine-derived; the child's report never enters the
-  //    numbers (the upstream project memory.py:747-762's rule).
+  //    numbers (nanobot memory.py:747-762's rule).
   const added: MemoryEntry[] = [];
   try {
     for (const e of await store!.load()) {

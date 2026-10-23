@@ -1,6 +1,6 @@
 // M48 §1 — the loop-safety net: pure detectors consumed by the loop at turn
-// boundaries. Three independent failure shapes (the upstream project's frequency-dominance
-// loop detection fused with the upstream's failure/edit-streak guards):
+// boundaries. Three independent failure shapes (langroid's frequency-dominance
+// loop detection fused with HarnessX's failure/edit-streak guards):
 //
 //   identical_calls — inside a sliding W=6-turn window, the fingerprint
 //     (tool name + canonical argument hash) of some call reaches frequency
@@ -35,7 +35,7 @@ export interface LoopSafetyCall {
    *  failure_streak / edit_repeat / no_answer never consult it — the
    *  exemption is for designed polling rhythm, not failure immunity. */
   readonly exempt?: boolean;
-  /** 133 #6（the upstream projectce 形）：stamped by the loop when this call was
+  /** 133 #6（codex 63475131ce 形）：stamped by the loop when this call was
    *  GATE-DENIED（permission/hook/task 拒——从未执行）。truncated/persist-
    *  failed 的合成失败不带此旗（那是生成/落盘问题，不是权限墙）。 */
   readonly denied?: true;
@@ -53,14 +53,14 @@ export interface LoopVerdict {
   /** Human-readable fingerprint summary — rides the note, the event, and the
    *  aborted terminal's evidence field. */
   readonly evidence: string;
-  /** 133 #6（the upstream projectce 形）— true when the offending streak was
+  /** 133 #6（codex 63475131ce 形）— true when the offending streak was
    *  ENTIRELY gate denials（权限/钩子/任务拒——从未执行的调用）。The
    *  loop's forced abort then carries Terminal.denialCircuit，父链按终因
    *  选行为契约通知（"用户确认前禁止恢复"）。 */
   readonly denialCircuit?: true;
 }
 
-// Tuning constants (the upstream project: F=1.5 dominance; our spec: W=6).
+// Tuning constants (langroid: F=1.5 dominance; our spec: W=6).
 export const LOOP_WINDOW = 6;
 export const LOOP_DOMINANCE = 1.5;
 /** Frequency floor: ≥ W/2 (3 of the last 6 turns). */
@@ -321,7 +321,7 @@ export function detectLoop(turns: readonly LoopSafetyTurn[]): LoopVerdict | unde
 }
 
 // ---------------------------------------------------------------------------
-// 121 #5 — the no-progress guard (advisory-only). the upstream format f088466d3 形的保
+// 121 #5 — the no-progress guard (advisory-only). a reference harness f088466d3 形的保
 // 守版：四条 verdict 车道全部不看工具「结果」——不同调用返回相同结果
 // （换着花样问同一件事）四处漏检：调用不同（identical_calls 的指纹按
 // name+args 算，不命中）、无报错（failure_streak/edit_repeat 只看
@@ -340,7 +340,7 @@ export function detectLoop(turns: readonly LoopSafetyTurn[]): LoopVerdict | unde
 /** Consecutive identical-result turns that mean "no progress". */
 export const NO_PROGRESS_TURNS = 5;
 
-// 129-3（the upstream project 1bb0c93a 引进）— 对级无进展台账：A,B,A,B 同果交错对轮级
+// 129-3（DeepCode 1bb0c93a 引进）— 对级无进展台账：A,B,A,B 同果交错对轮级
 // streak 全漏（streak 永远 1——指纹在 R_A/R_B 间乒乓）。本台账数
 // （调用集,结果指纹）PAIR 在整个 run 内的出现次数：同一对第 N 次（不必连续）
 // 即交错停滞。与 streak 车道并存：连续同果走快路径（5 轮），交错走台账

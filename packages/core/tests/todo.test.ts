@@ -224,7 +224,7 @@ describe("todo_write activeForm (M26 P4)", () => {
     expect(p?.lines).toEqual(["◐ Adding pagination"]);
   });
 
-  it("description is the the upstream format-style contract: three examples + binding rules", () => {
+  it("description is the CC-style contract: three examples + binding rules", () => {
     const tool = createTodoTool({});
     expect((tool.description.match(/<example>/g) ?? []).length).toBe(3);
     // The three use cases: create the board / advance it / skip with a reason.

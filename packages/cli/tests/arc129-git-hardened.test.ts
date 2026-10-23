@@ -1,5 +1,5 @@
-// 129 弧（the upstream project 3fbea00d / GHSA-6mg9-3cvh-9939 引进）——git 调用硬化的收据。
-// 夹具范式（the upstream project marker-file）：fixture 仓配置恶意 fsmonitor 命令（每次
+// 129 弧（goose 3fbea00d / GHSA-6mg9-3cvh-9939 引进）——git 调用硬化的收据。
+// 夹具范式（goose marker-file）：fixture 仓配置恶意 fsmonitor 命令（每次
 // `git status` 会执行）→ 硬化后 status 仍正常收集、marker 文件永不出现。
 // 红线：夹具只写 mkdtemp(os.tmpdir())，只写不删。
 import { describe, expect, it } from "vitest";

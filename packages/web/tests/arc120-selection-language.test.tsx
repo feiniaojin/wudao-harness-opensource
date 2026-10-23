@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 // 120 弧「选择语言」收据套件（用户令 09-28：设置页选择控件选中/未选中区分度
-// 太低，参考 a ref/claude.ai/the upstream project重做——整体界面要有良好设计规范）。
+// 太低，参考 dsh/claude.ai/codex 重做——整体界面要有良好设计规范）。
 //   ① 分段选择 .seg：凹槽轨道（surface-2）+ 选中段浮起药丸（surface 实底
 //      + elev-1 + text-1 + 字重 600）——形态区分不靠色彩差，四主题同律；
 //      未选中安静（透明底 + text-3）。
 //   ② 开关 input.wudao-switch：appearance 定制胶囊（36×20、radius-sm 与全站
 //      scale 一致——999px 胶囊帽仍是退役项），off = hair-3 中性、
-//      checked = accent 实底（the upstream format律：状态才配得上颜色）。
+//      checked = accent 实底（dsh 律：状态才配得上颜色）。
 //   ③ 主 CTA 恢复 accent 实底（116 全描边化矫枉过正；权限卡一直是实底，
 //      全局描边分裂了 CTA 语言）。
 //   ④ 设置行 .setrow：标题/说明左 + 控件右 + hairline 分隔。

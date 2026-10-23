@@ -240,7 +240,7 @@ export function modelLabel(config: { provider?: string; model: string }): string
 
 // Token magnitude for the compacted notice, one decimal: 12340 → "12.3k".
 export function formatTokensK(n: number): string {
-  // 129 弧（the upstream harness 8784a5946 同款 bug）：≥999_950 时 k 路径会印出
+  // 129 弧（OpenHands 8784a5946 同款 bug）：≥999_950 时 k 路径会印出
   // "1000k"/"1050k"（无 M 档——DeepSeek V4 1M 窗下 StatusBar 真可命中）。
   // 阈值 999_950 = k 路径四舍五入到 1000.0k 的确切起点（n/100 进位边界）。
   if (n >= 999_950) return Math.round(n / 100_000) / 10 + "M";

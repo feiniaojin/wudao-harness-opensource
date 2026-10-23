@@ -172,7 +172,7 @@ describe("ω99-87 — TUI effortLiveBox wiring (86's TUI lane, 82's isomorph)", 
     inst.unmount();
   });
 
-  it.skip("case2 end-to-end: idle /effort high → the run's armed box → the TUI task spawn carries effortSent=high; settle disarms", async () => {
+  it("case2 end-to-end: idle /effort high → the run's armed box → the TUI task spawn carries effortSent=high; settle disarms", async () => {
     const root = mkdtempSync(join(tmpdir(), "om87-e2e-"));
     roots.push(root);
     const reg = stubRegistry();

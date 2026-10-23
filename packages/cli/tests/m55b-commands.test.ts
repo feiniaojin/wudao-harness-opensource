@@ -820,7 +820,7 @@ describe("driver routing — /review /security-review /mcp /agents", () => {
       const report = runMcpStatusCommand({ workspaceRoot: ws, toolNames: ["read_file", "mcp__demo__echo", "mcp__demo__ping"] });
       expect(report).toContain("demo: 已连接 · 2 个工具"); // ω99-180: 钉随源演进
       expect(report).toContain("mcp__");
-      // the upstream format-format compat: the row names its source tier.
+      // CC-format compat: the row names its source tier.
       expect(report).toContain("来源：project .wudao/mcp.json"); // ω99-180: 钉随源演进
 
       const empty = runMcpStatusCommand({ workspaceRoot: tmpdir(), toolNames: ["read_file"] });

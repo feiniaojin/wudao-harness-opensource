@@ -1,11 +1,11 @@
-// 夜移 032 — the per-run net file-change ledger (the upstream projectturn_diff_tracker.rs
+// 夜移 032 — the per-run net file-change ledger (codex turn_diff_tracker.rs
 // port). Five sequential edits to one file today leave five receipts and no
 // answer to "what did THIS run actually change?" — the tracker keeps the
-// the upstream projectbaseline/current algebra: per file, the FIRST write's pre-state is
+// codex baseline/current algebra: per file, the FIRST write's pre-state is
 // the baseline and the LAST write's bytes are the current, so the run's net
 // diff is one before→after pair no matter how many writes landed. Scope v1:
 // write_file/edit at the top-level session (child sidechains and bookkeeping
-// workspaces excluded — the deliberate divergence from the upstream project's multi-
+// workspaces excluded — the deliberate divergence from codex's multi-
 // environment merge); shell mutations are outside (M32's prober owns
 // external change observation).
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

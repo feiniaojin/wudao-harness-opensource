@@ -3,7 +3,7 @@
 // Posture throughout: tolerant parsing (junk warns and falls back to the
 // default, never fatal); effective merged settings in, resolved values out.
 //
-//   contextExcludes    glob list — M54b loading skips matching context files
+//   claudeMdExcludes    glob list — M54b loading skips matching context files
 //                       (the loader warns on dead patterns).
 //   autoCompactWindow   the window behind the 0.8× auto-compaction trigger,
 //                       clamped 100k–1M; default = the env/context window.
@@ -33,21 +33,21 @@ import { loadLayeredSettings } from "./settings-layer.js";
 import { SCHEDULE_NEAR_FIRE_GUARD_MS } from "./schedules-model.js";
 import { KERNEL_POLICY } from "./kernel-policy.js";
 
-/** Parse `contextExcludes` (string[]; junk entries dropped with a warning). */
-export function parseContextExcludes(
+/** Parse `claudeMdExcludes` (string[]; junk entries dropped with a warning). */
+export function parseClaudeMdExcludes(
   effective: Readonly<Record<string, unknown>> | undefined,
   warn: (m: string) => void = () => {},
 ): string[] {
-  const raw = effective?.["contextExcludes"];
+  const raw = effective?.["claudeMdExcludes"];
   if (raw === undefined) return [];
   if (!Array.isArray(raw)) {
-    warn('⚠️ settings: "contextExcludes" must be an array of globs; ignored');
+    warn('⚠️ settings: "claudeMdExcludes" must be an array of globs; ignored');
     return [];
   }
   const out: string[] = [];
   for (const item of raw) {
     if (typeof item !== "string" || item.trim() === "") {
-      warn("⚠️ settings: contextExcludes entries must be non-empty strings; entry dropped");
+      warn("⚠️ settings: claudeMdExcludes entries must be non-empty strings; entry dropped");
       continue;
     }
     out.push(item.trim());
@@ -434,7 +434,7 @@ export async function loadAgentsSettings(
 }
 
 // ---------------------------------------------------------------------------
-// 125 项 1（the upstream formatresolveCompactSpec 形）— compaction 节点：thresholdRatio +
+// 125 项 1（dsh resolveCompactSpec 形）— compaction 节点：thresholdRatio +
 // headroomTokens。缺省 0.8 / 2048 = 预留感知公式只在 outputReserve 在场时才
 // 改变触发线（reserve 缺席 → 平比，字节不变）。misc 家族同款容忍姿势：
 // malformed/错型 → warning + 缺省，never fatal。

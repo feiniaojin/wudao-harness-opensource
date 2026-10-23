@@ -1,4 +1,4 @@
-// M49 §2 — the background review fork (the upstream). After a SUCCESSFUL run with
+// M49 §2 — the background review fork (hermes). After a SUCCESSFUL run with
 // ≥3 tool calls, a shareContext fork replays the settled transcript (warm
 // prefix) with maxTurns 2 and read tools + memory_write, asking "anything
 // worth saving as a skill or memory? ≤3 suggestions". Every suggestion the

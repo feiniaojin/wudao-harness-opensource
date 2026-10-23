@@ -495,6 +495,33 @@ details.reasoning .body { white-space: pre-wrap; border-left: 2px solid var(--ha
   border-radius: var(--radius-sm);
 }
 
+/* 小精灵会话弧 — 空态双入口（.hero-actions/.hero-act）：有可续会话时的两条
+   续聊路（继续上次会话=恢复最近一条；从历史会话提问=选择器→fork 追问流）。
+   hero-await-name 的按钮化升级对：胶囊描边钮（hair-2 描边 + text-2 静态；
+   hover/focus 回 accent——表链路的惯用视觉，实现词零出现）。缺席=零渲染
+   （hero 字节同形）。间距走 4px 栅格。 */
+.hero .hero-actions {
+  margin-top: var(--sp-4);
+  display: flex;
+  gap: var(--sp-2);
+}
+.hero .hero-act {
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--hair-2);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-ui);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hero .hero-act:hover { color: var(--accent); border-color: var(--accent); }
+.hero .hero-act:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* M64-visual §3: scoped visually-hidden text — status glyphs and other
    icon-only marks carry their word for assistive tech (the .vh pattern,
    reintroduced narrowly for these). */
@@ -512,7 +539,7 @@ details.reasoning .body { white-space: pre-wrap; border-left: 2px solid var(--ha
 }
 
 
-/* --- 借鉴弧 α2（the upstream format2.1.269 思想）: the queued steer's recall button — the
+/* --- 借鉴弧 α2（CC 2.1.269 思想）: the queued steer's recall button — the
        parked-chip drop idiom (SimpleComposer 的 .parked-chip .drop 家族) on
        the SERVER-side steering queue lines (.steer 高级面 / .queue-line 极简
        面)。Ghost until hover on pointer devices; always visible where hover
@@ -532,7 +559,7 @@ details.reasoning .body { white-space: pre-wrap; border-left: 2px solid var(--ha
 .recall:hover { color: var(--danger); }
 .recall:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* --- 借鉴弧 δ（the upstream harness 367ab084 思想）: the busy tool row's 转入后台
+/* --- 借鉴弧 δ（penguin-harness 367ab084 思想）: the busy tool row's 转入后台
        button — the α2 recall idiom on the in-flight face (.act-row tail).
        Accent tone (it is a navigation action, not a destructive one); the
        row is data-status=run so the tail right-aligns via margin-left:auto.

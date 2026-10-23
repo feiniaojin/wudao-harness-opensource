@@ -327,7 +327,7 @@ describe("T3 — prompt construction", () => {
     expect(embed).not.toContain("m-e18 ");
     // Via the prompt the embed stays capped too.
     const built = buildDreamPrompt({ entries: entries.slice(0, 8), cursor: { lastSeq: 0 } });
-    // 永续 v6 弧 A（the upstream project C3）钉随迁：embed 进 prompt 时套 nonce 围栏（+~60
+    // 永续 v6 弧 A（reef C3）钉随迁：embed 进 prompt 时套 nonce 围栏（+~60
     // 字符定界标记）——帽随围栏放宽（内容本体仍受 DREAM_EMBED_MAX_CHARS 约
     // 束，围栏是定界开销不是内容）。
     expect(built!.prompt.split("## Current ledger")[1]!.length).toBeLessThanOrEqual(DREAM_EMBED_MAX_CHARS + 120);

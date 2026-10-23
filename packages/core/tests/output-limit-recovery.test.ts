@@ -1,4 +1,4 @@
-// 夜移 013 — 输出上限恢复梯（nudge-only）：真 the upstream format的 tiered max_output_tokens
+// 夜移 013 — 输出上限恢复梯（nudge-only）：真 CC 的 tiered max_output_tokens
 // recovery（query.ts:1188-1256 escalate→nudge×3→surface）针对 wudao 架构的
 // 适配。关键取舍：wudao 的截断 assistant 在 loop.ts 已入史（append-only、
 // 前缀纯增长），因此**放弃** tier-1 的「同请求升档重试」（那需要弹掉已入史

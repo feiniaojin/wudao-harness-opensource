@@ -1,6 +1,6 @@
 // ω99-242: #2 — 中断任务自动续跑的服务面协调器（重启不丢托付）。北极星=
 // 托付闭环：挂机长任务经得起重启——夜里托付的活，重启后自己验证着续跑，
-// 早上是结果不是一排 todo。参考 the upstream project/apps/server/src/task-recovery.ts
+// 早上是结果不是一排 todo。参考 openwork/apps/server/src/task-recovery.ts
 // 的判定纪律（观察-分类-认领-限流 + graceful shutdown checkpoint + 丢 ack
 // 永不重试），落在我方的持久资产上（session JSONL 半轮证据 / mission DAG
 // / 跨进程会话租约）。本包不知 CLI：恢复注入走下方 RecoveryPort，由 cli
@@ -342,7 +342,7 @@ interface MemRecord extends FoldSessionState {
 
 export interface RecoveryCoordinator {
   /** One observe→classify→admit pass (coalesced: a tick while ticking joins
-   *  the in-flight one — the the upstream project discipline). */
+   *  the in-flight one — the openwork discipline). */
   tick(): Promise<void>;
   /** A manual client submit landed (invariant 7): cancels the pending
    *  recovery of the session the user took over (permission replies never

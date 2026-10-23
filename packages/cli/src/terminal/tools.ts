@@ -1,4 +1,4 @@
-// P2-12（96 队列 #12）terminal 工具面 — 单工具五动作（the upstream format单工具多操作范
+// P2-12（96 队列 #12）terminal 工具面 — 单工具五动作（CC 单工具多操作范
 // 式，lsp 同款）：run / send / read / interrupt / exit。会话与 shell 状态跨
 // 工具调用存活（cd/export/venv/交互式 CLI——本弧存在理由）。
 //

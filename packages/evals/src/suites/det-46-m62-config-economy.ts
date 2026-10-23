@@ -25,7 +25,7 @@
 //                   through the real buildToolSet, explicit on/off override,
 //                   env kill switch wins; MCP alwaysLoad pins eager loading.
 //   §7 misc keys    autoCompactWindow clamp matrix, memory/mcp switches,
-//                   contextExcludes skip + dead-pattern lint (through the real
+//                   claudeMdExcludes skip + dead-pattern lint (through the real
 //                   project-context loader), fallbackModel ordered chain with
 //                   receipt annotation + key-class no-fallback + sticky skip.
 import { mkdir, readFile, readdir, stat, utimes, writeFile } from "node:fs/promises";
@@ -78,7 +78,7 @@ import {
 import { loadMcpConfig, normalizeServer } from "wudao-harness/mcp/config";
 import { parseMcpTimeouts } from "wudao-harness/mcp/tools";
 import {
-  parseContextExcludes,
+  parseClaudeMdExcludes,
   resolveAutoCompactSettings,
   resolveMemorySettings,
   resolveMcpEnabled,
@@ -706,7 +706,7 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
       const mcpFirstNames = (mcpModel.inputs[0]?.tools ?? []).map((t) => t.name);
 
       // ================================================================== §7
-      // misc keys + contextExcludes (through the real loader).
+      // misc keys + claudeMdExcludes (through the real loader).
       const miscWarns: string[] = [];
       const clampLow = resolveAutoCompactSettings({ autoCompactWindow: 50_000 }, 400_000, (m) => miscWarns.push(m));
       const clampHigh = resolveAutoCompactSettings({ autoCompactWindow: 2_000_000 }, 400_000, (m) => miscWarns.push(m));
@@ -715,7 +715,7 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
       const ws12 = await makeWs(root, "ws12");
       await writeFile(join(ws12, ".wudao", "settings.json"), JSON.stringify({
         autoCompactWindow: 200_000,
-        contextExcludes: ["AGENTS.md", "zzz-*.md"],
+        claudeMdExcludes: ["AGENTS.md", "zzz-*.md"],
         fallbackModel: ["m-proj"],
       }), "utf8");
       await writeFile(join(ws12, ".wudao", "settings.local.json"), JSON.stringify({
@@ -727,7 +727,7 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
       const compactLayered = resolveAutoCompactSettings(layered12.effective, 400_000);
       const memoryOff = resolveMemorySettings(ws12, { memoryEnabled: false, memoryDirectory: "data" });
       const memoryDirect = resolveMemorySettings(ws12, { memoryDirectory: "custom.jsonl" });
-      const excludesParsed = parseContextExcludes(layered12.effective);
+      const excludesParsed = parseClaudeMdExcludes(layered12.effective);
       resetProjectContextCacheForTests();
       setProjectContextExcludes(excludesParsed);
       await writeFile(join(ws12, "WUDAO.md"), "WS12-ROOT body\n", "utf8");
@@ -1045,9 +1045,9 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
     need(e.misc.fallbackJunkEmpty, "misc: a non-array fallbackModel must be ignored");
     need(JSON.stringify(e.misc.fallbackLayered) === JSON.stringify(["m-a", "m-proj", "m-b"]),
       `misc: fallbackModel must merge across tiers (concat-dedup; got ${JSON.stringify(e.misc.fallbackLayered)})`);
-    need(e.misc.excludesSkipped, "misc: contextExcludes must skip matching context files");
-    need(e.misc.excludesKept, "misc: contextExcludes must keep non-matching files");
-    need(e.misc.deadPatternWarned, "misc: a contextExcludes pattern matching nothing must lint as dead");
+    need(e.misc.excludesSkipped, "misc: claudeMdExcludes must skip matching context files");
+    need(e.misc.excludesKept, "misc: claudeMdExcludes must keep non-matching files");
+    need(e.misc.deadPatternWarned, "misc: a claudeMdExcludes pattern matching nothing must lint as dead");
     need(!e.misc.excludedPatternFalseDead,
       "misc: a pattern that DID exclude a file must not lint as dead (see report concern: excluded candidates never enter the seen-list)");
     // fallback chain (real engine)

@@ -1,4 +1,4 @@
-// 120-a A2 (the upstream format #6540 形) — the CLI half of the summary-call prefix-
+// 120-a A2 (a reference harness #6540 形) — the CLI half of the summary-call prefix-
 // freeze census (the core half: core/tests/summary-prefix-freeze.test.ts).
 // Every summary/review-class call on the CLI side declares one of three
 // cache postures, and this file pins each declaration:

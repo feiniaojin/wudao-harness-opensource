@@ -237,7 +237,7 @@ export function PluginTab({
   return (
     <div className="plugin-tab" data-plugin-tab>
       {/* ω99-236: the「内置」section — FIRST (builtins before marketplace
-          stuff, the plugins-panel reading order): the doc trio row with
+          stuff, the CC plugins-panel reading order): the doc trio row with
           its opt-out toggle. Absent key = default ON (`?? true` — old
           server degrade, the memoryEnabled 缺省门语义). */}
       <div className="settings-section" data-doc-suite-section>
@@ -261,7 +261,7 @@ export function PluginTab({
       <div className="settings-section">
         <div className="section-title">市场</div>
         <div className="hint">
-          {"添加 the upstream format 生态市场源:owner/repo · git URL(#ref)· 本地目录 · marketplace.json 路径——添加即克隆/复制到本机,不执行任何代码"}
+          {"添加 CC 生态市场源:owner/repo · git URL(#ref)· 本地目录 · marketplace.json 路径——添加即克隆/复制到本机,不执行任何代码"}
         </div>
         <div className="keyrow">
           <input

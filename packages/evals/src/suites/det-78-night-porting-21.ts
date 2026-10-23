@@ -1,5 +1,5 @@
 // det-78-night-porting-21 — the deterministic pins for 夜移 033 (the
-// zero-output length-stop tripwire, ported from the upstream project's
+// zero-output length-stop tripwire, ported from pi's
 // packages/ai/src/utils/overflow.ts Case 3). A length-stop carrying ZERO
 // output tokens over a ≥99%-full window is a disguised context overflow —
 // the server truncated the oversized input (Xiaomi MiMo style), leaving no

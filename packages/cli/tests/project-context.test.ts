@@ -107,7 +107,7 @@ describe("loadProjectContext — reference-aligned discovery (M54b §1)", () => 
     const r = loadProjectContext(child);
     expect(r.files.map((f) => f.displayPath)).toEqual(["CLAUDE.md", "sub/WUDAO.md"]);
     expect(r.section.indexOf("parent-level rules")).toBeLessThan(r.section.indexOf("child rules"));
-    // Display paths are project-root-relative (the upstream formatrelativeDisplay).
+    // Display paths are project-root-relative (dsh relativeDisplay).
     expect(r.section).toContain("## CLAUDE.md\nparent-level rules");
     expect(r.section).toContain("## sub/WUDAO.md\nchild rules");
   });

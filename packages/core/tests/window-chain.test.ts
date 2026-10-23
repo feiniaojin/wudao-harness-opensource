@@ -1,4 +1,4 @@
-// 125 项 1/项 2（the upstream project窗口链/WorldState 差分）— the window identity chain and
+// 125 项 1/项 2（codex 窗口链/WorldState 差分）— the window identity chain and
 // the world-diff injection: pure-function shapes, the tier-2 summary header
 // seam (byte-identical status-quo when unarmed), the loop's rotation
 // bookkeeping (index growth, in-run diff chaining, event fields), and the

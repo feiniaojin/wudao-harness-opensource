@@ -1,4 +1,4 @@
-// 125 项 3（the upstream project预算上卷 4761851ff3 形）— GoalRuntime 的子代理用量归账面：
+// 125 项 3（codex 预算上卷 4761851ff3 形）— GoalRuntime 的子代理用量归账面：
 // onSubagentUsage 汇入计数器（childId 去重计子代理数），query/statusLine/
 // webSnapshot 展示「子代理累计」，settle 行落盘，restore 续算；扇出用量
 // 永不进预算触发（ω99-8b 分区）。含 task-tool-support 的 childId 盖章与
@@ -65,7 +65,7 @@ describe("125 项 3 — GoalRuntime.onSubagentUsage 归账", () => {
     expect(q.text).not.toContain("子代理累计");
   });
 
-  it("onRunStart 的注入行同样携带上卷（预算行的 the upstream project 补面）", () => {
+  it("onRunStart 的注入行同样携带上卷（预算行的 codex 补面）", () => {
     const { runtime } = makeRuntime();
     runtime.onRunStart();
     runtime.onSubagentUsage({ childId: "sub-a", model: "m", usage: usage(400, 100) });

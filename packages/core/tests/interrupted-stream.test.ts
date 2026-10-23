@@ -3,7 +3,7 @@ import { runAgentLoop, type LoopEvent, type Terminal } from "../src/loop.js";
 import type { ModelClient, ModelInput, ModelStreamEvent } from "../src/model-client.js";
 import type { AgentMessage } from "../src/types.js";
 
-// 夜移 001（2026-08-28 night porting，the upstream formatinterrupted-stream finalization）：
+// 夜移 001（2026-08-28 night porting，dsh interrupted-stream finalization）：
 // 用户中止一条已流出 delta 的回答时，已送达的文本/推理前缀必须落为一条
 // `interrupted` 助手消息 —— 人类转录与 UI 所见一致，resume/replay 保持有效；
 // 下一轮请求把它当作 append-only 后缀（M24：前缀字节永不改写，`interrupted`

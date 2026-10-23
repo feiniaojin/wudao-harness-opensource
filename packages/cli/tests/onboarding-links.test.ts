@@ -24,12 +24,7 @@ function relativeLinks(text: string): { href: string; from: string }[] {
   return out;
 }
 
-// Distribution guard: the onboarding series (incl. 04-reference-comparison.md,
-// which compares against the internal reference repos) is internal-workspace
-// documentation. The opensource distribution does not ship it — run the suite
-// where the docs exist, skip where they don't.
-const shipped = existsSync(onboardingDir);
-(shipped ? describe : describe.skip)("onboarding docs build without dead links (M52 §4)", () => {
+describe("onboarding docs build without dead links (M52 §4)", () => {
   it("the series exists with the four recomposed chapters + index", () => {
     const files = markdownFiles(onboardingDir);
     for (const expected of [

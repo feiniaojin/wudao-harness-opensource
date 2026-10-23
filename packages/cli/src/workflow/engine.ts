@@ -85,11 +85,11 @@ export interface JsflowOptions {
   readonly resumeTasks?: readonly TaskJournalEntry[];
   /** M11 #2: completed run() commands from the journal being resumed. */
   readonly resumeCmds?: readonly CmdJournalEntry[];
-  /** M11 #2（the upstream format cmd 字面量钉死命令集的 wudao 形）：调用方授予的命令
+  /** M11 #2（a reference harness cmd 字面量钉死命令集的 wudao 形）：调用方授予的命令
    *  允许清单（--allow-cmd 旗标积聚）。缺省/不含 → run() 拒绝（fail-
    *  closed，能力≠策略——脚本声明能力，调用方在确认时授予）。 */
   readonly commandAllowlist?: ReadonlySet<string>;
-  /** 133 #3（the upstream format journal 身份模型）：本次执行的运行身份（脚本+参数双
+  /** 133 #3（a reference harness journal 身份模型）：本次执行的运行身份（脚本+参数双
    *  哈希）——写入 run-started；与 resumeIdentity 全等时，任务键在 seq 位
    *  漂移 = 纯度违例（大声失败），否则 = 脚本/参数编辑（既有截断语义）。
    *  缺省（适配器路径/旧调用方）不武装，行为逐字节不变。 */
@@ -210,7 +210,7 @@ export class PlanStepFailure extends Error {
   }
 }
 
-/** 133 #3（the upstream format journal 身份模型，6.1 的 inputHash 防御校验直译）：同一
+/** 133 #3（a reference harness journal 身份模型，6.1 的 inputHash 防御校验直译）：同一
  *  运行身份（脚本+参数未动）下，任务键在 seq 位漂移 = 脚本在绊线之外
  *  引入了非确定性。绝不静默偏移（重跑会掩盖一个被污染的重放前缀）——
  *  整个 run 大声失败，结构化错误点名 seq 与两个键。T006 F4/F5：子工作
@@ -483,7 +483,7 @@ async function runTask(ctx: EngineCtx, prompt: string, opts: TaskOptions = {}): 
       }
     }
     if (entry !== undefined && !failureGap) {
-      // 133 #3（the upstream format inputHash 防御校验）：同身份（脚本+参数未动）下的键
+      // 133 #3（a reference harness inputHash 防御校验）：同身份（脚本+参数未动）下的键
       // 漂移不是编辑——是脚本在绊线之外引入了非确定性。绝静默偏移：大声
       // 失败，点名 seq 与两键（截断重跑会掩盖被污染的重放前缀）。
       // T006 F1（HIGH）：stale-schema 落穿（键相等但缓存数据不再过当前
@@ -505,7 +505,7 @@ async function runTask(ctx: EngineCtx, prompt: string, opts: TaskOptions = {}): 
     }
   }
 
-  // --- M11 #3: Import pool lookup (the upstream format amend-resume 第一写关闭规则) -----
+  // --- M11 #3: Import pool lookup (a reference harness amend-resume 第一写关闭规则) -----
   // 编辑点之后（invalidated=true），任务按键在**全量**重放清单中查找——
   // 内容寻址键天然支持随机访问。关门规则：首个带工具的实际执行关闭导入
   // 池的非纯项；纯项（toolCalls===0）永远可导入（"只依赖指令与转录前缀，
@@ -673,7 +673,7 @@ async function runSubWorkflow(ctx: EngineCtx, name: string, childArgs?: unknown)
 type Program = (primitives: VmPrimitives) => Promise<unknown>;
 export type { Program };
 
-/** M11 #2（the upstream format world.run 形）— 脚本级确定性命令门。
+/** M11 #2（a reference harness world.run 形）— 脚本级确定性命令门。
  *
  * 语义：非零退出码是正常返回（门控循环的常态——检查失败是数据不是
  * 异常）；超时/spawn 失败也是返回的字段。无 shell：execFile args 直传
@@ -725,7 +725,7 @@ async function runCmd(ctx: EngineCtx, cmd: string, args?: readonly string[], opt
       ctx.onEvent?.({ type: "journal-truncated", atSeq: seq });
     }
   }
-  // M11 #3：cmd 的**实际执行**永远关门（live 副作用——the upstream format 的 world.run
+  // M11 #3：cmd 的**实际执行**永远关门（live 副作用——a reference harness 的 world.run
   // live 执行同义）。拒绝（不在允许清单）也关门——拒绝后的导入语义过于
   // 微妙，保守处置。
   shared.firstWrite = true;

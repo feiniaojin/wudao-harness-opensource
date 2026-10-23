@@ -1,10 +1,10 @@
-// 128-2（the upstream project20 引进，变体）— resume 暖前缀。
+// 128-2（codex 3f4668da20 引进，变体）— resume 暖前缀。
 //
 // 问题：长会话空闲后用户再说话，首 token 延迟 = 连接建立 + 路由 + 全量
 // 历史组装 + 服务端前缀缓存（若已被逐出）重建。空闲时间是免费资源，应该
 // 提前花掉。
 //
-// 机制（the upstream project的 generate:false prepared response 是 OpenAI 私有 WS 协议，
+// 机制（codex 的 generate:false prepared response 是 OpenAI 私有 WS 协议，
 // 国产兼容端点没有——引进的是机制不是协议）：resume 落定的那一刻，后台
 // fire-and-forget 发一次 max_tokens:1 的同前缀请求，把 provider 的前缀
 // 缓存（重）建。用户的下一条真实请求的前缀（system+tools+历史）与它

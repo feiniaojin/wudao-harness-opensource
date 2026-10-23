@@ -449,7 +449,7 @@ describe("ω-4a §5.12 — purity", () => {
   });
 });
 
-describe("夜移 020 — monitor_read (on-demand incremental read, real-the upstream format BashOutput paradigm)", () => {
+describe("夜移 020 — monitor_read (on-demand incremental read, real-CC BashOutput paradigm)", () => {
   it("quartet: createMonitorTools returns 4 tools; monitor_read rides last (trio prefix byte-stable) and is read-only/concurrency-safe", () => {
     const tools = toolsOver(stubRegistry());
     expect(tools).toHaveLength(4);

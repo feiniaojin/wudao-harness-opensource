@@ -1,5 +1,5 @@
-// 夜移 005（2026-08-28 night porting，the upstream formatsession-title port，设计加强）：
-// 会话自动命名的纯函数层。the upstream format的 purpose=session-title 思路：一个独立的
+// 夜移 005（2026-08-28 night porting，dsh session-title port，设计加强）：
+// 会话自动命名的纯函数层。dsh 的 purpose=session-title 思路：一个独立的
 // 小型模型调用给会话起人类可读标题 —— 不进主转录、不改任何前缀字节（独立
 // system prompt，与主会话的 KV 前缀毫无共享）、思考开最低档、输出封顶。
 // 加强点：source 三态（derived/manual/llm）保证手动 /rename 永不被覆盖；

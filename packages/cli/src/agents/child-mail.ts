@@ -5,7 +5,7 @@
 // settle seam, with the same fire-on-idle wake the peer lane has. The lane
 // is deliberately dumb: it receives already-formatted steering texts (the
 // child's identity was applied by core's runSubagent) and hands them out
-// FIFO — the the upstream formatnext-step-FIFO + waking accounting is the lane semantics
+// FIFO — the dsh next-step-FIFO + waking accounting is the lane semantics
 // the parent steering channel already owns, not new machinery here.
 import type { ParentMailSink } from "@wudao/core";
 

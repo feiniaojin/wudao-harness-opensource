@@ -1,12 +1,12 @@
-// 夜移 006 (the upstream project permission/arity port, hardened): the rule an `a`/`p`
+// 夜移 006 (opencode permission/arity port, hardened): the rule an `a`/`p`
 // answer records for shell. wudao's askRuleFor previously fell through
 // to the BARE tool rule — approving ONE command blanket-approved EVERY
-// command. The port derives a command-prefix rule (the upstream project's BashArity)
-// with three tightenings the upstream project lacks:
+// command. The port derives a command-prefix rule (opencode's BashArity)
+// with three tightenings opencode lacks:
 //   1. compound commands (unquoted ; | & < > ` $( ) records NO rule — a
 //      pipeline's second half is never pre-approved by its first;
 //   2. destructive heads (rm, dd, kill…) degrade to EXACT-match, not prefix;
-//   3. unknown heads record the EXACT command (the upstream project's arity-1 default
+//   3. unknown heads record the EXACT command (opencode's arity-1 default
 //      would turn `python a.py` into `python *` — arbitrary-script blanket).
 import { describe, it, expect } from "vitest";
 import { commandArityRule, commandHeadTokens } from "../src/permission-arity.js";
@@ -45,7 +45,7 @@ describe("commandArityRule — the rule recorded for an approval", () => {
     expect(commandArityRule("npm install")).toBe("npm install");
     expect(commandArityRule("docker compose up -d")).toBe("docker compose up");
     expect(commandArityRule("aws s3 ls bucket")).toBe("aws s3 ls");
-    expect(commandArityRule("cargo run --release")).toBe("cargo run --release"); // arity 3 counts tokens, flags included (the upstream project parity)
+    expect(commandArityRule("cargo run --release")).toBe("cargo run --release"); // arity 3 counts tokens, flags included (opencode parity)
   });
   it("read-only arity-1 heads record the bare head (bounded, harmless)", () => {
     expect(commandArityRule("ls -la /tmp")).toBe("ls");

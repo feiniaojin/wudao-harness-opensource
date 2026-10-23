@@ -51,7 +51,7 @@ describe("examples/ (M40) load through the real loaders", () => {
     expect(p.source).toBe("flag");
     expect(p.skills.map((s) => s.name)).toEqual(["release-checklist"]);
     expect(p.commands.map((c) => c.name)).toEqual(["verify"]);
-    // Both agents translate: tools mapped through the the upstream formataliases, doc-writer
+    // Both agents translate: tools mapped through the CC aliases, doc-writer
     // carries the deepseek provider pin.
     const agents = p.agents.map((a) => a.profile);
     expect(agents.map((a) => a.id).sort()).toEqual(["doc-writer", "ticket-triage"]);

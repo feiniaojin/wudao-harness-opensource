@@ -394,7 +394,7 @@ describe("buildSystemPrompt — skills trailing section (M27)", () => {
   });
 });
 
-it("discovers skills from the upstream's native .claude/skills location", () => {
+it("discovers skills from Claude Code's native .claude/skills location", () => {
   const root = mkdtempSync(join(tmpdir(), "sk-"));
   try {
     mkdirSync(join(root, ".claude", "skills", "cc-skill"), { recursive: true });
@@ -407,10 +407,10 @@ it("discovers skills from the upstream's native .claude/skills location", () => 
 });
 
 // ---------------------------------------------------------------------------
-// cc-plugins D1 — the personal tier (~/.claude/skills) + the the upstream formatfrontmatter
+// cc-plugins D1 — the personal tier (~/.claude/skills) + the CC frontmatter
 // superset. Discovery order is now first-wins across FOUR roots:
 //   .agents/skills > .wudao/skills > ~/.claude/skills (personal) > .claude/skills
-// (the personal tier overrides the the upstream format-shaped PROJECT root only), then the
+// (the personal tier overrides the CC-shaped PROJECT root only), then the
 // ~/.wudao/skills global tier fills gaps (M57), then plugin skills.
 // ---------------------------------------------------------------------------
 
@@ -492,12 +492,12 @@ describe("personal tier discovery (cc-plugins D1)", () => {
       expect(r.skills[0]?.filePath).toBe(agents);
       expect(r.warnings.length).toBe(3);
       rmSync(join(ws, ".agents", "skills", "dup"), { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
-      // 2. .wudao beats personal + the project the upstream formatroot.
+      // 2. .wudao beats personal + the project CC root.
       r = load();
       expect(r.skills[0]?.filePath).toBe(wudao);
       expect(r.warnings.length).toBe(2);
       rmSync(join(ws, ".wudao", "skills", "dup"), { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
-      // 3. personal overrides the the upstream format-shaped PROJECT root — the warning names
+      // 3. personal overrides the CC-shaped PROJECT root — the warning names
       //    both copies (first-wins diagnostic, same family as the roots).
       r = load();
       expect(r.skills[0]?.filePath).toBe(personal);
@@ -562,7 +562,7 @@ describe("personal tier discovery (cc-plugins D1)", () => {
   });
 });
 
-describe("parseSkillFrontmatter — the upstream format superset (cc-plugins D1)", () => {
+describe("parseSkillFrontmatter — CC superset (cc-plugins D1)", () => {
   it("argument-hint and when-to-use parse as scalars (both when-spellings share one field)", () => {
     expect(parseSkillFrontmatter("---\nname: a\ndescription: d\nargument-hint: <file> [mode]\nwhen-to-use: prose tasks\n---\nb")).toEqual({
       name: "a",

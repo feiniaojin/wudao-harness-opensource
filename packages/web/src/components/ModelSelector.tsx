@@ -28,7 +28,7 @@ import { isSwitchableModel } from "../protocol.js";
 import type { RecentModel } from "../recent-models-store.js";
 
 // ω99-218: #2 — 「最近使用」= 左列顶部的虚拟组（伪供应商行）：多供应商
-// 用户的高频切模型动作打开即达（the upstream project chat footer recent 的场景），但不破
+// 用户的高频切模型动作打开即达（goose chat footer recent 的场景），但不破
 // 四轮反馈锁定的两栏级联——最近行完全复用既有联动机械（hover/click 联动
 // 右栏、onPick(model, provider) 对参数、/model vs /provider 路由、Esc/
 // outside 关闭、重开回自动焦点全不动）。矩阵滤层：recent 条目只在当前

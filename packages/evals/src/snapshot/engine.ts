@@ -1,4 +1,4 @@
-// M71 §1 — snapshot record/replay engine (research 36 §8, a ref's keyless
+// M71 §1 — snapshot record/replay engine (research 36 §8, dsh's keyless
 // snapshot design): record once WITH a key against the REAL provider, replay
 // forever WITHOUT one.
 //

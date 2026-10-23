@@ -11,7 +11,7 @@ import {
 } from "../src/workflow/vm.js";
 
 // ---------------------------------------------------------------------------
-// FakeDriver seam (the upstream format): the VM is testable without a model — primitives
+// FakeDriver seam (a reference harness): the VM is testable without a model — primitives
 // are injected, so tests hand it deterministic fakes.
 // ---------------------------------------------------------------------------
 

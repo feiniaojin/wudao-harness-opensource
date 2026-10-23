@@ -2,7 +2,7 @@
 // Computes HSL lightness steps and WCAG contrast for the candidate cool-gray
 // ladders + neutral bubbles, so the frozen values in tokens.css are provably
 // inside the bands the arc mandates:
-//   - inter-layer HSL L step in [3, 5] (the upstream formatrecipe: bg/surface/surface-2)
+//   - inter-layer HSL L step in [3, 5] (dsh recipe: bg/surface/surface-2)
 //   - cool hue: B - R >= 3 on every ladder rung (blue-tinted gray, not warm)
 //   - text-1/2/3, ok/warn/danger, tok-* on every surface >= 4.5 (both themes)
 //   - neutral user bubble: ink over the ALPHA-COMPOSITED bg >= 4.5 (dark) and

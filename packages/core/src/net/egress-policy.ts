@@ -4,20 +4,20 @@
 // through, and computes the proxy-env overlay harness-spawned children see.
 // Nothing here imports undici or any transport — the install half
 // (net/egress.ts) owns the dispatcher, so policy stays loadable and testable
-// with plain object literals (the the upstream formatpolicy.ts split).
+// with plain object literals (the dsh policy.ts split).
 //
 // Obligations encoded here:
-// - the upstream projectnot-gap (a63fb12c1): NO_PROXY entries match the host AND every
+// - pi not-gap (a63fb12c1): NO_PROXY entries match the host AND every
 //   subdomain (`example.com` also bypasses `api.example.com`); a leading dot
 //   or `*.` prefix is the same thing; `*` bypasses everything.
-// - a ref: loopback is bypassed by DEFAULT (localhost / 127.0.0.0/8 / ::1 and
+// - dsh: loopback is bypassed by DEFAULT (localhost / 127.0.0.0/8 / ::1 and
 //   friends) — a proxy that also serves the harness's own loopback traffic
 //   turns the Web UI, the ws server, and every local test server into a
 //   routing loop.
-// - a ref: a REJECTED proxy slot (value wudao cannot route) keeps that scheme
+// - dsh: a REJECTED proxy slot (value wudao cannot route) keeps that scheme
 //   DIRECT and never falls back to another scheme's proxy — the diagnostic
 //   and the route must agree.
-// - a ref: credentials in proxy URLs are never echoed — error text and child
+// - dsh: credentials in proxy URLs are never echoed — error text and child
 //   overlays carry the redacted form (env values the user exported pass
 //   through verbatim; curl needs them).
 //
@@ -53,7 +53,7 @@ export interface EgressSettingsInput {
 
 /** Why one candidate proxy value was rejected. Warned, never thrown — a
  *  value exported for another tool must not stop the harness from starting
- *  (the upstream formatresolution contract). */
+ *  (dsh resolution contract). */
 export interface EgressDiagnostic {
   /** `invalid` = unparseable; `unsupported` = a scheme wudao cannot route. */
   readonly kind: "invalid" | "unsupported";
@@ -86,7 +86,7 @@ export interface EgressRoutedPolicy {
 
 export type EgressPolicy = EgressDirectPolicy | EgressRoutedPolicy;
 
-/** Loopback entries merged into every routed policy's bypass list (a ref). */
+/** Loopback entries merged into every routed policy's bypass list (dsh). */
 export const LOOPBACK_NO_PROXY: readonly string[] = ["localhost", "127.0.0.1", "::1", "[::1]"];
 
 /** Every environment name that carries proxy configuration (both casings,
@@ -126,7 +126,7 @@ export function egressProxyScheme(value: string): EgressProxyScheme | undefined 
 
 /** True when the value is one Node's own env-proxy parser (22.21+/24, under
  *  NODE_USE_ENV_PROXY) accepts: parseable http(s) ONLY — Node exits 1 on any
- *  other scheme, so a socks value must keep the flag withheld (a ref). */
+ *  other scheme, so a socks value must keep the flag withheld (dsh). */
 export function isNodeEnvProxyUrl(value: string): boolean {
   try {
     const protocol = new URL(value.trim()).protocol;
@@ -160,7 +160,7 @@ export function redactProxyUrl(proxyUrl: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Environment reading (the upstream formatprecedence: lowercase first, blank = unset)
+// Environment reading (dsh precedence: lowercase first, blank = unset)
 // ---------------------------------------------------------------------------
 
 function readEnvName(env: EgressEnv, lower: string): { value: string; name: string } | undefined {
@@ -220,7 +220,7 @@ function withLoopback(noProxy: string | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// Loopback + NO_PROXY matching (the upstream projecta63fb12c1 subdomain rule)
+// Loopback + NO_PROXY matching (pi a63fb12c1 subdomain rule)
 // ---------------------------------------------------------------------------
 
 /** Split one bypass entry into host and optional port (IPv6-safe: only a
@@ -246,7 +246,7 @@ function splitHostPort(entry: string): { host: string; port?: string } {
 const OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";
 const LOOPBACK_IPV4 = new RegExp(`^127\\.${OCTET}\\.${OCTET}\\.${OCTET}$`);
 
-/** Whether a host names this machine (a ref): the whole 127/8 block, the IPv6
+/** Whether a host names this machine (dsh): the whole 127/8 block, the IPv6
  *  loopback/unspecified addresses, `.localhost`, and the IPv4-mapped forms. */
 export function isLoopbackHost(hostname: string): boolean {
   const host = hostname.replace(/^\[|\]$/g, "").replace(/\.$/, "").toLowerCase();
@@ -393,7 +393,7 @@ const POLICY_FIELD_NAMES = [
  * Empty object when no policy is active — the caller's env passes through
  * untouched (byte-identical, the §2.7 negative control).
  *
- * Semantics (the upstream format`proxyEnvironmentForChild`): a name the user exported keeps
+ * Semantics (dsh `proxyEnvironmentForChild`): a name the user exported keeps
  * the user's value (their curl/git settings, in their casing); a name nobody
  * set receives the resolved value, so a child never routes differently than
  * the parent (NODE_USE_ENV_PROXY does not read ALL_PROXY). The bypass list is

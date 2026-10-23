@@ -3,7 +3,7 @@ import { runAgentLoop, createStreamPreemptChannel, type LoopEvent, type Terminal
 import type { ModelClient, ModelInput, ModelStreamEvent } from "../src/model-client.js";
 import type { AgentMessage } from "../src/types.js";
 
-// 124b 项 1（the upstream projectinstant_interrupt）——流抢占。
+// 124b 项 1（codex instant_interrupt）——流抢占。
 //
 // steering 只能在模型调用边界落地的问题：DeepSeek/GLM 的长 reasoning 流期
 // 间（可达数分钟）用户的新指令只能排队干等。streamPreempt 通道让 busy-
@@ -67,7 +67,7 @@ const baseState = (first: string) => ({
   status: "idle" as const,
 });
 
-describe("stream preemption (124b 项 1, the upstream project instant_interrupt)", () => {
+describe("stream preemption (124b 项 1, codex instant_interrupt)", () => {
   it("busy-submit preempts the in-flight stream: steer lands, dropped partial never enters the model context", async () => {
     const channel = createStreamPreemptChannel();
     const queue: string[] = [];

@@ -207,7 +207,7 @@ describe("ask-reviewer ablation", () => {
 });
 
 // ---------------------------------------------------------------------------
-// End-of-options `--` (the upstream projectprecedent): the FIRST bare `--` ends flag parsing —
+// End-of-options `--` (pi precedent): the FIRST bare `--` ends flag parsing —
 // every token after it is a positional (prompt word), even flag-looking ones;
 // the `--` itself joins neither the flags nor the prompt. Later `--` tokens
 // are ordinary positionals. Without a bare `--` the split is the identity, so
@@ -223,7 +223,7 @@ describe("end-of-options --: splitEndOfOptions", () => {
     expect(splitEndOfOptions(["--", "--help"])).toEqual({ flagWindow: [], positionals: ["--help"] });
     expect(splitEndOfOptions(["--resume", "abc", "--", "-x"])).toEqual({ flagWindow: ["--resume", "abc"], positionals: ["-x"] });
   });
-  it("only the FIRST -- separates — a second/later -- is an ordinary positional (the upstream project convention)", () => {
+  it("only the FIRST -- separates — a second/later -- is an ordinary positional (pi convention)", () => {
     expect(splitEndOfOptions(["--", "a", "--", "b"])).toEqual({ flagWindow: [], positionals: ["a", "--", "b"] });
   });
   it("a `--` look-alike (`--=x`) is not the separator", () => {

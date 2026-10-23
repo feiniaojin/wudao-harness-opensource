@@ -1,4 +1,4 @@
-// 128-3（the upstream project3d 引进）— per-chain 压缩所有权收据。
+// 128-3（codex 21eb55513d 引进）— per-chain 压缩所有权收据。
 // 不变量（digest 验收原文）：主链/子链自身连续压缩 N 次后，sidechain 证据
 // 条目数不变——盘上只有原始消息 + 边界条目，投影件（摘要/丢弃/修剪标记）
 // 不落盘；resume 全量裸重放。

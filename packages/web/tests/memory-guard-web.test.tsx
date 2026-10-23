@@ -1,4 +1,4 @@
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest-the upstream project C3）——「已拦 N 条可疑学习输入」
+// 永续迭代 v6 · reef 借鉴弧 A（digest-reef C3）——「已拦 N 条可疑学习输入」
 // 的 web 可见面 RED 件：管理记忆面板（PreferencesTab 直接挂载，preferences-
 // tab.test.tsx 的 harness 家族）在 blocked>0 时渲染提示行（含去向）；blocked
 // 缺场 = 零渲染（老 server 静默降级，零噪音门不破）。全 mock 零真网络。

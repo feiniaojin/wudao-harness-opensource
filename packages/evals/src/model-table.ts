@@ -8,7 +8,7 @@
 // 定义表的模式与从成绩单提取的纯函数。跑完第二模型臂后 populate 即得
 // 可路由的 model_table。
 //
-// 超越点（vs the upstream harness）：
+// 超越点（vs OpenHands）：
 // - 表的每格可追溯到冻结配置净测 Pass@1（红线令）
 // - 成本用 pricing 目录的 per-M-USD 算 $/run（不是猜）
 // - 只在开窗时路由（M24 不变量已在 134 报告定谳）
@@ -37,7 +37,7 @@ export interface ModelTable {
   readonly results: readonly ModelBenchmarkResult[];
 }
 
-/** Task categories the router classifies into (the upstream harness taxonomy adapted). */
+/** Task categories the router classifies into (OpenHands taxonomy adapted). */
 export type TaskCategory =
   | "bug-fix"        // SWE-bench shape: fix a failing test
   | "test-gen"       // Generate tests for existing code
@@ -54,7 +54,7 @@ export const BENCHMARK_CATEGORY: Readonly<Record<string, TaskCategory>> = {
   "tau-retail": "conversation",
   "terminal-bench": "terminal",
   "humaneval": "greenfield",
-  "the upstream project-polyglot": "greenfield",
+  "aider-polyglot": "greenfield",
   "bfcl-v4": "conversation",
 };
 

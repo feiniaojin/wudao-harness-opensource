@@ -1,4 +1,4 @@
-// 129 弧（the upstream project 3fbea00d / GHSA-6mg9-3cvh-9939 引进）——harness git 调用对
+// 129 弧（goose 3fbea00d / GHSA-6mg9-3cvh-9939 引进）——harness git 调用对
 // 不可信仓库配置的硬化。
 //
 // 威胁：harness 对工作区/市场仓跑 git（status/clone/diff/checkout）。这些仓的

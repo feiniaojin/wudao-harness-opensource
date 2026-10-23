@@ -1,4 +1,4 @@
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest-the upstream project C2）——失败指纹清单纯层 RED 件：
+// 永续迭代 v6 · reef 借鉴弧 A（digest-reef C2）——失败指纹清单纯层 RED 件：
 // 归一化矩阵（同因异形→同指纹；不同因→异指纹）、new→persisting→fixed
 // 状态机、跨重启稳定（JSONL 事件流 round-trip + 重 fold 等价）、徽章与
 // 修复知识的内容预算。纯函数 + tmpdir JSONL，零网络零真实 shell。
@@ -43,7 +43,7 @@ describe("normalizeFailureCause — 同因异形→同指纹", () => {
     expect(a).toBe(b);
     expect(a).toContain("<path>");
     expect(a).toContain("<n>");
-    // Same run in a FRESH temp dir (the upstream project: fingerprints survive brand-new tmp dirs).
+    // Same run in a FRESH temp dir (reef: fingerprints survive brand-new tmp dirs).
     const c = normalizeFailureCause("Error at ~/builds/abc123/src/parse.ts:1:2 — timeout after 1ms (pid 2, attempt 1)");
     expect(a).toBe(c);
   });
@@ -239,7 +239,7 @@ describe("occurrenceBadge + fixedNoteContent — 用户面纯派生", () => {
 });
 
 // ---------------------------------------------------------------------------
-// v7 借鉴弧 γ2（digest-a 候选 2，源 the upstream format #6162）——run-end 车道：
+// v7 借鉴弧 γ2（digest-a 候选 2，源 a reference harness #6162）——run-end 车道：
 // 「怎么结束的」入同一账本（fold/IO 全复用），词面与失败分家（防污染）。
 // ---------------------------------------------------------------------------
 

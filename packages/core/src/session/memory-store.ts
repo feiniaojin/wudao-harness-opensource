@@ -1,4 +1,4 @@
-// ω99-52 (the upstream projectC5 method, wudao contract): the in-memory SessionStore — the
+// ω99-52 (pi C5 method, wudao contract): the in-memory SessionStore — the
 // conformance suite's second backend and the seed for subagent/evals
 // in-process sessions. Not a toy: entries are stored as SERIALIZED lines and
 // re-validated on read through the same validators as the JSONL load paths

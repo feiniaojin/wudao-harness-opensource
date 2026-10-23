@@ -1,4 +1,4 @@
-// 研究弧A#1（TTL 冷窗免费清理）钉——the upstream formattimeBasedMC 的 wudao 超越版：
+// 研究弧A#1（TTL 冷窗免费清理）钉——CC timeBasedMC 的 wudao 超越版：
 // cold 预测 expired+idle 时，startRun 在用户消息入列前做 tier-0 清除
 // （零边际缓存代价），带冷转归因回执。钉四件事：
 //   ①idle+expired → clearTier 生效（大旧工具结果被清）+ 冷窗一次性

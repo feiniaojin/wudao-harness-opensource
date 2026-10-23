@@ -1,11 +1,11 @@
 // 夜移 030 — the file-operations ledger riding tier-2 compaction summaries
-// (the upstream projectcompaction/utils.ts port). When a span is summarized away the model
+// (pi compaction/utils.ts port). When a span is summarized away the model
 // otherwise loses its file footprint: it re-reads files (full tokens + fresh
 // cache-miss bytes) and forgets which files it already edited. The ledger is
 // MECHANICAL — extracted from the span's assistant toolCall blocks, never
 // LLM-dependent — and survives N successive compactions by re-parsing the
 // tags out of the prior frozen summary (wudao delta: state-free re-derivation
-// where the upstream projectpersists a details field on the session entry).
+// where pi persists a details field on the session entry).
 import { describe, it, expect } from "vitest";
 import {
   extractFileOps,

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // M72 §1/§2 — the render-performance milestone's behavior pins (research 38
-// §1, the upstream's Markdown.tsx): the module-level lex LRU + syntax fast-path, and
+// §1, CC's Markdown.tsx): the module-level lex LRU + syntax fast-path, and
 // the streaming boundary advance. Pure logic asserts against the unchanged
 // `parseBlocks` oracle (byte-identical rendering is the milestone contract:
 // the cache/fast-path may only change WORK, never output); component asserts
@@ -67,7 +67,7 @@ describe("M72 §1 fast path (plain text skips the lexer)", () => {
     getBlocks("plain one");
     getBlocks("plain two");
     const s = markdownCacheStats();
-    expect(s.fastPathSkips).toBe(3); // one cheap rebuild per render, the upstream's "don't retain 4× content"
+    expect(s.fastPathSkips).toBe(3); // one cheap rebuild per render, CC's "don't retain 4× content"
     expect(s.size).toBe(0);
     expect(s.lexRuns).toBe(0); // the block parser never ran
   });
@@ -130,7 +130,7 @@ describe("M72 §1 lex LRU (max 500, survives remounts)", () => {
   });
 });
 
-// M72 §2 — streaming boundary advance (the upstream formatStreamingMarkdown): each delta
+// M72 §2 — streaming boundary advance (CC StreamingMarkdown): each delta
 // re-lexes only the unstable suffix; the stable prefix is committed once and
 // never parsed again. `stableBoundary` is the pure seam rule; the component
 // pins byte-identical output vs <Markdown> for the same complete text (the

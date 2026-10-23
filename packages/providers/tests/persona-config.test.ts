@@ -36,7 +36,7 @@ describe("ProviderConfig.persona + WUDAO_PERSONA", () => {
 
     const b = resolveProviderConfigResult({
       ...BASE_ENV,
-      WUDAO_PERSONA: "openai-responses:headers,prompt",
+      WUDAO_PERSONA:  "openai-responses:headers,prompt",
     } as any);
     expect(b.ok && b.config.persona).toEqual({
       id: "openai-responses",
@@ -47,7 +47,7 @@ describe("ProviderConfig.persona + WUDAO_PERSONA", () => {
   it("bad spec fails closed with a reason", () => {
     const r = resolveProviderConfigResult({
       ...BASE_ENV,
-      WUDAO_PERSONA: "openai-responses:wat",
+      WUDAO_PERSONA:  "openai-responses:wat",
     } as any);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toContain("WUDAO_PERSONA");

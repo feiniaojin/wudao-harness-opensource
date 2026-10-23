@@ -1,5 +1,5 @@
 // ω99 拆分运动 弧 B：plugins 的逐插件装载器族外提（skills/commands/agents/
-// mcp/hooks 五装载器 + frontmatter 解析 + the upstream format工具别名映射 + 事件名规整 +
+// mcp/hooks 五装载器 + frontmatter 解析 + CC 工具别名映射 + 事件名规整 +
 // 内建命令名册/可执行扩展名/isDir——原 plugins.ts 模块级段逐字保留；
 // plugins.ts re-export 门面保公共面）。类型走 type-only 互引（无运行时环）。
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -109,7 +109,7 @@ function stripFrontmatter(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// M40 §2 — the upstream formatagents/*.md translation
+// M40 §2 — CC agents/*.md translation
 // ---------------------------------------------------------------------------
 
 /** Frontmatter keys the translation understands; everything else is warned
@@ -133,7 +133,7 @@ export interface ParsedAgentFrontmatter {
   readonly body: string;
 }
 
-/** Parse a the upstream formatagent markdown file's frontmatter — the same tolerant
+/** Parse a CC agent markdown file's frontmatter — the same tolerant
  *  line-style parse as skills (`key: value`, quotes stripped, prose lines
  *  ignored). Unterminated/absent frontmatter → the whole text is the body. */
 export function parseAgentFrontmatter(text: string): ParsedAgentFrontmatter {
@@ -186,8 +186,8 @@ function stripQuotes(v: string): string {
   return v;
 }
 
-/** the upstream formattool names → ours (the same translation direction as the hook event
- *  map: a the upstream formatplugin's assets speak the upstream formatvocabulary). */
+/** CC tool names → ours (the same translation direction as the hook event
+ *  map: a CC plugin's assets speak CC vocabulary). */
 const CC_TOOL_ALIASES: Readonly<Record<string, string>> = {
   Read: "read_file",
   Write: "write_file",
@@ -204,7 +204,7 @@ const NATIVE_AGENT_TOOL_NAMES: ReadonlySet<string> = new Set([
   "task", "agent_await", "agent_status", "agent_cancel", "load_tools", "ask_user",
 ]);
 
-/** Map the `tools:` comma list to toolNames. Order preserved; the upstream formataliases
+/** Map the `tools:` comma list to toolNames. Order preserved; CC aliases
  *  translated; unknown names warn and drop (the roster's fail-closed
  *  posture — a typo can never widen into an unexpected tool). */
 function mapAgentTools(raw: string, filePath: string, plugin: string, warnings: string[]): readonly string[] {
@@ -216,7 +216,7 @@ function mapAgentTools(raw: string, filePath: string, plugin: string, warnings: 
     if (NATIVE_AGENT_TOOL_NAMES.has(native) || native.startsWith("ext_") || native.startsWith("mcp__")) {
       out.push(native);
     } else {
-      warnings.push(`plugin ${plugin}: ${filePath} agent tool "${name}" is unknown (supported: ${[...NATIVE_AGENT_TOOL_NAMES].join(", ")} + the upstream format aliases ${Object.keys(CC_TOOL_ALIASES).join("/")}); ignored`);
+      warnings.push(`plugin ${plugin}: ${filePath} agent tool "${name}" is unknown (supported: ${[...NATIVE_AGENT_TOOL_NAMES].join(", ")} + CC aliases ${Object.keys(CC_TOOL_ALIASES).join("/")}); ignored`);
     }
   }
   return out;
@@ -332,7 +332,7 @@ export function loadPluginAgents(dir: string, plugin: string, warnings: string[]
   return out;
 }
 
-/** `.mcp.json` (the upstream's name) or `mcp.json` (ours); `mcpServers` (the upstream format) or
+/** `.mcp.json` (CC's name) or `mcp.json` (ours); `mcpServers` (CC) or
  *  `servers` (ours) as the server map. `.mcp.json` wins when both exist. */
 export function loadPluginMcp(dir: string, plugin: string, warnings: string[]): Readonly<Record<string, McpServerConfig>> {
   const dotted = join(dir, ".mcp.json");
@@ -386,13 +386,13 @@ export function loadPluginMcp(dir: string, plugin: string, warnings: string[]): 
   return out;
 }
 
-// the upstream formathook event names → our canonical hook events (the full CANONICAL_HOOK_EVENTS
+// CC hook event names → our canonical hook events (the full CANONICAL_HOOK_EVENTS
 // surface — 21 configurable events today). Derived FROM the shared constant,
 // never re-hardcoded here — the M63-A review finding that killed the
 // triplicated fixed list: every canonical key maps to itself, the two v1
-// short aliases pass through, and each the upstream formatname is the canonical name minus
-// the leading "on" — except the two the upstream formatrenames (UserPromptSubmit / Stop).
-// Wudao-specific events with no the upstream formatspelling are excluded below so they grow
+// short aliases pass through, and each CC name is the canonical name minus
+// the leading "on" — except the two CC renames (UserPromptSubmit / Stop).
+// Wudao-specific events with no CC spelling are excluded below so they grow
 // no bogus alias. A regular future event lands in the map for free; anything
 // else is warned + skipped.
 const CC_EVENT_NAME_RENAMES: Readonly<Record<string, string>> = {
@@ -400,9 +400,9 @@ const CC_EVENT_NAME_RENAMES: Readonly<Record<string, string>> = {
   onRunStop: "Stop",
 };
 
-// The anticipated exclusion case arrived with the M64 fleet merge: the upstream formathas no
+// The anticipated exclusion case arrived with the M64 fleet merge: CC has no
 // TeammateIdle hook, so "minus-on" would mint a bogus alias. New wudao-only
-// events without a the upstream formatface land here.
+// events without a CC face land here.
 const CC_EVENT_NAME_EXCLUSIONS: ReadonlySet<string> = new Set(["onTeammateIdle"]);
 
 /** The accepted hooks.json event-key vocabulary → canonical faces. Exported
@@ -419,12 +419,12 @@ export const HOOK_EVENT_MAP: Readonly<Record<string, CanonicalHookEvent>> = {
   ),
 };
 
-/** `hooks/hooks.json` → HooksSettings. Accepts the upstream's nested
+/** `hooks/hooks.json` → HooksSettings. Accepts CC's nested
  *  `{matcher?, hooks:[{type:"command",command}]} groups — the group's
- *  matcher is passed through onto each entry it contributes (the upstream's matcher
+ *  matcher is passed through onto each entry it contributes (CC's matcher
  *  vocabulary, e.g. superpowers' SessionStart "startup|resume", is identical
  *  to our native matcher semantics: comma/pipe exact-match list or RegExp) —
- *  and our flat `{command, timeoutMs?, matcher?}` entries. Every the upstream formatevent
+ *  and our flat `{command, timeoutMs?, matcher?}` entries. Every CC event
  *  name maps onto its canonical face (HOOK_EVENT_MAP). */
 export function loadPluginHooks(dir: string, plugin: string, warnings: string[]): HooksSettings {
   const path = join(dir, "hooks", "hooks.json");
@@ -445,7 +445,7 @@ export function loadPluginHooks(dir: string, plugin: string, warnings: string[])
     warnings.push(`plugin ${plugin}: hooks/hooks.json must be an object; ignoring plugin hooks`);
     return {};
   }
-  // the upstream formatwraps the event map in a "hooks" key; a bare event map is tolerated.
+  // CC wraps the event map in a "hooks" key; a bare event map is tolerated.
   const wrapped = (parsed as Record<string, unknown>)["hooks"];
   const eventMap: unknown = typeof wrapped === "object" && wrapped !== null && !Array.isArray(wrapped) ? wrapped : parsed;
 
@@ -453,7 +453,7 @@ export function loadPluginHooks(dir: string, plugin: string, warnings: string[])
   for (const [key, value] of Object.entries(eventMap as Record<string, unknown>)) {
     const canonical = HOOK_EVENT_MAP[key];
     if (canonical === undefined) {
-      warnings.push(`plugin ${plugin}: unknown hook event "${key}" (supported canonical names: ${CANONICAL_HOOK_EVENTS.join(", ")}; upstream spellings like SessionStart/UserPromptSubmit/Stop also accepted); skipped`);
+      warnings.push(`plugin ${plugin}: unknown hook event "${key}" (supported canonical names: ${CANONICAL_HOOK_EVENTS.join(", ")}; CC spellings like SessionStart/UserPromptSubmit/Stop also accepted); skipped`);
       continue;
     }
     if (!Array.isArray(value)) {
@@ -470,7 +470,7 @@ export function loadPluginHooks(dir: string, plugin: string, warnings: string[])
 }
 
 /** Flatten one event's entry list. Entries: our flat `{command, timeoutMs?,
- *  matcher?}` or a the upstream formatmatcher group `{matcher?, hooks: […]}` — the group's
+ *  matcher?}` or a CC matcher group `{matcher?, hooks: […]}` — the group's
  *  matcher is stamped onto every entry it contributes (so superpowers'
  *  SessionStart "startup|resume" reaches our native matcher engine with the
  *  vocabulary intact); an entry's OWN matcher wins over the inherited one,
@@ -492,7 +492,7 @@ function parseHookEntries(plugin: string, dir: string, event: string, items: rea
         command: rec["command"],
         ...(timeoutMs !== undefined ? { timeoutMs } : {}),
         ...(matcher !== undefined ? { matcher } : {}),
-        // E4: every plugin entry carries its install dir — the upstream's
+        // E4: every plugin entry carries its install dir — CC's
         // ${CLAUDE_PLUGIN_ROOT} convention consumes it at fire time.
         pluginRoot: dir,
       });

@@ -1,4 +1,4 @@
-// 124b 项 1（the upstream projectinstant_interrupt 裁决）——流抢占通道。
+// 124b 项 1（codex instant_interrupt 裁决）——流抢占通道。
 //
 // 问题：steering 只能在模型调用边界落地（loop 在每次模型调用前 drain
 // 队列）。DeepSeek/GLM 的长 reasoning 流可达数分钟，期间用户提交的新指

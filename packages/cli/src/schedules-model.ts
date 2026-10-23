@@ -19,8 +19,8 @@ export const RUN_PREVIEW_CHARS = 2_000;
  *  due re-fires normally). 30 minutes covers long-but-legitimate headless
  *  runs while bounding the daemon's exposure. */
 export const SCHEDULE_RUN_TIMEOUT_MS = 30 * 60_000;
-/** 借鉴弧 α3（the upstream ec58e08a35 思想）— 漏火有界重跑：fire 已被消耗（表已
- *  前进）但子进程从未到达模型（持续宕机窗口）时，隔多久补跑一次。the upstream
+/** 借鉴弧 α3（hermes ec58e08a35 思想）— 漏火有界重跑：fire 已被消耗（表已
+ *  前进）但子进程从未到达模型（持续宕机窗口）时，隔多久补跑一次。hermes
  *  梯子 5/15/30min≤3 次；这里收窄为「最多 1 次、单一延迟」——判据更严（子
  *  进程自己盖的 UNREACHED 章，非 daemon 猜输出）。 */
 export const SCHEDULE_MISS_RETRY_DELAY_MS = 5 * 60_000;
@@ -139,7 +139,7 @@ export interface ScheduleRuntimeOverrides {
 /** The add/load faces' shared effort union (typed rejection elsewhere). */
 export const SCHEDULE_RUNTIME_EFFORTS = ["low", "medium", "high"] as const;
 
-// 121 项 2（the upstream project d72beaf9e durable wake + the upstream project 5ab0e6df3 形）—
+// 121 项 2（prime-agent d72beaf9e durable wake + goose 5ab0e6df3 形）—
 // 「agent 自己安排的周期性再注入」的持久锚：schedule_add 工具面在 agent
 // 设定时自动盖上当前会话的 origin；fire 时 spawn 车道不全新开跑，而是
 // resume 该会话（跨重启 durable——resume 读盘上 JSONL，不依赖宿主存活），

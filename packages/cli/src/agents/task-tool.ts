@@ -460,7 +460,7 @@ export async function executeTask(
     ...(reportSchema !== undefined
       ? [`[report contract] Your FINAL message must be a single JSON object satisfying this schema (no prose, no code fences): ${canonicalJson(reportSchema)}`]
       : []),
-    // ω99-57: the the upstream formatinitial-task instruction — one guidance line on the
+    // ω99-57: the dsh initial-task instruction — one guidance line on the
     // isolated child's OWN brief (its fresh prefix; forks never see it, and
     // no system-prompt or tool-schema byte moves anywhere). mailLive: the
     // session wired a lane AND the drawable pool carries the global tool AND

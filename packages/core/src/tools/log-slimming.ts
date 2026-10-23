@@ -1,4 +1,4 @@
-// 借鉴弧 C1（the upstream project C3 Evidence-Preserving Reducer 的阈值门控混合移植）
+// 借鉴弧 C1（a reference project C3 Evidence-Preserving Reducer 的阈值门控混合移植）
 // —— 超长构建/测试日志的「廉价模型首读 + 逐字节验证回执」。
 //
 // ── 比较裁决（引进依据，coordinator 2026-09-15 令）──────────────────────
@@ -20,10 +20,10 @@
 //      evidence 元素恰好 {quote}；多一个键、少一个键、错类型都作废。
 //      【超越①】没有 status 字段——wudao 的 run wrapper 自己知道 isError
 //      与退出码（回执尾部的 [exit N] 标签是 harness 写的地面真值），
-//      模型无从伪造状态，比 the upstream project 少一个可伪造面。
+//      模型无从伪造状态，比 a reference project 少一个可伪造面。
 //   2. source_sha256 必须等于所发原文字节的 sha256。
 //   3. 每条 quote 必须 raw.includes(quote) 逐字节命中；【超越②】引用必须
-//      按给出顺序出现且互不重叠（the upstream project 算了行号但没验连续性/顺序），
+//      按给出顺序出现且互不重叠（a reference project 算了行号但没验连续性/顺序），
 //      行号由 harness 从命中位置计算，不采信模型自报。
 //   4. 去重；条数 1..maxEvidence；每条 1..maxQuoteChars 字符。
 //   5. missing-failure-evidence 门：观测失败（exit≠0）或原文含失败信号，
@@ -52,7 +52,7 @@ export interface LogSlimmingConfig {
    *  尾 50 行预览在这个尺寸以上开始系统性讲不清失败）。默认 40_000。 */
   readonly minChars: number;
   /** 超过这个尺寸的日志不发给廉价模型（ absurd 大小的日志走 M46 老路）。
-   *  默认 600_000（the upstream project 同值）。 */
+   *  默认 600_000（a reference project 同值）。 */
   readonly maxChars: number;
   /** 首读调用的墙钟上限；超时即 fail-open。默认 90_000ms。 */
   readonly timeoutMs: number;
@@ -78,7 +78,7 @@ export const DEFAULT_LOG_SLIMMING: LogSlimmingConfig = {
  *  way (effort none + softReasoningNone + a completion cap). Core never
  *  imports a concrete provider; this is the ModelClient port.
  *
- *  onDecision (the upstream project 决策 journal 的收编缝，digest C6): observer-only —
+ *  onDecision (a reference project 决策 journal 的收编缝，digest C6): observer-only —
  *  every receipt/fallback decision (with its typed reason) passes through
  *  here; the wiring layer may route it to session entries/telemetry. A
  *  throwing callback is the caller's bug and changes nothing here. */
@@ -97,7 +97,7 @@ export interface LogSlimmingPorts {
 // Eligibility — diagnostic commands + secret pre-screen (纯函数)
 // ---------------------------------------------------------------------------
 
-/** 构建输出类命令的保守识别（the upstream project DIAGNOSTIC_COMMAND 的移植面，只收
+/** 构建输出类命令的保守识别（a reference project DIAGNOSTIC_COMMAND 的移植面，只收
  *  常见构建/测试驱动词——识别不出来就不触发，错向 fail-open）。
  *  比原始正则更严：要求驱动词出现在命令首词或管道/逻辑序列的词首位，
  *  降低 `echo "cargo build"` 之类误命中。 */

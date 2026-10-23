@@ -1,5 +1,5 @@
-// 永续 v6 wave2（the upstream project C1）——触发器（人工同意第一道）：失败指纹 persisting
-// ≥3 时，建 offered 记录 + 一条通知。the upstream project 的触发是 batch 攒齐自动开步；
+// 永续 v6 wave2（reef C1）——触发器（人工同意第一道）：失败指纹 persisting
+// ≥3 时，建 offered 记录 + 一条通知。reef 的触发是 batch 攒齐自动开步；
 // wudao 的第一道门是**人**——通知只问「要生成一条改进提案吗？」，同意之
 // 前零模型调用、零文件改动（除 offered 记录本身）。
 //
@@ -8,7 +8,7 @@
 // schedules/mission 写入的失败在同一缝被下一次 fold 看到。防污染（γ2
 // 词面守卫）：run-end（终态成因）永不触发提案——它不是失败。
 //
-// 抑制=每指纹一生至多一条记录（任何状态）：被拒不再生成（the upstream project
+// 抑制=每指纹一生至多一条记录（任何状态）：被拒不再生成（reef
 // rejected_proposals）、被忽略不再烦人、已激活/已撤销的留档不重复。
 // kill switch 沿用 Dream 的 env 形（WUDAO_IMPROVE=off / WUDAO_NO_IMPROVE=1）。
 // fail-open：台账/提案仓不可读 → 静默跳过，绝不影响它所搭的收束路径。

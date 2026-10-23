@@ -31,7 +31,7 @@ export const DEFAULT_MAX_TURNS = 200;
  *  (Terminal.stopBlockCapped). The /goal stall guard's official semantics. */
 export const STOP_BLOCK_CAP = 3;
 
-/** M70 §1 (the upstream project): the explanatory error result for a length-truncated tool
+/** M70 §1 (pi): the explanatory error result for a length-truncated tool
  *  call. A stop_reason of "length" means the token limit cut the generation
  *  MID-ARGUMENTS — whatever arguments survived salvage-parsing are silently
  *  incomplete and may even pass schema validation. The guard fails EVERY tool
@@ -39,18 +39,18 @@ export const STOP_BLOCK_CAP = 3;
  *  model re-issues complete calls on the next turn. */
 export const TRUNCATED_TOOL_CALL_RESULT = "参数被截断，内容不完整，无法安全执行——请重新发起完整的工具调用";
 
-/** 波次 8 #41 (the upstream format#13+#18): the two synthetic tool results that keep a
+/** 波次 8 #41 (dsh #13+#18): the two synthetic tool results that keep a
  *  tool-phase abort's history PAIRED. The interrupted assistant (its
  *  tool_call batch) is already committed with `interrupted: true` (夜移 001);
  *  these answer every call that never got a real result, so resume/replay
  *  never hits repairOrphanedToolCalls' blind backfill — and the model can
  *  tell "may have side-effected → verify first" from "never ran → safe to
- *  re-issue" (the whole point of a ref's TOOL_OUTCOME_UNKNOWN /
+ *  re-issue" (the whole point of dsh's TOOL_OUTCOME_UNKNOWN /
  *  TOOL_NOT_STARTED split). Model-facing, like TRUNCATED_TOOL_CALL_RESULT. */
 export const ABORTED_UNKNOWN_TOOL_RESULT = "[已中断] 工具在执行途中被中止,结果未知——副作用可能已发生也可能未发生;重新发起前请先验证现状,不要盲目重试";
 export const ABORTED_NOT_STARTED_TOOL_RESULT = "[已中断] 工具在中止前尚未开始执行,什么都没有发生——可以安全地重新发起";
 
-/** 波次 8 #45 (the upstream formatsession-checkpoint-policy): the fail-closed synthetic for
+/** 波次 8 #45 (dsh session-checkpoint-policy): the fail-closed synthetic for
  *  a tool batch whose pre-dispatch durability barrier REJECTED. Nothing ran —
  *  running side-effecting bodies with no durable record of their dispatch is
  *  how a crash becomes an untraceable mutation — so the batch fails whole and
@@ -58,7 +58,7 @@ export const ABORTED_NOT_STARTED_TOOL_RESULT = "[已中断] 工具在中止前�
 export const PERSIST_FAILED_TOOL_RESULT = "[会话写入失败] 工具未执行——会话记录此刻无法落盘,本批全部工具调用已取消,未产生任何副作用;待会话存储恢复后可安全地重新发起";
 
 /** 夜移 013 — the output-limit recovery ladder's resume-mid-thought note
- *  (真 the upstream formatquery.ts:1188-1256 tier-2 nudge 的中文化身, same imperatives: no
+ *  (真 CC query.ts:1188-1256 tier-2 nudge 的中文化身, same imperatives: no
  *  apology, no recap, pick up mid-thought, smaller steps). Appended as a
  *  plain user message AFTER the truncated assistant — pure append, so the
  *  KV-cache prefix stays byte-stable. A DIFFERENT family from M70's guard:
@@ -70,7 +70,7 @@ export const OUTPUT_LIMIT_NUDGE = "[输出被截断] 输出长度达到上限,�
  *  clean turn in between; any non-length turn resets the episode). */
 export const DEFAULT_OUTPUT_LIMIT_NUDGES = 3;
 
-// 夜移 033 (the upstream projectpackages/ai/src/utils/overflow.ts Case 3) — a length-stop
+// 夜移 033 (pi packages/ai/src/utils/overflow.ts Case 3) — a length-stop
 // carrying ZERO output tokens over a ≥99%-full window is not a truncation:
 // the server silently truncated the oversized INPUT (Xiaomi MiMo style),
 // leaving no room to generate a single token. Nudging — appending MORE
@@ -105,7 +105,7 @@ export const EMPTY_FINAL_NUDGE = "[空回复] 上一条回复没有任何可见�
  *  resets it. */
 export const DEFAULT_EMPTY_FINAL_NUDGES = 1;
 
-/** ω99-9 — the mid-stream recovery arm's continuation note (the upstream harness #571
+/** ω99-9 — the mid-stream recovery arm's continuation note (penguin #571
  * `[turn_retried]` 尾部追注的 wudao 落地； same imperatives as
  * OUTPUT_LIMIT_NUDGE: no apology, no recap, continue from the break). A
  * transport failure AFTER delivered deltas committed the prefix as an
@@ -117,7 +117,7 @@ export const DEFAULT_EMPTY_FINAL_NUDGES = 1;
 export const TURN_RECOVERY_NOTE = "[turn_retried] 上一条回复在流式输出途中因传输故障中断，已收到的部分已保留。从中断处直接继续写——不要道歉、不要复述、不要重复已输出的内容。";
 
 /** ω99-9 — the per-turn budget for post-delta mid-stream recovery. Counted
- * separately from the provider layer's pre-delta retry ladder (the upstream harness 混计
+ * separately from the provider layer's pre-delta retry ladder (penguin 混计
  * 20 的教训): the two failures mean different things — received content
  * proves the connection worked, so recovery here must not burn the ladder's
  * budget, and a "streams a little then dies" endpoint is bounded by its OWN
@@ -178,7 +178,7 @@ export class ToolTimeoutError extends Error {
   }
 }
 
-/** 夜移 002 (the upstream formattimeout-policy, hardened): race a tool call against its
+/** 夜移 002 (dsh timeout-policy, hardened): race a tool call against its
  *  declared timeoutMs. The underlying promise is never cancelled — when the
  *  timer wins, the race rejects with ToolTimeoutError and the abandoned
  *  promise keeps running detached with its result discarded (the Promise
@@ -225,7 +225,7 @@ export class ContextOverflowHardError extends Error {
   }
 }
 
-/** 133 #5（the upstream projectff 引进）— content_filter 终因的恢复指导（512B 帽
+/** 133 #5（codex 8bd5a136ff 引进）— content_filter 终因的恢复指导（512B 帽
  * 中文定制+国产模型现实：DeepSeek/GLM 敏感词过滤的刚需面）。核心纪律：
  * 不当瞬时故障、禁绕过、给合规替代、继续无关授权工作。注入卫生：不复述
  * 被拦内容原文。 */

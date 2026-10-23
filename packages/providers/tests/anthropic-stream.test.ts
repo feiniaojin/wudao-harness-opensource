@@ -8,7 +8,7 @@ const cfg = { apiKey: "sk-an", baseURL: "https://api.anthropic.com", model: "cla
 const ccPersona: PersonaDefinition = {
   id: "cc-test", displayName: "CC",
   source: { kind: "workspace-source", provenance: "t", pinnedVersion: "1" },
-  headers: { anthropic: { "anthropic-version": "2023-06-01", "user-agent": "claude-cli/2.1.0 (external, cli)" } },
+  headers: { anthropic: { "anthropic-version": "2023-06-01", "user-agent": "wudao-harness/2.1.0 (external, cli)" } },
 };
 const seeded = { sessionId: "s1", uuid: () => "u1", now: () => new Date("2026-08-23T00:00:00.000Z") };
 const INPUT = { systemPrompt: "s", messages: [{ role: "user", content: "go" }], tools: [] };
@@ -97,7 +97,7 @@ describe("anthropic stream", () => {
     const model = createAnthropicProvider(cfg, { fetch: sseFetch([EV({ type: "message_start", message: { usage: { input_tokens: 1 } } }), EV({ type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 1 } }), EV({ type: "message_stop" })], cap), personaRuntime: rt });
     for await (const _ev of model.stream!(INPUT as any)) { /* drain */ }
     const h = cap[0].init.headers as Record<string, string>;
-    expect(h["user-agent"]).toBe("claude-cli/2.1.0 (external, cli)");
+    expect(h["user-agent"]).toBe("wudao-harness/2.1.0 (external, cli)");
     expect(JSON.parse(cap[0].init.body as string).stream).toBe(true);
   });
   it("bearerAuth config dual-sends authorization: Bearer on the streaming request too", async () => {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // 117 玻璃化（vibrancy）收据套件——去廉价化第四弧（窗口玻璃化）。依据
-// docs/research/117-vibrancy-probe.md §6（真机定谳）+ 116 §3e（the upstream format侧栏
+// docs/research/117-vibrancy-probe.md §6（真机定谳）+ 116 §3e（dsh 侧栏
 // 蓝洗范式）。六面钉：
 //   ① 玻璃门存在性：html.glass body 透明（底交材质）；基座规则零改动
 //      （body/sb 的非玻璃态样式 = 玻璃化之前原样——浏览器天然降级钉）；

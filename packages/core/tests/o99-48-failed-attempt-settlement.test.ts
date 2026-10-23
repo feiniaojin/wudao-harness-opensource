@@ -7,7 +7,7 @@ import type { ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "../s
 import type { AgentMessage } from "../src/types.js";
 import { createJsonlSessionStore } from "../src/session/store.js";
 
-// ω99-48（the upstream format候选 7 v2，attempt log-only settlement）：流式请求在首个
+// ω99-48（dsh 候选 7 v2，attempt log-only settlement）：流式请求在首个
 // delta 之后失败（非 abort）时，已渲染的前缀以一条 `assistant_attempt`
 // generic entry 落进会话 JSONL——不新增消息、不动消息链、永不进模型
 // 可见历史（零缓存代价）。失败语义零变化：结算只留痕，异常照常冒出。

@@ -1,4 +1,4 @@
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest-the upstream project C2）——失败指纹挂缝 RED 件：
+// 永续迭代 v6 · reef 借鉴弧 A（digest-reef C2）——失败指纹挂缝 RED 件：
 // mission 失败结算三路（门红/棘轮红/人工 fail）记指纹；回执徽章（第 N 次
 // 出现，persisting 时）；门再绿→fixed + pitfall 知识沉淀（幂等）；跨重启
 // （第二个 controller 进程读到同一清单）；status 一眼答「老失败在哪」。

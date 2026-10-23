@@ -212,12 +212,12 @@ describe("url 型 server 条目（P2-16a）", () => {
   });
 });
 
-describe("the upstream harness 格式兼容（mcpServers 别名 + 根 .mcp.json）", () => {
+describe("Claude Code 格式兼容（mcpServers 别名 + 根 .mcp.json）", () => {
   function writeCcConfig(cwd: string, text: string): void {
     writeFileSync(join(cwd, ".mcp.json"), text, "utf8");
   }
 
-  it("the upstream format 格式 {mcpServers:{...}} 原样粘贴即可用；条目里的 the upstream format 专属字段（type/cwd）被容忍", () => {
+  it("CC 格式 {mcpServers:{...}} 原样粘贴即可用；条目里的 CC 专属字段（type/cwd）被容忍", () => {
     const { cwd, cleanup } = tmpCwd();
     try {
       writeConfig(cwd, JSON.stringify({
@@ -232,7 +232,7 @@ describe("the upstream harness 格式兼容（mcpServers 别名 + 根 .mcp.json�
         args: ["minimax-coding-plan-mcp"],
         env: { MINIMAX_API_HOST: "https://api.minimaxi.com" },
       });
-      // 白名单校验只看已知字段——the upstream format的 type/cwd 不在黑名单里，条目照常收下。
+      // 白名单校验只看已知字段——CC 的 type/cwd 不在黑名单里，条目照常收下。
       expect(config.servers["typed"]).toEqual({ command: "echo" });
     } finally {
       cleanup();
@@ -269,7 +269,7 @@ describe("the upstream harness 格式兼容（mcpServers 别名 + 根 .mcp.json�
     }
   });
 
-  it("项目根 .mcp.json（the upstream format 项目文件）参与分层：global < .mcp.json < .wudao/mcp.json，同名整体替换", () => {
+  it("项目根 .mcp.json（CC 项目文件）参与分层：global < .mcp.json < .wudao/mcp.json，同名整体替换", () => {
     const { cwd, cleanup } = tmpCwd();
     try {
       writeCcConfig(cwd, JSON.stringify({

@@ -1,4 +1,4 @@
-// 125 项 2（the upstream projectget_context_remaining 形）— context_remaining 的挂载面钉子：
+// 125 项 2（codex get_context_remaining 形）— context_remaining 的挂载面钉子：
 // 工具集装配（ctx_inspect 族定位）、只读权限面（READ_TOOLS，不进 ask）、
 // 三个交互前端的接线（web/session-engine · TUI/app · REPL/index.ts+repl.ts）
 // 与 one-shot。源码缝断言沿 omega99-175/190 的 readFileSync 先例。

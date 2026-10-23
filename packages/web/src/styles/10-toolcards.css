@@ -396,7 +396,7 @@ button.wudao {
 /* 116 弧 A：普通钮 hover 去品牌色（hair-2 边 + text-1）——accent 只留在
    .primary 的 CTA 上。120 弧「选择语言」升级：主 CTA 从描边恢复 accent
    实底（116 全描边化矫枉过正——权限卡 .btnrow 的 primary 一直是实底，
-   全局描边反而分裂了 CTA 语言；the upstream format/claude.ai 的主操作钮都是品牌实底）。
+   全局描边反而分裂了 CTA 语言；dsh/claude.ai 的主操作钮都是品牌实底）。
    accent 的角色规范（120 定稿）：状态与承诺（CTA/on 态）用色，装饰不用。 */
 button.wudao:hover { border-color: var(--hair-2); color: var(--text-1); }
 button.wudao.primary { border-color: transparent; background: var(--accent); color: var(--accent-ink); }

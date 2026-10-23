@@ -1,32 +1,33 @@
-// P0-1 (永续迭代) — per-turn prefix-cache WASTE attribution notice (the the upstream project// cache-stats port). Where cold-cache.ts predicts a cold prefix BEFORE a run
+// P0-1 (永续迭代) — per-turn prefix-cache WASTE attribution notice (the pi
+// cache-stats port). Where cold-cache.ts predicts a cold prefix BEFORE a run
 // starts (idle/identity rules, pre-send), this module attributes the waste
 // AFTER the tokens were spent: the previous request's prompt SHOULD have been
 // read from cache (it was in the previous turn's prompt — the M24 append-only
 // invariant guarantees the bytes never moved), so whatever the provider
 // re-billed instead of cache-reading is waste with a nameable cause.
 //
-// Semantics ported from the upstream project's core/cache-stats.ts (detectMiss):
+// Semantics ported from pi's core/cache-stats.ts (detectMiss):
 //   missedTokens = min(prev.promptTokens, curr.promptTokens) - curr.cacheHit
 //   (min: a shrinking prompt — a branch cut — only re-bills what it still
 //   contains); misses at or below 1024 tokens are breakpoint-granularity
 //   noise; a provider that never reports cache splits is silent (every turn
 //   would otherwise read as a total miss); attribution precedence is
-//   model-switch > idle≥TTL > plain miss (the upstream project's label order).
+//   model-switch > idle≥TTL > plain miss (pi's label order).
 // Wudao adaptations (documented divergences):
 //   - a coldTurnExpected row (a compaction / provider-switch prefix rewrite
 //     — already receipted as `[cold: …]` in the usage line + the
 //     context_window JSONL entry) is never waste here;
 //   - the idle TTL is injectable: a provider with a DOCUMENTED window in
 //     COLD_CACHE_POLICIES (DeepSeek: days, not minutes) uses it, everyone
-//     else gets the upstream project's 5-minute default — wrong-window estimates erode trust
+//     else gets pi's 5-minute default — wrong-window estimates erode trust
 //     (the ω-5a I23 rule);
 //   - notices are per-CAUSE deduped per session (≤3 per session) instead of
-//     the upstream project's per-message transcript lines — a light hint, never a flood.
+//     pi's per-message transcript lines — a light hint, never a flood.
 // Purely observational: nothing here touches request bytes (M24 untouched).
 // No pricing table exists in this codebase, so the report carries tokens
 // only (the optional missedCost field is reserved for when one lands).
 
-/** Prompt-cache TTL for idle attribution (the upstream projectport; Anthropic default 5min).
+/** Prompt-cache TTL for idle attribution (pi port; Anthropic default 5min).
  *  The wiring overrides this with a provider's documented window when one
  *  exists (DeepSeek: 3 days, read as the maximum bound). */
 export const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -42,7 +43,7 @@ export const CACHE_WASTE_NOISE_FLOOR_TOKENS = 1024;
  *  elsewhere, never waste. */
 export type CacheWasteCause = "idle" | "model_changed" | "effort_changed" | "miss";
 
-/** A counted cache waste on one model call (the upstream projectCacheMiss + a cause). */
+/** A counted cache waste on one model call (pi CacheMiss + a cause). */
 export interface CacheWasteReport {
   /** Prompt tokens that were in the previous request's prompt but not read from cache. */
   readonly missedTokens: number;
@@ -57,7 +58,7 @@ export interface CacheWasteReport {
   readonly prevEffort?: string;
   /** ω99-53: see prevEffort. */
   readonly currEffort?: string;
-  /** The attribution (model switch wins over idle, the upstream project's label order). */
+  /** The attribution (model switch wins over idle, pi's label order). */
   readonly cause: CacheWasteCause;
   /** Extra cost vs. a full cache hit; reserved (no pricing table yet). */
   readonly missedCost?: number;
@@ -70,7 +71,7 @@ export interface CacheWasteTurn {
   readonly promptTokens: number;
   readonly cacheHitTokens: number;
   /** Present only when the wire actually reported a cache split — the
-   *  "this provider does caching" signal (the the upstream projectreportedCache guard). */
+   *  "this provider does caching" signal (the pi reportedCache guard). */
   readonly cacheWriteTokens?: number;
   /** The row rode a freshly rewritten prefix (compaction / provider switch) —
    *  the cold turn is expected and receipted elsewhere. */
@@ -83,7 +84,7 @@ export interface CacheWasteTurn {
   readonly at: number;
 }
 
-/** What the monitor remembers between rows (the upstream projectPreviousRequest). */
+/** What the monitor remembers between rows (pi PreviousRequest). */
 export interface CacheWasteBaseline {
   readonly promptTokens: number;
   readonly modelKey: string;
@@ -112,7 +113,7 @@ export function analyzeCacheWaste(
 ): CacheWasteReport | null {
   if (prev === undefined) return null;
   if (curr.promptTokens <= 0) return null;
-  // the upstream project's guard, inverted: a zero-cache row only counts when the wire (this
+  // pi's guard, inverted: a zero-cache row only counts when the wire (this
   // row, or some earlier one via the sticky baseline) has shown cache
   // splits — otherwise the provider just doesn't report caching.
   if (!reportsCacheSplit(curr) && !prev.reportedCache) return null;
@@ -147,7 +148,7 @@ export function analyzeCacheWaste(
 }
 
 /** The next baseline from an observed row (null on a zero-prompt row — keep
- *  the previous baseline; the upstream projectasPreviousRequest). `stickyReportedCache` is the
+ *  the previous baseline; pi asPreviousRequest). `stickyReportedCache` is the
  *  OR of everything seen before this row. */
 export function asCacheWasteBaseline(curr: CacheWasteTurn, stickyReportedCache: boolean): CacheWasteBaseline | null {
   if (curr.promptTokens <= 0) return null;

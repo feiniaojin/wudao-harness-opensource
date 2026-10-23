@@ -6,7 +6,7 @@
 // active_branch markers all ride over exactly as recorded — the fork starts
 // as a byte-identical twin whose future appends diverge onto their own file.
 //
-// 120-a A3 (the upstream format #6483 形) — the fork ALSO inherits the parent's
+// 120-a A3 (a reference harness #6483 形) — the fork ALSO inherits the parent's
 // file-history lineage (the M37 per-session time machine under
 // .wudao/history/<sessionId>/): without inheritance the fresh id's /rewind
 // starts EMPTY and every pre-fork snapshot becomes an orphan the branch can

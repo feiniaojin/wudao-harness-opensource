@@ -1,4 +1,4 @@
-// ω99-4c — lint/test 反射回路 (the upstream project's reflected_message, wudao wiring).
+// ω99-4c — lint/test 反射回路 (aider's reflected_message, wudao wiring).
 //
 // After an edit/write lands, run the configured lint; when a run that edited
 // files tries to stop, run the configured test. Failing output is fed back to
@@ -9,7 +9,7 @@
 // "harness 已运行 <cmd>（不要自己再跑）" wording steers the model away from
 // re-running the command itself.
 //
-// Negative rulings (documented, deliberately NOT ported from the upstream project):
+// Negative rulings (documented, deliberately NOT ported from aider):
 //   1. NO system-prompt change — the injected note already tells the model
 //      the harness ran the command; touching prompt.ts over one sentence is
 //      not worth a prefix-cache break (§4 prefix byte stability).

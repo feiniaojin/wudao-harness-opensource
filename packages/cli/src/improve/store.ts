@@ -1,4 +1,4 @@
-// 永续迭代 v6 · wave2 旗舰弧（the upstream project C1）——改进提案的版本化发布面
+// 永续迭代 v6 · wave2 旗舰弧（reef C1）——改进提案的版本化发布面
 // （.wudao/proposals/，一提案一 JSON 文件）。
 //
 // 对垒现役（2026-09-15）：wudao 已有的「学到的东西」全在记忆面
@@ -6,7 +6,7 @@
 // 第一条「行为变更」发布链（规则文本→.wudao/rules/ 车道），它与记忆面的
 // 差别=它改模型的行为，所以它的状态机携带两道人工门（offered=第一道：
 // 同意才生成；gated=第二道：批准才激活）+ 门禁结果留档 + 驳回记忆（同一
-// 指纹被拒的提案不再重复生成——the upstream project rejected_proposals 的 wudao 化，但
+// 指纹被拒的提案不再重复生成——reef rejected_proposals 的 wudao 化，但
 // 用户可见：每条记录就是管理面的一张卡）。
 //
 // 状态机（终态留档永不删——rejected 记忆是防重复提案的载体，永不清理；
@@ -38,7 +38,7 @@ export const IMPROVE_DIR = "proposals";
 export const PROPOSAL_RULE_MAX_CHARS = 1200;
 export const PROPOSAL_SUMMARY_MAX_CHARS = 160;
 export const PROPOSAL_SCOPE_MAX_CHARS = 120;
-/** 提案器烧穿护栏（the upstream project C4）：同一指纹生成失败 3 次即弃（每次失败都是一次
+/** 提案器烧穿护栏（reef C4）：同一指纹生成失败 3 次即弃（每次失败都是一次
  * 模型调用——attempts 帽防「整夜反复提同一方案烧后台 token」）。 */
 export const PROPOSER_MAX_ATTEMPTS = 3;
 

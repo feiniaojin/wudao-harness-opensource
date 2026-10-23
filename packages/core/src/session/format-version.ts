@@ -1,4 +1,4 @@
-// ω99-47 (the upstream projectC4 soft version marker + the upstream formatcandidate 3 read/write gate): the
+// ω99-47 (pi C4 soft version marker + dsh candidate 3 read/write gate): the
 // session JSONL's FORMAT VERSION. The transcript format has evolved purely
 // additively so far, which means an older binary reading a newer file
 // silently SKIPS what it does not recognize — data loss with no signal. The
@@ -12,7 +12,7 @@
 //  - WRITE GATE: a file whose marker names a version NEWER than
 //    SUPPORTED_FORMAT_VERSION opens read-only — reads return its data
 //    unchanged, writes throw UnsupportedSessionFormatException.
-//  - Migration chains (a ref's adjacent-frozen vEdge) are deliberately NOT
+//  - Migration chains (dsh's adjacent-frozen vEdge) are deliberately NOT
 //    built here: wudao has no breaking migration yet, so only the gate
 //    lands (YAGNI, recorded in the arc report).
 //

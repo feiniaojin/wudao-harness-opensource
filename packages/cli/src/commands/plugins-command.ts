@@ -32,9 +32,11 @@ import {
   marketplacesDir,
   pluginEnable,
   pluginInstall,
+  pluginInstallLocal,
   pluginListInstalled,
   pluginUninstall,
   readMarketplaceFile,
+  LOCAL_PLUGIN_MARKET,
   type MarketplaceInfo,
 } from "../marketplace.js";
 import { rescanExtensions } from "../extension-state.js";
@@ -53,6 +55,7 @@ export type PluginRescanFn = () => Promise<{ readonly skills: number; readonly p
 export type PluginOp =
   | { readonly t: "list" }
   | { readonly t: "install"; readonly name: string; readonly market: string; readonly scope: "user" | "project" }
+  | { readonly t: "install-local"; readonly path: string }
   | { readonly t: "uninstall"; readonly id: string }
   | { readonly t: "enable"; readonly id: string }
   | { readonly t: "disable"; readonly id: string }
@@ -102,7 +105,16 @@ export function parsePluginArgs(argv: readonly string[]): { kind: "op"; op: Plug
     return { kind: "op", op: { t: "list" }, json };
   }
   if (head === "install") {
-    if (second === undefined) return { kind: "usage", reason: "install expects <name>@<market>" };
+    if (second === undefined) return { kind: "usage", reason: "install expects <name>@<market> or a local plugin directory path" };
+    // plugin-compat：路径形 token（./ · / · ~ · 含 /）= 本地直装（外部/
+    // 上游格式插件）；rest 按空格拼回（带空格的本地路径在 slash face 是一个
+    // 引号 token，在 CLI face 是多个 argv 词）。非路径形走市场安装语法。
+    const isPathLike = second.startsWith(".") || second.startsWith("/") || second.startsWith("~") || second.includes("/");
+    if (isPathLike) {
+      if (scope !== undefined) return { kind: "usage", reason: "--scope is not valid for a local path install (fixed project scope)" };
+      if (nameFlag !== undefined) return { kind: "usage", reason: "--name is only valid with marketplace add" };
+      return { kind: "op", op: { t: "install-local", path: [second, ...rest].join(" ") }, json };
+    }
     if (rest.length > 0) return { kind: "usage", reason: `install takes one <name>@<market> (unexpected "${rest[0]}")` };
     const at = second.indexOf("@");
     if (at <= 0 || at === second.length - 1) {
@@ -158,6 +170,7 @@ const USAGE_BODY = `插件管理（插件是配置包：技能/命令/MCP/hooks 
 
   list                                              已装登记 + 已加载映射清单
   install <name>@<market> [--scope user|project]    安装（默认 user 作用域）
+  install <本地路径>                                本地直装外部（CCB 家族上游包）插件 → .wudao/plugins/（project 作用域）
   uninstall <name>[@<market>]                       卸载（删目录 + 注销登记）
   enable|disable <name>[@<market>]                  启用 / 停用（停用即从映射隐藏）
   marketplace add <source> [--name <name>]          添加市场（owner/repo · git URL#ref · 本地目录 · marketplace.json 路径）
@@ -258,6 +271,21 @@ async function runPluginOp(op: PluginOp, ctx: RunContext): Promise<OpResult> {
         ];
         return finish(0, lines.join("\n"), { id, scope: op.scope, dir, detail, ...receipt.json });
       }
+      case "install-local": {
+        // plugin-compat：本地直装 — 外部（CCB 家族上游包）或 claude-plugin
+        // 目录 → .wudao/plugins/<name>/（project 作用域，登记 market=local）。
+        const { dir, name, format, detail } = await pluginInstallLocal(op.path, engDeps);
+        const receipt = await rescanReceipt(ctx);
+        const id = `${name}@${LOCAL_PLUGIN_MARKET}`;
+        const lines = [
+          `✅ 已安装 ${id}（本地直装·project 作用域）→ ${dir}`,
+          `   清单格式：${format === "ccb-family" ? "上游 CCB 家族包（package.json 声明）" : "claude-plugin"}`,
+          `   将映射：技能 ${detail.skills} · 命令 ${detail.commands} · agents ${detail.agents} · hooks ${detail.hooks} · MCP ${detail.mcp}`,
+          ...(detail.mcp > 0 ? ["   插件的 MCP 服务器在重启后生效（热重扫只换合并配置，不换已生成的工具集）"] : []),
+          receipt.text,
+        ];
+        return finish(0, lines.join("\n"), { id, scope: "project", dir, format, detail, ...receipt.json });
+      }
       case "uninstall": {
         await pluginUninstall(op.id, engDeps);
         const receipt = await rescanReceipt(ctx);
@@ -357,6 +385,7 @@ function loadedJson(p: LoadedPlugin): Record<string, unknown> {
     ...(p.description !== undefined ? { description: p.description } : {}),
     dir: p.dir,
     source: p.source,
+    format: p.format ?? "claude-plugin",
     skills: p.skills.length,
     commands: p.commands.length,
     agents: p.agents.length,

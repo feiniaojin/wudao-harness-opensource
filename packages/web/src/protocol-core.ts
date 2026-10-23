@@ -4,7 +4,7 @@ import type { SlashCommandInfo } from "./slash.js";
 // Mirrored contract types (PROTOCOL.md)
 // ---------------------------------------------------------------------------
 /** setMode values (the harness's modes; PROTOCOL "setMode"). 0.3.12: the
- *  three-mode redesign (对齐 the upstream harness 模式设计) — workspace(默认,工作区可
+ *  three-mode redesign (对齐 Claude 模式设计) — workspace(默认,工作区可
  *  读写)/ask(每次执行工具都问)/auto(完全权限); 0.3.14 adds plan(只读探查
  *  — reads and safe read-only commands only, everything else denied). The
  *  retired read-only and the 0.3.11 default/acceptEdits pair are gone, and
@@ -19,7 +19,7 @@ export type Mode = "workspace" | "ask" | "auto" | "plan";
 export type SubmitOutcome = "started" | "steered" | "notice" | "noop" | "frontend" | "cleared";
 
 /** Mirrors cli/src/permission.ts modeLabel. 0.3.13: the display word is
- *  the the upstream harness-style vocabulary — workspace shows as "accept" (≈ the upstream format
+ *  the Claude-Code-style vocabulary — workspace shows as "accept" (≈ CC
  *  acceptEdits); the mode VALUE stays workspace (persistence and the wire
  *  protocol are unchanged). plan already displays as "plan". */
 export {
@@ -373,7 +373,7 @@ export type ClientOp =
   | { op: "answerPermission"; allow: boolean; reason?: string; /** 0.3.14 #1: the answer's scope — "session"/"always" record a rule (absent = once). */ scope?: "session" | "always"; sid?: string }
   | { op: "recallSteer"; index: number; text: string; sid?: string }
   | { op: "answerAskUser"; answer?: string; sid?: string }
-  /** 借鉴弧 δ（the upstream harness 367ab084 思想）— move ONE in-flight tool call to the
+  /** 借鉴弧 δ（penguin 367ab084 思想）— move ONE in-flight tool call to the
    *  background: its result stops blocking the turn (the run closes at the
    *  turn boundary), the landed result merges later through the background
    *  lane. callId from the status frame's busyTools rows; absent = the
@@ -430,7 +430,10 @@ export type ClientOp =
   | { op: "schedulesSetEnabled"; id: string; enabled: boolean }
   | { op: "schedulesRemove"; id: string }
   | { op: "schedulesRunNow"; id: string; resetBreaker?: boolean }
-  | { op: "resume"; id: string; sid?: string }
+  | { op: "resume"; id: string; sid?: string; /** 小精灵会话弧 — 追问形：字节
+   *  复制该会话到全新 id 后 resume 副本（原会话永不改写；回执联合=
+   *  ResumeForkOutcome）。vaulting 蹭既有 resume 条目（op 名不变）。 */
+    fork?: true }
   | { op: "rewind"; target: number | "last" | "list" }
   /** M53 §1: arm message n for editing — the result carries the original
    *  text (null when out of range / busy) for the input box. ω99-258: n:0 is
@@ -449,7 +452,7 @@ export type ClientOp =
    *  stays active, pending stays pending). Vaulted; the DRIVER short-circuits
    *  a content-equal replay, so a mid-flap replay converges (version 恰 +1). */
   | { op: "memoryEdit"; id: string; content: string }
-  /** 永续 v6 wave2（the upstream project C1）：门控自改进面——list 拉全部提案记录卡；五个
+  /** 永续 v6 wave2（reef C1）：门控自改进面——list 拉全部提案记录卡；五个
    *  决策=两道人工门+簿记（consent/ignore/activate/reject/undo）。决策
    *  vaulted（consent 起子代理、activate 写规则文件——恰一次），重放收敛
    *  MISS 形。 */
@@ -684,6 +687,16 @@ export type SessionRestoreResult =
 export type ResumeOutcome =
   | { readonly ok: true }
   | { readonly ok: false; readonly reason: "not_found" }
+  | { readonly ok: false; readonly reason: "occupied"; readonly holderPid: number };
+
+// 小精灵会话弧 — resume 的 fork 形（追问）回执联合镜像（cli driver 的
+// settings-ops.forkSession 是源头；自家拷贝纪律同上）。ok:true 唯一成功
+// 形，forkedId=副本会话 id（视图随主车道的 reset 帧自然切过去）；三路
+// 拒答：busy=主车道正在跑（换血不能打断回合）、not_found=源会话不存在
+// 或不可读、occupied=副本 resume 撞租约（罕见——全新 v7 id）。
+export type ResumeForkOutcome =
+  | { readonly ok: true; readonly forkedId: string }
+  | { readonly ok: false; readonly reason: "busy" | "not_found" }
   | { readonly ok: false; readonly reason: "occupied"; readonly holderPid: number };
 
 // ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 // deliberately SHARED between the parent and every child (one
 // createPermissionGate product threaded through the task tool). Without this
 // module, a fork/isolated child's ask is indistinguishable from the main
-// agent's, and the human has nothing to check the request against — the upstream project's
+// agent's, and the human has nothing to check the request against — codex's
 // threat ("a worker's transcript can contain forwarded or assistant-authored
 // text claiming the user approved something"), except wudao's reviewer at
 // this tier is a person.

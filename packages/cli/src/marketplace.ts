@@ -1,8 +1,8 @@
-// cc-plugins A1+A2 — the marketplace + install engine: the upstream format-compatible plugin
+// cc-plugins A1+A2 — the marketplace + install engine: CC-compatible plugin
 // markets and copy-based installs from them. A market = a directory with
 // `.claude-plugin/marketplace.json` ({name, description?, plugins:[{name,
-// source, description?, version?}]} — the upstream's format verbatim; unknown fields
-// ignored; an entry's `source` is a string or the upstream's object form — {source:
+// source, description?, version?}]} — CC's format verbatim; unknown fields
+// ignored; an entry's `source` is a string or CC's object form — {source:
 // "url"|"git"|"github"} — normalized to the string grammar at parse). Market
 // (add) sources come in four forms: `owner/repo` (GitHub shorthand), a
 // git URL with optional `#<ref>` (branch/tag), an existing local directory,
@@ -38,6 +38,7 @@ import { promisify } from "node:util";
 import { readGlobalSettings, resolveGlobalHome, saveGlobalSettings } from "./settings-layer.js";
 import { hardenedGitArgs } from "./git-hardened.js";
 import { inspectPluginDir, normalizeWorkspaceRoot } from "./plugins.js";
+import type { PluginFormat } from "./plugins.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -218,7 +219,7 @@ function assertSafeName(name: string): void {
 // ---------------------------------------------------------------------------
 
 /** Add a market. The name is `opts.name` when given, else the
- *  materialized manifest's own `name` (the upstream's rule — that is why git/localDir
+ *  materialized manifest's own `name` (CC's rule — that is why git/localDir
  *  sources stage into a scratch dir first: the name cannot be known before
  *  the manifest exists). Failures strand nothing: a scratch or invalid
  *  materialization is removed before the typed error leaves. */
@@ -716,6 +717,81 @@ export async function pluginInstall(
   };
   await writeInstalledRegistry([...installed, record], env);
   return { dir: dest, detail };
+}
+
+// ---------------------------------------------------------------------------
+// plugin-compat — 本地路径安装：外部（CCB 家族）插件包的直装入口
+// ---------------------------------------------------------------------------
+
+/** 本地路径安装的固定市场名：installed.json 里 market="local" 的行就是「从
+ *  本地目录直装的外部插件」，与市场安装（market=<市场名>）在登记层天然隔
+ *  离；enable/disable/uninstall 经 `<name>@local` 走既有引擎，零新路径。 */
+export const LOCAL_PLUGIN_MARKET = "local";
+
+/** 从一个本地目录直装插件（`wudao plugin install <path>`）：dry-run 用同一
+ *  个装载器识别格式（claude-plugin 或上游 CCB 家族包），拷入 PROJECT 作用
+ *  域 `<workspace>/.wudao/plugins/<name>/`（外部插件与市场安装同根异册，
+ *  命名空间即登记侧的 market="local"），登记进 installed.json。与
+ *  pluginInstall 同一份契约：可失败的检查全部先于任何写入；中途失败清掉
+ *  半成品目录；登记只在树完整落位后追加；永不执行插件代码。 */
+export async function pluginInstallLocal(
+  source: string,
+  deps: PluginEngineDeps = {},
+): Promise<{ dir: string; name: string; format: PluginFormat; detail: InstallDetail }> {
+  const env = deps.env ?? process.env;
+  const ws = deps.workspaceRoot ?? process.cwd();
+
+  // 源路径：`~` 展开 + 相对路径按工作区根解析（与 classifyPluginSource 的
+  // 展开规则一致）。
+  const expanded = source.startsWith("~") ? join(homedir(), source.slice(1)) : source;
+  const src = isAbsolute(expanded) ? expanded : resolve(ws, expanded);
+  let info;
+  try {
+    info = statSync(src);
+  } catch {
+    throw new MarketplaceError("invalid-source", `cannot read plugin source "${source}" (${src} does not exist) — expected a local plugin directory (or <name>@<market> from a registered marketplace)`);
+  }
+  if (!info.isDirectory()) {
+    throw new MarketplaceError("invalid-source", `plugin source "${source}" (${src}) is not a directory`);
+  }
+
+  // dry-run 与 pluginInstall 同一个装载器 — 两种清单格式都能识别与计数。
+  const inspect = inspectPluginDir(src, ws);
+  if (inspect === undefined) {
+    throw new MarketplaceError("invalid-plugin", `"${source}" is not a loadable plugin (neither .claude-plugin/plugin.json nor a CCB-family package.json declaration) — nothing was installed`);
+  }
+  const name = inspect.name;
+  assertSafePluginName(name);
+
+  // fail-closed：同名 local 安装只此一份；孤儿目录（拷贝中途崩溃的残留）
+  // 报告而非覆写。
+  const installed = await readInstalledRegistry(env);
+  const prior = installed.find((r) => r.name === name && r.market === LOCAL_PLUGIN_MARKET);
+  const dest = pluginInstallDir(name, "project", env, ws);
+  if (prior !== undefined) {
+    throw new MarketplaceError("already-exists", `plugin "${name}" is already installed from a local path (${prior.scope} scope) — uninstall it first`);
+  }
+  if (existsSync(dest)) {
+    throw new MarketplaceError("already-exists", `${dest} exists but is not a registered install — remove the directory by hand and retry`);
+  }
+
+  try {
+    await copyTree(src, dest); // A1 同款拷贝器 — symlink 永不随行
+  } catch (err) {
+    await rm(dest, { recursive: true, force: true }); // never leave a half install behind
+    throw err instanceof MarketplaceError ? err : new MarketplaceError("invalid-source", `cannot install plugin "${name}" from ${source}: ${errorMessage(err)}`);
+  }
+
+  const record: InstalledRecord = {
+    name,
+    market: LOCAL_PLUGIN_MARKET,
+    scope: "project",
+    ...(inspect.version !== undefined ? { version: inspect.version } : {}),
+    // project 根存工作区 realpath（与 pluginInstall 同一 A2-review 规则）
+    root: normalizeWorkspaceRoot(ws),
+  };
+  await writeInstalledRegistry([...installed, record], env);
+  return { dir: dest, name, format: inspect.format ?? "claude-plugin", detail: inspect.detail };
 }
 
 /** Resolve an install id — `"<name>@<market>"` exact, or a bare `<name>` that

@@ -11,7 +11,7 @@
 //     daemon 的内存表整表快照会覆写外部写入）。
 //   · 幂等（一链一发 pending 火）：同 task_id 已有待接棒的火 → 拒绝并提示等待
 //     （127 设计 §3.4；匹配键 = createdFrom "continue_task" + 火的 prompt 字节）。
-//   · 有帽：同工作区活跃链（pending 火）> 3 条拒绝——唤醒链不设上限是 the upstream format教训，
+//   · 有帽：同工作区活跃链（pending 火）> 3 条拒绝——唤醒链不设上限是 dsh 教训，
 //     排程链必须有帽，两回事。
 //   · M24 纪律：工具定义加入工具列表是一个跨版本冷点（append-only 尾，紧跟
 //     schedules 三件套；仅 daemon 宿主会话注册，headless/REPL/pet/子代理不注册

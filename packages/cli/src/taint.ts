@@ -1,4 +1,4 @@
-// M49 §4 — tool-result taint (the upstream project). Tool results carrying user-provided
+// M49 §4 — tool-result taint (langroid). Tool results carrying user-provided
 // file content (read_file: provenance "user-file") or external-server content
 // (MCP: "mcp") get a TAINT BIT in the frontend's message metadata — a WeakMap
 // SIDE CHANNEL keyed by the ToolResultMessage objects themselves, so nothing

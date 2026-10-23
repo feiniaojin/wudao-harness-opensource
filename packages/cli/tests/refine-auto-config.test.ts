@@ -1,6 +1,6 @@
 // ω99-7 — refine.auto settings loader contract (the long-task-config
 // pattern): missing/empty → OFF (enabled=false — a feature that silently
-// spends model calls must be explicitly enabled; the upstream project defaults ON,
+// spends model calls must be explicitly enabled; prime-agent defaults ON,
 // wudao reverses that ruling); malformed → warning + per-field fallback;
 // unknown keys → warning listing them; WUDAO_AUTO_REFINE=off kill switch;
 // turnInterval clamped [1,200], cooldownMs clamped [0,24h].

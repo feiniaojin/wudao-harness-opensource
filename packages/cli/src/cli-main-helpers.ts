@@ -11,9 +11,9 @@ import { join, dirname, relative } from "node:path";
 import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, classifyTurnRetryError, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao/core";
 import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao/providers";
 import { createFileAttachmentStore, type ImageBlock } from "@wudao/core";
-// 夜移 035 (the upstream projectturn_timing): the one-shot run's phase recorder (debug tier).
+// 夜移 035 (codex turn_timing): the one-shot run's phase recorder (debug tier).
 import { createTurnProfileRecorder } from "@wudao/core";
-// 夜移 032 stage-2 (the upstream projectturn_diff_tracker): the one-shot run's net-change
+// 夜移 032 stage-2 (codex turn_diff_tracker): the one-shot run's net-change
 // tracker — one instance for the whole command, shared by the tool set and
 // both passes (reset per pass), rendered once at settle.
 import { createTurnDiffTracker } from "@wudao/core";
@@ -120,7 +120,7 @@ import { getContextRules, createContextRuleMatcher } from "./rules.js";
 import { setSessionOutputStyle } from "./output-styles.js";
 import { setProjectContextExcludes } from "./project-context.js";
 import {
-  parseContextExcludes,
+  parseClaudeMdExcludes,
   resolveAutoCompactSettings,
   resolveMemorySettings,
   resolveMcpEnabled,
@@ -405,7 +405,7 @@ export function askFirstRunWizard(): Promise<boolean> {
   });
 }
 
-// 借鉴弧 α3（the upstream 思想）— 一次性运行的「模型零接触」回执。runReal 的事件
+// 借鉴弧 α3（hermes 思想）— 一次性运行的「模型零接触」回执。runReal 的事件
 // 循环把任何 reasoning/assistant 增量的到达记进这个盒（一次进程一次运行）；
 // main().catch 里死亡时若盒仍空且错误分类为瞬态 provider 错（429/5xx/
 // network——classifyTurnRetryError 的瞬态词汇表），stderr 盖一章

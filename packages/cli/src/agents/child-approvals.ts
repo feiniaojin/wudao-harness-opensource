@@ -1,4 +1,4 @@
-// ω99-43 — durable child approval receipts (the upstream format #5543's mechanism,
+// ω99-43 — durable child approval receipts (a reference harness #5543's mechanism,
 // wudao's landing). A session'd child's human ask/answer used to live only
 // in process memory: the parent dies → the sidechain carries the message
 // flow but ZERO approval trace → a resumed child re-asks the same question
@@ -7,7 +7,7 @@
 // entry, and the key is CONTENT-ADDRESSED — `<tool>#<hash(canonicalJson(
 // input))>`, i.e. core's callFingerprint verbatim (single canonical
 // serializer; never a second key-ordering). Content addressing structurally
-// kills the upstream's boot-id hazard: different content never matches, and the
+// kills a reference harness's boot-id hazard: different content never matches, and the
 // same content matching across a restart IS the continuity feature.
 //
 // Lifecycle: the face is built at the child's spawn site (the task tool,

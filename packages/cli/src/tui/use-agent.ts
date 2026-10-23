@@ -93,7 +93,7 @@ export interface UseAgentOptions {
    *  own turn lands in state (before the first model call); the App persists
    *  it to the session JSONL immediately (crash-safety for the prompt). */
   onUserTurn?: AgentDriverOptions["onUserTurn"];
-  /** 波次8 #45 (the upstream formatsession-checkpoint-policy): forwarded to the driver —
+  /** 波次8 #45 (dsh session-checkpoint-policy): forwarded to the driver —
    *  fired once per tool-carrying turn AFTER the assistant(tool_use) lands in
    *  state and BEFORE any tool body runs; the App persists the ordered prefix
    *  here. A rejection fails closed at the loop (no tool body runs — the model

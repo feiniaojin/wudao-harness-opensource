@@ -43,7 +43,7 @@ export function createMemoryWriteTool(store: MemoryStore): Tool {
       const tags = Array.isArray(args.tags) ? args.tags.filter((t): t is string => typeof t === "string" && t.trim() !== "").map((t) => t.trim().toLowerCase()).slice(0, 8) : [];
       try {
         const result = await store.write({ kind, content, scope, tags });
-        // 永续 v6 弧 A（the upstream project C3）：被拦=未入库（拦下的密钥/注入形状不落
+        // 永续 v6 弧 A（reef C3）：被拦=未入库（拦下的密钥/注入形状不落
         // 台账、也不进 pending），回执诚实说「已拦」而非「已排队」。
         if (!result.ok) {
           return { content: `memory_write 已拦下：${result.reasons.join("；")} — 内容未入库（可疑学习输入记录在拦截清单，记忆面板可见）`, isError: true };

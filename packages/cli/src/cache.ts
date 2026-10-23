@@ -244,7 +244,7 @@ export function detectCacheBreak(input: CacheBreakInput): string | undefined {
     if (currLines < prevLines) {
       return expectedOrRaw(`⚠️ cache break: history truncated (turn ${turn})${tier}`, turn);
     }
-    // 夜移 008 (the upstream format break-forensics port, hardened): pure extension —
+    // 夜移 008 (a reference harness break-forensics port, hardened): pure extension —
     // the ONLY legitimate miss source is the appended delta. A miss far
     // beyond what the delta can explain means the provider re-processed the
     // PREFIX: eviction/TTL, not a harness defect. (The old code was silent
@@ -421,7 +421,7 @@ export interface CacheTrackingOptions {
    *  task tool's forwarder owns that row, so a same-client child counts
    *  exactly once). */
   readonly onUsage?: (usage: ModelUsage, cumulative: CacheStats, window: ContextWindowInfo, querySource?: string) => void;
-  /** P0-1 (the upstream projectcache-stats port): fires once per MAIN-call usage row — rows
+  /** P0-1 (pi cache-stats port): fires once per MAIN-call usage row — rows
    *  whose ModelInput carried a querySource tag (title/btw/summarizer/
    *  reflection/ask-reviewer side calls ride OTHER prefixes; comparing them
    *  against the main chain would misread as waste). The per-turn

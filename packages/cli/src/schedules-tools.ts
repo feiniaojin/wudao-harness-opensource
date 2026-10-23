@@ -61,7 +61,7 @@ export function createScheduleTools(face: ScheduleToolFace): Tool[] {
         budgetTokens: { type: "number", description: "Optional per-fire token ceiling for a task" },
         runtime: {
           type: "object",
-          description: 'Optional per-task runtime tier (113-C1), consumed ONLY when a fire spawns a fresh headless run — a bound continue lane keeps the session\'s own runtime. Night crons can run a cheaper model than interactive sessions: {provider:"deepseek", model:"deepseek-v4-flash", persona:"the upstream format", effort:"low"} — every field optional; unknown persona ids are refused at add.',
+          description: 'Optional per-task runtime tier (113-C1), consumed ONLY when a fire spawns a fresh headless run — a bound continue lane keeps the session\'s own runtime. Night crons can run a cheaper model than interactive sessions: {provider:"deepseek", model:"deepseek-v4-flash", persona:"anthropic-cli", effort:"low"} — every field optional; unknown persona ids are refused at add.',
           properties: {
             model: { type: "string", description: "Model id for the spawned run (--model — wins over env pins)" },
             provider: { type: "string", description: "Provider id for the spawned run (--provider)" },

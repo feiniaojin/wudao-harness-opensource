@@ -78,9 +78,9 @@ export interface LoadRosterOptions {
 }
 
 // Doctrine prompts. The three M9 types migrate verbatim (their prompts are
-// load-bearing for existing behavior); the new roles adapt the upstream's fleet
+// load-bearing for existing behavior); the new roles adapt a reference harness's fleet
 // doctrine (manager dispatches and never does the unit of work; adversarial
-// reviewers must assume guilt and cite evidence) plus the upstream project's
+// reviewers must assume guilt and cite evidence) plus hive's
 // identity-independent worker essence: the child's context is disposable and
 // the final report is ALL the caller receives, so it must stand alone.
 export const BUILTIN_ROLES: Record<string, AgentRoleProfile> = {
@@ -269,7 +269,7 @@ export async function loadRoleProfiles(
   const shadowed: ShadowedProfile[] = [];
 
   // M40 §2: the plugin layer — between builtins and the global/workspace
-  // files. The profiles arrive translated in-process (the upstream formatagents/*.md →
+  // files. The profiles arrive translated in-process (CC agents/*.md →
   // AgentRoleProfile in plugins.ts), so only the id shape is re-checked here.
   for (const { profile, source } of options.pluginAgents ?? []) {
     if (!ROLE_ID_RE.test(profile.id)) {

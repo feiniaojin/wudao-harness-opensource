@@ -12,12 +12,12 @@ export {
   CREDENTIAL_RE,
   MEMORY_MAX_CONTENT_CHARS,
   MEMORY_NOVELTY_JACCARD,
-  // 借鉴弧 C2（the upstream project C4）：盲 held-out 的精化入口标记（refine/dream 过滤）。
+  // 借鉴弧 C2（a reference project C4）：盲 held-out 的精化入口标记（refine/dream 过滤）。
   HELDOUT_MEMORY_TAG,
   isHeldOutEntry,
 } from "./store.js";
 export type { MemoryStore, MemoryEntry, MemoryKind, MemoryScope, MemoryWriteInput, MemoryWriteResult, MemoryAssessment } from "./store.js";
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest C3）——学习入口防污染三件套：nonce 围栏
+// 永续迭代 v6 · reef 借鉴弧 A（digest C3）——学习入口防污染三件套：nonce 围栏
 // （dream/refine 嵌入面）、凭据值/指令覆盖双正则块档门（store 写入汇聚点）、
 // 有界拦截台账（可见，绝不静默丢）。比较裁决与设计纪律见 guard.ts 头注。
 export {

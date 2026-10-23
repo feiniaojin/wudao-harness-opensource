@@ -230,7 +230,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
 
   // M58 §C#8 (batch-B wiring of C's prober): the <git_status> block rides the
   // driver's MetaNote channel — projection-only, NEVER the stable prompt
-  // prefix (the the upstream formatcache coupling the spec's hard rule rejects). Eager probe
+  // prefix (the CC cache coupling the spec's hard rule rejects). Eager probe
   // at mount = the session-start snapshot (the first model call drains it);
   // every turn_finished re-checks the cheap fingerprint. A note pushed while
   // idle waits in the queue until the next model call — turn boundaries only,
@@ -598,7 +598,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
       contextProbe: () => stateHandle.current.state?.messages ?? [],
       getForkContext: () => stateHandle.current.state,
       getSystemPrompt: () => stateHandle.current.state?.systemPrompt ?? "",
-      // 125 项 2（the upstream projectget_context_remaining 形）：水位线查询工具的触发线
+      // 125 项 2（codex get_context_remaining 形）：水位线查询工具的触发线
       // 缝——live 窗口（state）+ live config 的 ratio/headroom/reserve（项 1
       // 装配缝），/model //provider 切换后的下一次查询自然生效。
       contextRemaining: {
@@ -714,7 +714,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
   apiRef.current = api;
   // 夜移 018 (延迟预取 wudao 适配): the deferred MCP load the caller started
   // before first paint lands HERE — the app is already interactive; the
-  // typing window is the warm-init slot (real the upstream formatmain.tsx:388-411 adapted:
+  // typing window is the warm-init slot (real CC main.tsx:388-411 adapted:
   // the un-blocked boot replaces the warm-init, the seam replaces the
   // arrival). A run already in flight parks them at its settle boundary.
   useEffect(() => {

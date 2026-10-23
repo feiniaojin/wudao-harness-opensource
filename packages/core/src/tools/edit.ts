@@ -16,13 +16,13 @@ import type { PendingWriteGate } from "../pending-actions.js";
 //   * replace_all,
 //   * ±4-line numbered result/error snippets instead of a bare "edited".
 //
-// ω99-4a — match ladder widened (the upstream project search_replace.py port):
+// ω99-4a — match ladder widened (aider search_replace.py port):
 //   * blank-line-relaxed: boundary BLANK LINES stripped off old_string, with
-//     new_string stripped the SAME way (the upstream project strips the search/replace/
+//     new_string stripped the SAME way (aider strips the search/replace/
 //     original triple identically — strip_blank_lines :611-614; preproc order
 //     strip-before-indent from all_preprocs :527-541).
 //   * indent-relative: whole-block UNIFORM indent shift — needle lines are
-//     compared with leading [ \t] stripped (a TS simplification of the upstream project's
+//     compared with leading [ \t] stripped (a TS simplification of aider's
 //     RelativeIndenter :18-100 + try_strategy :580-607, which exists to feed
 //     its dmp fuzzy path; we only detect/apply a uniform shift). Non-uniform
 //     misalignment deliberately does NOT hit — it falls to the closest-
@@ -34,7 +34,7 @@ import type { PendingWriteGate } from "../pending-actions.js";
 //     already covers the main failure face.
 //   * dmp/difflib fuzzy apply: fuzzy hits are exactly what the unique-hit
 //     iron law below exists to prevent.
-//   * reverse_lines (:543-546): the upstream project itself commented it out.
+//   * reverse_lines (:543-546): aider itself commented it out.
 //   Execution order: exact → quote-normalized → blank-line-relaxed →
 //   whitespace-tolerant → indent-relative. blank-line runs BEFORE the trim
 //   because it strips strictly less (a shorter prefix/suffix survives), i.e.
@@ -55,7 +55,7 @@ interface MatchOutcome {
   /** Match length in the original content. */
   readonly length: number;
   /** ω99-4a: rungs that normalize old_string must transform new_string the
-   *  same way (the upstream project's triple-strip). Absent → new_string applies verbatim
+   *  same way (aider's triple-strip). Absent → new_string applies verbatim
    *  (the pre-ω99-4a behavior of every legacy rung). */
   readonly replacement?: string;
 }
@@ -122,7 +122,7 @@ function findMatch(content: string, oldStr: string, newStr: string, replaceAll: 
     if (quoteHits.length >= 1) return { level: "quote-normalized", starts: quoteHits, length: normalizedNeedle.length };
   }
 
-  // ω99-4a rung 4 — blank-line relaxation (the upstream project strip_blank_lines :611-614,
+  // ω99-4a rung 4 — blank-line relaxation (aider strip_blank_lines :611-614,
   // the (True, False, False) row of all_preprocs :527-541). Runs BEFORE the
   // trim rung: stripping only whole blank lines removes strictly less than
   // oldStr.trim(), so this is the tighter normalization and must claim the
@@ -131,7 +131,7 @@ function findMatch(content: string, oldStr: string, newStr: string, replaceAll: 
   // R in content implies T in content). Multi-line needles only: a single-
   // line needle's boundary newline is a trailing newline on a content line,
   // not a blank line — that case stays pinned to whitespace-tolerant. The
-  // replacement is stripped the same way (the upstream project strips the triple).
+  // replacement is stripped the same way (aider strips the triple).
   {
     const stripped = stripBoundaryBlankLines(oldStr);
     if (stripped !== oldStr && stripped !== "" && stripped.includes("\n")) {
@@ -164,7 +164,7 @@ function findMatch(content: string, oldStr: string, newStr: string, replaceAll: 
   return { error: notFoundError(content, oldStr) };
 }
 
-// ω99-4a rung 5 — indent-relative uniform shift. RelativeIndenter (the upstream project
+// ω99-4a rung 5 — indent-relative uniform shift. RelativeIndenter (aider
 // :18-100) ENCODES relative indents with a marker + make_absolute round-trip
 // because its consumer is a dmp fuzzy apply; the wudao rung only needs
 // detect-and-apply of a UNIFORM whole-block shift, so lines are compared with
@@ -178,7 +178,7 @@ const indentOf = (line: string): string => LINE_INDENT.exec(line)![0];
 const stripLineIndent = (line: string): string => line.replace(/^[ \t]*/, "");
 
 function findIndentRelative(content: string, oldStr: string, newStr: string): MatchOutcome | { error: string } | undefined {
-  // Needle-side preproc = rung 4's strip first (the upstream project all_preprocs (True,
+  // Needle-side preproc = rung 4's strip first (aider all_preprocs (True,
   // True, False) order: strip blank lines, THEN compare indents). A
   // single-line needle has no block to shift.
   const needle = stripBoundaryBlankLines(oldStr);
@@ -339,7 +339,7 @@ export function createEditTool(options: {
   workspaceRoot: string;
   readState?: ReadStateTable;
   history?: FileHistory;
-  /** 夜移 032 (the upstream projectturn-diff): the per-run net-change ledger; recorded
+  /** 夜移 032 (codex turn-diff): the per-run net-change ledger; recorded
    *  after a committed edit. Absent → unchanged behavior. */
   turnDiff?: TurnDiffTracker;
   /** M46 §1: post-edit syntax verification over the UPDATED content (same

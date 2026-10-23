@@ -1,10 +1,10 @@
-// ω-3a — the mutation idempotency vault (adapted from the upstream project's WS vault).
+// ω-3a — the mutation idempotency vault (adapted from nanobot's WS vault).
 // Ops that carry a client-instance qualifier (`cid`) and name a MUTATION are
 // keyed by `cid` + the envelope's op id: a retry with the same payload digest
 // JOINS the in-flight execution (never re-executes), a retry after completion
 // replays the cached result (TTL 5 min, max 256, pruned oldest), and the same
 // id with a DIFFERENT payload gets an explicit conflict error (the wudao
-// analog of the upstream project's 409 — the existing err-string envelope). Reads and
+// analog of nanobot's 409 — the existing err-string envelope). Reads and
 // cid-less (old-client) ops are never vaulted: a cached read would serve
 // stale data, and old clients keep today's execute-every-frame behavior.
 import { describe, it, expect, afterEach } from "vitest";

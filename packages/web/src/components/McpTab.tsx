@@ -28,8 +28,8 @@ const TIER_GROUPS: readonly {
   readonly file: keyof McpListResult["files"];
   readonly hint: string;
 }[] = [
-  { tier: "user", title: "用户级 —— 本机所有项目", file: "user", hint: "所有会话可用；the upstream harness / wudao 两种格式都行（mcpServers 或 servers）" },
-  { tier: "root", title: "项目根 .mcp.json —— the upstream harness 项目文件", file: "root", hint: "the upstream harness 的项目级配置，wudao 直接读取，零拷贝迁移" },
+  { tier: "user", title: "用户级 —— 本机所有项目", file: "user", hint: "所有会话可用；Claude Code / wudao 两种格式都行（mcpServers 或 servers）" },
+  { tier: "root", title: "项目根 .mcp.json —— Claude Code 项目文件", file: "root", hint: "Claude Code 的项目级配置，wudao 直接读取，零拷贝迁移" },
   { tier: "project", title: "项目级 .wudao/mcp.json —— 本工作区", file: "project", hint: "仅本项目；同名服务器整体替换上面两层（三层中优先级最高）" },
 ];
 
@@ -96,7 +96,7 @@ export function McpTab({
     <div className="settings-section" data-testid="mcp-tab">
       <div className="section-title">MCP 服务器</div>
       <div className="hint">
-        {"已配置的 MCP 服务器分三层生效：用户级 → 项目根 .mcp.json → 项目级（同名后者整体替换前者）。配置文件支持 the upstream harness 的 mcpServers 格式，可直接粘贴。"}
+        {"已配置的 MCP 服务器分三层生效：用户级 → 项目根 .mcp.json → 项目级（同名后者整体替换前者）。配置文件支持 Claude Code 的 mcpServers 格式，可直接粘贴。"}
       </div>
       <div className="keyrow">
         <button type="button" className="wudao" disabled={refreshing} onClick={refresh} data-testid="mcp-refresh">

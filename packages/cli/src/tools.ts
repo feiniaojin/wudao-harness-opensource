@@ -62,6 +62,9 @@ import type { ChildMailLane } from "./agents/child-mail.js";
 import { createPeerTools } from "./peer/tools.js";
 import type { PeerRuntime } from "./peer/runtime.js";
 import { createMemoryWriteTool, createMemorySearchTool } from "./memory/tools.js";
+// M-Memory 弧第二半 — 长期记忆三件套（tools.ts 装配缝；store 是 core 的
+// openMemoryStore 面，与 M49 store 不同型——互斥缝见 buildToolSet）。
+import { createLongtermMemoryTools, createLongtermMemorySearchTool } from "./longterm-memory.js";
 // 夜移 029: the skill-search scorer + its threshold-gated tool face.
 import { createDiscoverSkillsTool, skillSearchEligible } from "./skill-search.js";
 import type { LoadedSkill } from "./skills.js";
@@ -311,7 +314,7 @@ export function buildToolSet(opts: {
    *  ctx_inspect tool (the model seeing its own occupancy). Late-bound: tools
    *  are built before the AgentState exists. */
   readonly getSystemPrompt?: () => string;
-  /** 125 项 2（the upstream projectget_context_remaining 形）：上下文水位线查询工具的
+  /** 125 项 2（codex get_context_remaining 形）：上下文水位线查询工具的
    *  触发线输入缝 — present（且 ctx_inspect 的两缝在场）→ 只读的
    *  context_remaining 工具挂进 TOP-LEVEL 集，紧随 ctx_inspect（同族定位，
    *  跨版本一次性冷点）。getThreshold 在调用时重读（live 窗口 + 项 1 的
@@ -348,11 +351,11 @@ export function buildToolSet(opts: {
    *  Rides the TOP-LEVEL coding tools only (worktree children write a
    *  different tree; their changes are git-diffable instead). */
   readonly history?: FileHistory;
-  /** 夜移 032 (the upstream projectturn-diff): the per-run net file-change ledger — the
+  /** 夜移 032 (codex turn-diff): the per-run net file-change ledger — the
    *  SAME instance the frontend hands to the driver (reset at run start,
    *  receipt at run settle); absent → no ledger, unchanged behavior. Rides
    *  the TOP-LEVEL coding tools only (child sidechains write their own
-   *  trees; the upstream projectmerges environments, wudao v1 does not). */
+   *  trees; codex merges environments, wudao v1 does not). */
   readonly turnDiff?: TurnDiffTracker;
   /** M46 §1: write-verify config (settings.json writeVerify + env), injected
    *  so core stays settings-unaware. Absent → tools return the pre-M46
@@ -366,7 +369,7 @@ export function buildToolSet(opts: {
    *  TOP-LEVEL shell only — it needs the per-session spillDir seam the
    *  worktree children don't carry. */
   readonly longOutput?: LongOutputConfig;
-  /** 借鉴弧 C1（the upstream project C3）：超长诊断日志的证据保全瘦身端口（廉价档
+  /** 借鉴弧 C1（a reference project C3）：超长诊断日志的证据保全瘦身端口（廉价档
    *  ModelClient + 可选阈值覆盖）。缺省不注入 = shell 字节同 pre-C1。
    *  Rides the TOP-LEVEL shell only（与 longOutput 同界——需要 spill 缝）。 */
   readonly logSlimming?: LogSlimmingPorts;
@@ -377,8 +380,16 @@ export function buildToolSet(opts: {
   /** M49 §1: the session's memory store. Present → memory_write +
    *  memory_search join the TOP-LEVEL set, and read-only children gain
    *  memory_search (children never write memory). Absent → zero memory
-   *  surface (the pre-M49 tool set, tests pin that boundary). */
+   *  surface (the pre-M49 tool set, tests pin that boundary).
+   *  M-Memory 弧第二半：驱动装配已统一换轨到 longtermMemory（memory_search
+   *  两边同名，互斥——同传 fail-closed 拒绝，见下）；本缝为 M49 兼容面保留。 */
   readonly memory?: { readonly store: import("./memory/store.js").MemoryStore };
+  /** M-Memory 弧第二半 — 长期记忆库（core openMemoryStore，
+   *  .wudao/memory/memory.jsonl）。在场 → memory_save / memory_search /
+   *  memory_forget 进顶层集，只读子集（worktree children）带 memory_search
+   *  （子 agent 永不写长期记忆，M49 同界）。缺席 → 零长期记忆面。新槽位 =
+   *  一次性冷前缀点（M24 声明：工具列表前缀稳定，新增工具天然断一次）。 */
+  readonly longtermMemory?: { readonly store: import("@wudao/core").MemoryStore };
   /** M59 §3: web runtime — fetch caps (maxChars/allowedPorts; the tool itself
    *  is zero-config ALWAYS registered) and the optional search provider
    *  config (present → web_search registered; absent → search stays out of
@@ -503,7 +514,7 @@ export function buildToolSet(opts: {
    *  face — ask posture by the fail-closed default). Subagents never see
    *  them (the notes dir is parent-session-scoped). */
   readonly notes?: { readonly sessionId: () => string };
-  /** 125 项 1（the upstream projectnew_context 形）: the model-side context-rotation face —
+  /** 125 项 1（codex new_context 形）: the model-side context-rotation face —
    *  present → the `new_context` tool joins the TOP-LEVEL set right after the
    *  notes pair (append-only tail, M24: every earlier tool keeps its exact
    *  bytes and index; the new slot is a declared one-time cross-version cold
@@ -665,10 +676,20 @@ export function buildToolSet(opts: {
   // (what the task tool's children draw from by name) carries BOTH so a role
   // listing memory_search finds it, but the default child set (and every
   // worktree child below) is search-only.
+  // M-Memory 弧第二半：memory_search 两系统同名——同传两缝是装配错误
+  // （模型会看到两个同名工具），构建期 fail-closed 拒绝。
+  if (opts.memory !== undefined && opts.longtermMemory !== undefined) {
+    throw new Error("buildToolSet: memory (M49) 与 longtermMemory (M-Memory) 互斥——memory_search 同名，只能装配其一");
+  }
   const memoryTools = opts.memory
     ? [createMemoryWriteTool(opts.memory.store), createMemorySearchTool(opts.memory.store)]
     : [];
-  const toolPool = [...codingTools, ...memoryTools];
+  // M-Memory 弧第二半：长期记忆三件套（顶层全量；池里同载——task tool 的
+  // 子集按名抽取时找得到）。挂载位=M49 槽位之后（append-only 尾纪律）。
+  const longtermMemoryTools = opts.longtermMemory !== undefined
+    ? createLongtermMemoryTools({ store: opts.longtermMemory.store })
+    : [];
+  const toolPool = [...codingTools, ...memoryTools, ...longtermMemoryTools];
   // M50 §1: run_script (PTC) — the model batches its tool calls as one JS
   // program over a file-RPC channel in a sandboxed child; ONLY the program's
   // stdout enters context. Every inner call() re-enters the SAME gate the
@@ -729,6 +750,9 @@ export function buildToolSet(opts: {
     // session registry; fixed tail position — grandchild symmetry).
     createMessageChildTool(registry),
     ...(opts.memory ? [createMemorySearchTool(opts.memory.store)] : []),
+    // M-Memory 弧第二半：worktree children 带只读 memory_search（新库——
+    // 与 M49 子集同界：子 agent 永不写长期记忆）。
+    ...(opts.longtermMemory ? [createLongtermMemorySearchTool(opts.longtermMemory.store)] : []),
   ];
   const contextProbe = opts.contextProbe;
   // The orchestration task tool (M30): roster roles, background spawn, child
@@ -953,7 +977,7 @@ export function buildToolSet(opts: {
         contextWindowTokens: opts.contextWindowTokens,
       })),
     );
-    // 125 项 2（the upstream projectget_context_remaining 形）：水位线查询面 — ctx_inspect
+    // 125 项 2（codex get_context_remaining 形）：水位线查询面 — ctx_inspect
     // 给占用明细，这里给决策面（剩余/距压缩线），与 loop 的 effectiveThreshold
     // 读同一条线（core 的 resolveCompactionThresholdTokens 单一真值点）。
     // 只读（READ_TOOLS 面），top-level only，紧随 ctx_inspect 的家族定位。

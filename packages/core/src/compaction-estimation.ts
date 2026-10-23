@@ -8,7 +8,7 @@ import { estimateImageTokens } from "./attachments.js";
 // ω-1 — script-aware estimation. The wudao target models are Chinese-first:
 // CJK text compresses to ≈1 token per char, so the flat chars/4 ratio
 // under-counted Chinese-heavy payloads 2–4× and delayed compaction past the
-// real budget. Evidence: the upstream project e418363d — window-derived ceilings measured
+// real budget. Evidence: hive e418363d — window-derived ceilings measured
 // ≈1 token per CJK char against real tokenizers. Over-estimation is the
 // safe direction for compaction thresholds, so astral-plane CJK (ext-B
 // surrogate pairs) counts once per code point.

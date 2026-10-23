@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // M72 §3 — semantic collapse in the ADVANCED column's tool stream (research
-// 38 §1, the upstream's collapseReadSearch): consecutive OBSERVATION-tool runs (reads,
+// 38 §1, CC's collapseReadSearch): consecutive OBSERVATION-tool runs (reads,
 // greps, globs, web lookups) collapse into a `name ×N` group header — one
 // line instead of N cards — each group expandable in place. Pure CSS/class
 // + local state only: the history array itself is never rewritten (the

@@ -151,7 +151,7 @@ function htmlParagraphs(text: string): string {
  *  as the markdown render, but one self-contained page — inline CSS (the
  *  #1a1a24 dark-card family), native <details> folds for tool calls, zero
  *  external resources, zero JS, deterministically testable via generatedAt.
- *  the upstream project's export-html is the paradigm; the base64 + client JS + vendor
+ *  pi's export-html is the paradigm; the base64 + client JS + vendor
  *  marked/hljs machinery is deliberately NOT taken. */
 export function renderSessionHtml(args: {
   readonly entries: readonly ExportEntry[];

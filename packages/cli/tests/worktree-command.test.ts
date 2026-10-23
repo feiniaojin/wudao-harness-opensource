@@ -4,7 +4,7 @@
 // layer and the command module's pure halves: enter creates branch+directory
 // via core's createChildWorktree (the CLI adapter — core's signature is
 // untouched, 子 agent 用法零扰动), a non-git root refuses, remove is blocked
-// by uncommitted/untracked changes (the upstream format同款防丢), keep leaves the tree, and
+// by uncommitted/untracked changes (CC 同款防丢), keep leaves the tree, and
 // the worktree_enter/worktree_exit entries ride the PINNED session root's
 // JSONL as generic entries (provider_change 同款纪律).
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -161,7 +161,7 @@ describe("worktreeRemoveBlocked / removeMainWorktree", () => {
     await git(enter.worktree.path, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "wip");
     await expect(worktreeRemoveBlocked(enter.worktree.path)).resolves.toEqual({ blocked: false });
     // The branch now carries an unmerged commit — removal deletes the tree
-    // but the branch is LEFT (git branch -d refuses, never -D: the upstream format同款防丢).
+    // but the branch is LEFT (git branch -d refuses, never -D: CC 同款防丢).
     const cleanup = await removeMainWorktree(enter.worktree.path);
     expect(cleanup.removed).toBe(true);
     expect(cleanup.branchDeleted).toBe(false);

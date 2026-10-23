@@ -1,4 +1,4 @@
-// 128-4（the upstream projectde 引进）— deferred 目录 names-first 预算收据。
+// 128-4（codex 0f9a731ade 引进）— deferred 目录 names-first 预算收据。
 // 存在性优先于描述：预算内每个名字必有一行；名字放不下=显式 omission
 // notice；字节稳定；UTF-8 安全。
 import { describe, expect, it } from "vitest";

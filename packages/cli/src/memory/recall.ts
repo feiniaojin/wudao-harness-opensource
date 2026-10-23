@@ -10,7 +10,7 @@ import { tokenSet } from "../tokenize.js";
 export const RECALL_MAX_ITEMS = 4;
 export const RECALL_MAX_CHARS = 2400;
 export const RECALL_LEAD = "Relevant memories (auto-recalled, may be imperfect):";
-/** 夜移 015 (#22, 真 the upstream formatmemoryScan MAX_MEMORY_FILES): the runtime's active
+/** 夜移 015 (#22, 真 CC memoryScan MAX_MEMORY_FILES): the runtime's active
  *  pool is capped to the NEWEST entries — bounds read-side cost and ranking
  *  dilution as the store grows (file order = append order, slice the tail). */
 export const RECALL_POOL_CAP = 200;
@@ -30,7 +30,7 @@ export const RECALL_FLOOR_RATIO = 0.15;
  *  命中 ∈ [2,∞), 纯 overlap ∈ (0,1], 断崖在 (1,2]。中强 top (2 tag = 4
  *  分) 下裸比例 relative 0.6 够不到断崖, 1.0 纯 overlap 弱尾漏过占预算。
  *  tier 最小值把地板钉到断崖上; 无参考有此机制 (MiMo 无分层分域概念,
- *  真 the upstream formatmemdir 无地板, the upstream project 是绝对阈值)。 */
+ *  真 CC memdir 无地板, aider 是绝对阈值)。 */
 export const RECALL_TAG_TIER_MIN = 2;
 
 /** The selection cutoff for a pool whose best score is `top` — an entry is
@@ -43,7 +43,7 @@ export function recallCutoff(top: number): number {
   const relative = top * RECALL_FLOOR_RATIO;
   return top >= RECALL_TAG_TIER_MIN ? Math.max(relative, RECALL_TAG_TIER_MIN) : relative;
 }
-/** 夜移 015 (#22, 真 the upstream formatmemoryAge): one note-level caveat when any selected
+/** 夜移 015 (#22, 真 CC memoryAge): one note-level caveat when any selected
  *  entry is ≥2 days old — stale file:line cites read MORE authoritative than
  *  they are, and the model never learns an entry's age without this. */
 export const RECALL_STALENESS_NOTE =
@@ -149,7 +149,7 @@ export function recallMemories(input: RecallInput): RecallResult {
   }
   if (selected.length === 0) return { selected: [], note: undefined };
   const lines = selected.map((e) => {
-    // 夜移 015 (真 the upstream formatmemoryAge): the age label rides the metadata parens —
+    // 夜移 015 (真 CC memoryAge): the age label rides the metadata parens —
     // "models are poor at date arithmetic", the suffix does it for them.
     // 夜移 025: content/tags are untrusted stored bytes — escaped so they
     // can never forge note lines or the envelope framing.

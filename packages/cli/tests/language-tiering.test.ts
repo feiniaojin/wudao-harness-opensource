@@ -165,12 +165,12 @@ describe("settingsStatus — settings.languageReply/languageReasoning", () => {
 // ---------------------------------------------------------------------------
 
 describe("settingsSaveProvider — effort binding persistence", () => {
-  it.skip("an echoed effort persists beside persona; null persists as null; an unechoed effort DIES (F1 whole-row replace)", async () => {
+  it("an echoed effort persists beside persona; null persists as null; an unechoed effort DIES (F1 whole-row replace)", async () => {
     const ops = makeOps();
     const r = await ops.settingsSaveProvider("my-gw", {
       baseUrl: "https://gw.example.com/v1",
       defaultModel: "m-x",
-      persona: "the upstream format:headers",
+      persona: "a reference harness:headers",
       effort: "high",
     });
     expect(r).toEqual({ ok: true, provider: "my-gw" });
@@ -182,7 +182,7 @@ describe("settingsSaveProvider — effort binding persistence", () => {
     await ops.settingsSaveProvider("my-gw", {
       baseUrl: "https://gw.example.com/v1",
       defaultModel: "m-x",
-      persona: "the upstream format:headers",
+      persona: "a reference harness:headers",
       effort: null,
     });
     row = JSON.parse(readFileSync(registryPath(), "utf8")) as { providers: Record<string, { effort?: unknown }> };
@@ -194,7 +194,7 @@ describe("settingsSaveProvider — effort binding persistence", () => {
     await ops.settingsSaveProvider("my-gw", {
       baseUrl: "https://gw.example.com/v1",
       defaultModel: "m-x",
-      persona: "the upstream format:headers",
+      persona: "a reference harness:headers",
     });
     row = JSON.parse(readFileSync(registryPath(), "utf8")) as { providers: Record<string, { effort?: unknown }> };
     expect("effort" in (row.providers["my-gw"] ?? {})).toBe(false);

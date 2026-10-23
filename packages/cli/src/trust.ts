@@ -1,5 +1,5 @@
 // P1-5 (96 队列) — the WORKSPACE TRUST GATE's decision store + status math.
-// the upstream projectcore/trust-manager lineage, adapted to wudao's surfaces:
+// pi core/trust-manager lineage, adapted to wudao's surfaces:
 //   • decisions live in the USER global tier (`~/.wudao/trust.json`, keyed by
 //     the CANONICAL workspace path — realpath so a symlinked clone can never
 //     dodge its own record);
@@ -48,7 +48,7 @@ export function canonicalizeWorkspacePath(path: string): string {
 }
 
 /** The decision store: canonical path → trusted (true/false). Absent key =
- * no decision. Decision `null` on write DELETES the key (the upstream project's shape). */
+ * no decision. Decision `null` on write DELETES the key (pi's shape). */
 export type TrustStore = Readonly<Record<string, boolean>>;
 
 /** Read the store. Missing → {}; malformed → one warning + {} (fail-closed:

@@ -185,7 +185,7 @@ describe("edit", () => {
 
   // -------------------------------------------------------------------------
   // ω99-4a — match ladder extensions: blank-line-relaxed + indent-relative
-  // (the upstream project search_replace.py port; unique hit still required at every rung)
+  // (aider search_replace.py port; unique hit still required at every rung)
   // -------------------------------------------------------------------------
   describe("match ladder ω99-4a extensions", () => {
     it("blank-line-relaxed: strips boundary blank lines off old_string AND new_string", async () => {
@@ -201,7 +201,7 @@ describe("edit", () => {
       });
       expect(res.isError).toBeFalsy();
       expect(res.content).toContain("match: blank-line-relaxed");
-      // new_string is stripped the SAME way (the upstream project strips the triple).
+      // new_string is stripped the SAME way (aider strips the triple).
       expect(await readFile(join(root, "b.txt"), "utf8")).toBe("header\n\nqux();\nbaz();\n\nfooter\n");
     });
     it("blank-line-relaxed: 2 hits after stripping → ambiguity error, disk untouched", async () => {

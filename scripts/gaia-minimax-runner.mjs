@@ -5,8 +5,8 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-const BENCH = "./wudao-bench";
-const WUDAO = "external/packages/cli/dist/index.js";
+const BENCH = "~/xdev/github/wudao-harness-project/wudao-bench";
+const WUDAO = "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/index.js";
 const PROGRESS_DIR = join(BENCH, "gaia-minimax-progress");
 const OUT = join(BENCH, "gaia-minimax-results.json");
 const MODEL_ARGS = ["--provider", "minimax-code", "--model", "MiniMax-M3"];

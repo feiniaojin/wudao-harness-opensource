@@ -105,7 +105,7 @@ describe("PermissionsTab", () => {
     await replyStatus(server, null);
     expect(shieldChip(c).dataset.mode).toBe("workspace");
     expect(shieldChip(c).className).not.toContain("sel");
-    expect(shieldChip(c).textContent).toContain("accept"); // 0.3.13: the the upstream format label for the default tier
+    expect(shieldChip(c).textContent).toContain("accept"); // 0.3.13: the CC label for the default tier
     expect(c.querySelector("h3.set-title")?.textContent).toBe("权限档(新会话默认)");
     expect(c.textContent).toContain("当前会话档 = accept"); // status=null → modeLabel("workspace")
     expect(c.textContent).toContain("shift+tab");

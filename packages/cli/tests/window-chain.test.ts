@@ -1,4 +1,4 @@
-// 125 项 1/项 2（the upstream project窗口链/WorldState 差分）CLI 面：
+// 125 项 1/项 2（codex 窗口链/WorldState 差分）CLI 面：
 //   ① compact_boundary 条目的 additive 字段（windowIndex/worldState）——写入
 //      缺省不落（老字节不变）、读取带 fail-safe；
 //   ② windowChainFromEntries（receiptAnchorsFromEntries 同族读取）——老行

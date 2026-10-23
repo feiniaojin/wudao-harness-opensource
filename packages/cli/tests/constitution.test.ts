@@ -4,7 +4,7 @@
 // unreachable by construction), the memoized system-prompt section
 // (byte-stable per session, restart to change), the /constitution command
 // face, the project-tier settings gate, and the append-only tool-list
-// registration. the upstream format user_constitution lineage: model SUGGESTS, the
+// registration. a reference harness user_constitution lineage: model SUGGESTS, the
 // human APPROVES, sha256 digest detects drift.
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";

@@ -1,4 +1,4 @@
-// P0-1 (永续迭代) — per-turn prefix-cache WASTE attribution (the upstream projectcache-stats
+// P0-1 (永续迭代) — per-turn prefix-cache WASTE attribution (pi cache-stats
 // port). Pure matrix over a fake clock: idle>TTL loss / idle<TTL no-loss
 // (plain miss) / model-switch loss / noise floor / no-cache-report providers
 // / coldTurnExpected resets; the monitor's per-cause dedup; the wrapper's
@@ -44,7 +44,7 @@ const base = (over: Partial<CacheWasteBaseline> = {}): CacheWasteBaseline => ({
   ...over,
 });
 
-describe("analyzeCacheWaste (pure matrix, the upstream project detectMiss semantics)", () => {
+describe("analyzeCacheWaste (pure matrix, pi detectMiss semantics)", () => {
   it("no previous baseline (first turn / post-reset) → null", () => {
     expect(analyzeCacheWaste(undefined, turn())).toBeNull();
   });
@@ -69,7 +69,7 @@ describe("analyzeCacheWaste (pure matrix, the upstream project detectMiss semant
     expect(r?.cause).toBe("miss");
   });
 
-  it("model switch takes attribution precedence over idle (the upstream project label order)", () => {
+  it("model switch takes attribution precedence over idle (pi label order)", () => {
     const r = analyzeCacheWaste(base(), turn({ cacheHitTokens: 1_000, modelKey: "p/m2", at: 1_000_000 + 10 * MIN }));
     expect(r?.cause).toBe("model_changed");
     expect(r?.modelChanged).toBe(true);
@@ -115,7 +115,7 @@ describe("analyzeCacheWaste (pure matrix, the upstream project detectMiss semant
     expect(analyzeCacheWaste(base(), turn({ cacheHitTokens: 0, at: 1_000_000 + 11 * MIN }), 10 * MIN)?.cause).toBe("idle");
   });
 
-  it("shipped constants match the the upstream project port (5min TTL, 1024 floor)", () => {
+  it("shipped constants match the pi port (5min TTL, 1024 floor)", () => {
     expect(CACHE_TTL_MS).toBe(5 * 60 * 1000);
     expect(CACHE_WASTE_NOISE_FLOOR_TOKENS).toBe(1024);
   });

@@ -84,7 +84,7 @@ export async function enterMainWorktree(cwd: string, name: string): Promise<Main
   return { ok: true, worktree: { path: created.path, branch: created.branch, name: trimmed } };
 }
 
-/** The remove guard (red line 2, the upstream format同款防丢): ANY uncommitted change —
+/** The remove guard (red line 2, CC 同款防丢): ANY uncommitted change —
  *  modified, staged, or untracked — blocks `/worktree exit remove`. The
  *  refusal names keep; `git worktree remove` would refuse too, but this
  *  check says WHY before anything is attempted. */

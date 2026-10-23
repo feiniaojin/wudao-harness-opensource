@@ -1,4 +1,4 @@
-// 夜移 032 (the upstream projectturn_diff_tracker.rs render half) — the net-diff renderer
+// 夜移 032 (codex turn_diff_tracker.rs render half) — the net-diff renderer
 // over the core tracker's ledger. Rendering lives in the cli (not core)
 // because the LCS engine already lives here (M32's file-changes prober) —
 // one diff implementation, two consumers. Output is git-style: per file a

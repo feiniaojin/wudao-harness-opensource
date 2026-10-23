@@ -45,7 +45,7 @@ afterEach(() => {
 });
 
 describe("WudaoApp double-Esc rewind (M58 §C#6)", () => {
-  it.skip("idle double Esc within the window runs /rewind last; the workspace bytes roll back", async () => {
+  it("idle double Esc within the window runs /rewind last; the workspace bytes roll back", async () => {
     const history = createFileHistory(join(root, ".wudao", "history", "s1"));
     const readState = createReadStateTable();
     const write = createWriteFileTool({ workspaceRoot: root, history });

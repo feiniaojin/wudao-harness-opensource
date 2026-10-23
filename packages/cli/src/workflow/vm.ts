@@ -10,7 +10,7 @@
 // the clock or rolls dice fails loudly instead of forking replay); it is NOT
 // isolation — the script still runs with full JS capability in-process.
 // Scripts must take time and randomness in via `args`; that discipline is
-// what makes journal replay sound (the upstream format enforces the same).
+// what makes journal replay sound (a reference harness enforces the same).
 import type { JsonSchemaSubset } from "./structured-output.js";
 import type { VerifySpec } from "./scorers.js";
 
@@ -28,7 +28,7 @@ export interface TaskCost {
  *  adds `preflight-refused`: the route was refused AT ADMISSION (provider /
  *  key / model / budget) with no model call spent. 133 #3 adds
  *  `purity-violation`: same-identity replay saw a task key drift at a seq
- *  position — the script is nondeterministic past the tripwire (the upstream format
+ *  position — the script is nondeterministic past the tripwire (a reference harness
  *  inputHash 防御校验的 wudao 形：绝不静默偏移). */
 export type FailureCategory =
   | "no-structured-output"
@@ -45,7 +45,7 @@ export interface TaskFailure {
   readonly message: string;
 }
 
-/** Deterministic scorer receipts (the upstream format §3.3). M56 §4 adds the two
+/** Deterministic scorer receipts (a reference harness §3.3). M56 §4 adds the two
  *  evidence-fault classes: `transport` (the worker transport reported no
  *  process result — not the task's fault) and `verifier` (the SCORER itself
  *  is broken, e.g. a regex that does not compile). Neither fails the task
@@ -53,7 +53,7 @@ export interface TaskFailure {
  *  manual/verifier-prompt scorers — the built-ins never emit it. */
 export type VerifyStatus = "pass" | "fail" | "skip" | "timeout" | "partial" | "transport" | "verifier";
 
-/** M56 §4 (the upstream format task_spec): success without evidence is a 0.5 PARTIAL,
+/** M56 §4 (a reference harness task_spec): success without evidence is a 0.5 PARTIAL,
  *  never a pass. A receipt set counts as evidence only when at least one
  *  receipt speaks to the work (pass/fail/timeout); skip/transport/verifier
  *  receipts and absent scorers leave the success unevidenced. */
@@ -138,7 +138,7 @@ export interface VmPrimitives {
   readonly task: (prompt: string, opts?: TaskOptions) => Promise<TaskResult>;
   readonly parallel: <T>(fns: readonly (() => Promise<T> | T)[], opts?: { limit?: number }) => Promise<ParallelResult<T>>;
   readonly pipeline: <T>(gen: AsyncIterable<() => Promise<T> | T>, opts?: { limit?: number }) => Promise<ParallelResult<T>>;
-  /** M11 #2（the upstream format world.run 形）：脚本级确定性命令门。非零退出码是正常
+  /** M11 #2（a reference harness world.run 形）：脚本级确定性命令门。非零退出码是正常
    *  返回（门控循环的常态——检查失败是数据不是异常）；超时/spawn 失败也
    *  是正常返回的字段（门控循环需要看到这些事实）。无 shell：args 数组
    *  直传（无管道/重定向/变量展开）。命令必须在调用方授予的允许清单内
@@ -387,7 +387,7 @@ export function compileScript(source: string): CompiledScript {
     "task",
     "parallel",
     "pipeline",
-    // M11 #2: the script-level command gate primitive (the upstream format world.run 形).
+    // M11 #2: the script-level command gate primitive (a reference harness world.run 形).
     "run",
     "log",
     "workflow",

@@ -85,7 +85,7 @@ export interface MonitorStartInput {
 }
 
 /** 夜移 020 — one on-demand incremental read of a live watch's ring buffer
- *  (real the upstream's BashOutput paradigm: bashId + cursor, not a new event). */
+ *  (real CC's BashOutput paradigm: bashId + cursor, not a new event). */
 export interface MonitorReadResult {
   /** Output since this watch's last read ("" = nothing new). */
   readonly output: string;

@@ -1,4 +1,4 @@
-// ω99-4c — the `reflect` settings loader contract (the upstream project's lint/test
+// ω99-4c — the `reflect` settings loader contract (aider's lint/test
 // reflected_message, wudao wiring). Loader mirrors long-task-config:
 // missing/empty → reflect: undefined (feature OFF, silent); wrong-typed
 // fields → warning + per-field fallback (never fatal); unknown keys →

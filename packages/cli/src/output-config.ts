@@ -176,7 +176,7 @@ export function resolveGenericShapingRuntime(
 }
 
 // ---------------------------------------------------------------------------
-// logSlimming（借鉴弧 C1，the upstream project C3）— 超长诊断日志的证据保全瘦身。
+// logSlimming（借鉴弧 C1，a reference project C3）— 超长诊断日志的证据保全瘦身。
 // 缺省关；启用必须显式指名廉价档模型（fail-closed：不猜 provider 的
 // flash 名，settings 示例文档给 deepseek-v4-flash / glm-5.3-flash 档名）。
 // 全部验证门与 fail-open 语义在 core（tools/log-slimming.ts）；本节只做

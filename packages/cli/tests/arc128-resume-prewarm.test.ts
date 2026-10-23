@@ -1,4 +1,4 @@
-// 128-2（the upstream project20 引进，变体）— resume 暖前缀收据。
+// 128-2（codex 3f4668da20 引进，变体）— resume 暖前缀收据。
 // 恰一次 max_tokens:1 同前缀请求 / querySource 溯源 / kill switch / 失败静默 /
 // 空历史不预热 / usage 的 goal 排除（querySource 过滤纪律）。
 import { describe, expect, it, beforeEach, afterEach } from "vitest";

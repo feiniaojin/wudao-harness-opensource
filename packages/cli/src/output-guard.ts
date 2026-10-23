@@ -1,4 +1,4 @@
-// 夜移 034 — stdout 背压守卫（the upstream projectpackages/coding-agent/src/core/output-guard.ts
+// 夜移 034 — stdout 背压守卫（pi packages/coding-agent/src/core/output-guard.ts
 // 移植，适配 wudao 的注入纪律）。一次性模式往管道慢消费者（head/jq/下游
 // 管道）流式写答案时有三类裸写事故：
 //   · write 回调携 EAGAIN/ENOBUFS/EWOULDBLOCK（非阻塞管道缓冲满）——裸
@@ -6,15 +6,15 @@
 //   · 进程退出不排干 stdio——缓冲中的尾部直接截断丢（一次性模式答案的
 //     最后几段，"字段级丢"）；
 //   · 多处并发写（delta 流 + 工具标记 + 回执）在背压下交错帧。
-// 守卫语义（与 the upstream project同）：逐块回调验证；可重试码 10ms 退避无限重试（同块
+// 守卫语义（与 pi 同）：逐块回调验证；可重试码 10ms 退避无限重试（同块
 // 原文重发）；promise-tail 串行（一次至多一块在飞，帧永不交错）；出口
 // flush 空探针——回调序即写序，空写的回调落地即证明此前的队列已排干。
 // 致命错（非可重试码）一次性 onFatal（默认写 stderr 后 exit(1)——stdout
-// 不可恢复，静默挂死更糟；the upstream project同判），此后 lane 死亡：后续入队静默跳过、
+// 不可恢复，静默挂死更糟；pi 同判），此后 lane 死亡：后续入队静默跳过、
 // flush 如实 reject。
-// 分叉：the upstream project绑死 process.stdout 且无测试缝；wudao 的 target 注入（repl.ts
+// 分叉：pi 绑死 process.stdout 且无测试缝；wudao 的 target 注入（repl.ts
 // 的 opts.stdout 同款纪律）+ onFatal/retryDelayMs 可注入，测试与 TUI 接管
-// （未来）共用一实现。the upstream project的 B 半（takeOverStdout TUI 期间重定向 stderr）
+// （未来）共用一实现。pi 的 B 半（takeOverStdout TUI 期间重定向 stderr）
 // wudao 无消费者，不移植——夜移 034 只取 A 半（背压纪律）。
 export interface RawStdoutTarget {
   write(chunk: string | Uint8Array, callback?: (error?: Error | null) => void): boolean;
@@ -30,7 +30,7 @@ export interface OutputGuard {
 }
 
 export interface OutputGuardOptions {
-  /** 可重试码的退避间隔；默认 10ms（the upstream project同值）。 */
+  /** 可重试码的退避间隔；默认 10ms（pi 同值）。 */
   readonly retryDelayMs?: number;
   /** 致命错回调；默认 stderr 一行 + exit(1)。 */
   readonly onFatal?: (error: Error) => void;
@@ -51,7 +51,7 @@ export function createOutputGuard(target: RawStdoutTarget, options: OutputGuardO
   let dead = false;
 
   // 单块写：回调验证 + 可重试码退避重试（同块原文无限重发）。同步 throw
-  // （the upstream project:29-31 同款 try/catch）与回调错走同一条重试判。
+  // （pi :29-31 同款 try/catch）与回调错走同一条重试判。
   const writeChunk = async (text: string): Promise<void> => {
     for (;;) {
       try {

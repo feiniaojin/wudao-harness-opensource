@@ -1,7 +1,7 @@
 // P2-13 (96 队列 #13) — the USER CONSTITUTION store: the three-file
 // user-global layer under ~/.wudao/ (WUDAO_GLOBAL_HOME-sandboxed like every
 // global-tier file, so tests isolate without touching the operator's store).
-// the upstream format crates/config/src/user_constitution.rs lineage:
+// a reference harness crates/config/src/user_constitution.rs lineage:
 //   • constitution.md     — the ONLY active file. Written EXCLUSIVELY by
 //     approvePendingClause (atomic tmp+rename) — the model-side tool has no
 //     code path that reaches it (the suggest tool writes the pending dir

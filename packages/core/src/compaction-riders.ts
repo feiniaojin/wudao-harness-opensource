@@ -59,7 +59,7 @@ export const taskFocusLine = (focus: string | undefined): string =>
   focus === undefined ? "" : `${SUMMARY_TASK_LEAD} ${focus}\n`;
 
 // ---------------------------------------------------------------------------
-// 125 项 1（the upstream projectnew_context 形）— the agent-rotation identity riders. When the
+// 125 项 1（codex new_context 形）— the agent-rotation identity riders. When the
 // MODEL (not the harness threshold) asks for a context rotation, the boundary
 // must carry WHY it rotated (the window-identity seam — 125b's window chain is
 // the future home of the numbering; until it lands the marker count IS the
@@ -128,23 +128,23 @@ export function withSummaryEndMarker(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// 夜移 030 (the upstream project) — the file-operations ledger riding tier-2 summaries
-// (the upstream projectcompaction/utils.ts extractFileOpsFromMessage / computeFileLists /
+// 夜移 030 (pi) — the file-operations ledger riding tier-2 summaries
+// (pi compaction/utils.ts extractFileOpsFromMessage / computeFileLists /
 // formatFileOperations). When a span is summarized away the model loses its
 // file footprint: it re-reads files (full tokens + fresh cache-miss bytes)
 // and forgets what it already edited. The ledger is MECHANICAL — extracted
 // from the span's assistant toolCall blocks, never LLM-dependent — and
 // survives N successive compactions by RE-PARSING the tags out of the prior
-// frozen summary. Wudao deltas over the upstream project: ① the running ledger is re-derived
+// frozen summary. Wudao deltas over pi: ① the running ledger is re-derived
 // from frozen summary bytes instead of a persisted `details` field on the
 // session entry (state-free, resume-re-derivable — the same determinism
 // property the tier-0/1 stubs enjoy); ② entries keep touch-recency order
-// and each list is capped (the upstream projectis alphabetical and unbounded — a long chained
+// and each list is capped (pi is alphabetical and unbounded — a long chained
 // session would grow the tags without limit); ③ the static and dual tier-2
 // paths carry it too through this ONE shared seam.
 // ---------------------------------------------------------------------------
 
-/** Tag names of the two ledger blocks (the upstream projectverbatim shape). */
+/** Tag names of the two ledger blocks (pi verbatim shape). */
 export const FILE_LEDGER_READ_TAG = "read-files";
 export const FILE_LEDGER_MODIFIED_TAG = "modified-files";
 /** Per-list cap on the ledger a summary carries. Oldest (front) entries
@@ -213,7 +213,7 @@ export function parseFileOpsFromSummary(content: string): FileLedger | undefined
 
 /** 夜移 030: merge the prior boundary's ledger with the new span's ops.
  * Prior entries first, span ops bump to the end; a path the span modified
- * leaves the read list wherever it came from (the upstream projectcomputeFileLists'
+ * leaves the read list wherever it came from (pi computeFileLists'
  * modified-wins semantics, applied across boundaries). Pure. */
 export function mergeFileOps(prior: FileLedger | undefined, next: FileLedger): FileLedger {
   const modified: string[] = [];
@@ -233,7 +233,7 @@ function formatLedgerBlock(tag: string, files: readonly string[]): string | unde
   return `<${tag}>\n${lines.join("\n")}\n</${tag}>`;
 }
 
-/** 夜移 030: the ledger blocks appended to a tier-2 summary (the upstream projectverbatim
+/** 夜移 030: the ledger blocks appended to a tier-2 summary (pi verbatim
  * shape: `\n\n` + blocks joined by a blank line; capped lists lead with the
  * omission line). Empty ledger → "" so a file-less span keeps today's
  * summary bytes byte-identical. Pure. */
@@ -381,7 +381,7 @@ export function planModeLine(active: boolean | undefined): string {
 }
 
 // ---------------------------------------------------------------------------
-// 113-B1（the upstream project #2385 形）— the kept-tail recency anchor. The summarizer
+// 113-B1（prime-agent #2385 形）— the kept-tail recency anchor. The summarizer
 // only ever sees the compacted span; without a bridge the summary describes
 // the world BEFORE the kept tail, and a post-compaction model may read it as
 // the newest state (stale-summary drift). The anchor is the LATEST kept-tail

@@ -51,13 +51,16 @@ import { createGitStatusProber } from "../git-status-note.js";
 import { buildToolSet } from "../tools.js";
 import { historySearchCorpus } from "../history-search.js";
 import { loadLogSlimmingPortsForBoot } from "../output-config.js";
-import { openMemoryStore, createMemoryRuntime, surfacePendingReview } from "../memory/index.js";
+import { createMemoryRuntime, surfacePendingReview } from "../memory/index.js";
+// M-Memory 弧第二半 — 长期记忆装配（工具换轨 + 首轮注入 + rescan 保尾 +
+// 会话终了沉淀）。
+import { createLongtermMemoryRuntime, setLongtermMemoryRuntime, withFirstRunMemoryInjection } from "../longterm-memory.js";
 import { buildSystemPrompt } from "../prompt.js";
 import { summarizeToolCall, modelLabel } from "../log.js";
 import { createCacheTrackingModel } from "../cache.js";
 // ω-5a I23: the cold-cache pre-send monitor (one per session).
 import { ColdCacheMonitor, COLD_CACHE_POLICIES, coldCacheIdentity } from "../cold-cache.js";
-// P0-1: the per-turn prefix-cache waste attribution monitor (the upstream projectcache-stats
+// P0-1: the per-turn prefix-cache waste attribution monitor (pi cache-stats
 // port) + the kill-switch bridge for its notice.
 import { CacheWasteMonitor, formatCacheWasteNotice, CACHE_TTL_MS } from "../cache-report.js";
 import { isFeatureAblated } from "../args.js";
@@ -166,7 +169,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // Inert (carrying `refusal`) under WUDAO_DISABLE_CRON=1 or a symlinked
   // store — every surface then says why instead of silently no-op'ing.
   const sessionId0 = props.sessionId ?? `wudao-${Date.now().toString(36)}`;
-  // #48 (the upstream turn-lease slice): the boot lease — this process becomes
+  // #48 (hermes#4 turn-lease slice): the boot lease — this process becomes
   // the session's run-writer here, so it must OWN the cross-process lease
   // before anything else spins up (cron, watchers, the driver). A live
   // foreign holder refuses the boot outright: `wudao ui` double-opened on
@@ -226,7 +229,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   const loginShellEnv = maybeLoginShellEnv(workspaceRoot);
   // 114：会话的 python kernel idle 窗（settings pythonKernel；boot 一次读）。
   const pythonKernelIdleMs = pythonKernelSettingsFromNode((await loadLayeredSettings(workspaceRoot, () => {}, process.env)).effective["pythonKernel"]).idleTimeoutMs;
-  // 125 项 1（the upstream formatresolveCompactSpec 形）— 预留感知触发线的 misc 旋钮
+  // 125 项 1（dsh resolveCompactSpec 形）— 预留感知触发线的 misc 旋钮
   // （compaction.thresholdRatio/headroomTokens；缺省 0.8/2048 = reserve 缺席
   // 时平比字节不变）。boot 一次读；live 的窗口语义/请求帽在 recomputeWindow
   // 随 /provider 切换重算。
@@ -234,7 +237,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
     (await loadLayeredSettings(workspaceRoot, () => {}, process.env)).effective["compaction"],
     (line) => (props.startupNotice ?? ((l) => stdoutGuard.writeRawStdout(`${l}\n`)))(line),
   );
-  // 121 项 1（the upstream format 498490680 形）— AIMD 速率自适应并发门：设置缺省时
+  // 121 项 1（a reference harness 498490680 形）— AIMD 速率自适应并发门：设置缺省时
   // 门上限=kernel-policy 静态帽（3）且初值=上限——与既有静态帽字节等价，
   // 直到第一个 overload 信号。agents.aimdMaxConcurrent 可抬/降上限
   // （[1,16]，misc 家族纪律：junk→warning+缺省）。这一个 gate 同时喂两路：
@@ -304,9 +307,9 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
     identity: (): string => coldCacheIdentity(liveConfig),
     noteUsage: (identity: string, promptTokens: number): void => coldCacheMonitor.noteUsage(identity, promptTokens),
   };
-  // P0-1 (the upstream projectcache-stats port): the per-turn waste attribution monitor. Idle
+  // P0-1 (pi cache-stats port): the per-turn waste attribution monitor. Idle
   // attribution uses the provider's DOCUMENTED cache window when the policy
-  // table has one (DeepSeek: days) — the upstream project's 5-minute default would mislabel
+  // table has one (DeepSeek: days) — pi's 5-minute default would mislabel
   // every >5min gap on DeepSeek as expiry (the ω-5a I23 trusted-window rule).
   const coldPolicy0 = COLD_CACHE_POLICIES[config.provider ?? ""] ?? { windowKind: "unknown" };
   const wasteIdleTtlMs = coldPolicy0.windowKind !== "unknown" && coldPolicy0.windowSeconds !== undefined
@@ -414,7 +417,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // M32: one read-state table per session; M37 §2: the file history driving
   // driver-level /rewind (one per session id).
   const readState = props.readState ?? createReadStateTable();
-  // 夜移 032 (the upstream projectturn-diff): the per-run net-change ledger — one shared
+  // 夜移 032 (codex turn-diff): the per-run net-change ledger — one shared
   // instance threaded into BOTH the tool set (write_file/edit record) and
   // the driver (reset at run start, receipt at run settle).
   const turnDiff = createTurnDiffTracker();
@@ -546,6 +549,12 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // sides (the frontends that build tools without a driver pass none and the
   // children simply draw no mail tool).
   const childMail = createChildMailLane();
+  // M-Memory 弧第二半 — 长期记忆 runtime（boot 召回注入 + 会话终了沉淀）。
+  // store：<ws>/.wudao/memory/memory.jsonl（与 M49 的 .wudao/memory.jsonl 物理
+  // 分离，见 longterm-memory.ts 头注）；enabled 读分层设置 memory.enabled。
+  // 单例装配给命令道（/memory 新动词）与 REPL 同款位点复用。
+  const ltsMemory = await createLongtermMemoryRuntime({ workspaceRoot });
+  setLongtermMemoryRuntime(ltsMemory);
   const tools: Tool[] = [
     ...(props.tools ? props.tools : buildToolSet({
       workspaceRoot,
@@ -560,7 +569,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       // repeated). Observational: recorder failures are isolated.
       onSubagentUsage: (info) => {
         costRegistry.record({ model: info.model, provider: "subagent", usage: info.usage });
-        // 125 项 3（the upstream project预算上卷）：同一行也归账进根目标（晚绑 goalRuntimeBox
+        // 125 项 3（codex 预算上卷）：同一行也归账进根目标（晚绑 goalRuntimeBox
         // ——driver 创建时填充；goal 面缺席/无 live 目标时 runtime 静默丢弃）。
         // 计入报告、不计入触发（ω99-8b 分区不动）。
         goalRuntimeBox.current?.onSubagentUsage(info);
@@ -573,7 +582,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       contextProbe: () => stateHandle.state?.messages ?? [],
       getForkContext: () => stateHandle.state,
       getSystemPrompt: () => stateHandle.state?.systemPrompt ?? "",
-      // 125 项 2（the upstream projectget_context_remaining 形）：水位线查询工具的触发线
+      // 125 项 2（codex get_context_remaining 形）：水位线查询工具的触发线
       // 缝——窗口读可变 compactionOptions（/provider 切换 recomputeWindow 跟
       // 随），ratio/headroom/reserve 从 live config + misc 设置重读（闭包晚绑
       // 定：compactionOptions 在本调用之后声明，读发生在工具执行时）。
@@ -606,7 +615,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       ...(props.sandbox ? { sandbox: props.sandbox } : {}),
       ...(props.writeVerify ? { writeVerify: props.writeVerify } : {}),
       ...(props.longOutput ? { longOutput: props.longOutput } : {}),
-      // 借鉴弧 C1（the upstream project C3）：长日志瘦身端口——引擎自解析 settings+env
+      // 借鉴弧 C1（a reference project C3）：长日志瘦身端口——引擎自解析 settings+env
       // （loadLayeredSettings 同款纪律），缺省关 = undefined。
       logSlimming: await loadLogSlimmingPortsForBoot(config),
       // 114: the kernel's session knob (idle-reap window).
@@ -677,9 +686,12 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       ...(props.compactionEnabled === false ? {} : { newContext: { portBox: contextRotationBox } }),
       readState,
       turnDiff,
-      // M49 §1: the memory store rides the tool set (top level writes, child
-      // sets draw search only).
-      memory: { store: openMemoryStore(workspaceRoot) },
+      // M-Memory 弧第二半：模型记忆工具面换轨——memory_save/memory_search/
+      // memory_forget（新库）。M49 的 memory_write/memory_search 不再挂载：
+      // memory_search 同名冲突，两缝互斥（buildToolSet fail-closed 拒绝同传）。
+      // M49 的 dream/refine/pending-review 走 store 直连不受影响；回滚=换回
+      // memory: { store: openMemoryStore(workspaceRoot) }。
+      ...(ltsMemory.enabled ? { longtermMemory: { store: ltsMemory.store } } : {}),
       agents: {
         registry,
         runId: sessionId,
@@ -892,7 +904,10 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
             ).catch(persistFailed);
           },
         }),
-    hooks,
+    // M-Memory 弧第二半：driver 专属 hooks 注入包裹（首轮召回注入缝——
+    // onRunStart 在首个模型调用之前触发，注入块照样进第一个请求）。agents
+    // 选项（上方）保持原样 hooks：子 agent 的 loop 不触发主会话注入。
+    hooks: withFirstRunMemoryInjection(hooks, ltsMemory),
     ...(props.sessionStartSource !== undefined ? { sessionStartSource: props.sessionStartSource } : {}),
     ...(props.rewakeSink !== undefined ? { rewakeSink: props.rewakeSink } : {}),
     ...(props.hookRuntime !== undefined ? { hookRuntime: props.hookRuntime } : {}),
@@ -1087,13 +1102,18 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       skills: fresh.skills,
       pluginCommands: fresh.pluginCommands,
       ...(fresh.pluginAgents.length > 0 ? { pluginAgents: fresh.pluginAgents } : {}),
-      ...(fresh.hooks !== undefined ? { hooks: fresh.hooks } : {}),
+      // M-Memory 弧第二半：fresh.hooks 同款包裹——extension swap 换掉 driver
+      // hooks 后首轮注入缝仍在（fresh.hooks 缺席时 replaceExtensions 不动
+      // hooks 槽，包裹版原样存活）。
+      ...(fresh.hooks !== undefined ? { hooks: withFirstRunMemoryInjection(fresh.hooks, ltsMemory) } : {}),
       // ω99-28 T1 — the rebuild passes the SAME session-static peer flag the
       // boot prompt was built with (line ~794). Omitting it defaulted the 4th
       // arg to false: every rescan in a peer-tools session DROPPED the
       // "# Peer messaging" tail — an undeclared system-header break on any
       // mission_start/bundle rescan (the ω99-26 campaign's turn 3, 18.4k).
-      systemPrompt: buildSystemPrompt(workspaceRoot, hasMcpTools, hasReadTool ? fresh.skills : [], peer.refusal === undefined, hasComputerTools),
+      // M-Memory 弧第二半：appendTo 保尾——rescan 重建后的 prompt 尾部仍带
+      // 冻结的 <long-term-memory> 块（boot 注入与 rescan 两个位点字节一致）。
+      systemPrompt: ltsMemory.appendTo(buildSystemPrompt(workspaceRoot, hasMcpTools, hasReadTool ? fresh.skills : [], peer.refusal === undefined, hasComputerTools)),
     });
   });
 
@@ -1118,6 +1138,15 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       unregisterExtensionSwap(); // A3: the session is over — no more swaps land here
       driverBox.current?.interrupt();
       registry.abortAll();
+      // M-Memory 弧第二半：会话终了确定性沉淀（管线 ②——用户纠正模式的保守
+      // lesson 提炼，无 key 纯确定性；静默，失败绝不阻塞 teardown）。读已
+      // 持久化的会话轨迹（store.load——审计完整性的同一来源）。
+      try {
+        const captureSid = engineLiveSidBox.current ?? sessionId;
+        await ltsMemory.captureAtSessionEnd({ sessionId: captureSid, messages: await store.load(captureSid) });
+      } catch {
+        /* capture never blocks teardown */
+      }
       driver.dispose();
       // P2-15 (96 队列 #15): sessionEnd 强制 flush the OTel exporter (the
       // runtime's own await cap bounds this — teardown never waits past it,

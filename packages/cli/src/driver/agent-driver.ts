@@ -83,6 +83,8 @@ import { runSideQuestion, type SideQuestionRunResult, type SideQuestionResult } 
 import type { SessionRow } from "../session-list.js";
 import type { AgentRegistry } from "../agents/index.js";
 import { runMemoryCommand } from "../memory/commands.js";
+// M-Memory 弧第二半 — /memory 新动词面（长期记忆；旧动词回落上方 M49 面）。
+import { longtermMemoryRuntimeFor, runLongtermMemoryVerb } from "../longterm-memory.js";
 // ω99-260: 面一 — the memory faces' data seam: the PHYSICAL store handle (the
 // memory_write tool's own anchor, session-engine :1210's store — management
 // stays usable even when recall is off; openSessionMemoryStore is NOT used
@@ -96,7 +98,7 @@ import { refineAutoRuntimeFor, observeAutoRefineOnHooks } from "../memory/auto-r
 import { spawnBackgroundReview, REVIEW_MIN_TOOL_CALLS, neuterWriteTools } from "../memory/review.js";
 // ω-4f (design 84): Dream consolidation — stage 2 (ledger→curated ledger).
 import { spawnDreamRun } from "../memory/dream.js";
-// 永续 v6 wave2（the upstream project C1）：门控自改进——触发器（收束缝）+ 提案/决策面。
+// 永续 v6 wave2（reef C1）：门控自改进——触发器（收束缝）+ 提案/决策面。
 import { maybeOfferImprovements } from "../improve/trigger.js";
 import { listImprovements, readImprovement, writeImprovement, withStatus, toImprovementWire, activateImprovement, undoImprovement, type ImprovementFaceResult } from "../improve/store.js";
 import { consentToGenerate } from "../improve/propose.js";
@@ -253,7 +255,7 @@ import {
   fileWriteContent, capDiff, sameAgentRoot, lastAssistantAnswer,
 } from "./fs-panels.js";
 import { AUTO_MODE_CONTRACT, modeSteeringNote } from "./mode-steering.js";
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— 运行中工具调用转后台的车道。
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— 运行中工具调用转后台的车道。
 import { createDetachLane, describeDetachVerdict, backgroundedNotice, type DetachVerdict } from "./detach-lane.js";
 // 124b 项 1：流抢占的旁路审计（不进会话 JSONL/模型所见——见该件头注）。
 import { appendStreamPreemptAudit } from "./stream-preempt-audit.js";
@@ -425,7 +427,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   };
   let mode: Mode = opts.mode ?? "workspace";
   let sessionId = opts.sessionId ?? newSessionId();
-  // 125 项 1/项 2（the upstream project窗口链/WorldState 差分）— the session's window-chain
+  // 125 项 1/项 2（codex 窗口链/WorldState 差分）— the session's window-chain
   // bookkeeping, rebuilt from the session entries at boot/resume (the
   // windowChainFromEntries 同族读取) and advanced at every compact boundary
   // this process lands. windowBoundaryCount = compact_boundary rows so far
@@ -1094,7 +1096,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // the loop before each model call; whatever survives run end (a steer that
   // landed too late) is auto-started as a fresh run.
   const queueRef: { current: string[] } = { current: [] };
-  // 124b 项 1（the upstream projectinstant_interrupt）：在飞运行的流抢占通道——run 内创
+  // 124b 项 1（codex instant_interrupt）：在飞运行的流抢占通道——run 内创
   // 建（startRun），run 的 finally 缝清除。submitCore 的 busy 臂停车文本后
   // 调 request()：正在流式的模型调用立即中断（模型调用之间的 request 打
   // 在陈旧控制器上，无害空操作——那种提交照旧在轮界 drain 落地）。
@@ -1121,7 +1123,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // 前端按「系统注入」回退。信封与投影字节零变化（标签只进 UI 历史）。
   const metaNotes: { text: string; source: string }[] = [];
   const takenNoteSources: string[] = [];
-  // 121 §4（the upstream format budget death salvage）— the ONE-SHOT wrap-up round armed
+  // 121 §4（a reference harness budget death salvage）— the ONE-SHOT wrap-up round armed
   // at the settle that crossed the goal's budget, fired at the settle seam's
   // system-injection lane (before cron/peer/child-mail: a dying goal outranks
   // scheduled work). Cleared by ANY startRun — whichever run comes next, its
@@ -1575,7 +1577,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // wrapper minus the user turn (no append, no onUserTurn 落盘 — the historical
   // tail user/tool_result IS the model input tail; 不注引导语，前缀字节稳定).
   const startRun = (text: string, plan: boolean, images?: readonly ImageBlock[], files?: readonly FileBlock[], mode?: { readonly continueRun?: boolean }): void => {
-    // #48 (the upstream turn-lease slice): the run gate. The RUN is where this
+    // #48 (hermes#4 turn-lease slice): the run gate. The RUN is where this
     // process becomes a run-writer for `sessionId` — the cross-process lease
     // must be held before the first model call. Sync fast-path: a session
     // this box already saw refused (a failed resume, a refused run) rejects
@@ -1618,7 +1620,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         coldCacheWarned = true;
         appendHistory({ kind: "notice", text: `❄️ 缓存可能已冷（${cold.reason}）——约 ${cold.reprocessTokens} token 需重新处理（${cold.confidence}）` }); // ω99-166f-iii: #4（reason/confidence 插值原样）
       }
-      // 研究弧A#1（TTL 冷窗免费清理，超越 the upstream formattimeBasedMC）：冷预测
+      // 研究弧A#1（TTL 冷窗免费清理，超越 CC timeBasedMC）：冷预测
       // confidence=expired 且 reason=idle 时，前缀重写已不可避免——此刻
       // 做 tier-0 清除的边际缓存代价为零（debt-free window）。超越点：
       // ①per-provider 政策表（COLD_CACHE_POLICIES 文档化窗口，不硬编码
@@ -1966,7 +1968,8 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
                 // tier-2 summary request (read at run start — settled /model //effort
                 // switches count; an explicit caller value wins, same rule as the
                 // rider).
-                // ω99-245: #9 — THIS read is the effort window PIN (the upstream project                // session/reasoning_effort.rs 四转移的本地形态): ①变更=轮界
+                // ω99-245: #9 — THIS read is the effort window PIN (codex
+                // session/reasoning_effort.rs 四转移的本地形态): ①变更=轮界
                 // 事件（运行中 /effort 只停泊 pendingModelApply，收束才落地）；
                 // ②本 read = 采样建 pin——run 内 modelLive 不再变，采样与压缩
                 // 共用同一快照；③压缩只读快照绝不写状态（摘要失败走静态回退，
@@ -1976,7 +1979,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
                 ...(o.compaction.reasoningEffort === undefined && modelLive.effort !== undefined && modelLive.effort !== ""
                   ? { reasoningEffort: modelLive.effort }
                   : {}),
-                // 125 项 1（the upstream project窗口链）: the rotation identity — read at run
+                // 125 项 1（codex 窗口链）: the rotation identity — read at run
                 // start (baseWindowCount = boundaries landed so far, this
                 // process's or rebuilt from the entries at boot/resume); the
                 // loop advances the index per in-run boundary. sessionKey =
@@ -1986,7 +1989,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
                   sessionKey: sessionId.slice(0, 8),
                   baseWindowCount: windowBoundaryCount,
                 },
-                // 125 项 2（the upstream projectWorldState 差分）: the diff baseline (the
+                // 125 项 2（codex WorldState 差分）: the diff baseline (the
                 // last boundary's snapshot; absent on a never-compacted
                 // session → the first rotation injects no diff) + the
                 // extractor the loop calls at each rotation. In-run chaining
@@ -2104,15 +2107,15 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
             return note?.text;
           },
         },
-        // 夜移 003（the upstream projecttime_reminder）：周期性当前时间 grounding——run 首
+        // 夜移 003（codex time_reminder）：周期性当前时间 grounding——run 首
         // 轮必注入、其后墙钟漂移 ≥30min 再注入；走 MetaNote 投影（前缀缓存
         // 安全、不落盘）。纯模型侧信息，人类侧 notice 过滤（见 meta_note）。
         timeReminder: { intervalMs: 30 * 60_000 },
-        // 夜移 035 (the upstream projectturn_timing): the run's phase recorder, threaded
+        // 夜移 035 (codex turn_timing): the run's phase recorder, threaded
         // verbatim (consumer-owned — created before the run, completed+read
         // at the consumer's settle; complete is idempotent).
         ...(o.turnProfile !== undefined ? { turnProfile: o.turnProfile } : {}),
-        // 波次 8 #45 (the upstream format#17): pre-dispatch durability barrier — threaded
+        // 波次 8 #45 (dsh #17): pre-dispatch durability barrier — threaded
         // straight through when the frontend supplies one.
         ...(o.onBeforeToolDispatch !== undefined ? { onBeforeToolDispatch: o.onBeforeToolDispatch } : {}),
         // 夜移 036: the driver owns the session-lifetime budget; the loop
@@ -2639,7 +2642,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
               break;
             }
             case "stream_preempted": {
-              // 124b 项 1（the upstream projectinstant_interrupt）：在飞模型流被用户的
+              // 124b 项 1（codex instant_interrupt）：在飞模型流被用户的
               // 新提交抢占——被弃 partial 已在 loop 侧彻底丢弃（不进转录/
               // JSONL/模型所见，M24），这里做三件事：
               //   (1) UI 保真：已流出的文本展示为一条助手条目（UI-only——
@@ -2808,7 +2811,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         materializePending();
         // Aborted runs (Esc/^C, or the loop's own abort terminal) get the same
         // session-consistency treatment as error turns: a synthetic assistant
-        // reply keeps alternation provider-legal. 夜移 001 (the upstream formatinterrupted-
+        // reply keeps alternation provider-legal. 夜移 001 (dsh interrupted-
         // stream finalization): a mid-stream abort may ALREADY have committed
         // the delivered prefix as an `interrupted` assistant — then the
         // synthetic would stack a second assistant on the real one, so it is
@@ -2887,7 +2890,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           appendHistory({ kind: "notice", text: interruptedNotice(runEndCause) });
           // ω99-166c-ii: #2 interrupted 族中文化（孪生臂同款）。
         } else if (isQuotaParkError(err)) {
-          // 113-B3（the upstream project #2375 形）— the account-quota park arm. The
+          // 113-B3（prime-agent #2375 形）— the account-quota park arm. The
           // run ends in the new PARKED terminal (not the ordinary failure):
           // one Chinese notice with the reset moment, one quota_park
           // attribution row on the M35 §2 generic lane (never model-visible),
@@ -3005,7 +3008,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         // never reached model_call_finished must not wedge /provider closed.
         modelInFlight = false;
         if (state.status === "running") state.status = "idle";
-        // v7 γ2——终态成因回执（the upstream format #6162 的 wudao 落点）：取消/中止的
+        // v7 γ2——终态成因回执（a reference harness #6162 的 wudao 落点）：取消/中止的
         // run 在会话 JSONL 留「谁/什么结束了它」的结构化一行（含 user-abort
         // ——UI 括注是噪音，账面不缺席）；正常/失败结束缺席（omit-when-no-
         // cause，老读侧零感知）。resume/考古面据此回答「这轮为什么没了」。
@@ -3082,7 +3085,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           // total · 模型 · 工具 (次数)，作为本 run 的最后一条 history 条目，
           // ok / 中断 / 出错路径都会落（finally seam），slack 摘要 footer 搬运
           // 同一段文本。
-          // 夜移 032 (the upstream projectturn-diff): the run's net file-change receipt —
+          // 夜移 032 (codex turn-diff): the run's net file-change receipt —
           // one before→after pair per file no matter how many writes landed.
           // Preview rides the notice text; the full git-style diff rides the
           // detail (0.3.7 expandable notice). Same settle seam as the stats
@@ -3297,7 +3300,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           // snapshot window — no polling by design).
           void memorySig.refresh();
           emit(); // the status face now carries the settled goal
-          // 夜移 005 (the upstream formatsession-title): after the first successful run, upgrade
+          // 夜移 005 (dsh session-title): after the first successful run, upgrade
           // the derived session name to an LLM title — one tiny background call,
           // its own system prompt (zero shared prefix bytes with the session),
           // never in the main transcript. Fire-and-forget: any failure silently
@@ -3383,7 +3386,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
               onReceipt: (line) => appendHistory({ kind: "notice", text: line }),
             });
           }
-          // 永续 v6 wave2（the upstream project C1）：门控自改进的触发器——与 Dream 同一收束
+          // 永续 v6 wave2（reef C1）：门控自改进的触发器——与 Dream 同一收束
           // 缝（失败事件都在运行/调度里落账，收束是它们最近的可读点）。纯读
           // 台账 fold + 建 offered 记录 + 一条通知；两道人工门之前零模型调用
           // 零规则写入（kill switch WUDAO_IMPROVE=off；fail-open：坏台账静默）。
@@ -3563,7 +3566,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           // low-priority take lane delivers it before its next model call
           // (or the next pollCron/pollPeer tick / settle seam, once idle).
           else if (!busy) {
-            // 121 §4（the upstream format budget death salvage）— the budget-dead goal's
+            // 121 §4（a reference harness budget death salvage）— the budget-dead goal's
             // wrap-up round, strictly BEFORE cron/peer/child-mail: the dying
             // goal's last answer outranks scheduled work. ONE round per
             // crossing (armed above at the crossing settle; cleared by any
@@ -3749,7 +3752,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       queueRef.current = [...queueRef.current, text];
       queued = [...queueRef.current];
       emit();
-      // 124b 项 1（the upstream projectinstant_interrupt）：busy-submit 即时抢占在飞模型流
+      // 124b 项 1（codex instant_interrupt）：busy-submit 即时抢占在飞模型流
       // ——用户提交了新指令，排队等一个可能还有数分钟的长 reasoning 流是
       // 最差的 UX。request() 只中断当前模型调用（工具执行/压缩不受影响）；
       // 被弃 partial 由 loop 旁路审计（stream_preempted 事件），循环立即
@@ -4287,7 +4290,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // stay at the original repo (red line 1). The /provider discipline: enter
   // parks behind a busy run and lands at its settle; remove — destructive —
   // NEVER queues (refused while busy), and is refused again on uncommitted
-  // changes (red line 2, the upstream format同款防丢).
+  // changes (red line 2, CC 同款防丢).
   const writeWorktreeEntry = (kind: "worktree_enter" | "worktree_exit", data: Omit<WorktreeEntryData, "at">): void => {
     if (o.workspaceRoot === undefined) return; // no session root → nothing to pin to
     void recordWorktreeEntry({ workspaceRoot: o.workspaceRoot, sessionId, kind, data })
@@ -4319,7 +4322,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
    *  working must not be re-rooted mid-run); busy → park to the settle. */
   const runWorktreeEnter = (nameRaw: string): void => {
     if (activeWorktree !== null) {
-      appendHistory({ kind: "notice", text: `⚠️ 拒绝 /worktree enter：已在 worktree 中（${activeWorktree.name}，分支 ${activeWorktree.branch}）——请先 /worktree exit（不嵌套，the upstream format 同款门）` }); // ω99-166c-iv: #5
+      appendHistory({ kind: "notice", text: `⚠️ 拒绝 /worktree enter：已在 worktree 中（${activeWorktree.name}，分支 ${activeWorktree.branch}）——请先 /worktree exit（不嵌套，CC 同款门）` }); // ω99-166c-iv: #5
       return;
     }
     if (pendingWorktreeOp !== null || worktreeOpInFlight) {
@@ -4512,7 +4515,8 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     // mid-run submit parks TEXT ONLY (an image steer is refused rather than
     // silently stripped — nothing may strand admitted attachments), and any
     // routed COMMAND refuses images (the command registry has no
-    // `input.images` declaration slot yet — M80 TODO, the upstream format    // CommandDefinition.input.images, research 40 §3).
+    // `input.images` declaration slot yet — M80 TODO, dsh
+    // CommandDefinition.input.images, research 40 §3).
     const images = submitOpts?.images !== undefined && submitOpts.images.length > 0 ? submitOpts.images : undefined;
     if (images !== undefined) {
       if (!images.every((b) => isValidImageBlock(b))) {
@@ -4778,18 +4782,28 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       }
       // M49 §1: /memory [list|del <id>|ok <id>] — the memory store's command
       // face (workspace-scoped; the store is .wudao/memory.jsonl).
+      // M-Memory 弧第二半：新动词面（search/save/forget/list/refresh/on/off）
+      // 先走长期记忆（.wudao/memory/memory.jsonl）；旧动词（del/ok/edit/dream）
+      // 回落 M49 原面。
       case "memory": {
         if (o.workspaceRoot === undefined) {
           appendHistory({ kind: "notice", text: "（memory 不可用——无工作区）" }); // ω99-166d-ii: #17（括号 notice 族中文化）
           return "notice";
         }
-        void runMemoryCommand(
-          o.workspaceRoot,
-          cmd.args,
-          // ω-4f: the dream verb's session model + registry (other verbs
-          // ignore it; a registry-less session gets the usage line instead).
-          o.agentsRegistry !== undefined ? { model: o.model, registry: o.agentsRegistry } : undefined,
-        )
+        void (async () => {
+          const lts = longtermMemoryRuntimeFor();
+          const ltsText = lts === undefined
+            ? undefined
+            : await runLongtermMemoryVerb({ workspaceRoot: o.workspaceRoot as string, verbArgs: cmd.args, runtime: lts, state });
+          if (ltsText !== undefined) return ltsText;
+          return runMemoryCommand(
+            o.workspaceRoot as string,
+            cmd.args,
+            // ω-4f: the dream verb's session model + registry (other verbs
+            // ignore it; a registry-less session gets the usage line instead).
+            o.agentsRegistry !== undefined ? { model: o.model, registry: o.agentsRegistry } : undefined,
+          );
+        })()
           .then((text) => appendHistory({ kind: "notice", text }))
           .catch((err) => {
             appendHistory({ kind: "notice", text: `⚠️ memory 命令失败：${err instanceof Error ? err.message : String(err)}` }); // ω99-166c-i: #8 failed 回执中文化（command→命令；memory token 保留 ASCII；err 三元原样）。
@@ -4842,7 +4856,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         return "notice";
       }
       // 夜移 014 → ω99-316: /btw <question> — the cache-shared side question
-      // (真 the upstream formatsideQuestion.ts 的 wudao 适配, now a DETACHED LOOP). The fork
+      // (真 CC sideQuestion.ts 的 wudao 适配, now a DETACHED LOOP). The fork
       // rides the session's prefix bytes: systemPrompt, the full message
       // history, and the tool list are identical to the main run's (the
       // same-table freeze keeps the tool DECLARATIONS byte-identical while
@@ -5770,7 +5784,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         return "notice";
       }
       // M61 §4: /schedule — the durable task group (list/add/rm +
-      // ω99-5a pause/unpause/run, the the upstream project daemon verbs).
+      // ω99-5a pause/unpause/run, the goose daemon verbs).
       case "schedule": {
         const daemon = o.schedule;
         if (daemon === undefined) {
@@ -5923,7 +5937,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         evaluator,
         backgroundBusy: () => {
           const all = o.agentsRegistry?.status() ?? [];
-          // 113-B2（the upstream project #2465 形）: the detach lane's live work holds
+          // 113-B2（prime-agent #2465 形）: the detach lane's live work holds
           // the goal round too — a /bg task still running means the very work
           // the goal would evaluate is in flight; a continuation now races the
           // completion notice (a burned round + the model may re-issue the
@@ -6477,7 +6491,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           // The clock is advisory — any failure here leaves resume exactly as
           // it was (prewarm below still runs).
         }
-        // 128-2（the upstream project形，变体）— the resume prewarm: the user is about to
+        // 128-2（codex 形，变体）— the resume prewarm: the user is about to
         // READ the history (the idle window); one background max_tokens:1
         // same-prefix request re-warms the provider's prefix cache so their
         // next message rides warm bytes. Fire-and-forget, silent failure,
@@ -6601,7 +6615,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       if (r.ok) await memorySig.refresh();
       return r;
     },
-    // 永续 v6 wave2（the upstream project C1）：门控自改进面——管理面（设置→偏好→改进提案）
+    // 永续 v6 wave2（reef C1）：门控自改进面——管理面（设置→偏好→改进提案）
     // 的数据与决策缝。全部守卫在任何模型调用之前（consent 的门禁环境检查、
     // 状态门）；决策幂等收敛（MISS 形）；consent 的子代理/门禁异步落定时
     // 走 appendHistory notice（与触发通知同车道）。
@@ -6959,7 +6973,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     ask(toolName: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string }): Promise<PermissionDecision> {
       return askPermission(toolName, input, ctx);
     },
-    // 借鉴弧 α2（the upstream format2.1.269 思想）— steering 未读撤回：CAS 删队列中一条仍未
+    // 借鉴弧 α2（CC 2.1.269 思想）— steering 未读撤回：CAS 删队列中一条仍未
     // 消费的排队消息（index 是状态帧快照里的下标，text 是同帧文本——两者仍
     // 逐字相符才删，防「帧到按钮点之间队列已被动过」的错杀；已被 loop 的
     // mid-run take() 或结算 drain 消费/开跑的条目天然不在数组里 → false）。

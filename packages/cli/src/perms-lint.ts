@@ -1,4 +1,4 @@
-// M52 §2 — the permission-rule linter (CCB + the upstream format双源). A PURE function over
+// M52 §2 — the permission-rule linter (CCB + CC 双源). A PURE function over
 // the settings `permissions` node: it detects unreachable rules — rules that
 // can never decide a call because something earlier in the layer order always
 // matches first. Report-only (no auto-fix; the fix text is advice).

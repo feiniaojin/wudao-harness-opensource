@@ -179,7 +179,7 @@ describe("LspManager (lazy start · idle reap · crash rebuild)", () => {
     }
   });
 
-  it.skip("a request timeout errors the caller but does NOT kill the server", async () => {
+  it("a request timeout errors the caller but does NOT kill the server", async () => {
     const ws = await makeWorkspace();
     // m 提到 try 外：finally 里要 dispose（构造是懒的，不 spawn，提前无副作用）。
     const m = track(new LspManager({

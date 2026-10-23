@@ -12,7 +12,7 @@ export type ScheduleCommand =
   | { kind: "list" }
   | { kind: "add"; schedule: AddableSchedule; prompt: string; runtime?: ScheduleRuntimeOverrides }
   | { kind: "rm"; id: string }
-  // ω99-5a: the daemon verbs (run = the upstream project run_now). Three separate variants —
+  // ω99-5a: the daemon verbs (run = goose run_now). Three separate variants —
   // a shared {kind: "pause"|"unpause"|"run"} defeats discriminant narrowing
   // at the dispatch sites.
   | { kind: "pause"; id: string }
@@ -54,7 +54,7 @@ export function parseScheduleRuntime(spec: string): ScheduleRuntimeOverrides | s
 }
 
 /** `/schedule` — list | add "<cron>" <prompt> | add @<ISO> <prompt> | rm <id>
- *  | pause <id> | unpause <id> | run <id> (ω99-5a; run = the upstream project run_now).
+ *  | pause <id> | unpause <id> | run <id> (ω99-5a; run = goose run_now).
  *  113-C1: the add forms take an optional trailing `--runtime <spec>` tier
  *  (stripped from the prompt BEFORE the trigger forms match; absent → the
  *  legacy parse byte-for-byte). */

@@ -75,7 +75,7 @@ describe("formatRunStats", () => {
     expect(formatRunStats(2_100, 2_000, 0, 0)).toBe("耗时 2.1s · 模型 2.0s");
   });
 
-  // 借鉴弧 B1（the upstream project C1）：缓存债行——omit-when-zero；k 格式一位小数。
+  // 借鉴弧 B1（a reference project C1）：缓存债行——omit-when-zero；k 格式一位小数。
   it("appends 缓存债 when the run booked cache debt (omit-when-zero)", () => {
     expect(formatRunStats(2_100, 2_000, 0, 1, 0, 0, 0)).toBe("耗时 2.1s · 模型 2.0s · 工具 <1s (1 次)");
     expect(formatRunStats(2_100, 2_000, 0, 1, 0, 0, 144_000)).toBe("耗时 2.1s · 模型 2.0s · 工具 <1s (1 次) · 缓存债 144k");

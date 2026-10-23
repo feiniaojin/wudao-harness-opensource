@@ -48,6 +48,6 @@ export const PEER_HOOK_TOKEN_ENV = "WUDAO_MSG_TOKEN";
  *  implements or consumes it in this milestone. */
 export interface IsolatePeerMachines {
   /** May a session on one machine message a session on another? (Project
-   *  files may OPEN this, never close it — the the upstream formatrule.) */
+   *  files may OPEN this, never close it — the CC rule.) */
   readonly allowsCrossMachine: (from: { readonly machine: string }, to: { readonly machine: string }) => boolean;
 }

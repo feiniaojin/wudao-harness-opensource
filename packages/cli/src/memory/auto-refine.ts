@@ -1,4 +1,4 @@
-// ω99-7 — auto-refine: the automatic trigger layer over /refine (the upstream project
+// ω99-7 — auto-refine: the automatic trigger layer over /refine (prime-agent
 // _maybeAutoRefine 防抖语义全搬, 按 wudao 缝重落; qm consolidation 规则已并进
 // REFINE_SYSTEM_PROMPT). Two levels: a turn counter / compaction event decides
 // WHETHER to consider a refine, then one CHEAP model call (a JSON boolean
@@ -15,13 +15,13 @@
 //  - 失败必盖 cooldown 章（防每轮重试）: 门解析失败、门网络炸、apply 炸都盖章。
 //  - 门解析复用 refine.ts 的 extractProposalJson（三级容错）, 不另抄一份。
 //
-// 语义取舍（the upstream project → wudao, 报告有载）:
+// 语义取舍（prime-agent → wudao, 报告有载）:
 //  - 计数标记 = 内存基线（时间戳 + assistant 计数基线）, 不落盘——会话重启
 //    即重数, 可接受。基线存"计数"而非消息索引: 压缩会重写 state.messages,
 //    索引会漂, 计数只会保守归零（max(0, cur-baseline)）。
 //  - branch 版本守卫未搬: wudao 的 refine 写的是 memory store 而非会话历史,
 //    会话分叉不 invalidate 已落 store 的编辑。
-//  - shouldRefine=false（含解析失败）统一盖章+清零; the upstream project 在 compact 触发
+//  - shouldRefine=false（含解析失败）统一盖章+清零; prime-agent 在 compact 触发
 //    且 turns 已达标时会保留 turn 复审, wudao 从简不保留（更保守, 少花调用）。
 import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
 import type { AgentHooks, AgentMessage, AgentState, ModelClient, StopHookDecision } from "@wudao/core";
@@ -56,7 +56,7 @@ export interface AutoRefineDecisionInput {
 /** Pure: the two-level trigger's first level. Cooldown outranks both
  *  triggers (a stamped failure must not re-enter on the same signal);
  *  compact outranks turns (rarer, higher-signal checkpoint); a disabled
- *  compact trigger falls through to the turn check (the upstream project's
+ *  compact trigger falls through to the turn check (prime-agent's
  *  reason-rewriting, decided here instead). */
 export function shouldTriggerAutoRefine(s: AutoRefineDecisionInput): AutoRefineDecision {
   if (!s.cfg.enabled) return { run: false, reason: "off" };
@@ -118,11 +118,11 @@ export function summarizeEditActivity(
 }
 
 // ---------------------------------------------------------------------------
-// The cheap gate — ONE model call, one JSON boolean (the upstream project
+// The cheap gate — ONE model call, one JSON boolean (prime-agent
 // reviewAutoRefine; parsing reuses extractProposalJson's三级容错).
 // ---------------------------------------------------------------------------
 
-/** the upstream project's gate rides a 40k trajectory tail (vs the full refine's 80k)
+/** prime-agent's gate rides a 40k trajectory tail (vs the full refine's 80k)
  *  — the gate must stay cheaper than what it gates. */
 const AUTO_REFINE_GATE_TRAJECTORY_CHARS = 40_000;
 
@@ -264,7 +264,7 @@ export function createAutoRefineRuntime(deps: AutoRefineDeps): AutoRefineRuntime
     try {
       const verdict = await reviewAutoRefineGate(model, messages, { reason: d.reason, turnsSinceLastReview: turnsSince });
       if (!verdict.shouldRefine) {
-        // false（含解析失败）: 盖章 + 清零 — the upstream project 语义, wudao 统一两路.
+        // false（含解析失败）: 盖章 + 清零 — prime-agent 语义, wudao 统一两路.
         lastAt = now();
         baselineTurns = countAssistantTurns(messages);
         pendingTurns = false;
@@ -284,7 +284,7 @@ export function createAutoRefineRuntime(deps: AutoRefineDeps): AutoRefineRuntime
       pendingCompact = false;
     } catch {
       // 失败必盖 cooldown 章（防每轮重试）: gate 网络炸 / apply 炸都盖章; 计数
-      // 保留 — 冷却过后 turns 重新达标即重试（the upstream project 的 catch 语义）.
+      // 保留 — 冷却过后 turns 重新达标即重试（prime-agent 的 catch 语义）.
       lastAt = now();
     } finally {
       inProgress = false;

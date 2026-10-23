@@ -2,7 +2,7 @@
 // 116 弧 A「材质升级」的收据套件——去廉价化第一弧（surface 质感体系）。
 //   ① hair 阶梯：每主题一组黑白 alpha 三档（发丝线），CSSOM 解析值钉死；
 //   ② 背景阶梯：每主题 bg/surface/surface-2 的冷灰（B−R≥3）+ 层间 HSL-L
-//      步进 3~5（the upstream format配方；算值同 scripts/arc116-ladder.mjs）；
+//      步进 3~5（dsh 配方；算值同 scripts/arc116-ladder.mjs）；
 //   ③ elevation 三件套：描边入影 + 两层 .02~.05 柔光，双主题值钉死；
 //   ④ accent 收权：四主题组合（dark/light × green/blue/black）下——
 //      用户气泡中性且与 accent 无关、芯片选中中性、选中行/CTA/focus 环
@@ -94,7 +94,7 @@ describe("116 弧 A — the surface system across the four theme combos", () => 
       if (surface !== "#FFFFFF") expect(bMinusR(surface)).toBeGreaterThanOrEqual(3);
       expect(bMinusR(bg)).toBeGreaterThanOrEqual(3);
       expect(bMinusR(surface2)).toBeGreaterThanOrEqual(3);
-      // 暗色阶梯的层间步进落在 3~5（the upstream format配方；浅色的 surface=纯白锚不适用）。
+      // 暗色阶梯的层间步进落在 3~5（dsh 配方；浅色的 surface=纯白锚不适用）。
       if (dark) {
         const s1 = hslL(surface) - hslL(bg);
         const s2 = hslL(surface2) - hslL(surface);
@@ -114,7 +114,7 @@ describe("116 弧 A — the surface system across the four theme combos", () => 
         const blacks = [...v.matchAll(/rgba\(0,0,0,(\.\d+)\)/g)].map((m) => Number.parseFloat(m[1] as string));
         const alphas = prop("--hair-1").startsWith("rgba(0,0,0") ? blacks.slice(1) : blacks;
         expect(alphas).toHaveLength(2); // 两层柔光
-        for (const a of alphas) expect(a).toBeLessThanOrEqual(0.05); // the upstream format 配方带
+        for (const a of alphas) expect(a).toBeLessThanOrEqual(0.05); // dsh 配方带
       }
     });
 
@@ -202,7 +202,7 @@ describe("116 弧 A — retired tokens & the border/elevation exclusivity law", 
   });
 
   // 每个 elevation 消费面必须 border:0——描边已在影里，双轮廓即 116 的
-  // 廉价感来源 #2（the upstream format成文律：neutral 边框与 elevation 投影禁止同用）。
+  // 廉价感来源 #2（dsh 成文律：neutral 边框与 elevation 投影禁止同用）。
   it("every elevation surface declares border:0 (边框与投影不同用)", () => {
     const ELEV_SURFACES = [
       ".composer", // elev-2（focus/dragover 态换 accent 环，不带回边框）

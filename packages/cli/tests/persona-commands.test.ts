@@ -14,16 +14,16 @@ import {
 } from "../src/commands/persona.js";
 
 const ccDef: PersonaDefinition = {
-  id: "cc", displayName: "the upstream harness",
-  source: { kind: "workspace-source", provenance: "http.ts:34", pinnedVersion: "the default client 2.x" },
-  headers: { anthropic: { "user-agent": "wudao-harness/0.4.14 (external, cli)" } },
-  prompt: { system: { mode: "prefix", text: "You are the upstream harness.\n" } },
+  id: "cc", displayName: "Anthropic CLI",
+  source: { kind: "workspace-source", provenance: "http.ts:34", pinnedVersion: "claude-cli 2.x" },
+  headers: { anthropic: { "user-agent": "wudao-harness/2.0.0 (external, cli)" } },
+  prompt: { system: { mode: "prefix", text: "You are Claude Code.\n" } },
   confidence: "byte-verified",
 };
 const dshDef: PersonaDefinition = {
-  id: "owire", displayName: "the upstream format",
-  source: { kind: "workspace-source", provenance: "ref/owire", pinnedVersion: "1" },
-  headers: { "openai-chat": { "x-client": "the upstream format" } },
+  id: "owire", displayName: "OWire",
+  source: { kind: "workspace-source", provenance: "ref/dsh", pinnedVersion: "1" },
+  headers: { "openai-chat": { "x-client": "owire" } },
 };
 const registry: PersonaRegistry = { personas: [ccDef, dshDef], errors: [] };
 
@@ -52,7 +52,7 @@ describe("parsePersonaArgument", () => {
   it("fail-closed on garbage", () => {
     expect(parsePersonaArgument("--headers-only")).toEqual({ ok: false, error: expect.stringContaining("--headers-only") });
     expect(parsePersonaArgument("cc --wat")).toEqual({ ok: false, error: expect.stringContaining("--wat") });
-    expect(parsePersonaArgument("cc owire")).toEqual({ ok: false, error: expect.any(String) });
+    expect(parsePersonaArgument("cc dsh")).toEqual({ ok: false, error: expect.any(String) });
   });
   it("layerOverrideFor semantics", () => {
     // Fix round 1（spec §10.1 mask）：旗标携带**完整启用集**——--with-prompt =
@@ -232,7 +232,7 @@ describe("resolveActivePersona (spec §1 chain)", () => {
 // SDD 2026-08-23 persona layer-selection Task 1 — the two PERSISTED reference
 // points (provider card binding / settings.json global default) accept the
 // layer-qualified form `<id>[:layers]`（既有 parsePersonaSpec 语法，`+`/`,` 连
-// 接）。限定层集 = **完整启用集**（spec §10.1 fix round 1：`the upstream format:headers`
+// 接）。限定层集 = **完整启用集**（spec §10.1 fix round 1：`anthropic-cli:headers`
 // = 只启用 headers——经 resolvePersona/effectiveLayers 的 mask 语义生效，未列出
 // 的层关、defaultLayers 不参与）；纯 id 路径与历史逐字节一致（spec ===
 // undefined、层集走缺省）。

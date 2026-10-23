@@ -2,7 +2,7 @@
    红色律:--danger 只用于错误卡/diff 删除/需确认徽标/拒绝。 */
 :root, [data-theme="dark"] {
   /* —— 116 弧 A「材质升级」：背景阶梯从暖灰迁到蓝调冷灰（B−R≈5），层间
-     HSL 亮度步进收到 3~5（8.82→11.96→15.49%，the upstream format 配方；算值与全套对比度
+     HSL 亮度步进收到 3~5（8.82→11.96→15.49%，dsh 配方；算值与全套对比度
      门见 scripts/arc116-ladder.mjs）。暖黑 #171716 与青蓝主题打架的诊断
      （116 报告 §3.a 差距 3）由此收口。 */
   --bg: #141519; --surface: #1C1D21; --surface-2: #25262A;
@@ -10,7 +10,7 @@
      themes (tokens-contrast.test.ts gates it) — #70706A was 2.89~3.60. */
   --text-1: #EAEAE6; --text-2: #A6A6A0; --text-3: #94948E;
   /* —— 116 弧 A：发丝线三档（黑白 alpha 叠层，非实色）。同一条边在任何
-     表面上自动协调（alpha 随底面重算），这是 the upstream format 边框律的通道形式——
+     表面上自动协调（alpha 随底面重算），这是 dsh 边框律的通道形式——
      rgba 自 Safari 3 起支持，WKWebView macOS 12 安全。档位：hair-1 静态
      分隔/卡片描边；hair-2 悬停/强调边与输入框描边；hair-3 滚动条
      thumb/最强调分隔。退役的实色线令牌（--line/--line-2）已全量迁此。 */
@@ -24,7 +24,7 @@
      (hovered chips, sig-glyph) the old value sat at 4.25:1; the lift clears
      4.71 on the worst surface and the ink pair only improves (5.88). */
   --accent: #12A874; --accent-ink: #141519; --accent-weak: #12A8741A;
-  /* 116 弧 A「accent 收权」：用户气泡去品牌色 → 中性灰（the upstream format：气泡从不用
+  /* 116 弧 A「accent 收权」：用户气泡去品牌色 → 中性灰（dsh：气泡从不用
      品牌色）。暗色 = 白 alpha 叠层（对 --bg 合成 ≈ rgb(41,42,46)，墨
      #EAEAE6 合成对比 11.9:1）。三 accent 的气泡自此同值——气泡不再是
      accent 的消费角色（逐 accent 覆写块随之退役）。 */
@@ -44,12 +44,12 @@
      （ink/royal/jade）——flow-visual 的关键词门扫声明值，black/blue/green
      会误中（--swatch-black-rgb 的连字符是词边界）。 */
   --swatch-ink-rgb: 17 17 17; --swatch-royal-rgb: 47 84 235; --swatch-jade-rgb: 18 168 116;
-  /* —— 116 弧 B「骨架升级」：内容宽从 720px 死宽改自适应（the upstream format配方
-     --the upstream format-chat-content-width）。clamp 的 % 在消费者的 max-width/width 语境
+  /* —— 116 弧 B「骨架升级」：内容宽从 720px 死宽改自适应（dsh 配方
+     --dsh-chat-content-width）。clamp 的 % 在消费者的 max-width/width 语境
      里对包含块解析（.chat/.composer 列宽、.set-body 表单列），大屏舒展到
      920、窄窗回落 680——「窄死宽」是 116 报告廉价感来源 #5 的主项。clamp()
      自 Safari 13.1 起，WKWebView macOS 12 安全。composer/inline 卡族沿
-     +32px 派生（the upstream format：composer = 内容宽 +32）。 */
+     +32px 派生（dsh：composer = 内容宽 +32）。 */
   --content-max: clamp(680px, 64%, 920px);
   /* I6: the mix-to-black operand (wizard scrim) as a token — no bare color
      keywords in styles.css; black mixes identically in both themes. */
@@ -95,12 +95,12 @@
      = calc(+1)）。新浮层必须入档，不许裸数字。 */
   --z-jump: 4; --z-float: 5; --z-toggle: 6; --z-legend: 20; --z-ws-menu: 26;
   --z-modal: 30; --z-ctx-menu: 36; --z-palette: 40; --z-wizard: 60;
-  /* —— 116 弧 A：elevation 三件套（the upstream formatgradient-shadow-text 配方）。
+  /* —— 116 弧 A：elevation 三件套（dsh gradient-shadow-text 配方）。
      「浮起」= 0.5px 发丝描边画进 box-shadow（不占布局）+ 两层极淡柔光
      （alpha .02~.05）。暗色下柔光几乎不可见、由描边承担分离——重投影
      （单档 0 6px 20px rgba(0,0,0,.45)）已退役，那是 Web 2.0 廉价感的
      最大单一来源（116 报告 §0-2）。
-     ★ 边框与投影不同用（the upstream format 成文律）：凡消费 --elev-* 的表面一律
+     ★ 边框与投影不同用（dsh 成文律）：凡消费 --elev-* 的表面一律
      border:0——描边已在影里，再画边框就是双重轮廓。低=小浮件（选中
      chip/图例）；中=菜单/composer/浮卡；高=模态/向导/命令面板。
      --elev-2-soft 是中档去描形态：composer 的 focus/dragover 态用它 +

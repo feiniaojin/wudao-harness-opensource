@@ -1,4 +1,4 @@
-// M48 §4 — the the upstream harness "Agent Work Loop" scorer (research 12 #6).
+// M48 §4 — the better-harness "Agent Work Loop" scorer (research 12 #6).
 // 5 dimensions × 15 checks over a transcript + terminal, each check mapped to
 // one of 7 evidence states with a score ceiling. The core axiom is
 // "a configured capability is not observed use": a clean single-session
@@ -20,7 +20,7 @@ export type EvidenceState =
   | "unobserved"
   | "not-applicable";
 
-/** Evidence state → score ceiling (the upstream harness table). A dimension's
+/** Evidence state → score ceiling (better-harness table). A dimension's
  *  score is the MIN of its checks' ceilings — a missing required check caps
  *  the whole dimension at 59. */
 export const EVIDENCE_CEILING: Readonly<Record<EvidenceState, number>> = {
@@ -61,7 +61,7 @@ export interface WorkloopDimensionDef {
   readonly checks: ReadonlyArray<{ id: CheckId; description: string }>;
 }
 
-/** The 5 × 15 grid (the upstream harness models/agent-work-loop.md:83-89). */
+/** The 5 × 15 grid (better-harness models/agent-work-loop.md:83-89). */
 export const WORKLOOP_DIMENSIONS: readonly WorkloopDimensionDef[] = [
   {
     id: "task-understanding",
@@ -142,7 +142,7 @@ export interface WorkloopReport {
   readonly evidence: "verified" | "partial";
 }
 
-/** The partial score an unevidenced success earns (the upstream format C7). */
+/** The partial score an unevidenced success earns (a reference harness C7). */
 export const PARTIAL_SUCCESS_SCORE = 0.5;
 
 export interface WorkloopInput {
@@ -323,7 +323,7 @@ const evaluators: Readonly<Record<CheckId, Evaluator>> = {
     const checked = s.calls.some(({ call }) => call.name === "shell");
     if (wrote && checked) return ok("acceptance-evidence", "outcome-supported", "completed with an answer and a verification run");
     if (wrote) return ok("acceptance-evidence", "exercised", "completed with an answer, but writes were never verified");
-    // M56 §4 (the upstream format C7): success without evidence is a 0.5 PARTIAL, never
+    // M56 §4 (a reference harness C7): success without evidence is a 0.5 PARTIAL, never
     // a pass — "worker exited successfully but produced no verifiable output".
     return ok("acceptance-evidence", "present", "completed with an answer but no verifiable artifact — 0.5 partial, never a pass");
   },
@@ -426,7 +426,7 @@ export function loadSessionMessages(text: string): AgentMessage[] {
 
 /** Render the report as the eval CLI's text table. */
 export function formatWorkloopReport(report: WorkloopReport): string {
-  const lines: string[] = ["agent work-loop score (the upstream harness 5×15)", "-------------------------------------------"];
+  const lines: string[] = ["agent work-loop score (better-harness 5×15)", "-------------------------------------------"];
   for (const d of report.dimensions) {
     lines.push(`${d.name.padEnd(22)} ${String(d.score).padStart(3)}`);
     for (const c of d.checks) {

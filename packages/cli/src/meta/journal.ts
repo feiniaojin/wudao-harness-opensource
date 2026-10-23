@@ -1,4 +1,4 @@
-// M50 §2 — the meta evolution journal (the upstream's journal, the portable
+// M50 §2 — the meta evolution journal (HarnessX's journal, the portable
 // part): an append-only `.wudao/experiments.jsonl` of every experiment on a
 // harness lever, plus an aggregation that ranks lever VALUES by the Wilson
 // 95% lower bound on their ok-rate and attributes task-level flips.

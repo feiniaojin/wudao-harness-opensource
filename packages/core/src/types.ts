@@ -72,10 +72,10 @@ export interface AssistantMessage {
    *  "length", "tool_calls", "content_filter", ...). "length" = the token
    *  limit cut the generation mid-stream — the loop's truncated tool-call
    *  guard fails every tool call in such a message instead of executing
-   *  salvage-parsed arguments (the upstream project). Persistence-only metadata: it never
+   *  salvage-parsed arguments (pi). Persistence-only metadata: it never
    *  reaches the wire on replay. */
   readonly stopReason?: string;
-  /** 夜移 001 (the upstream formatinterrupted-stream finalization): true when this message
+  /** 夜移 001 (dsh interrupted-stream finalization): true when this message
    *  is the delivered prefix of a stream the user aborted — committed so the
    *  transcript matches what streamed and resume/replay stay valid.
    *  Persistence-only metadata (same contract as stopReason and uuid): never
@@ -106,7 +106,7 @@ export interface ToolResultMessage {
    *  wire role stays string-only: the provider serializer buffers these into
    * ONE synthetic user message immediately following the tool block (prefix
    * "Attached image(s) from tool result:"), adapting any string-only tool
-   * wire format (the upstream formatserialize parity). No builtin tool emits images yet —
+   * wire format (dsh serialize parity). No builtin tool emits images yet —
    * the shape is the M79 foundation. */
   readonly images?: readonly ImageBlock[];
 }
@@ -119,7 +119,7 @@ export type AgentMessage = UserMessage | AssistantMessage | ToolResultMessage;
 // never mid-call. Cooperative by design: the preemptive mechanism is
 // signal/abort ("aborted"); this reason only ever means the elapsed budget
 // ran out between turns. finalMessage is absent (no final answer existed).
-// 夜移 036 (the upstream projectrollout_budget): "session_budget_exhausted" = the SESSION-
+// 夜移 036 (codex rollout_budget): "session_budget_exhausted" = the SESSION-
 // TREE weighted token budget (LoopOptions.sessionBudget) went dry — recorded
 // right after the response's usage landed, so the response's tool calls never
 // execute. Sticky: later runs burn one call each, record, and fail the same
@@ -136,7 +136,7 @@ export interface Terminal {
   /** M48 §1: present only on a loop-safety forced abort (the run's second
    *  loop verdict) — the detector's evidence string, for UI/audit. */
   readonly loopEvidence?: string;
-  /** 133 #6（the upstream projectce 形）— present only on a loop-safety abort
+  /** 133 #6（codex 63475131ce 形）— present only on a loop-safety abort
    *  whose offending streak was ENTIRELY permission denials（否决墙）.
    *  Persistence-only metadata（same contract as loopEvidence——never
    *  reaches the wire）; the PARENT chain consumes it to select the
@@ -162,7 +162,7 @@ export interface Terminal {
    *  hook already decided). `finalMessage` is the tool-call assistant
    *  message that carried the batch. */
   readonly postToolBatchStop?: true;
-  /** 弧 δ (the upstream harness 367ab084 思想, additive-only): present when a mid-flight
+  /** 弧 δ (penguin 367ab084 思想, additive-only): present when a mid-flight
    *  tool call was detached to the background and the run closed at the
    *  batch boundary for it — same settling shape as postToolBatchStop (the
    *  batch's results stand, the model is not called again), but the cause

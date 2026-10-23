@@ -1,4 +1,4 @@
-// 借鉴弧 δ（v7 第三梯队，digest-b 候选 C3 / the upstream harness 367ab084 思想）—
+// 借鉴弧 δ（v7 第三梯队，digest-b 候选 C3 / penguin-harness 367ab084 思想）—
 // 运行中工具调用转后台（mid-flight detach）。
 //
 // 在位者只有两态：发起时后台（M30 task 工具的 background spawn——形态在
@@ -6,7 +6,7 @@
 // 合成、承诺被弃）。缺的是第三态：一个正在前台执行的工具调用（长构建/
 // 子 agent 任务）想转后台继续跑、当前对话不被卡死。
 //
-// the upstream harness 的机制（detachSignal 与 stop signal 分离 + collectUntil 并集收集
+// penguin 的机制（detachSignal 与 stop signal 分离 + collectUntil 并集收集
 // 窗）在 wudao 的落法：
 //   • 请求车道 = 一个极小的 per-run 事件盒（ToolDetachHub）。用户手势 →
 //     hub.request(callId)；loop 为每个在飞调用把 hub 事件折进执行赛跑

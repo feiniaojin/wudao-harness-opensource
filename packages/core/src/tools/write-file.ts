@@ -13,7 +13,7 @@ export function createWriteFileTool(options: {
   workspaceRoot: string;
   readState?: ReadStateTable;
   history?: FileHistory;
-  /** 夜移 032 (the upstream projectturn-diff): the per-run net-change ledger. Only a
+  /** 夜移 032 (codex turn-diff): the per-run net-change ledger. Only a
    *  COMMITTED write is recorded (after the bytes land); absent → unchanged
    *  behavior. */
   turnDiff?: TurnDiffTracker;

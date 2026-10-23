@@ -106,7 +106,7 @@ for (const [label, make] of BACKENDS) {
 
     // Acceptance 4 — never overwrites: adopting into an id the store already
     // holds is a typed refusal (class name pinned), and the existing content
-    // is untouched (the upstream project's COPYFILE_EXCL, made assertable at the store layer).
+    // is untouched (pi's COPYFILE_EXCL, made assertable at the store layer).
     it("adopting into an existing id refuses with the typed conflict; content untouched", async () => {
       await adoptSessionEntries(store, "dup", SEED);
       const err = await adoptSessionEntries(store, "dup", [POST]).then(() => undefined, (e: unknown) => e);

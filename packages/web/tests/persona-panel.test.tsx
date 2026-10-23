@@ -57,8 +57,8 @@ const LIST = {
 const DEEPSEEK_DEF: PersonaDefinition = {
   id: "deepseek-native",
   displayName: "DeepSeek Native",
-  source: { kind: "workspace-source", provenance: "doc90 §3 (deepseek-harness/)", pinnedVersion: "b150a551" },
-  headers: { "openai-chat": { "user-agent": "deepseek-harness/0.1.1-rc.2" } },
+  source: { kind: "workspace-source", provenance: "doc90 §3 (openai-chat reference)", pinnedVersion: "b150a551" },
+  headers: { "openai-chat": { "user-agent": "wudao-harness/0.4.14" } },
   prompt: { system: { mode: "prefix", text: "You are an AI agent powered by DeepSeek Harness." } },
 };
 
@@ -69,14 +69,14 @@ const ALPHA_DEF: PersonaDefinition = {
   headers: { anthropic: { "x-session-id": "{{sessionId}}" } },
 };
 
-/** Iteration 2 T2 — the「header 是空的」bug's shape: claude-code's headers
+/** Iteration 2 T2 — the「header 是空的」bug's shape: a reference harness's headers
  *  live ONLY on the anthropic wire, so the fixed openai-chat default tab
  *  opened the detail on an empty headers form. */
 const CLAUDE_CODE_DEF: PersonaDefinition = {
   id: "anthropic-cli",
-  displayName: "Claude Code",
-  source: { kind: "external-research", provenance: "claude-code-sourcemap", pinnedVersion: "2.x" },
-  headers: { anthropic: { "anthropic-beta": "oauth-2025-04-20", "user-agent": "claude-cli/2.0.0 (external, cli)" } },
+  displayName: "Anthropic CLI",
+  source: { kind: "external-research", provenance: "a reference harness", pinnedVersion: "2.x" },
+  headers: { anthropic: { "anthropic-beta": "oauth-2025-04-20", "user-agent": "wudao-harness/2.0.0 (external, cli)" } },
   prompt: { system: { mode: "prefix", text: "You are Claude Code, Anthropic's official CLI for Claude." } },
 };
 
@@ -194,7 +194,7 @@ const flush = async (): Promise<void> => {
 async function renderPanel(opts?: {
   /** A personaList body override (default: LIST). */
   readonly list?: unknown;
-  /** The personaGet fixture map (default: deepseek-harness + alpha). */
+  /** The personaGet fixture map (default: a reference harness + alpha). */
   readonly defs?: Record<string, PersonaDefinition>;
 }): Promise<Harness> {
   const defs = opts?.defs ?? { "deepseek-native": DEEPSEEK_DEF, alpha: ALPHA_DEF };
@@ -427,14 +427,14 @@ const T2_DEFS: Record<string, PersonaDefinition> = {
 
 const T2_LIST = {
   personas: [
-    { id: "anthropic-cli", displayName: "Claude Code", source: "builtin" as const, layers: "headers+prompt", editable: false },
+    { id: "anthropic-cli", displayName: "Anthropic CLI", source: "builtin" as const, layers: "headers+prompt", editable: false },
     { id: "prompt-only", displayName: "Prompt Only", source: "global" as const, layers: "prompt", editable: true },
     { id: "alpha", displayName: "Alpha", source: "global" as const, layers: "headers", editable: true },
   ],
 };
 
 describe("PersonaPanel wire tabs + layer-qualified global default (iteration 2 T2)", () => {
-  it("opens a loaded persona on the FIRST wire with content (claude-code → anthropic)", async () => {
+  it("opens a loaded persona on the FIRST wire with content (a reference harness → anthropic)", async () => {
     const h = await renderPanel({ list: T2_LIST, defs: T2_DEFS });
     await select(h, "anthropic-cli");
     // The tab strip's initial position is the anthropic wire — the fixed
@@ -454,7 +454,7 @@ describe("PersonaPanel wire tabs + layer-qualified global default (iteration 2 T
   it("wire tabs carry per-wire row-count badges; a zero count dims", async () => {
     const h = await renderPanel({ list: T2_LIST, defs: T2_DEFS });
     await select(h, "anthropic-cli");
-    // claude-code: 2 anthropic header rows; the other two wires are empty.
+    // a reference harness: 2 anthropic header rows; the other two wires are empty.
     expect(wireBadge(h.container, "anthropic").textContent).toBe("2");
     expect(wireBadge(h.container, "openai-chat").textContent).toBe("0");
     expect(wireBadge(h.container, "openai-chat").className).toContain("zero");
@@ -590,7 +590,7 @@ describe("PersonaPanel gate scoping (R1)", () => {
   it("a builtin persona keeps its provenance hint (内置指纹), NOT the 手工编写 line", async () => {
     const h = await renderPanel();
     await select(h, "deepseek-native");
-    // deepseek-harness trips the round-trip check (foreign source row) but a
+    // a reference harness trips the round-trip check (foreign source row) but a
     // builtin is read-only regardless — the hint must stay the provenance
     // line, not claim the gate held it.
     expect(h.container.textContent).toContain("内置指纹(workspace-source)");

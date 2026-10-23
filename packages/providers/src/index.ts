@@ -176,7 +176,7 @@ export type {
   RegistryLoadResult,
   EffectiveProfile,
 } from "./registry.js";
-// 借鉴弧 B1（the reference project C1）— 价目面：目录 schema + 缓存经济学 ratio 的自动推导
+// 借鉴弧 B1（a reference project C1）— 价目面：目录 schema + 缓存经济学 ratio 的自动推导
 //（catalog pin > WUDAO_PRICE env > 保守缺省，来源类型化；不暴露为用户配置）。
 export { deriveCachePricing, isModelPrices, catalogPricesFor } from "./pricing.js";
 export type { ModelPrices, PriceSource } from "./pricing.js";
@@ -203,7 +203,7 @@ export {
   DEFAULT_AUTH_COOLDOWN_MS,
 } from "./key-pool.js";
 export type { KeyPool, KeyPoolOptions, KeyPoolSnapshot, CooldownClass } from "./key-pool.js";
-// 波次 7 #37 (the reference harness C1)：provider 级 429 暂停窗 —— 三协议工厂同享、可注入。
+// 波次 7 #37 (a reference harness C1)：provider 级 429 暂停窗 —— 三协议工厂同享、可注入。
 export { createRatePauseWindow, DEFAULT_RATE_PAUSE_MS, RATE_PAUSE_SLICE_MS } from "./rate-pause.js";
 export type { RatePauseWindow, RatePauseOptions } from "./rate-pause.js";
 // Persona layer exports (Task 5 / Task 6 / Task 7 / Task 8 / Task 9 / Task 11)

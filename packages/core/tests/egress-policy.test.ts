@@ -154,7 +154,7 @@ describe("proxyForUrl — routing + bypass (§2.4)", () => {
   });
 });
 
-describe("bypassesNoProxy + isLoopbackHost — the upstream project subdomain rule", () => {
+describe("bypassesNoProxy + isLoopbackHost — pi subdomain rule", () => {
   const bypass = (noProxy: string, url: string): boolean => bypassesNoProxy(noProxy, new URL(url));
 
   it("entry matches host + subdomains; leading dot and `*.` are equivalent forms", () => {
@@ -207,7 +207,7 @@ describe("egressChildEnvOverlay — the scrubChildEnv proxy half (§2.7)", () =>
     expect(overlay["NODE_USE_ENV_PROXY"]).toBe("1");
   });
 
-  it("a socks proxy value withholds NODE_USE_ENV_PROXY (Node child would exit 1) — a ref a ref obligation", () => {
+  it("a socks proxy value withholds NODE_USE_ENV_PROXY (Node child would exit 1) — dsh obligation", () => {
     const p = routed(resolveEgressPolicy({}, { proxy: "socks5://127.0.0.1:10808" }));
     const overlay = egressChildEnvOverlay(p, {});
     expect(overlay["HTTPS_PROXY"]).toBe("socks5://127.0.0.1:10808");

@@ -1,4 +1,4 @@
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— 运行中工具调用转后台：
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— 运行中工具调用转后台：
 //   车道面  typed 裁决（block 族=不可中断族拒 / 无在飞拒 / 裸调用挑第一个
 //          可转的）、收集登记→注入排队（2000 字截断）、stopAll 的取消回执
 //          （已停任务落定只回执不注入）
@@ -87,14 +87,14 @@ describe("δ 车道面 — typed 裁决与收集", () => {
     expect(injection.length).toBeLessThan(DETACH_RESULT_INJECTION_CHARS + 200);
   });
 
-  it("124 项 1（a ref a ref b6775f6d4f 教训）：N 连续落定全唤醒——唤醒链没有预算，第 4 个及以后的通知照常并入", async () => {
-    // the upstream format的后台完成链曾带 maxConsecutiveWakes=3 默认预算，预算耗尽后「第 4
+  it("124 项 1（dsh b6775f6d4f 教训）：N 连续落定全唤醒——唤醒链没有预算，第 4 个及以后的通知照常并入", async () => {
+    // dsh 的后台完成链曾带 maxConsecutiveWakes=3 默认预算，预算耗尽后「第 4
     // 个通知不再唤醒、会话死到用户敲键」（issue #641，回滚 b6775f6d4f 才改
     // opt-in）。wudao 的唤醒面（idle seam 的 drain→landed + 本车道的注入
-    // 队列）设计上无任何唤醒计数：N 超过 the upstream format默认 3（这里取 5），每次落定
+    // 队列）设计上无任何唤醒计数：N 超过 dsh 默认 3（这里取 5），每次落定
     // 都必须仍有一条注入可 drain，FIFO 全量。钉子见 idle-seam.ts 头注。
     const lane = createDetachLane({ onNotice: () => {} });
-    const N = 5; // > a ref's default wake budget of 3
+    const N = 5; // > dsh's default wake budget of 3
     const releases: ((r: { message: ToolResultMessage }) => void)[] = [];
     for (let i = 1; i <= N; i += 1) {
       let release: ((r: { message: ToolResultMessage }) => void) | undefined;
@@ -113,7 +113,7 @@ describe("δ 车道面 — typed 裁决与收集", () => {
       await until(() => lane.runningCount() === N - i, `job ${i} to land`);
     }
     // Every completion still has its injection — no budget exhausted at the
-    // 4th (a ref's death shape) or anywhere else.
+    // 4th (dsh's death shape) or anywhere else.
     const drained: string[] = [];
     for (;;) {
       const next = lane.takeInjection();
@@ -122,7 +122,7 @@ describe("δ 车道面 — typed 裁决与收集", () => {
     }
     expect(drained).toHaveLength(N);
     expect(drained[0]).toContain("job 1");
-    expect(drained[3]).toContain("job 4"); // the the upstream format #641 shape — still awake
+    expect(drained[3]).toContain("job 4"); // the dsh #641 shape — still awake
     expect(drained[4]).toContain("job 5");
   });
 

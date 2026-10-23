@@ -1,23 +1,23 @@
-// M54/M54b — project-context files: the harness's answer to "the upstream format has
+// M54/M54b — project-context files: the harness's answer to "CC has
 // CLAUDE.md, Codex has AGENTS.md". M54 shipped root-only + alphabetical
 // (user's minimum). M54b aligns discovery with the reference harnesses
-// (docs/research/18-ctx-loading-semantics.md §7, a ref-flavored): the user
-// directed matching reference semantics, NOT the upstream's walk-to-filesystem-root.
+// (docs/research/18-ctx-loading-semantics.md §7, dsh-flavored): the user
+// directed matching reference semantics, NOT CC's walk-to-filesystem-root.
 //
 // Discovery & order (reference semantics):
 //   1. user-global `~/.wudao/WUDAO.md` (personal baseline) concatenated
-//      FIRST — least specific (the upstream's user tier / a ref's ~/.a ref/AGENTS.md).
+//      FIRST — least specific (CC's user tier / dsh's ~/.dsh/AGENTS.md).
 //   2. `.git`-BOUNDED upward walk: from workspaceRoot walk up ONLY to the
 //      nearest ancestor containing `.git` (inclusive — a worktree's `.git`
 //      FILE counts too). The chain loads ROOT → CWD: parent/broadest first,
-//      cwd/most-specific LAST = highest priority (the upstream format claudemd.ts:877-878,
-//      a ref a ref ancestorChain). Never walks to the fs root: no `.git` within a
+//      cwd/most-specific LAST = highest priority (CC claudemd.ts:877-878,
+//      dsh ancestorChain). Never walks to the fs root: no `.git` within a
 //      ≤10-level sanity bound → fallback to root-only.
 //   3. Within ONE directory the user's alphabetical rule stays:
 //      case-insensitive filename order — AGENTS.md → CLAUDE.md → WUDAO.md.
 //      `agents.md` (lowercase) is the accepted AGENTS fallback spelling,
 //      used only when exact-case AGENTS.md is absent in that directory.
-//   4. Content dedup (a ref a ref files.ts:368-384 + cross-dir extension):
+//   4. Content dedup (dsh files.ts:368-384 + cross-dir extension):
 //      identical trimmed content loads ONCE — within a directory the later
 //      sibling collapses (kills AGENTS.md-symlinked-to-CLAUDE.md double
 //      loads); across directories the MORE-SPECIFIC (later/deeper) copy
@@ -46,10 +46,10 @@ import { getContextRules, globMatchesPath, type ContextRule } from "./rules.js";
  *  via its generic `#`/`##` heading split). */
 export const PROJECT_CONTEXT_HEADING = "# Project context";
 
-/** Single-file cap (the upstream's 40k-token bloat lesson, threshold set wide). */
+/** Single-file cap (CC's 40k-token bloat lesson, threshold set wide). */
 export const MAX_PROJECT_CONTEXT_FILE_BYTES = 64 * 1024;
 
-/** Total cap for the assembled section (a ref a ref maxBytes precedent). Broadest
+/** Total cap for the assembled section (dsh maxBytes precedent). Broadest
  *  files are dropped first when exceeded; the cwd file is always kept. */
 export const MAX_PROJECT_CONTEXT_SECTION_BYTES = 128 * 1024;
 
@@ -65,13 +65,13 @@ export const USER_GLOBAL_DISPLAY_PATH = "~/.wudao/WUDAO.md";
  *  treat its content with the same trust as any project file. */
 export const LOCAL_CONTEXT_FILENAME = "WUDAO.local.md";
 
-/** Root marker that bounds the upward walk (a ref `projectRootMarkers`). A
+/** Root marker that bounds the upward walk (dsh `projectRootMarkers`). A
  *  `.git` FILE (worktrees) or directory both count. */
 const GIT_ROOT_MARKER = ".git";
 
 /** Sanity bound for the upward walk: workspaceRoot itself plus at most 10
  *  ancestors are probed for the marker before falling back to root-only —
- *  never walk to the filesystem root (the upstream's exposure, a ref's fix). */
+ *  never walk to the filesystem root (CC's exposure, dsh's fix). */
 const MAX_WALK_UP_LEVELS = 10;
 
 export interface ProjectContextFile {
@@ -116,7 +116,7 @@ interface LoadedFile {
   /** Identity of the directory tier (absolute dir, or the global sentinel)
    *  for per-directory dedup. */
   readonly dirKey: string;
-  /** Whitespace-trimmed content — the dedup digest (a ref
+  /** Whitespace-trimmed content — the dedup digest (dsh
    *  trimmedInstructionDigest semantics; string key, no hash needed). */
   readonly digest: string;
   readonly content: string;
@@ -125,7 +125,7 @@ interface LoadedFile {
 }
 
 /** Nearest ancestor (inclusive) carrying the root marker, or the start
- *  directory when none exists within the sanity bound — a ref
+ *  directory when none exists within the sanity bound — dsh
  *  findProjectRoot(files.ts:168-191). */
 function findProjectRoot(startDir: string): string {
   const start = resolve(startDir);
@@ -144,7 +144,7 @@ function findProjectRoot(startDir: string): string {
   return start; // sanity bound hit — root-only fallback
 }
 
-/** Inclusive project-root → cwd directory chain, broadest first (a ref
+/** Inclusive project-root → cwd directory chain, broadest first (dsh
  *  ancestorChain: [root, …, cwd]). */
 function ancestorChain(projectRoot: string, cwd: string): string[] {
   const chain: string[] = [];
@@ -219,7 +219,7 @@ function ruleLoadedFile(rule: ContextRule): LoadedFile {
   };
 }
 
-/** a ref a ref per-directory dedup (files.ts:368-384): within one directory a later
+/** dsh per-directory dedup (files.ts:368-384): within one directory a later
  *  candidate whose trimmed content duplicates an earlier sibling collapses
  *  (the earliest — alphabetical-first — copy is kept). Different tiers then
  *  dedup keeping the MORE-SPECIFIC copy's position: a broader file (user
@@ -260,16 +260,16 @@ export function loadProjectContext(workspaceRoot: string): ProjectContextResult 
   const chain = ancestorChain(projectRoot, root);
   const loaded: LoadedFile[] = [];
   // M62 §7: every M54b candidate the walk actually SAW (display paths) —
-  // the dead-pattern lint's universe for contextExcludes.
+  // the dead-pattern lint's universe for claudeMdExcludes.
   const seenCandidates: string[] = [];
 
-  // M62 §7 (contextExcludes): skip candidates whose display path matches
+  // M62 §7 (claudeMdExcludes): skip candidates whose display path matches
   // any configured glob. Warn per skip so the user sees it working.
   const excluded = (displayPath: string): boolean => {
     if (sessionExcludes.length === 0) return false;
     for (const glob of sessionExcludes) {
       if (globMatchesPath(glob, displayPath)) {
-        warnings.push(`excluded by contextExcludes (${glob}): ${displayPath}`);
+        warnings.push(`excluded by claudeMdExcludes (${glob}): ${displayPath}`);
         return true;
       }
     }
@@ -357,7 +357,7 @@ export function loadProjectContext(workspaceRoot: string): ProjectContextResult 
   //    walk saw is dead config (typo'd pattern), warn so it gets fixed.
   for (const glob of sessionExcludes) {
     if (!seenCandidates.some((p) => globMatchesPath(glob, p))) {
-      warnings.push(`contextExcludes pattern "${glob}" matches no discovered context file (dead pattern)`);
+      warnings.push(`claudeMdExcludes pattern "${glob}" matches no discovered context file (dead pattern)`);
     }
   }
 
@@ -400,19 +400,19 @@ export function loadProjectContext(workspaceRoot: string): ProjectContextResult 
 // ONCE per process (spec §2 — no hot reload; restart to pick up edits).
 const cache = new Map<string, ProjectContextResult>();
 
-// M62 §7 — contextExcludes (settings, both tiers). Set ONCE at process
+// M62 §7 — claudeMdExcludes (settings, both tiers). Set ONCE at process
 // start, BEFORE the first getProjectContext call (the memo captures them);
 // later calls are no-ops for the same session-static reason.
 let sessionExcludes: readonly string[] = [];
 
-/** Set the session's contextExcludes globs (startup-only; first call wins
+/** Set the session's claudeMdExcludes globs (startup-only; first call wins
  *  once anything has loaded — call before any prompt build). */
 export function setProjectContextExcludes(globs: readonly string[]): void {
   if (cache.size > 0) return; // a root already loaded — the bytes are frozen
   sessionExcludes = globs.filter((g) => typeof g === "string" && g.trim() !== "").map((g) => g.trim());
 }
 
-/** The session's active contextExcludes (tests/doctor). */
+/** The session's active claudeMdExcludes (tests/doctor). */
 export function getProjectContextExcludes(): readonly string[] {
   return sessionExcludes;
 }

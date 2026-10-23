@@ -1,17 +1,17 @@
-// Skills (M27) — progressive-disclosure capability packs, the upstream project-style.
+// Skills (M27) — progressive-disclosure capability packs, pi-style.
 // A skill = <dir>/SKILL.md with a minimal line-style frontmatter (`name:` /
 // `description:`, hand-parsed — zero yaml dependency). The body is plain
 // markdown knowledge; it has NO runtime semantics.
 //
 // Discovery (first-wins on duplicate names, with a diagnostic warning):
-//   <workspaceRoot>/.agents/skills/*/SKILL.md   (ecosystem location — the upstream harness
+//   <workspaceRoot>/.agents/skills/*/SKILL.md   (ecosystem location — Claude
 //                                               Code / Codex / Anthropic skills
 //                                               drop in unchanged)
 //   <workspaceRoot>/.wudao/skills/*/SKILL.md    (project native)
 //   ~/.claude/skills/*/SKILL.md                 (PERSONAL tier, cc-plugins D1 —
-//                                               the upstream's own location; overrides the
+//                                               CC's own location; overrides the
 //                                               project .claude root only)
-//   <workspaceRoot>/.claude/skills/*/SKILL.md   (project the upstream location)
+//   <workspaceRoot>/.claude/skills/*/SKILL.md   (project CC location)
 //   ~/.wudao/skills/*/SKILL.md                  (global, M57 — fills gaps)
 //   <plugin>/skills/*/SKILL.md                  (M36 — tagged, never shadows)
 //
@@ -36,15 +36,16 @@ import type { SkillInjectionDecide } from "./skill-expand.js";
  *  label D2 keys off (approval policy for activation-time injection, help
  *  annotations): "project" = a workspace-relative root (repo-carried content
  *  a clone can bring), "personal" = a user-home root (~/.claude/skills or the
- *  ~/.wudao/skills global tier — the user's own machine), "plugin" = a the upstream format *  plugin's skills/ dir (trust decision = the install). */
+ *  ~/.wudao/skills global tier — the user's own machine), "plugin" = a CC
+ *  plugin's skills/ dir (trust decision = the install). */
 export type SkillOrigin = "project" | "personal" | "plugin";
 
 /** Discovery roots in priority order (first-wins). Workspace-relative arrays
  *  resolve under the workspace root; a LEADING "~" marks the personal tier,
  *  resolved against the user home via personalSkillRoot. The order encodes
  *  the cc-plugins D1 matrix: ecosystem + project-native roots beat the
- *  personal tier, which in turn beats the upstream's PROJECT location ("personal
- *  overrides project" for the the upstream format-shaped roots only). */
+ *  personal tier, which in turn beats CC's PROJECT location ("personal
+ *  overrides project" for the CC-shaped roots only). */
 const SKILL_ROOT_SEGMENTS: ReadonlyArray<readonly string[]> = [
   [".agents", "skills"],
   [".wudao", "skills"],
@@ -119,7 +120,7 @@ export interface LoadedSkill {
    *  substitution at invocation (D3). Both the inline `[a, b]` and the
    *  indented `- item` forms parse here. */
   readonly argumentsDecl?: readonly string[];
-  /** M36: set when the skill came from a the upstream formatplugin's skills/ dir (the fourth
+  /** M36: set when the skill came from a CC plugin's skills/ dir (the fourth
    *  discovery source). Same list, same manifest — this tag is for `plugin
    *  list` accounting only. */
   readonly plugin?: string;
@@ -145,7 +146,7 @@ export interface SkillFrontmatter {
    *  settings hooks.* shape) — armed for the session's remainder at
    *  invocation, cleared by /clear and compaction. */
   readonly hooks?: Record<string, readonly unknown[]>;
-  // cc-plugins D1 — the the upstream formatfrontmatter superset. Everything below is parsed
+  // cc-plugins D1 — the CC frontmatter superset. Everything below is parsed
   // and CARRIED; the fields with a runtime mechanism map at their consumer
   // (see LoadedSkill's field docs), the rest degrade gracefully.
   /** `argument-hint:` — the user-facing invocation shape. */
@@ -174,7 +175,7 @@ export interface SkillFrontmatter {
   readonly approvalGate?: "file-edits";
   /** Fields with NO wudao mechanism (model/effort/shell) that were present,
    *  deduped in first-seen order — the loader warns once per skill, then
-   *  ignores them (the upstream's own posture toward unknown fields). */
+   *  ignores them (CC's own posture toward unknown fields). */
   readonly unsupported?: readonly string[];
 }
 
@@ -293,7 +294,7 @@ export function parseSkillFrontmatter(text: string): SkillFrontmatter {
         }
       }
     }
-    // anything else: an unknown key — ignored (tolerant, the upstream's own posture)
+    // anything else: an unknown key — ignored (tolerant, CC's own posture)
   }
   if (name === undefined) return { description };
   return {
@@ -364,8 +365,8 @@ export interface LoadSkillsOptions {
  *  diagnostic warning that names the WINNING source). Discovery order
  *  (cc-plugins D1; M57 §1 kept for the global tier):
  *   <workspaceRoot>/.agents/skills, .wudao/skills  (project)
- *   ~/.claude/skills                                (personal — the upstream's location)
- *   <workspaceRoot>/.claude/skills                  (project the upstream location)
+ *   ~/.claude/skills                                (personal — CC's location)
+ *   <workspaceRoot>/.claude/skills                  (project CC location)
  *   <bundleRoots>                                   (ω99-18 mission bundles — campaign-scoped tier)
  *   ~/.wudao/skills/<name>/SKILL.md                 (global — fills gaps)
  *  A same-name skill in an EARLIER root claims the name; the global tier only
@@ -486,9 +487,13 @@ function warnStaticSkillDefectOnce(warn: (msg: string) => void, filePath: string
 /** ω99-37 — walker options. `skipWarningBudget: true` = a receipt/predict
  *  walk: same enumeration, same skip semantics, but the per-path static
  *  warning budget is neither spent nor gated (see warnStaticSkillDefectOnce).
- *  Absent = the default budgeting walk (loadSkills and every rescan). */
+ *  Absent = the default budgeting walk (loadSkills and every rescan).
+ *  plugin-compat D1 — `frontmatterRewrite` 在解析前改写 SKILL.md 文本（仅
+ *  解析层；LoadedSkill.content 保持磁盘原字节）：上游 CCB 家族技能的
+ *  camelCase 键（whenToUse）靠它归一化成本装的连字符拼写。 */
 export interface LoadSkillsUnderDirOptions {
   readonly skipWarningBudget?: boolean;
+  readonly frontmatterRewrite?: (text: string) => string;
 }
 
 /** Load the skills under ONE root dir (each child directory = one skill).
@@ -524,7 +529,8 @@ export function loadSkillsUnderDir(
     } catch {
       continue; // a skill dir without SKILL.md is not a skill (silent)
     }
-    const fm = parseSkillFrontmatter(text);
+    // plugin-compat D1：解析前改写（content 落盘原文，改写只影响解析结果）
+    const fm = parseSkillFrontmatter(opts.frontmatterRewrite !== undefined ? opts.frontmatterRewrite(text) : text);
     if (fm.name === undefined) {
       warnStaticSkillDefectOnce(warn, filePath, `skill ${filePath} has no "name:" in its frontmatter; skipping it`, spendWarningBudget);
       continue;
@@ -809,7 +815,7 @@ export function skillBodyNeedsInjection(skill: LoadedSkill): boolean {
  *  tiers (personal / user-scope-plugin free; everything else through the
  *  session's shell pipeline via `decide`). Rejects when an injection
  *  is denied or its exec fails — the caller surfaces the error and submits
- *  NOTHING (the upstream's fail-loud posture; a half-expanded envelope must never
+ *  NOTHING (CC's fail-loud posture; a half-expanded envelope must never
  *  reach the model). */
 export async function buildExpandedSkillMessage(
   skill: LoadedSkill,

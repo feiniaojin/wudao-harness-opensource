@@ -99,7 +99,7 @@ export function routeSubmit(d: SubmitDeps, text: string): void {
     }
     return;
   }
-  // 借鉴弧 α2（the upstream format2.1.269 思想）: /recall [n] — recall a queued steer before
+  // 借鉴弧 α2（CC 2.1.269 思想）: /recall [n] — recall a queued steer before
   // the loop drains it. The /find interception shape (TUI-owned, no driver
   // routing arm): resolve the target against the LIVE status snapshot, then
   // the driver's CAS face does the race-safe removal. A false reply means it
@@ -125,7 +125,7 @@ export function routeSubmit(d: SubmitDeps, text: string): void {
     return;
   }
 
-  // 借鉴弧 δ（the upstream harness 367ab084 思想）: /bg [n] — 把一个在飞的工具
+  // 借鉴弧 δ（penguin-harness 367ab084 思想）: /bg [n] — 把一个在飞的工具
   // 调用转入后台（结果不再阻塞本轮；run 在轮界收口，落定结果稍后经后台
   // 车道并入）。/recall 的 TUI 自有命令形态：裸命令=驱动面挑第一个可转的
   // 在飞行；/bg <n>=第 n 个 busy 行（行序即 live.busyTools 渲染序）。typed

@@ -1,5 +1,5 @@
 // P2-9（96 队列 #9）LSP 工具面 — 单工具 `lsp`（action: definitions /
-// references / hover），typescript 单语言 v1（the upstream format单工具多操作范式）。
+// references / hover），typescript 单语言 v1（CC 单工具多操作范式）。
 //
 // 纪律：
 // - buildTool fail-closed 工厂：任何失败（server 缺失/超时/崩溃/路径/参

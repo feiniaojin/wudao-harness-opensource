@@ -1,4 +1,4 @@
-// 133 #6（the upstream projectce 引进）— Guardian 父链通知收据：否决墙判定
+// 133 #6（codex 63475131ce 引进）— Guardian 父链通知收据：否决墙判定
 // （failure_streak/identical_calls 全 denied → verdict.denialCircuit）、
 // 强制中止 Terminal 带旗、SubagentRunInfo 终因、Task 工具的行为契约通知
 // （"用户确认前禁止恢复"）。

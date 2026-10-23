@@ -79,7 +79,7 @@ describe("interactive tools", () => {
 
 describe("the Bolt SDK loads (dependency-health guard)", () => {
   it("imports @slack/bolt with a usable App constructor (no broken transitive deps)", async () => {
-    // Guards the p-queue override: @slack/web-athe upstream project's p-queue@6.0.0 tarball has
+    // Guards the p-queue override: @slack/web-api's p-queue@6.0.0 tarball has
     // no "main" and crashes require on Node 22+ — the workspace pins 6.6.2.
     const mod = (await import("@slack/bolt")) as unknown as { App?: unknown; default?: { App?: unknown } };
     const Ctor = mod.App ?? mod.default?.App;

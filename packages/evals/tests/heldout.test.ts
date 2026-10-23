@@ -1,4 +1,4 @@
-// 借鉴弧 C2（the upstream project C4）— 盲 held-out 的机械面测试：密封清单守卫（真实
+// 借鉴弧 C2（a reference project C4）— 盲 held-out 的机械面测试：密封清单守卫（真实
 // contracts.json 有效 + 坏 fixture 每条规则咬人）、训练面排除、报告剥离、
 // 泄漏扫描。sealedAt/fraction 是纪律数据——测试钉「冻结字面量不漂移」。
 import { describe, it, expect } from "vitest";

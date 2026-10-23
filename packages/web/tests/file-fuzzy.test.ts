@@ -11,7 +11,7 @@ import { buildPathIndex, buildPathIndexAsync, searchPathIndex } from "../src/fil
 const rows = (hits: readonly { path: string }[]): readonly string[] => hits.map((h) => h.path);
 
 describe("file-fuzzy matching (smart-case + bitmap pre-reject)", () => {
-  it("lowercase query is case-insensitive; uppercase flips to case-sensitive (real the upstream format smart-case)", () => {
+  it("lowercase query is case-insensitive; uppercase flips to case-sensitive (real CC smart-case)", () => {
     const idx = buildPathIndex(["src/App.tsx", "src/fap.md", "APIRoute.tsx"]);
     // "ap" (lowercase) matches all three case-insensitively (A..p, a..p, A..P).
     // Scores: App 74 (boundary after '/' + consecutive + short-path), APIRoute
@@ -158,7 +158,7 @@ describe("file-fuzzy async build — time-chunked, queryable prefix (#30 pattern
     expect(advancingYields).toBeGreaterThan(0);
     // Frozen clock: elapsed is always 0 → NO yield, even at 4096 paths. A
     // count-based chunker would yield in both variants — this pins that the
-    // chunk unit is TIME (slow machines get smaller chunks, per real the upstream format).
+    // chunk unit is TIME (slow machines get smaller chunks, per real CC).
     let frozenYields = 0;
     await buildPathIndexAsync(paths, {
       chunkMs: 4,

@@ -1,9 +1,9 @@
-// 125 项 1（the upstream formatresolveCompactSpec 形）— 预留感知压缩触发线。纯函数：输入窗口/
+// 125 项 1（dsh resolveCompactSpec 形）— 预留感知压缩触发线。纯函数：输入窗口/
 // 比例/安全余量/输出预留，输出触发阈值（token 数）。loop 的 effectiveThreshold
 // 与 CLI 的 context_remaining 工具共享这一个真值点，模型/人/harness 对
 // 「还有多少上下文」永不各执一词。
 //
-// 形状（the upstream formatpackages/compaction/compaction-basic/src/config.ts:141-217 的
+// 形状（dsh packages/compaction/compaction-basic/src/config.ts:141-217 的
 // resolveCompactSpec，三次真实 1M 窗死亡的事故尸检背书）：
 //
 //   threshold = min(thresholdRatio × window, window − outputReserve − headroom)
@@ -14,9 +14,9 @@
 //   provider profile 的 defaultMaxTokens 或用户 config.maxTokens，由 CLI
 //   解析后线程进来）。长输出场景（maxTokens 相对窗口大）下，平比 0.8 的
 //   触发线会在「prompt + max_tokens 已撑爆窗口」之后才到 —— 413 每轮都由
-//   reactive clip-retry 事后救 = 从未 proactive（the upstream format同款迟到形态）。扣掉
+//   reactive clip-retry 事后救 = 从未 proactive（dsh 同款迟到形态）。扣掉
 //   预留后触发线提前到「下一次请求还放得下完整输出」的地方。
-// - headroom 是触发线之下的固定安全余量（the upstream formatheadroomTokens 同位件）：
+// - headroom 是触发线之下的固定安全余量（dsh headroomTokens 同位件）：
 //   压缩产物重放、序列化开销、估算误差都从这里吸收。
 // - outputReserve 未知（缺省 undefined / 0）= 平比 0.8 原样 —— 对每个
 //   未解析出请求帽的会话/测试夹具字节不变（红线：不改正常短输出行为；
@@ -32,7 +32,7 @@
 // （glm-code），完成走独立预算但请求帽仍按 prompt+max_tokens 检查，同一条
 // 线。windowMode 未知（未画像端点）的会话不扣预留 —— 平比，零行为变化。
 //
-// fail-loud 的边界（the upstream format对非正压力预算当场抛配置错误）：本模块是纯函数，
+// fail-loud 的边界（dsh 对非正压力预算当场抛配置错误）：本模块是纯函数，
 // 不抛 —— 压力预算（window − reserve − headroom）非正时钳到地板值，触发
 // 线落到「立即压缩」一侧（诚实反应：这个配置放不下任何输出），CLI 装配缝
 // 负责 warn（那里同时知道窗口和预留两个数）。压缩死亡螺旋由 M58 §C#3 的
@@ -44,7 +44,7 @@ export type CompactionWindowMode = "shared" | "independent" | "unknown";
 
 /** 平比帽缺省 —— M24 以来的 0.8×window 触发线（行为锚点，永不漂移）。 */
 export const DEFAULT_COMPACTION_THRESHOLD_RATIO = 0.8;
-/** 触发线之下的固定安全余量（the upstream formatheadroomTokens 同位件；2K 缺省）。 */
+/** 触发线之下的固定安全余量（dsh headroomTokens 同位件；2K 缺省）。 */
 export const DEFAULT_COMPACTION_HEADROOM_TOKENS = 2048;
 /** 压力预算非正时的触发线地板 —— 预留吃满窗口的病态配置落到「立即压缩」
  *  一侧，永不产出 ≤0 的阈值（负阈值会让 occupancy ≥ threshold 恒真，
@@ -79,7 +79,7 @@ export function resolveOutputReserveTokens(
   return maxTokens;
 }
 
-/** 预留感知触发线（the upstream formatresolveCompactSpec 形；纯函数）。
+/** 预留感知触发线（dsh resolveCompactSpec 形；纯函数）。
  *
  *  返回值永远 ≤ floor(thresholdRatio × window)（ratio 帽是硬上限——新公式
  *  只收紧不放宽）；outputReserveTokens 缺席时正好等于它（平比，字节不变）。

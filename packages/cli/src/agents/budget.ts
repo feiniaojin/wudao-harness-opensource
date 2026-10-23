@@ -1,4 +1,4 @@
-// M31 §2 — adaptive fan-out budget (the upstream project 3, anti-ratchet). Every finished
+// M31 §2 — adaptive fan-out budget (hive 3, anti-ratchet). Every finished
 // child appends a per-role sample to `.wudao/agents-stats.json` (persists
 // across sessions, last 50 samples per role). Suggestions use ONLY
 // successful, non-grace samples: estimate = median(success turns), ceiling

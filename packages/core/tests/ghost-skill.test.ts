@@ -1,4 +1,4 @@
-// M48 §3 — ghost-skill markers (the upstream). A skill loaded via read_file whose
+// M48 §3 — ghost-skill markers (hermes). A skill loaded via read_file whose
 // message later falls into a compaction span would silently vanish from the
 // model's context — the agent stops obeying the skill without knowing why.
 // Compaction now swaps pruned skill-read tool results for the canonical

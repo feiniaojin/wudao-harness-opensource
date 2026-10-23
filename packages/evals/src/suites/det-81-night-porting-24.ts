@@ -1,5 +1,5 @@
 // det-81-night-porting-24 — the deterministic pins for 夜移 036 (session-tree
-// token budget, ported from the upstream project/core/src/rollout_budget.rs). wudao
+// token budget, ported from codex codex-rs/core/src/rollout_budget.rs). wudao
 // had run-level wall-clock fuses (maxRunMs) and read-only usage stats, but no
 // tree-wide hard cap — a subagent fleet could burn unbounded tokens. Pinned
 // here through the public export: weighted accounting with cached-input-free
@@ -10,7 +10,7 @@ import { createSessionBudget } from "@wudao/core";
 import type { ModelUsage } from "@wudao/core";
 
 export interface NightPorting24Evidence {
-  // ① weighted units = output×sampling + non-cached-input×prefill (the upstream project40-of-100)
+  // ① weighted units = output×sampling + non-cached-input×prefill (codex 40-of-100)
   readonly weightedAccounting: boolean;
   // ② exhaustion is sticky and remaining clamps at 0 with full index
   readonly stickyExhaustion: boolean;
@@ -36,7 +36,7 @@ export const det81Eval: EvalDefinition<Record<string, never>, NightPorting24Evid
     return {};
   },
   async run() {
-    // ① the upstream project's exact test numbers: input 60 (40 cached) + output 15 with
+    // ① codex's exact test numbers: input 60 (40 cached) + output 15 with
     //    weights 2.0/0.5 → 15×2 + 20×0.5 = 40 units; remaining 60; index 1.
     const a = createSessionBudget({
       limitTokens: 100,
@@ -111,7 +111,7 @@ export const det81Eval: EvalDefinition<Record<string, never>, NightPorting24Evid
       if (!ok) errs.push(msg);
     };
 
-    need(e.weightedAccounting, "① weighted units must be output×sampling + non-cached-input×prefill (the upstream project 40-of-100)");
+    need(e.weightedAccounting, "① weighted units must be output×sampling + non-cached-input×prefill (codex 40-of-100)");
     need(e.stickyExhaustion, "② exhaustion must be sticky with remaining clamped at 0 and full reminder index");
     need(e.thresholdIndexing, "③ reminder_index must count crossed thresholds with index 0 restating the window start");
     need(e.dedupAndRearm, "④ dedup must be per {thread, window} and rearm must restate without refunding");

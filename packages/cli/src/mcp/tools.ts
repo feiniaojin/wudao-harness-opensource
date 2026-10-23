@@ -67,7 +67,7 @@ interface McpToolDescriptor {
 // 夜移 021: MCP text boundary hygiene. Every string an MCP server sends
 // across the wire — tool descriptions and tools/call text — is untrusted
 // input to both the model's context and any terminal that renders tool
-// results. The reference (the upstream format mcp-client sanitization) strips C0
+// results. The reference (a reference harness mcp-client sanitization) strips C0
 // controls and NFC-normalizes server responses; we go one further and also
 // strip DEL + the C1 range (CSI-adjacent controls some terminals honor) and
 // drop U+FFFD (mojibake smuggling). Tool descriptions additionally carry a
@@ -167,14 +167,14 @@ export function mcpToolFromDescriptor(serverName: string, t: McpToolDescriptor, 
 }
 
 // ---------------------------------------------------------------------------
-// P0-2（96 队列 #2）MCP resources 面 — 移植 the upstream formatListMcpResourcesTool /
+// P0-2（96 队列 #2）MCP resources 面 — 移植 CC ListMcpResourcesTool /
 // ReadMcpResourceTool 到 wudao 的 mcp__<server>__* 桥。
 //
 // resources/list、resources/read 直接骑 JsonRpcClient.request（协议层零
 // 改）。工具面由 initialize 的 capabilities.resources 决定：能力缺失不注
 // 册（byte-stable —— 能力决定工具集，静态不抖，prompt 前缀不因服务器面
 // 变化）。所有资源文本走夜移 021 的 sanitizeMcpText 边界；渲染输出套
-// core 的 capOutputLines 有界。与 the upstream format的分歧：the upstream format把两只工具标为只读+并发
+// core 的 capOutputLines 有界。与 CC 的分歧：CC 把两只工具标为只读+并发
 // 安全，wudao 沿用 mcp__ 桥的保守姿态（外部服务器跑任意逻辑，方法名不
 // 构成安全承诺）——权限管线照旧按 mcp__* ask 处理。
 // ---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ function asMcpResourceContents(result: unknown): unknown {
 }
 
 /** resources/list → 紧凑清单（每资源一行：`uri [mime] 名称：描述`），
- *  有界。非数组/空/全无效 → 空清单文案（the upstream format同款语义：没有资源不代表
+ *  有界。非数组/空/全无效 → 空清单文案（CC 同款语义：没有资源不代表
  *  服务器没有工具）。纯函数，导出供测试与零进程接缝复用。 */
 export function renderResourceList(serverName: string, resources: unknown): string {
   const empty = `MCP 服务器 "${serverName}" 没有声明资源（服务器仍可能提供工具）。`;
@@ -232,7 +232,7 @@ export function renderResourceList(serverName: string, resources: unknown): stri
 }
 
 /** resources/read → 内容块渲染：每块 `[uri mime?]` 头 + 文本正文；blob
- *  只报解码字节数（base64 永不进入上下文 —— the upstream formatpersistBinaryContent 的
+ *  只报解码字节数（base64 永不进入上下文 —— CC persistBinaryContent 的
  *  无落盘版本）；无法识别的块给显式标记。整体套 capOutputLines。 */
 export function renderResourceContents(serverName: string, uri: string, contents: unknown): string {
   const empty = `MCP 服务器 "${serverName}" 的资源 "${uri}" 返回了空内容。`;

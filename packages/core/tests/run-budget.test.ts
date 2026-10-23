@@ -138,7 +138,7 @@ describe("runAgentLoop run budget (maxRunMs)", () => {
     expect(clock).toBe(4_000);
   });
 
-  // 波次 7 #40 (the upstream project #6): the run-budget soft landing. The maxTurns fuse has
+  // 波次 7 #40 (hive #6): the run-budget soft landing. The maxTurns fuse has
   // a last-chance nudge; maxRunMs was a bare hard wall — a model still
   // exploring at the fuse lost the run with no answer at all. At 80% of the
   // budget the loop injects ONE answer-now note at the turn boundary (the

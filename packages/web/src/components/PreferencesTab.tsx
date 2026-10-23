@@ -42,7 +42,7 @@ const errText = (e: unknown): string => (e instanceof Error ? e.message : String
  *  简洁 and 高级. */
 const MODE_LABELS = { simple: "简洁模式", buddy: "Buddy 模式", advanced: "高级模式" } as const;
 
-/** 永续 v6 wave2（the upstream project C1）：改进提案卡的状态徽标（收益词表——两道人工门
+/** 永续 v6 wave2（reef C1）：改进提案卡的状态徽标（收益词表——两道人工门
  *  在词面上可见：待同意/待激活；未知 token 原样透传，不编造）。 */
 export function improveStatusLabel(status: string): string {
   switch (status) {
@@ -149,7 +149,7 @@ export function PreferencesTab({
   // refused) → the whole section hides (the 零噪音门), the rest of the tab
   // renders byte-as-before.
   const [mem, setMem] = useState<readonly MemoryEntry[] | null | undefined>(undefined);
-  // 永续 v6 弧 A（the upstream project C3）：被拦学习输入计数——「已拦 N 条可疑学习输入」
+  // 永续 v6 弧 A（reef C3）：被拦学习输入计数——「已拦 N 条可疑学习输入」
   // 提示行（凭据值/指令注入形状，未入库；老 server 不回该字段=0 零渲染）。
   const [memBlocked, setMemBlocked] = useState(0);
   const [memBusyId, setMemBusyId] = useState<string | null>(null);
@@ -196,7 +196,7 @@ export function PreferencesTab({
   const memFail = (e: unknown): void => {
     notify(`⚠️ 记忆操作失败：${e instanceof Error ? e.message : String(e)}`);
   };
-  // 永续 v6 wave2（the upstream project C1）：改进提案面——管理记忆旁的独立小节（记忆面板
+  // 永续 v6 wave2（reef C1）：改进提案面——管理记忆旁的独立小节（记忆面板
   // 旁的姊妹面）。段内懒取同管理记忆（挂载时一取+每次决定后重取；老 server
   // 缺 op / 方法缺场 → 整节隐藏，零噪音门）。
   const [improve, setImprove] = useState<readonly ImprovementWire[] | null | undefined>(undefined);
@@ -257,7 +257,7 @@ export function PreferencesTab({
     <div className="settings-section set-sec">
       <h3 className="section-title set-title">偏好</h3>
       {/* 120 弧「选择语言」：偏好行改 .setrow（标题+说明左/控件右/hairline
-          分隔，claude.ai·a ref 设置行节奏），原生 checkbox 升 .wudao-switch
+          分隔，claude.ai·dsh 设置行节奏），原生 checkbox 升 .wudao-switch
           定制开关（on=accent 实底——状态才配得上颜色）。 */}
       <label className="setrow">
         <span className="setrow-main">
@@ -472,7 +472,7 @@ export function PreferencesTab({
         )}
       </div>
     ) : null}
-    {/* 永续 v6 wave2（the upstream project C1）：改进提案——管理记忆旁的独立小节。失败反复
+    {/* 永续 v6 wave2（reef C1）：改进提案——管理记忆旁的独立小节。失败反复
         出现时助手提议把它总结成一条工作规则；生成后先过自动门禁，激活由你
         决定（两道确认），激活的规则可一键撤销。老 server → 整节隐藏。 */}
     {improve !== undefined && improve !== null ? (

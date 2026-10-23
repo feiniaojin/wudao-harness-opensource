@@ -1,4 +1,4 @@
-// 波次 8 #45 (the upstream formatsession-checkpoint-policy) — pre-dispatch durability
+// 波次 8 #45 (dsh session-checkpoint-policy) — pre-dispatch durability
 // barrier at the CLI layer. The gap: persistence ran ONLY at run-complete —
 // a crash mid-tool left NO trace that a side-effecting call was dispatched
 // (the entire run's messages were still in memory), so resume lost the
@@ -103,7 +103,7 @@ const countToolUseLines = (path: string, toolCallId: string): number => {
   } catch { return 0; }
 };
 
-describe("波次8 #45 — pre-dispatch durability barrier (a ref a ref session-checkpoint-policy)", () => {
+describe("波次8 #45 — pre-dispatch durability barrier (dsh session-checkpoint-policy)", () => {
   it("① driver: a rejected barrier fails closed end-to-end — no tool body, PERSIST_FAILED synthetic reaches history", async () => {
     let execs = 0;
     const probe: Tool = {

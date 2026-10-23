@@ -189,11 +189,11 @@ export interface CompactBoundaryData {
   readonly tier: number;
   /** ISO timestamp. */
   readonly at: string;
-  /** 125 项 1（the upstream project窗口链）— the window index this boundary OPENED
+  /** 125 项 1（codex 窗口链）— the window index this boundary OPENED
    *  (compact_boundary rows so far + 1). Additive: absent on pre-125 rows =
    *  no window concept, behavior unchanged. */
   readonly windowIndex?: number;
-  /** 125 项 2（the upstream projectWorldState）— the world snapshot AT the rotation (goal
+  /** 125 项 2（codex WorldState）— the world snapshot AT the rotation (goal
    *  state + cumulative changed files + active tools); the diff baseline for
    *  the NEXT window's boundary. Additive: absent on pre-125 rows. */
   readonly worldState?: WorldState;

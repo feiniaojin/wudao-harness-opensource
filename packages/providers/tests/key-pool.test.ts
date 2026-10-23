@@ -235,7 +235,7 @@ describe("provider key rotation on 429", () => {
 
 // ---------------------------------------------------------------------------
 // 夜移 007 (hermes credential-pool port, hardened) — STATUS-CLASSED cooldowns.
-// the reference project keys cooldowns by HTTP status class; wudao's M56 pool only cooled on
+// hermes keys cooldowns by HTTP status class; wudao's M56 pool only cooled on
 // 429 — a dead key (401/403) kept re-entering rotation, burning a full
 // round-trip + fail per request until its turn cycled away. Classes:
 //   auth (401/403) — credential dead/revoked → LONG cooldown (15min default);

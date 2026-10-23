@@ -1,4 +1,4 @@
-// 借鉴弧 α3（the upstream ec58e08a35 思想）— 漏火有界重跑：fire 已被消耗（表已
+// 借鉴弧 α3（hermes ec58e08a35 思想）— 漏火有界重跑：fire 已被消耗（表已
 // 前进）但子进程从未到达模型（WUDAO_MODEL_UNREACHED 章）→ 武装一次
 // missRetryAt，到点以 triggeredBy "miss-retry" 补跑（不推进表、不再武装——
 // 有界性靠车道身份，不靠计数器）。对垒：fire-once/no-catch-up 与 boot 缺火
@@ -72,7 +72,7 @@ describe("α3 纯逻辑 — armMissRetry 四门", () => {
     expect(armMissRetry(dailyFired({ enabled: false }), T0, T0 + MIN)).toBeUndefined();
   });
 
-  it("refuses when the retry would land at/after the next natural fire (the upstream: 不晚于 next_run_at)", () => {
+  it("refuses when the retry would land at/after the next natural fire (hermes: 不晚于 next_run_at)", () => {
     // every 5min: the next natural fire is T0+5min == the retry instant → superseded.
     const tight = dailyFired({ schedule: { type: "every", intervalMs: 5 * MIN }, nextRunAt: T0 + 5 * MIN });
     expect(armMissRetry(tight, T0, T0 + MIN)).toBeUndefined();

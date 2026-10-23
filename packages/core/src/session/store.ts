@@ -50,7 +50,7 @@ export interface ProviderChangeEntry {
 /** M33 §3: the session's human-facing short name, derived from the first user
  *  message (kebab-case, ≤6 words). Recorded once, never a message — load()
  *  filters it out like the model-state entries.
- *  夜移 005 (the upstream formatsession-title port): `source` names the writer — "derived"
+ *  夜移 005 (dsh session-title port): `source` names the writer — "derived"
  *  (M33 kebab fallback), "llm" (background title call upgrade), "manual"
  *  (user /rename). The store is append-only and the LAST name entry wins on
  *  read; auto-titling must respect manual renames, hence the tag. Optional
@@ -125,7 +125,7 @@ export interface SessionStore {
 // 用同一枚 RE 做 fail-closed 形状拒（防穿越是它的副产品：`../x` 过不了）。
 export const SESSION_ID_RE = /^[A-Za-z0-9_-]+$/;
 
-/** 夜移 031 (the upstream projectsession/jsonl/storage.ts port): a torn-tail verdict — the
+/** 夜移 031 (pi session/jsonl/storage.ts port): a torn-tail verdict — the
  *  byte prefix the file should be healed to. `healTo` is always either ""
  *  or newline-terminated, so a subsequent append can never weld onto it. */
 export interface TornTailVerdict {

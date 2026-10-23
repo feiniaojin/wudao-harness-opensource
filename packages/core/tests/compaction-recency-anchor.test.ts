@@ -1,4 +1,4 @@
-// 113-B1（the upstream project #2385 形）— 压缩摘要的 kept-tail recency anchor：
+// 113-B1（prime-agent #2385 形）— 压缩摘要的 kept-tail recency anchor：
 //   ① 摘要请求的尾指令织入最新 kept-tail assistant 文本（<recent-state-anchor>，
 //      截 500 字），replay 前缀字节零改（M24——缓存代价声明为 0）；
 //   ② compact 边界后的 summary message 追加常量权威行「保留的消息权威于本摘要」

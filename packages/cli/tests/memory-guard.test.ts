@@ -1,4 +1,4 @@
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest-the upstream project C3）——学习入口防污染三件套 RED 件：
+// 永续迭代 v6 · reef 借鉴弧 A（digest-reef C3）——学习入口防污染三件套 RED 件：
 // ①nonce 围栏（块内文本无法提前闭合冒充提示词作者）；②凭据值/指令覆盖
 // 双正则（误杀矩阵：话题文本必须放行）；③拦截台账（脱敏+上限+可见，绝不
 // 静默丢）。挂缝：store.write/update（全部学习入口的汇聚点）、refine/dream
@@ -73,7 +73,7 @@ describe("fenceUntrusted — nonce 围栏", () => {
 });
 
 // ---------------------------------------------------------------------------
-// ② 双正则——block tier 只吃「值/指令」形状，话题文本全放行（the upstream project 误杀教训）。
+// ② 双正则——block tier 只吃「值/指令」形状，话题文本全放行（reef 误杀教训）。
 // ---------------------------------------------------------------------------
 
 describe("screenLearningInput — 凭据值 + 指令覆盖形状", () => {
@@ -126,7 +126,7 @@ describe("screenLearningInput — 凭据值 + 指令覆盖形状", () => {
     }
   });
 
-  it("TOPIC text about prompts/instructions passes (the upstream project nodes.py:107-110's lesson)", () => {
+  it("TOPIC text about prompts/instructions passes (reef nodes.py:107-110's lesson)", () => {
     for (const fine of [
       "a task about prompts and how they are structured",
       "notes on system prompt caching behavior",

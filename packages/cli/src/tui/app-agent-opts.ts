@@ -10,7 +10,7 @@ import type { Mode } from "../permission.js";
 import type { CostRegistry } from "../commands/cost.js";
 import type { DriverPersonaContext } from "../driver/agent-driver.js";
 import { createMemoryRuntime } from "../memory/index.js";
-// 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线的装配缝 + 缺省锚。
+// 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线的装配缝 + 缺省锚。
 import { compactionThresholdFields, DEFAULT_COMPACTION_SETTINGS } from "../misc-config.js";
 import type { WudaoAppProps } from "./app-props.js";
 import type { UseAgentOptions } from "./use-agent.js";
@@ -105,7 +105,7 @@ export function buildAgentOptions(d: AgentOptsDeps): UseAgentOptions {
           // §7: the LIVE window (state — follows /model and /provider
           // switches; useAgent re-pushes options every render).
           contextWindowTokens: liveWindowTokens,
-          // 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线 —— 平比帽
+          // 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线 —— 平比帽
           // （ratio×window）永远在；outputReserveTokens 在场（已画像窗口语义
           // + 请求帽已知）时收紧到 min(ratio×window, window − reserve −
           // headroom)。每次 render 从 live config 重读（/model //provider 切换

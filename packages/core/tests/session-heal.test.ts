@@ -1,4 +1,5 @@
-// 夜移 031 — torn-tail JSONL self-heal + serialized session writes (the upstream project// session/jsonl/storage.ts port). A crash mid-append leaves a junk tail line
+// 夜移 031 — torn-tail JSONL self-heal + serialized session writes (pi
+// session/jsonl/storage.ts port). A crash mid-append leaves a junk tail line
 // that today is silently skipped on EVERY load forever — and a file whose
 // last line lost its trailing newline gets its next append WELDED onto that
 // line, an unhealable mid-file corruption. The port: (a) every append goes
@@ -9,7 +10,7 @@
 // re-verified inside the write queue so a concurrent append can't be lost
 // to a stale verdict); a missing trailing newline alone is repaired the same
 // way; (c) mid-file corruption does NOT heal — wudao keeps its deliberate
-// fail-open skip (the upstream projectthrows), so resume resilience is unchanged.
+// fail-open skip (pi throws), so resume resilience is unchanged.
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";

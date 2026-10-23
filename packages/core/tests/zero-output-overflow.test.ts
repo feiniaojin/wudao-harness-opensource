@@ -1,4 +1,4 @@
-// 夜移 033 — 零输出 length-stop 分流（the upstream projectpackages/ai/src/utils/overflow.ts
+// 夜移 033 — 零输出 length-stop 分流（pi packages/ai/src/utils/overflow.ts
 // Case 3 适配）：服务端把超窗输入截到窗满（Xiaomi MiMo 式），不报 413 而是回
 // stop_reason:"length" + output=0 + 输入占满窗口——这不是输出被切，是上下文
 // 溢出的伪装。013 的 nudge 会往已满的窗口再追加一条注记：确定性同败、烧光
@@ -137,7 +137,7 @@ describe("夜移 033 — zero-output length-stop diverts to the reactive compact
   });
 });
 
-describe("夜移 033 — isZeroOutputOverflow (the pure predicate, the upstream project Case 3 arithmetic)", () => {
+describe("夜移 033 — isZeroOutputOverflow (the pure predicate, pi Case 3 arithmetic)", () => {
   it("the 0.99 window-fill threshold, strict output===0, and the fail-open edges", () => {
     expect(isZeroOutputOverflow(0, 8_950, 9_000)).toBe(true);   // at/above 99%
     expect(isZeroOutputOverflow(0, 8_910, 9_000)).toBe(true);   // exactly floor(0.99*9000)

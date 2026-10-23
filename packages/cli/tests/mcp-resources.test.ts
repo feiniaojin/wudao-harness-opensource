@@ -1,6 +1,6 @@
 // P0-2（96 队列 #2）MCP resources 面 — 测试先行。
 //
-// 移植自 the upstream formatReadMcpResourceTool / ListMcpResourcesTool，落到 wudao 的
+// 移植自 CC ReadMcpResourceTool / ListMcpResourcesTool，落到 wudao 的
 // mcp__<server>__* 桥上：resources/list、resources/read 直接骑
 // JsonRpcClient.request（协议层零改），工具面由 initialize 的
 // capabilities.resources 决定（byte-stable：能力缺失不注册）。

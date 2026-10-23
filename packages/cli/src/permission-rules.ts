@@ -67,7 +67,7 @@ export function askRuleFor(toolName: string, input: Record<string, unknown>): st
     }
     return null; // no url at all → same hole, same closure
   }
-  // 夜移 006 (the upstream project permission/arity): shell records an arity-aware
+  // 夜移 006 (opencode permission/arity): shell records an arity-aware
   // command-prefix rule — never the bare tool (one approval = every command
   // was the old behavior). Compounds record nothing (allow-once only).
   if (toolName === "shell") {
@@ -90,7 +90,7 @@ export function askAnswerToDecision(answer: AskAnswer): PermissionDecision {
 }
 
 // Security fix — self-escalation via settings write. .wudao/settings.json IS
-// the runtime permission policy and .wudao/mcp.json (plus the the upstream format-compat
+// the runtime permission policy and .wudao/mcp.json (plus the CC-compat
 // project-root .mcp.json, same class of file) configures servers that
 // spawn arbitrary local commands: a model able to edit them silently widens
 // its own authority (hot reload makes the widening immediate). Writes via
@@ -139,7 +139,7 @@ export function protectedSettingsFile(toolName: string, input: Record<string, un
   return undefined;
 }
 
-// 夜移 010 (the upstream format-Py permissions/checker.py:18-200) — credential-material
+// 夜移 010 (a reference harness-Py permissions/checker.py:18-200) — credential-material
 // detection. OH-Py fnmatch-denies `*/.ssh/*`, `*/.aws/credentials`, `*/.gnupg/*`,
 // `*/.kube/config` and its own credential store before mode, surviving even
 // --dangerously-skip-permissions. Wudao's tools are workspace-confined

@@ -192,10 +192,10 @@ interface StreamingLexState {
 
 // The boundary only advances (monotonic), so the ref mutation during render
 // is idempotent under a double-render: the first pass consumes the last seam
-// of the current text, leaving a tail with no seam for the second pass (the upstream format
+// of the current text, leaving a tail with no seam for the second pass (CC
 // relies on the same property for StrictMode). A source that no longer
 // starts with the committed prefix (replacement, strip-prompts-style
-// rewrites) resets to zero and re-lexes once — the upstream's startsWith guard.
+// rewrites) resets to zero and re-lexes once — CC's startsWith guard.
 //
 // Mount point (2026-08-26 §3.2): LiveAnswer — the live answer now renders
 // markdown mid-stream inside AssistantReply's card, a deliberate web

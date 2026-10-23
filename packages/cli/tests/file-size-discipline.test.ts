@@ -32,7 +32,7 @@ const WHITELIST: Readonly<Record<string, number>> = {
   "packages/cli/src/tui/app.tsx": 1011, // TUI 主面（长程弧后入帽，刚好过线）；拆分候选=渲染分层
   "packages/web/src/protocol-core.ts": 1008, // web 协议核心（多 driver 弧后入帽，刚好过线）；拆分候选=消息/状态两域
   "apps/desktop/src-tauri/src/main.rs": 2385, // 冻结区——触界需独立提交+用户肉眼验收。2343→2385=0.4.3 gate 随源演进（LaunchAgent 定时唤起 --schedule-wake 面 +42；仍属冻结区，下批审计）
-  "packages/server/src/index.ts": 1881, // 拆分运动 batch2：ports.ts 外提；1857→1859=UiDriverPort 等五名 re-export 门面 +2（cli 跨包 dist 类型链必需）。1859→1881=永续 v6 wave2 旗舰弧（the upstream project C1 门控自改进）显式改帽：improvementFace 分发 case+形状门（+22）——纯分发面无纯函数可外提
+  "packages/server/src/index.ts": 1881, // 拆分运动 batch2：ports.ts 外提；1857→1859=UiDriverPort 等五名 re-export 门面 +2（cli 跨包 dist 类型链必需）。1859→1881=永续 v6 wave2 旗舰弧（reef C1 门控自改进）显式改帽：improvementFace 分发 case+形状门（+22）——纯分发面无纯函数可外提
   "packages/cli/src/driver/settings-ops.ts": 1631, // 1606→1631=0.4.3 gate 随源演进（122 LaunchAgent 弧：schedules.launchAgent 偏好开关面 +25——偏好页收益语行，纯接线）
   "packages/evals/src/suites/det-46-m62-config-economy.ts": 1070, // 名册套件族（同 deterministic 注记）
 };

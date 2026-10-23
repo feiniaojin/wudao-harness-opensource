@@ -1,6 +1,6 @@
 // det-52 — the cc-plugins compatibility surface pinned END TO END at the real
 // seams (fixture level, zero network, zero model). One suite walks the whole
-// Batch A-E story a the upstream formatplugin author would recognize:
+// Batch A-E story a CC plugin author would recognize:
 //
 //   §1 marketplace lifecycle — a local fixture MARKET (a real git repo cloned
 //      over file://, exactly how the cli tests ride the clone path) goes add →
@@ -8,7 +8,7 @@
 //      uninstall → update (upstream commit advances) → remove (CASCADE
 //      uninstalls its plugins, clears the market dir, the registry line, and
 //      the enabledPlugins keys).
-//   §2 frontmatter superset — a plugin skill carrying the the upstream formatfields
+//   §2 frontmatter superset — a plugin skill carrying the CC fields
 //      (when_to_use snake form, argument-hint, user-invocable, block-list
 //      allowed-tools / arguments) loads with every field surfaced and the
 //      whenToUse line merged into the <available_skills> manifest; a
@@ -26,16 +26,17 @@
 //      /skill:<name> alias onto the right skill; listSlashCommands labels each
 //      origin (workspace / plugin: <name>); a bare /<plugin-skill-name> is NOT
 //      a skill invocation.
-//   §5 hooks mapping — a hooks/hooks.json written in the upstream formatevent names
+//   §5 hooks mapping — a hooks/hooks.json written in CC event names
 //      (SessionStart w/ "startup|resume" matcher, UserPromptSubmit, Stop,
 //      PreToolUse w/ "Write|Edit", PostToolUse, SubagentStop) compiles onto
-//      the canonical on* faces through HOOK_EVENT_MAP; TeammateIdle (no the upstream format//      spelling — the E1 exclusion) warns and compiles NOTHING.
+//      the canonical on* faces through HOOK_EVENT_MAP; TeammateIdle (no CC
+//      spelling — the E1 exclusion) warns and compiles NOTHING.
 //   §6 cache invariant — across a rescanExtensions fired right after a REAL
 //      pluginInstall, the system prompt minus the trailing <available_skills>
 //      manifest is byte-for-byte identical before/after; the new skills only
 //      append manifest lines at the tail (A3's law).
 //   §7 object-form sources — a fixture .claude-plugin/marketplace.json whose
-//      entries use the upstream's OBJECT sources ({source:"url",url}, {source:"git",
+//      entries use CC's OBJECT sources ({source:"url",url}, {source:"git",
 //      url,ref}, {source:"github",owner,repo}) yields installable entries
 //      (E1b: normalized into the string grammar; the url/git forms install
 //      over file:// for real, the github form normalizes to owner/repo).
@@ -122,8 +123,8 @@ function writeText(path: string, text: string): void {
 // Fixture builders — everything lives under tmpdirs, nothing touches $HOME.
 // ---------------------------------------------------------------------------
 
-/** plugins/cc-superset — the the upstream formatsuperset plugin: frontmatter-matrix skill,
- *  paths-gated skill, one /deploy command, hooks in the upstream formatevent names. */
+/** plugins/cc-superset — the CC superset plugin: frontmatter-matrix skill,
+ *  paths-gated skill, one /deploy command, hooks in CC event names. */
 function buildSupersetPlugin(marketRoot: string): void {
   const p = join(marketRoot, "plugins", "cc-superset");
   writeJson(join(p, ".claude-plugin", "plugin.json"), { name: "cc-superset", version: "1.4.2", description: "the det-52 superset fixture" });
@@ -132,7 +133,7 @@ function buildSupersetPlugin(marketRoot: string): void {
     [
       "---",
       "name: cc-matrix",
-      "description: The the upstream format frontmatter superset",
+      "description: The CC frontmatter superset",
       "when_to_use: a superset field matrix is needed",
       "argument-hint: <topic> [details]",
       "user-invocable: false",
@@ -665,7 +666,7 @@ export const det52Eval: EvalDefinition<string, Det52Evidence> = {
 
       // =====================================================================
       // §7 object-form sources (E1b): a localDir market whose entries use
-      // the upstream's OBJECT sources; the url/git forms INSTALL over file://.
+      // CC's OBJECT sources; the url/git forms INSTALL over file://.
       // =====================================================================
       buildPluginRepo(repoA, "obj-url", false);
       buildPluginRepo(repoB, "obj-git", true);
@@ -800,7 +801,7 @@ export const det52Eval: EvalDefinition<string, Det52Evidence> = {
     need(m.pluginScope === "project", `§2 the install scope must stamp the skill, got ${JSON.stringify(m.pluginScope)}`);
     need(m.origin === "plugin", `§2 the origin tier must be plugin, got ${JSON.stringify(m.origin)}`);
     need(
-      e.frontmatter.manifestLine === "- name: cc-matrix — The the upstream format frontmatter superset — use when: a superset field matrix is needed (path: .wudao/plugins/cc-superset/skills/cc-matrix/SKILL.md)",
+      e.frontmatter.manifestLine === "- name: cc-matrix — The CC frontmatter superset — use when: a superset field matrix is needed (path: .wudao/plugins/cc-superset/skills/cc-matrix/SKILL.md)",
       `§2 the REAL skillsPromptSection manifest line must merge whenToUse into the description dash-line, got ${JSON.stringify(e.frontmatter.manifestLine)}`,
     );
     need(
@@ -877,7 +878,7 @@ export const det52Eval: EvalDefinition<string, Det52Evidence> = {
     // ---- §5 hooks mapping
     need(
       e.hooks.faces.onSessionStart === JSON.stringify([{ command: "echo det52-session-start", matcher: "startup|resume", pluginRoot: e.hooks.pluginDir }]),
-      `§5 SessionStart must compile onto onSessionStart with the upstream matcher preserved, got ${e.hooks.faces.onSessionStart}`,
+      `§5 SessionStart must compile onto onSessionStart with the CC matcher preserved, got ${e.hooks.faces.onSessionStart}`,
     );
     need(e.hooks.faces.onPromptSubmit === JSON.stringify([{ command: "echo det52-ups", pluginRoot: e.hooks.pluginDir }]), `§5 UserPromptSubmit → onPromptSubmit, got ${e.hooks.faces.onPromptSubmit}`);
     need(e.hooks.faces.onRunStop === JSON.stringify([{ command: "echo det52-stop", pluginRoot: e.hooks.pluginDir }]), `§5 Stop → onRunStop, got ${e.hooks.faces.onRunStop}`);
@@ -889,12 +890,12 @@ export const det52Eval: EvalDefinition<string, Det52Evidence> = {
     need(e.hooks.faces.onSubagentStop === JSON.stringify([{ command: "echo det52-substop", pluginRoot: e.hooks.pluginDir }]), `§5 SubagentStop → onSubagentStop (minus-on rule), got ${e.hooks.faces.onSubagentStop}`);
     need(e.hooks.faces.onTeammateIdle === "null", `§5 TeammateIdle must compile NOTHING, got ${e.hooks.faces.onTeammateIdle}`);
     need(e.hooks.mapPins.SessionStart === "onSessionStart", `§5 HOOK_EVENT_MAP SessionStart pin, got ${e.hooks.mapPins.SessionStart}`);
-    need(e.hooks.mapPins.UserPromptSubmit === "onPromptSubmit", `§5 HOOK_EVENT_MAP UserPromptSubmit pin (the the upstream format rename), got ${e.hooks.mapPins.UserPromptSubmit}`);
-    need(e.hooks.mapPins.Stop === "onRunStop", `§5 HOOK_EVENT_MAP Stop pin (the the upstream format rename), got ${e.hooks.mapPins.Stop}`);
+    need(e.hooks.mapPins.UserPromptSubmit === "onPromptSubmit", `§5 HOOK_EVENT_MAP UserPromptSubmit pin (the CC rename), got ${e.hooks.mapPins.UserPromptSubmit}`);
+    need(e.hooks.mapPins.Stop === "onRunStop", `§5 HOOK_EVENT_MAP Stop pin (the CC rename), got ${e.hooks.mapPins.Stop}`);
     need(e.hooks.mapPins.PreToolUse === "onPreToolUse", `§5 HOOK_EVENT_MAP PreToolUse pin, got ${e.hooks.mapPins.PreToolUse}`);
     need(e.hooks.mapPins.SubagentStop === "onSubagentStop", `§5 HOOK_EVENT_MAP SubagentStop pin, got ${e.hooks.mapPins.SubagentStop}`);
     need(e.hooks.mapPins.onTeammateIdle === "onTeammateIdle", `§5 the canonical onTeammateIdle key must self-map, got ${e.hooks.mapPins.onTeammateIdle}`);
-    need(!e.hooks.teammateIdleInMap, "§5 HOOK_EVENT_MAP must NOT mint a TeammateIdle the upstream format alias (the E1 exclusion)");
+    need(!e.hooks.teammateIdleInMap, "§5 HOOK_EVENT_MAP must NOT mint a TeammateIdle CC alias (the E1 exclusion)");
     need(e.hooks.teammateWarned, "§5 the loader must warn that TeammateIdle is not a known event");
 
     // ---- §6 cache invariant (A3)

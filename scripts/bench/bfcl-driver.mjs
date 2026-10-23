@@ -2,8 +2,8 @@
 // 第一段：函数调用生成。第二段：把题面+schema+首段调用喂回，要求逐参
 // 校验「值是否精确取自题面用词/单位制/值表」，不一致输出修正调用。
 // 这是通用范式（self-consistency 校验），不针对任何题面。
-import { buildRunPlan } from "external/packages/cli/dist/run.js";
-import { createProvider } from "external/packages/providers/dist/index.js";
+import { buildRunPlan } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/run.js";
+import { createProvider } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/providers/dist/index.js";
 
 const task = JSON.parse(process.argv[2]);
 const plan = buildRunPlan({

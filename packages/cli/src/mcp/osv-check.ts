@@ -6,11 +6,11 @@
 // （loadMcpTools 的既有 catch 把它变成标准的 warn+skip）；**其余一切错误
 // （网络/HTTP/JSON/超时）一律静默放行**——fail-open 是刻意的：离线用户
 // 不能因为 OSV 查不通而丢掉所有 MCP 服务器。只有"OSV 明确说这个包有
-// MAL 通告"才构成拒绝，语义上等价于 the upstream project 的 extension_malware_check
+// MAL 通告"才构成拒绝，语义上等价于 goose 的 extension_malware_check
 // （移植参考，只读）。
 //
-// 与 the upstream project 的两处刻意分歧（都在 fail-open 安全方向）：
-//   1. 不搬 uvx 的"选项-带独立值"大表（the upstream project :142-198），只认 --from=/
+// 与 goose 的两处刻意分歧（都在 fail-open 安全方向）：
+//   1. 不搬 uvx 的"选项-带独立值"大表（goose :142-198），只认 --from=/
 //      --from 两种形态（见 uvxFromPackage 注释）；
 //   2. PyPI 版本提取只认 `==`/`===` 精确形——漏解析版本只会把查询放宽到
 //      全版本（MAL 通告本来就按包生效，更保守），不会放行已知恶意包。
@@ -60,7 +60,7 @@ export function parseFirstPackageArg(ecosystem: "npm" | "PyPI", args: readonly s
 }
 
 /** 只扫参数头部的旗标区（第一个 positional / `--` 之前）：出现在包名之后
- *  的 --from 是被拉起工具自己的透传参数，不是 uvx 冷拉的包。the upstream project 为
+ *  的 --from 是被拉起工具自己的透传参数，不是 uvx 冷拉的包。goose 为
  *  uvx 维护了一张完整的"选项-带独立值"大表（:142-198），让
  *  `--directory /tmp --from pkg` 也能命中 pkg；这里**刻意不搬**——最坏情况
  *  是把某选项的独立值误当包名查了个不存在的包，OSV 查无此包 → 无 MAL

@@ -1,8 +1,8 @@
-// 永续迭代 v6 · wave2 旗舰弧（the upstream project C1）——配对回放门：改进提案激活前的
-// 确定性门禁。the upstream project backend.py 配对交错回放的 wudao 落地，语义照搬、执行面
+// 永续迭代 v6 · wave2 旗舰弧（reef C1）——配对回放门：改进提案激活前的
+// 确定性门禁。reef backend.py 配对交错回放的 wudao 落地，语义照搬、执行面
 // 重铸：
 //
-//   the upstream project 的门 = 候选树 vs 当前树，每任务两侧交错跑完整 episode（2×任务×
+//   reef 的门 = 候选树 vs 当前树，每任务两侧交错跑完整 episode（2×任务×
 //   repeats 次模型调用），wins-losses 边际裁决。wudao 的提案是**规则文本**
 //   （.wudao/rules/ 车道），不是代码——它能弱化的面是：①规则装载车道本身
 //   （加载/字节数/稳定节注入），②harness 整体回归。所以门 = 两段：
@@ -11,7 +11,7 @@
 //   规则落 .wudao/rules/），两侧都走**真实** loadContextRules +
 //   buildSystemPrompt（+ gated 规则的真实 matcher/note 构造）。判据=「提案
 //   不弱化门任务」：基线先自证健康（基线红=门不可判，fail-open 什么都不
-//   改——the upstream project「报错排在一切真分数之下」的教训：不可判绝不并列为零分）；
+//   改——reef「报错排在一切真分数之下」的教训：不可判绝不并列为零分）；
 //   候选必须通过基线通过的全部断言 + 规则在场断言（装得上、装得对）。
 //   ② 骨干 det 套件精选（5 个跨域）：det-01 基础 loop / det-06 M24 前缀
 //   稳定 / det-17 workflow / det-46 规则-上下文车道 / det-54 记忆自精化——
@@ -20,9 +20,9 @@
 //   对垒现役（2026-09-15）：Dream/refine 只精化「记忆」，提案无门直接可写
 //   的路径不存在（/rules 手写=用户自己的手）；本弧是 wudao 第一条「学到的
 //   行为变更」发布链，门是它区别于 Dream/refine 的构成性护栏。
-//   超越点（digest C1）：the upstream project 三个手写算术任务测不出 Workflow 变更
+//   超越点（digest C1）：reef 三个手写算术任务测不出 Workflow 变更
 //   （reefine 自认全 tie）——本门精选覆盖 workflow/规则/M24 域的 harness
-//   真实任务面；确定性套件无漂移，无需交错均摊（the upstream project 交错是为均摊非确定性
+//   真实任务面；确定性套件无漂移，无需交错均摊（reef 交错是为均摊非确定性
 //   模型漂移——脚本化模型按构造免漂移）；任务晋升（真实 mission 任务进
 //   门）留 seam：指纹 resolved 事件流已是候选源（弧 A 接口），待后续弧。
 //
@@ -214,7 +214,7 @@ export async function runImprovementGate(
   let ok = paired.baselineOk && paired.candidateOk && suiteErrors.length === 0;
   let reason: string | undefined;
   if (!paired.baselineOk) {
-    // Unjudgeable — the the upstream project rule: an errored baseline ranks BELOW every real
+    // Unjudgeable — the reef rule: an errored baseline ranks BELOW every real
     // verdict; the fail-open law upstream changes nothing either way.
     ok = false;
     reason = "基线未过——门不可判（未做任何改动）";

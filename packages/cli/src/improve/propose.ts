@@ -1,17 +1,17 @@
-// 永续 v6 wave2（the upstream project C1）——提案器：fresh-child 结构化生成（同意后）。
+// 永续 v6 wave2（reef C1）——提案器：fresh-child 结构化生成（同意后）。
 //
 // 形状沿 Dream 的 detached 纪律：registry.spawn 全新子代理（不 fork 前缀、
 // 不留会话痕迹——主会话字节零污染，M24 零代价）；但与 Dream 不同，本子代理
 // **无记忆工具**——它的全部输入由提示词携带（围栏化的 persisting 记录 +
 // 同 subject 相关史 + 被拒提案回读），输出走 reportSchema 结构化通道
-// （final_output 工具的参数即提案 JSON——the upstream project 实测教训 digest 六.2：
-// 「干脆用结构化输出」优于宽容解析）。the upstream project 六.3：思考型模型的提案调用要
+// （final_output 工具的参数即提案 JSON——reef 实测教训 digest 六.2：
+// 「干脆用结构化输出」优于宽容解析）。reef 六.3：思考型模型的提案调用要
 // 给足预算/超时（240s 档，非 60s 失败档）。
 //
 // 生成文本过 screenLearningInput（弧 A 三件套的第三面复用：提案=学习输入
 // 的一种）；被拦=可见拦截（台账 source:"improve"），提案记录落
 // proposer-failed 形（attempts 帽照走）——fail-open：什么都不改。
-// 防重蹈覆辙（the upstream project C4）：同 subject 的被拒提案全文回读给提案器。
+// 防重蹈覆辙（reef C4）：同 subject 的被拒提案全文回读给提案器。
 import { truncateSafe } from "@wudao/core"; // 113-A4
 import type { ModelClient } from "@wudao/core";
 import type { AgentRegistry } from "../agents/index.js";
@@ -50,7 +50,7 @@ export const PROPOSER_SYSTEM_PROMPT = [
   "除 final_output 外你没有任何工具。不要提问，直接提交。",
 ].join("\n");
 
-/** The worked example (the upstream project 六.1：完整示例远胜占位符——准入率 0/11→23/29)。 */
+/** The worked example (reef 六.1：完整示例远胜占位符——准入率 0/11→23/29)。 */
 const WORKED_EXAMPLE = [
   "## 参考示例（形状示范，内容与你的任务无关）",
   "失败记录：npm test 反复因 dist/ 未构建而失败（第 4 次出现）",
@@ -192,7 +192,7 @@ async function loadRelated(workspaceRoot: string, record: ImprovementRecord): Pr
 }
 
 /** The failed-attempt landing: back to offered (retryable) or abandoned at
- *  the attempts cap (the upstream project C4 不烧穿). Never throws. */
+ *  the attempts cap (reef C4 不烧穿). Never throws. */
 async function failAttempt(opts: ConsentOptions, record: ImprovementRecord, reason: string): Promise<void> {
   const clipped = clip(reason, 300);
   const next = withStatus(record, record.attempts >= PROPOSER_MAX_ATTEMPTS ? "abandoned" : "offered", { lastError: clipped });

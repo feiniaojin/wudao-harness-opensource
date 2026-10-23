@@ -22,7 +22,7 @@ import { createHash, randomBytes, randomInt } from "node:crypto";
 import { MAIL_CONTENT_MAX_CHARS } from "@wudao/core";
 
 /** The peer permission tier: "bypass" = the session runs with the ask layer
- *  off (mode "auto" — the local equivalent of the upstream's bypassPermissions). */
+ *  off (mode "auto" — the local equivalent of CC's bypassPermissions). */
 export type PeerTier = "bypass" | "normal";
 
 export interface PeerSenderDescriptor {

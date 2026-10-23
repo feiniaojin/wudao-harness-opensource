@@ -4,7 +4,7 @@
 // process.env reads (the caller passes env), no timers — the CLI runtime
 // (cli/src/cron.ts) owns ticking and the steering-channel enqueue.
 //
-// Semantics (spec §1, the upstream formatscheduled-tasks):
+// Semantics (spec §1, CC scheduled-tasks):
 //   • fires ONLY between turns (idle): a due task enqueues through the
 //     steering queue's low-priority channel; a task that came due while busy
 //     fires ONCE when the drain happens — never once per missed occurrence.

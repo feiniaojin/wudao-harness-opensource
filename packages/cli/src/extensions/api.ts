@@ -589,7 +589,7 @@ export function buildExtensionHooks(
   if (events.post_tool_use.length > 0) {
     hooks.onPostToolUse = async (toolName: string, input: Record<string, unknown>, result: string): Promise<void | string> => {
       const payload: PostToolUsePayload = { event: "post_tool_use", sessionId: sessionId(), tool: toolName, input: { ...input }, result };
-      // M62 §5: a handler may return a plain string (or the the upstream formatenvelope
+      // M62 §5: a handler may return a plain string (or the CC envelope
       // {hookSpecificOutput:{additionalContext}}) — it becomes context at
       // the next model call, same as command hooks.
       let context = "";

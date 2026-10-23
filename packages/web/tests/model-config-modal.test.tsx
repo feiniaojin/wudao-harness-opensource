@@ -44,7 +44,7 @@ afterEach(() => {
 
 const LIST: PersonaListResult = {
   personas: [
-    { id: "the upstream format", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
+    { id: "deepseek-native", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
     { id: "alpha", displayName: "Alpha", source: "global", layers: "headers", editable: true },
   ],
 };

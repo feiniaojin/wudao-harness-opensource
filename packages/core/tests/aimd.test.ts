@@ -1,5 +1,5 @@
-// 121 项 1 — the AIMD gate's pure state machine (the upstream format 498490680 +
-// the upstream project 5362cf300 形). Everything here is synchronous and in-memory:
+// 121 项 1 — the AIMD gate's pure state machine (a reference harness 498490680 +
+// prime-agent 5362cf300 形). Everything here is synchronous and in-memory:
 // additive increase on success, multiplicative decrease on overload-class
 // observations, clamped into [min, max], floor 1 by default. No persistence
 // exists anywhere in the module — provider capacity is transient state.

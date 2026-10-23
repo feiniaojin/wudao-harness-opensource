@@ -67,7 +67,7 @@ export function capBuffer(prev: string, text: string, maxBuffer: number): string
   return prev.length >= maxBuffer ? prev : truncateSafe(prev + text, maxBuffer);
 }
 
-// 波次 8 #43 (the upstream): exec()'s timeout kill reaches ONLY
+// 波次 8 #43 (hermes kill_process_tree): exec()'s timeout kill reaches ONLY
 // the direct child — the `sh -c` shell. Backgrounded grandchildren (`cmd &`,
 // pipe tails, daemons) get reparented and keep running: writing files,
 // holding locks, squatting the port. On POSIX the shell path spawns DETACHED
@@ -261,7 +261,7 @@ export function createShellTool(options: {
    *  NEVER consulted on the sandbox path — the docker branch returns before
    *  the await. Core stays session-unaware; the cli injects the provider. */
   readonly loginShellEnv?: () => Promise<Readonly<Record<string, string>> | undefined>;
-  /** 借鉴弧 C1（the upstream project C3）：超长诊断日志的证据保全瘦身。缺省不注入 =
+  /** 借鉴弧 C1（a reference project C3）：超长诊断日志的证据保全瘦身。缺省不注入 =
    *  行为与 pre-C1 字节相同。注入后：达到阈值的构建/测试日志先由最廉价
    *  档模型首读产出验证回执（原文照旧落盘归档）；任何一步不过都落回
    *  M46 头尾 shaping——主模型永远见不到未验证摘要（fail-open 教义）。
@@ -338,7 +338,7 @@ export function createShellTool(options: {
     const stdoutText = String(stdout);
     const stderrText = String(stderr);
     const raw = `${stdoutText}${stderrText ? (stdoutText ? "\n" : "") + stderrText : ""}`;
-    // 借鉴弧 C1（the upstream project C3）：阈值门控混合——合格诊断日志先由廉价档模型
+    // 借鉴弧 C1（a reference project C3）：阈值门控混合——合格诊断日志先由廉价档模型
     // 首读。原文先照常落盘归档（同一 M24 spill 缝），回执替换头尾预览；
     // slimToolLog 内部任何一门不过（含预筛不发起调用）都返回 fallback，
     // 控制流落到下面的 M46 分支——字节与 pre-C1 相同（fail-open）。

@@ -431,7 +431,7 @@ describe("provider management T4 — registry-scale search (R1)", () => {
     expect(h.container.textContent).toContain("无匹配");
   });
 
-  it("a MODEL-name hit surfaces its provider (the the upstream format picker rule)", async () => {
+  it("a MODEL-name hit surfaces its provider (the a reference harness picker rule)", async () => {
     const h = mountedTab(bigFixture());
     const search = h.container.querySelector("input.provider-search") as HTMLInputElement;
     await act(async () => {
@@ -832,7 +832,7 @@ describe("provider management iter6 — Persona 绑定 rides the create form", (
   // two-row fixture provider-detail's suite pins the wire contract with).
   const PERSONAS_REPLY = {
     personas: [
-      { id: "the upstream format", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
+      { id: "deepseek-native", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
       { id: "alpha", displayName: "Alpha", source: "global", layers: "headers", editable: true },
     ],
   };
@@ -861,7 +861,7 @@ describe("provider management iter6 — Persona 绑定 rides the create form", (
     const { h, form } = await openCreateForm();
     const sel = form.querySelector("select.detail-persona") as HTMLSelectElement;
     expect([...sel.querySelectorAll("option")].map((o) => (o as HTMLOptionElement).value)).toEqual([
-      "", "the upstream format", "alpha", "::none",
+      "", "deepseek-native", "alpha", "::none",
     ]);
     expect(sel.value).toBe(""); // 跟随全局 — the draft starts unbound
     // The layer qualifier select rides alongside (the edit row's exactly).

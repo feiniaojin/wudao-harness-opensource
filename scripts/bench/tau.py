@@ -3,7 +3,7 @@
 
 协议=官方：ToolCallingAgent + LLM 用户模拟器在 env 对话；reward=动作
 序列+DB 态+输出。模型全部走 127.0.0.1:8790 shim → buildRunPlan →
-createProvider（glm-code 带 the upstream format:headers persona）。
+createProvider（glm-code 带 a reference harness:headers persona）。
 
 用法: tau.py <start> <count>
 """

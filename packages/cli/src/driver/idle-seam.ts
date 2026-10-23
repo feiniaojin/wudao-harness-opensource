@@ -6,8 +6,8 @@
 // 「timer 已在则 no-op」的 start 守卫。逐字节搬家：各缝的 notice 文案、启动
 // 条件（车道存在与否/refusal）、drain 源全部原样作为参数——行为零变化。
 //
-// 124 项 1（the upstream formatb6775f6d4f 教训核对，121 §5「唤醒链无默认上限」不变量）—
-// ours-not-theirs 注记：the upstream format的后台完成通知链曾带 maxConsecutiveWakes=3 的
+// 124 项 1（dsh b6775f6d4f 教训核对，121 §5「唤醒链无默认上限」不变量）—
+// ours-not-theirs 注记：dsh 的后台完成通知链曾带 maxConsecutiveWakes=3 的
 // 默认唤醒预算，预算耗尽后「第 4 个通知不再唤醒、会话死到用户敲键」（issue
 // #641 实证），回滚才改为 opt-in。wudao 的对应唤醒面=本缝（五条 idle seam
 // 的 drain→landed），设计上**没有任何唤醒计数/预算**：poll 是无界次数的区间
@@ -23,7 +23,7 @@
 //     + /schedule unpause 重开）。
 // 不变量（后续维护者必守）：给本缝或任何后台完成唤醒链加「连续唤醒上限」
 // 之前，先读 121 §5——任何预算耗尽路径必须以用户可见通知 + 可恢复休止态
-// 收尾，永不许「不通知、不再唤醒、干等到用户敲键」的 the upstream format形态。钉子测试：
+// 收尾，永不许「不通知、不再唤醒、干等到用户敲键」的 dsh 形态。钉子测试：
 // detach-lane.test.ts 的「N 连续落定全唤醒」+ quota-park.test.ts 的重排
 // 耗尽钉。
 export interface IdleSeamDeps {

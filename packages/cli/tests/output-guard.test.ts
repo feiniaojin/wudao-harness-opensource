@@ -1,4 +1,4 @@
-// 夜移 034 — stdout 背压守卫（the upstream projectpackages/coding-agent/src/core/output-guard.ts
+// 夜移 034 — stdout 背压守卫（pi packages/coding-agent/src/core/output-guard.ts
 // 移植）。一次性模式往管道慢消费者（head/jq/下游管道）流式写答案时：
 // ①write 回调可携 EAGAIN/ENOBUFS/EWOULDBLOCK（非阻塞管道缓冲满）——裸
 // process.stdout.write 从不看回调，错误静默丢、尾部在进程退出时截断丢；

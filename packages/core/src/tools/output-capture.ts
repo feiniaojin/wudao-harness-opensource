@@ -8,7 +8,7 @@
 //   memory  — the retained window never exceeds maxBytes*2 (trimmed to
 //             maxBytes at UTF-8 code-point boundaries; a torn multibyte char
 //             or surrogate pair can never survive a trim);
-//   rate    — emissions obey the the upstream projectformula
+//   rate    — emissions obey the pi formula
 //             nextEmitAt = now + max(minIntervalMs, bytes*1000/targetBps),
 //             and append deltas are additionally SPLIT into at most one
 //             min-interval budget share (C = targetBps*minIntervalMs/1000
@@ -21,7 +21,7 @@
 //             raw window (the terminal face's source) is never rewritten.
 import type { OutputDelta } from "../tool.js";
 
-/** Live-view window budget (the upstream projectC3's default): the sliding retention target. */
+/** Live-view window budget (pi C3's default): the sliding retention target. */
 export const STREAM_WINDOW_MAX_BYTES = 50 * 1024;
 /** Rate floor: never more than one emission per this many ms. */
 export const OUTPUT_MIN_EMIT_INTERVAL_MS = 100;
@@ -131,7 +131,7 @@ export function sanitizeShellOutput(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// AdaptivePublisher — the upstream projectC3's formula with wudao's windowed-split extension.
+// AdaptivePublisher — pi C3's formula with wudao's windowed-split extension.
 // ---------------------------------------------------------------------------
 
 export interface AdaptivePublisherOptions {
@@ -195,7 +195,7 @@ export class AdaptivePublisher {
     const bytes = utf8ByteLength(next.delta.text);
     this.#nextEmitAt = now + Math.max(this.#minIntervalMs, (bytes * 1000) / this.#targetBps);
     // Commit pacing before delivery: a consumer that throws or re-enters must
-    // never re-buy the delta it already saw (the upstream project's commit-before-deliver).
+    // never re-buy the delta it already saw (pi's commit-before-deliver).
     if (next.more) this.#arm(this.#nextEmitAt - now);
     try {
       this.#publish(next.delta);

@@ -1,4 +1,4 @@
-// ω99-316 — /btw 侧问引擎（the upstream project sideQuestion 三宝石的 wudao 落地）。
+// ω99-316 — /btw 侧问引擎（prime-agent sideQuestion 三宝石的 wudao 落地）。
 //
 // 旁路 run = detached loop：克隆主投影构造独立 State，跑 core runAgentLoop，
 // 绝不触碰 session AgentState/JSONL/store——主线零扰动（M24）。三宝石：

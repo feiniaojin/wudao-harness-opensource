@@ -1,4 +1,4 @@
-// 133 #5（the upstream projectff 引进）— content_filter 恢复指导收据。
+// 133 #5（codex 8bd5a136ff 引进）— content_filter 恢复指导收据。
 // 被拦→注入指导+continue；一次性（同 run 不重复）；注入后模型可见；
 // 指导文本不含被拦内容原文（注入卫生）；stopReason 非 content_filter 零动作。
 import { describe, expect, it } from "vitest";
@@ -82,7 +82,7 @@ describe("133 #5 — content_filter 恢复指导", () => {
   it("注入卫生：指导文本不引用被拦内容原文", () => {
     const intercepted = "被拦的半截"; // 测试夹具的被拦文本
     expect(CONTENT_FILTER_GUIDANCE).not.toContain(intercepted);
-    // 指导文本 ≤ 512 字节（the upstream project同帽）
+    // 指导文本 ≤ 512 字节（codex 同帽）
     expect(Buffer.byteLength(CONTENT_FILTER_GUIDANCE, "utf8")).toBeLessThanOrEqual(512);
     // 三条纪律关键词在场
     expect(CONTENT_FILTER_GUIDANCE).toContain("不要");

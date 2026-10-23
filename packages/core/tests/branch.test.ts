@@ -181,7 +181,7 @@ describe("branch-summary (M53 §2)", () => {
     expect(branchSummaryNote([])).toBe("");
   });
 
-  it("the default budget is 16k (the upstream project's retention number)", () => {
+  it("the default budget is 16k (pi's retention number)", () => {
     expect(BRANCH_SUMMARY_BUDGET_CHARS).toBe(16_000);
   });
 

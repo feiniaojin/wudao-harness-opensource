@@ -1,4 +1,4 @@
-// ω99-45 — cooperative abort through the compaction pipeline (the upstream projectfindings C2,
+// ω99-45 — cooperative abort through the compaction pipeline (pi findings C2,
 // the wudao port). The contract under test:
 //   1. an abort mid-summarizer PROPAGATES (AbortError out) — it never degrades
 //      to the static fallback, which would be MORE work after the user asked

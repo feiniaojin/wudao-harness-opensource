@@ -6,7 +6,7 @@
 // once per entry like the TUI's Static column.
 //
 // M72 §3 — semantic collapse for the ADVANCED tool stream (research 38 §1,
-// the upstream's collapseReadSearch): consecutive OBSERVATION-tool runs (reads,
+// CC's collapseReadSearch): consecutive OBSERVATION-tool runs (reads,
 // greps, globs, web lookups) collapse into a `name ×N` group header, each
 // group expandable in place. The transform is view-side only — the history
 // array and its immutable entries are never rewritten; errored tools never
@@ -278,7 +278,7 @@ function ToolResult({ entry, onAction }: { readonly entry: ToolEntry; onAction?:
 
 /** ui-parity B — the advanced tool card's `.act` shell: the bordered card +
  *  clickable head the mockup specifies for the advanced tool stream. The
- *  head keeps the the upstream formattext contract (mark + name + (params)) and gains the
+ *  head keeps the CC text contract (mark + name + (params)) and gains the
  *  status coloring + chevron; clicking it folds/unfolds the body. Local
  *  state only (default OPEN — the historical surface always showed the
  *  result); the 8-line cap + its toggle live in the body below. */
@@ -493,7 +493,7 @@ export const HistoryList = React.memo(function HistoryList({ history, onAction, 
    *  idiom). */
   runningEditPaths?: ReadonlySet<string>;
 }): React.JSX.Element {
-  // M72 §3 (research 38 §1, the upstream's transform/render split): the grouping is an
+  // M72 §3 (research 38 §1, CC's transform/render split): the grouping is an
   // O(n) transform memoized on the history identity (App memoizes the concat
   // it passes down), kept APART from the render map — a streaming status
   // frame that changes no history re-renders zero rows instead of rebuilding

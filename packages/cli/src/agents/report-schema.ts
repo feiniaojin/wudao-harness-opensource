@@ -7,7 +7,7 @@
 //
 // ω99-5b §B: the structured finishing tool. A schema'd spawn's child gains a
 // `final_output` tool whose PARAMETERS are the report schema verbatim — the
-// provider shapes the call's arguments against it (the upstream project final_output parity:
+// provider shapes the call's arguments against it (goose final_output parity:
 // tool-args JSON is far more reliable than free text), and execute re-checks
 // through the M29 subset validator. Side-effect-free by construction.
 import { buildTool } from "@wudao/core";

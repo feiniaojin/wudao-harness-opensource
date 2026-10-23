@@ -141,7 +141,7 @@ export async function createCronRuntime(opts: CronRuntimeOptions): Promise<CronR
     throw err;
   }
 
-  // ω-1 — the dirty-flag persist (the upstream project cron/service.py pattern): the store
+  // ω-1 — the dirty-flag persist (nanobot cron/service.py pattern): the store
   // is marked dirty BEFORE the in-memory table advances, and only a
   // successful save of that-or-newer snapshot clears the flag. A crashed run
   // that never re-saved can no longer replay a stale on-disk `lastFiredAt`

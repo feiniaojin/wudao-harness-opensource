@@ -1,9 +1,9 @@
-// 夜移 035 — 回合相位计时（the upstream project/core/src/turn_timing.rs 移植）。
+// 夜移 035 — 回合相位计时（codex codex-rs/core/src/turn_timing.rs 移植）。
 // wudao 有缓存取证（M24 hit/miss 字节断言）无延迟取证——「这回合为何
 // 90s」不可答。六桶相位状态机：首采前（排队/投影） / 采样（模型流） /
 // 压缩 / 工具阻塞（gate+执行） / 采间开销（恢复梯/注记/批次钩子） /
 // 尾闲（末采后收尾）。语义钉：转换点归账当前相（advance）；嵌套 begin
-// 惰性（活动相不换）；complete 幂等且冻结；舍入残差吸入终相（the upstream project尾相
+// 惰性（活动相不换）；complete 幂等且冻结；舍入残差吸入终相（codex 尾相
 // 吸收取整）；时钟回退饱和为零；重试计数独立于请求计数。
 import { describe, it, expect } from "vitest";
 import { createTurnProfileRecorder } from "../src/turn-profile.js";
@@ -15,7 +15,7 @@ function manualClock(): { now(): number; recorder: ReturnType<typeof createTurnP
   return { now: () => t, recorder: r, set: (v: number) => { t = v; } };
 }
 
-describe("夜移 035 — turn profile: six-bucket phase accounting (the upstream project turn_timing.rs)", () => {
+describe("夜移 035 — turn profile: six-bucket phase accounting (codex turn_timing.rs)", () => {
   it("single sampling round: before / sampling / after split at exact transitions", () => {
     const c = manualClock();
     c.set(0);
@@ -133,7 +133,7 @@ describe("夜移 035 — turn profile: six-bucket phase accounting (the upstream
 
   it("rounding residual (floor truncation) is absorbed into the FINAL phase bucket", () => {
     // fractional clock: floor-per-bucket truncation leaves a residual that
-    // the upstream project's complete() adds back into the final active bucket
+    // codex's complete() adds back into the final active bucket
     let t = 0;
     const r = createTurnProfileRecorder(() => t);
     r.markTurnStarted();
@@ -180,7 +180,7 @@ describe("夜移 035 — turn profile: six-bucket phase accounting (the upstream
     expect(p.samplingRetryCount).toBe(2);
   });
 
-  it("before markTurnStarted every begin is inert (the upstream project started_at gate)", () => {
+  it("before markTurnStarted every begin is inert (codex started_at gate)", () => {
     const r = createTurnProfileRecorder();
     const s = r.beginSampling();
     s.end();

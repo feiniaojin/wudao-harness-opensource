@@ -1,4 +1,4 @@
-// 借鉴弧 α2（the upstream format2.1.269 思想）— steering 未读撤回：
+// 借鉴弧 α2（CC 2.1.269 思想）— steering 未读撤回：
 //   驱动面  recallSteer 的 CAS 语义（同帧 index+text 相符才删；已消费/错
 //   文本/越界 → false；撤回进历史 notice；系统车道不可撤——它根本不在
 //   queued 数组里）

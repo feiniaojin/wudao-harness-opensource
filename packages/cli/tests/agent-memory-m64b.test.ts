@@ -164,7 +164,7 @@ describe("M64-B roster surfaces", () => {
     expect(roster.profiles.has("broken")).toBe(false);
     expect(warnings.join(" ")).toContain("broken.json");
   });
-  it("the upstream format agents/*.md frontmatter: memory project|local|user parses; junk warns via loadPlugins", () => {
+  it("CC agents/*.md frontmatter: memory project|local|user parses; junk warns via loadPlugins", () => {
     const fm = parseAgentFrontmatter("---\nname: mem-agent\ndescription: has memory\nmemory: user\n---\nbody text");
     expect(fm.memory).toBe("user");
     expect(fm.unknownFields).toEqual([]);

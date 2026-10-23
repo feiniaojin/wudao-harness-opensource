@@ -1,10 +1,10 @@
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest-the upstream project C2）——失败指纹清单：失败模式的
-// 结构化记忆。the upstream project manifest.py 的 wudao 落地，语义照搬、存储不搬：
+// 永续迭代 v6 · reef 借鉴弧 A（digest-reef C2）——失败指纹清单：失败模式的
+// 结构化记忆。reef manifest.py 的 wudao 落地，语义照搬、存储不搬：
 //
 //   归一化 cause（绝对路径→<path>、含数字的 16+ 位标识串→<id>、数字→<n>、
 //   ANSI 剥离、空白折叠、截 200 字符）→ 指纹 = sha256(subject, stage,
 //   normalized)。归一化是纯函数、确定性——同一失败模式在不同时间戳/不同
-//   临时目录/不同 pid 下指纹相同，**跨进程重启与全新工作目录稳定**（the upstream project
+//   临时目录/不同 pid 下指纹相同，**跨进程重启与全新工作目录稳定**（reef
 //   manifest 的硬性要求）。
 //
 //   事件溯源（append-only JSONL，.wudao/failure-fingerprints.jsonl，与
@@ -13,7 +13,7 @@
 //   {type:"resolved"}。清单从事件流 FOLD 派生——不做第二份可变状态（运行时
 //   状态 ≠ 持久化状态：事件是唯一持久真相，manifest 是派生视图）。
 //
-//   状态机 new→persisting→fixed（the upstream project FailureManifest 三分类）：
+//   状态机 new→persisting→fixed（reef FailureManifest 三分类）：
 //   - 首次 observed → new（streak 1）；
 //   - 再次 observed → persisting（streak++，连续未解决的次数）；
 //   - resolved 命中未结记录 → fixed（streak 清零，resolvedCount++）；
@@ -30,7 +30,7 @@
 //   代价，直到模型显式引用。
 //
 //   wave2 接口预留（门控自改进闭环，digest C1）：`foldFailureManifest` 的
-//   persisting 记录就是未来提案器的结构化失败上下文（the upstream project 正是让提案器读
+//   persisting 记录就是未来提案器的结构化失败上下文（reef 正是让提案器读
 //   manifest 而非散文）；`readFailureEvents` + fold 即提案器读入面。
 import { createHash } from "node:crypto";
 import { mkdir, appendFile, readFile, writeFile } from "node:fs/promises";
@@ -38,7 +38,7 @@ import { dirname, join } from "node:path";
 
 /** The manifest's workspace-relative home (beside mission.json / memory.jsonl). */
 export const FAILURE_FINGERPRINTS_FILE = "failure-fingerprints.jsonl";
-/** Normalized cause cap (the upstream project manifest.py:52's 200-char truncation). */
+/** Normalized cause cap (reef manifest.py:52's 200-char truncation). */
 export const FP_CAUSE_MAX_CHARS = 200;
 /** Raw-cause preview cap for events (bounded rows; the normalized form is the identity). */
 export const FP_PREVIEW_MAX_CHARS = 160;
@@ -59,7 +59,7 @@ const LONG_ID_RE = /[A-Za-z0-9]{16,}/g;
 const hasDigit = (run: string): boolean => /[0-9]/.test(run);
 
 /** Absolute paths (POSIX /…, home ~/…, Windows C:\…) → `<path>`. Relative
- *  paths stay — they are stable identities, not noise (the upstream project masks absolute
+ *  paths stay — they are stable identities, not noise (reef masks absolute
  *  paths because temp dirs differ between runs; repo-relative paths don't). */
 const ABS_PATH_RE = /(?:~\/|[A-Za-z]:[\\/]|\/)[^\s"']*/g;
 

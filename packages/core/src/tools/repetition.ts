@@ -1,7 +1,7 @@
-// ω-1b — the repetition circuit breaker (the upstream project crates/the upstream project/src/tool_monitor.rs
+// ω-1b — the repetition circuit breaker (goose crates/goose/src/tool_monitor.rs
 // :34-82, digest 98a). A model wedged in a loop — re-reading the same file,
 // re-running the same failing command — is the most common pure token waste;
-// the upstream project interrupts once the SAME call repeats past a threshold. This module is
+// goose interrupts once the SAME call repeats past a threshold. This module is
 // the pure inspector: the loop feeds it every call that reaches the execution
 // seam, and a `repeated` verdict means "do not execute — answer with the
 // breaker error result instead".

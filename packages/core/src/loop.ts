@@ -20,7 +20,7 @@ export type { TaskHookDecision, TaskTransitionItems } from "./todo-transition.js
 import { createDeferController } from "./defer.js";
 // PB-1 探针基础设施：loop 两挂载点（transition 转发 + 工具装饰）；关=原样透传。
 import { probeAgentLoop, probeTools } from "./probe.js";
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— 运行中工具调用转后台的端口族。
+// 借鉴弧 δ（penguin 367ab084 思想）— 运行中工具调用转后台的端口族。
 import { BACKGROUNDED_TOOL_RESULT, type DetachedCall, type ToolDetachPort } from "./detach.js";
 // 拆分运动（借鉴弧 δ 顺带件）：纯合成层/赛跑机器外提至 loop-synthetics.ts
 // （逐字节搬家；re-export 维持既有公共面——index.ts 与 tests 的导入路径不动）。
@@ -45,7 +45,7 @@ export {
 export type { TurnRetryClass } from "./loop-synthetics.js";
 import { detectLoop, advanceNoProgress, NO_PROGRESS_CLEAN } from "./loop-safety.js";
 import type { LoopSafetyCall, LoopSafetyTurn, NoProgressState } from "./loop-safety.js";
-// ω-1b — the loop's two tool-result guards (the upstream project digest 98a): the repetition
+// ω-1b — the loop's two tool-result guards (goose digest 98a): the repetition
 // circuit breaker and the generic large-result shaping backstop. Both ride
 // ONE run-scoped seam around executeToolCall (see executeGuardedToolCall).
 import { createRepetitionInspector, repetitionBreakerMessage } from "./tools/repetition.js";
@@ -59,10 +59,10 @@ import { runReflectionFork, windowDigest, REFLECTION_KINDS, REFLECTION_DEFAULT_T
 import type { ReflectionOptions } from "./loop-reflection.js";
 import type { TurnProfileRecorder } from "./turn-profile.js";
 import type { SessionBudget } from "./session-budget.js";
-// 124b 项 1（the upstream projectinstant_interrupt）——流抢占通道：steering 提交即时中断
+// 124b 项 1（codex instant_interrupt）——流抢占通道：steering 提交即时中断
 // 在飞模型流（详见 stream-preempt.ts 的契约注释）。
 import type { StreamPreemptChannel } from "./stream-preempt.js";
-// 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线 —— effectiveThreshold
+// 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线 —— effectiveThreshold
 // 与 CLI 的 context_remaining 工具共享的单一真值点。
 import { resolveCompactionThresholdTokens, DEFAULT_COMPACTION_THRESHOLD_RATIO, DEFAULT_COMPACTION_HEADROOM_TOKENS } from "./compaction-threshold.js";
 export type { StreamPreemptChannel } from "./stream-preempt.js";
@@ -153,7 +153,7 @@ export interface AgentHooks {
   /** M61 §3: the stop hook is BLOCKING. Three shapes: "allow" (stop),
    *  {block:true,reason} (run one more turn with the reason injected as
    *  `[stop blocked] …`), and the prompt-hook spelling {continue:false} —
-   *  equivalent to block (the the upstream formatStop-hook contract). Block cap: three
+   *  equivalent to block (the CC Stop-hook contract). Block cap: three
    *  CONSECUTIVE continuations without any tool use end the run instead
    *  (the stall guard's official semantics — the caller learns via
    *  Terminal.stopBlockCapped). */
@@ -174,7 +174,8 @@ export interface AgentHooks {
    *  {block:true,reason} skips execution — the model receives an error tool
    *  result `blocked by hook: <reason>`. M63-C §2 adds the EXPLICIT rewrite
    *  contract: returning {updatedInput} replaces the call's arguments — the
-   *  rewritten input is what validation and the tool see (the the upstream format   *  updatedInput semantics, made explicit for our rewrite class). A throw
+   *  rewritten input is what validation and the tool see (the CC
+   *  updatedInput semantics, made explicit for our rewrite class). A throw
    *  degrades to allow (fail-open, same posture as the other gate hooks) —
    *  never a crashed run. */
   onPreToolUse?(toolName: string, input: Record<string, unknown>): PreToolUseDecision | Promise<PreToolUseDecision>;
@@ -201,7 +202,7 @@ export interface AgentHooks {
   onPostToolBatch?(batch: readonly PostToolBatchCall[]): PostToolBatchDecision | Promise<PostToolBatchDecision>;
   /** M63-A (driver-fired): a session boundary was crossed. Observer; the
    *  driver isolates failures. cc-plugins E4: a layer may RETURN a string —
-   *  the the upstream formatSessionStart context contract (hookSpecificOutput.
+   *  the CC SessionStart context contract (hookSpecificOutput.
    *  additionalContext); the driver parks it on the MetaNote projection so
    *  it reaches the first model call without touching persisted history. */
   onSessionStart?(source: SessionStartSource, info: { readonly sessionId?: string }): void | string | Promise<void | string>;
@@ -285,13 +286,13 @@ export type PreToolUseDecision =
 /** M61 §3 — the blocking Stop-hook decision (prompt-based stop hook). */
 export type StopHookDecision = "allow" | { block: true; reason: string } | { continue: false; reason?: string };
 
-/** ω99-48 (the upstream format候选 7 v2, attempt log-only settlement): the session entry a
+/** ω99-48 (dsh 候选 7 v2, attempt log-only settlement): the session entry a
  *  FAILED streaming attempt settles through — the log-only record of what the
  *  UI already rendered when the stream died mid-flight (network cut, gateway
  *  5xx, stream error) and the run is about to rethrow. Rides the M35 §2
  *  generic-entry channel (appendEntry), is NEVER a message, and NEVER enters
  *  the model-visible history: context projection is untouched, so the prefix
- *  cache pays nothing (the upstream formatneeded an entire format v2 for this settlement —
+ *  cache pays nothing (dsh needed an entire format v2 for this settlement —
  *  the entry model needs no migration). The `type` string is the contract,
  *  byte-for-byte. */
 export interface AssistantAttemptEntry {
@@ -335,7 +336,7 @@ export interface LoopOptions {
   // `deps.now ?? Date.now`); absent = Date.now. Never called when maxRunMs
   // is undefined.
   readonly now?: () => number;
-  // 夜移 013 — 输出上限恢复梯 (真 the upstream formattiered max_output_tokens recovery 的
+  // 夜移 013 — 输出上限恢复梯 (真 CC tiered max_output_tokens recovery 的
   // nudge-only 适配): a stop_reason:"length" TEXT truncation (no tool calls
   // — M70's guard owns that case) is followed by ONE resume-mid-thought
   // user note (OUTPUT_LIMIT_NUDGE) and a fresh model call, up to maxNudges
@@ -418,7 +419,7 @@ export interface LoopOptions {
      *  125 项 1: also feeds the reserve-aware threshold via the CLI's
      *  resolveOutputReserveTokens (unknown ⇒ no reserve ⇒ flat ratio). */
     readonly windowMode?: "shared" | "independent" | "unknown";
-    /** 125 项 1（the upstream formatresolveCompactSpec 形）：平比帽的比例。缺省 0.8（M24
+    /** 125 项 1（dsh resolveCompactSpec 形）：平比帽的比例。缺省 0.8（M24
      *  以来的触发线，行为锚点）。触发线永远 ≤ ratio×window —— 预留感知
      *  只收紧、永不放宽。misc-config 家族 compaction.thresholdRatio。 */
     readonly thresholdRatio?: number;
@@ -429,7 +430,7 @@ export interface LoopOptions {
      *  config.maxTokens / profile defaultMaxTokens 解析；windowMode 未画像
      *  或请求帽未知时缺省 undefined）。在场时触发线变为
      *  min(ratio×window, window − outputReserve − headroom)（长输出场景提前
-     *  触发，prompt+maxTokens 撑爆窗口之前压缩；the upstream format三次 1M 窗真实死亡的
+     *  触发，prompt+maxTokens 撑爆窗口之前压缩；dsh 三次 1M 窗真实死亡的
      *  尸检背书）；缺席 = 平比，行为与 M24 逐字节一致。 */
     readonly outputReserveTokens?: number;
     /** 波次 7 #38 (OH C2): skip the tier-2 LLM summary when the span passes
@@ -437,11 +438,11 @@ export interface LoopOptions {
      *  false restores the always-LLM path. Threaded straight into
      *  tier2Compact. */
     readonly zeroLlmDigest?: boolean;
-    /** 借鉴弧 B1（the upstream project C1）：压缩经济学定价（cacheWriteReadRatio 由调用
+    /** 借鉴弧 B1（a reference project C1）：压缩经济学定价（cacheWriteReadRatio 由调用
      *  方从 providers 价目推导后传入，不暴露为用户配置；缺省=保守缺省，
      *  ratioSource:"default" 类型化）。 */
     readonly cachePricing?: CachePricing;
-    /** 125 项 1（the upstream project窗口链）：窗口身份链。sessionKey = session id 短前缀；
+    /** 125 项 1（codex 窗口链）：窗口身份链。sessionKey = session id 短前缀；
      *  baseWindowCount = run 开始时 session entries 里已落的 compact_boundary
      *  条目数（driver 从 entries 数出——resume 后链继续而不是从 #1 重来）。
      *  每个 tier-2 边界把 summary message 头部带上
@@ -453,7 +454,7 @@ export interface LoopOptions {
       readonly sessionKey: string;
       readonly baseWindowCount: number;
     };
-    /** 125 项 2（the upstream projectWorldState 差分）：轮转时注入「当前世界 vs 上一窗口
+    /** 125 项 2（codex WorldState 差分）：轮转时注入「当前世界 vs 上一窗口
      *  末尾」的差分（goal 状态 + 文件变更 + 活跃工具），替代对事实的摘要
      *  转述。previous = 上一边界快照（driver 从最后一条 compact_boundary 的
      *  additive 字段读出；缺省=首次压缩→无差分注入，行为不变）；snapshot =
@@ -464,7 +465,7 @@ export interface LoopOptions {
       readonly snapshot: () => WorldState;
     };
   } & MicrocompactOptions;
-  /** 125 项 1（the upstream projectnew_context 形）— the model-side context-rotation seam.
+  /** 125 项 1（codex new_context 形）— the model-side context-rotation seam.
    *  Present → the loop installs its rotation port into `port` for THIS run's
    *  lifetime (the new_context tool's execute reaches it through the same box
    *  the host threaded into the tool factory) and honors the per-session
@@ -486,11 +487,11 @@ export interface LoopOptions {
   // Cooperative cancellation for the whole run. Aborts surface as a
   // `{reason:"aborted"}` terminal — never as a thrown error out of the loop.
   readonly signal?: AbortSignal;
-  // 借鉴弧 δ（v7 第三梯队，the upstream harness 367ab084 思想）— mid-flight
+  // 借鉴弧 δ（v7 第三梯队，penguin-harness 367ab084 思想）— mid-flight
   // tool-call detach: the per-run request port. When present, every non-block
   // tool execution races a detach leg alongside the abort race; a request for
   // an in-flight callId wins that call's race WITHOUT cancelling it (detach
-  // is "stop waiting", never "interrupt" — the upstream's detachSignal/stop-signal
+  // is "stop waiting", never "interrupt" — penguin's detachSignal/stop-signal
   // split): the call is answered in-history with BACKGROUNDED_TOOL_RESULT,
   // the still-running promise is handed to onDetachedCall, the batch's other
   // calls settle normally, and the run CLOSES at the turn boundary with
@@ -511,13 +512,13 @@ export interface LoopOptions {
    *  runs out and its result is simply not collected (honest discard, no
    *  unhandled rejection — the loop attaches its own catch). */
   readonly onDetachedCall?: (detached: DetachedCall) => void;
-  // 夜移 035 (the upstream projectturn_timing.rs): opt-in latency forensics for THIS run —
+  // 夜移 035 (codex turn_timing.rs): opt-in latency forensics for THIS run —
   // a six-bucket phase recorder owned by the CONSUMER (driver/CLI), created
   // before the run and completed+surfaced at its settle seam (the loop has
   // ~10 scattered terminal returns; the driver settle is the single choke
   // point). Absent = zero instrumentation overhead on the hot path.
   readonly turnProfile?: TurnProfileRecorder;
-  // 波次 8 #45 (the upstream formatsession-checkpoint-policy): the pre-dispatch durability
+  // 波次 8 #45 (dsh session-checkpoint-policy): the pre-dispatch durability
   // barrier. Called ONCE per tool-carrying turn, after the assistant message
   // lands in state.messages and BEFORE any gate/execution runs — the seam
   // where the consumer makes the session record durable (the assistant's
@@ -530,7 +531,7 @@ export interface LoopOptions {
   // persistence failure (nothing executes either way; truncation is the
   // more actionable fact). Absent = zero behavior change.
   readonly onBeforeToolDispatch?: (messages: readonly AgentMessage[]) => Promise<void> | void;
-  // ω99-48 (the upstream formatattempt log-only settlement): the sink for a FAILED streaming
+  // ω99-48 (dsh attempt log-only settlement): the sink for a FAILED streaming
   // attempt's log-only session entry. When a model attempt dies mid-stream
   // with a delivered prefix and the error is about to rethrow (non-abort —
   // the 夜移 001 interrupt path keeps its bytes), the loop builds the
@@ -554,7 +555,7 @@ export interface LoopOptions {
   // metadata (AssistantMessage.effort) so cache-report can attribute an
   // effort-switch cold turn later. It never reaches the wire (M47).
   readonly effortSent?: string;
-  // 夜移 036 (the upstream projectrollout_budget.rs): the session-tree token budget. ONE
+  // 夜移 036 (codex rollout_budget.rs): the session-tree token budget. ONE
   // instance shared by the root loop and every subagent (loopOptions spread
   // carries it; runSubagent rebinds threadId per child so reminders dedup
   // per thread while the accounting stays tree-wide). The loop CHARGES each
@@ -576,7 +577,7 @@ export interface LoopOptions {
   // — and surfaced as a `steered` event. Absent, or a queue that stays
   // empty, changes nothing.
   readonly steering?: { take(): string | undefined };
-  // 124b 项 1（the upstream projectinstant_interrupt）：流抢占通道。当用户在模型流式期
+  // 124b 项 1（codex instant_interrupt）：流抢占通道。当用户在模型流式期
   // 间提交新消息（steering 队列非空 + 驱动调用 channel.request()）时，
   // 当前在飞模型流被中断——只中断这一次调用，绝不结束运行：
   //   - 每次 attempt 前 next() 拿全新 signal，与 options.signal 合成后
@@ -606,7 +607,7 @@ export interface LoopOptions {
   // only as well). Notes are ephemeral per call — nothing carries across
   // turns. Absent, or a queue that stays empty, changes nothing.
   readonly metaNotes?: { take(): string | undefined };
-  // 夜移 003 (the upstream projecttime_reminder, drift-thresholded): periodically ground
+  // 夜移 003 (codex time_reminder, drift-thresholded): periodically ground
   // the model in the current wall-clock time. Injected on the FIRST model
   // call of the run, then again only when now() - lastInjection >= intervalMs
   // — long tool turns and human pauses re-ground, fast turns don't. Rides
@@ -637,7 +638,7 @@ export interface LoopOptions {
   // (fail-closed). Absent = disabled = byte-identical behavior — the CLI
   // wiring layer enables it; `--no-loop-reflection` ablates it.
   readonly reflection?: ReflectionOptions;
-  // ω-1b (the upstream project tool_monitor.rs, digest 98a) — the repetition circuit
+  // ω-1b (goose tool_monitor.rs, digest 98a) — the repetition circuit
   // breaker: N consecutive IDENTICAL tool calls (same name + same arguments,
   // JSON-stringified) that reach the execution seam trip an error tool
   // result instead of executing — the model re-reads the same file / re-runs
@@ -651,7 +652,7 @@ export interface LoopOptions {
   // genuinely identical call streams isolate what they measure from the
   // breaker's refusals; production callers never set it).
   readonly repetitionBreaker?: boolean;
-  // ω-1b (the upstream project large_response_handler.rs, digest 98a) — the generic
+  // ω-1b (goose large_response_handler.rs, digest 98a) — the generic
   // large-result backstop at the loop seam: EVERY tool's string result (not
   // just shell's M46 lane) is shaped head/tail + spill over loose
   // generic thresholds (1000 lines / 50KB) before it enters history.
@@ -713,7 +714,7 @@ export type LoopEvent =
   | { type: "tool_call_started"; turn: number; toolCallId: string; toolName: string; input: Record<string, unknown> }
   | { type: "tool_call_finished"; turn: number; toolCallId: string; isError: boolean; result: string; provenance?: string; /** ω-5b (I21): wall time from this call's gate start to result settle (gate + execution, performance.now()). Omitted on the truncated-guard path (never executed) and absent on pre-I21 events (additive-only). */ durationMs?: number; /** 弧 δ (additive-only): present when the call was moved to the background mid-flight — the result field is the BACKGROUNDED synthetic (the execution is still running; its real result merges later through the consumer's background lane). The started+finished pairing doctrine holds. */ backgrounded?: true }
   | { type: "turn_finished"; turn: number; toolCallCount: number }
-  | { type: "compacted"; turn: number; summaryMessage?: AgentMessage; beforeTokens: number; afterTokens: number; tier: 0 | 1 | 2 | 3; trigger: "threshold" | "boundary" | "immediate" | "reactive" | "static-fallback" | "manual" | "emergency" | "agent-rotation"; /** M52 §1: WHY it fired — manual (/compact), threshold (the 0.8×window trigger, any timing), overflow (post-413 reactive). */ reason: "manual" | "threshold" | "overflow" | "economic"; /** 借鉴弧 B1（the upstream project C1）：economic = 边界经济学门放行（盈亏平衡 ≤ 期距）。 */ /** M52 §1: tier-2 only — the fingerprint of the first kept ORIGINAL message; persisted as the compact_boundary session entry so a resumed session's next compaction continues the chain. */ firstKeptEntryId?: string; /** M70 §2 (pi): the messages the compact kept VERBATIM after the boundary (tier 0/1: the keep-recent window; tier 2: the post-span tail). Carried on compaction entries so future compactions can rebuild from it. */ retainedTail?: readonly AgentMessage[]; /** 借鉴弧 B1（the upstream project C1）：边界经济学的决策回执——只在轮边界审议武装的压缩上携带（压力/溢出/手动路径不带）。面板与测试的消费面。 */ economics?: CompactionEconomicsReport; /** 125 项 1：tier-2 only — 该边界开启的窗口序号（base + 本 run 已落边界数 + 1）；驱动层把它落进 compact_boundary 条目的 additive 字段 windowIndex。缺省 = 无窗口概念（pre-125 行为）。 */ windowIndex?: number; /** 125 项 2：tier-2 only — 轮转时刻的世界快照（driver 侧提取），作为 additive 字段落进 compact_boundary，供下一窗口做差分基线。 */ worldState?: WorldState; /** 125 项 1（the upstream project new_context 形）：模型侧轮转的回执字段——trigger 为 agent-rotation 时携带。 */ agentRotation?: { window: number; rationale: string } }
+  | { type: "compacted"; turn: number; summaryMessage?: AgentMessage; beforeTokens: number; afterTokens: number; tier: 0 | 1 | 2 | 3; trigger: "threshold" | "boundary" | "immediate" | "reactive" | "static-fallback" | "manual" | "emergency" | "agent-rotation"; /** M52 §1: WHY it fired — manual (/compact), threshold (the 0.8×window trigger, any timing), overflow (post-413 reactive). */ reason: "manual" | "threshold" | "overflow" | "economic"; /** 借鉴弧 B1（a reference project C1）：economic = 边界经济学门放行（盈亏平衡 ≤ 期距）。 */ /** M52 §1: tier-2 only — the fingerprint of the first kept ORIGINAL message; persisted as the compact_boundary session entry so a resumed session's next compaction continues the chain. */ firstKeptEntryId?: string; /** M70 §2 (pi): the messages the compact kept VERBATIM after the boundary (tier 0/1: the keep-recent window; tier 2: the post-span tail). Carried on compaction entries so future compactions can rebuild from it. */ retainedTail?: readonly AgentMessage[]; /** 借鉴弧 B1（a reference project C1）：边界经济学的决策回执——只在轮边界审议武装的压缩上携带（压力/溢出/手动路径不带）。面板与测试的消费面。 */ economics?: CompactionEconomicsReport; /** 125 项 1：tier-2 only — 该边界开启的窗口序号（base + 本 run 已落边界数 + 1）；驱动层把它落进 compact_boundary 条目的 additive 字段 windowIndex。缺省 = 无窗口概念（pre-125 行为）。 */ windowIndex?: number; /** 125 项 2：tier-2 only — 轮转时刻的世界快照（driver 侧提取），作为 additive 字段落进 compact_boundary，供下一窗口做差分基线。 */ worldState?: WorldState; /** 125 项 1（codex new_context 形）：模型侧轮转的回执字段——trigger 为 agent-rotation 时携带。 */ agentRotation?: { window: number; rationale: string } }
   // M24: prompt usage for the model call that just finished, forwarded from
   // ModelInput.onUsage (the provider's only usage channel). Emitted after
   // model_call_finished, before any tool events of the same turn.
@@ -778,7 +779,7 @@ export type LoopEvent =
   // call carries a raised completion cap); "exhausted" = the nudge budget is
   // spent, the run ends through TerminalReason "output_limit".
   // 夜移 033: "overflow-detour" = a zero-output length-stop was re-diagnosed
-  // as a disguised context overflow (the upstream projectCase 3) and diverted to the reactive
+  // as a disguised context overflow (pi Case 3) and diverted to the reactive
   // compaction instead of the nudge — the compacted events (if any) precede
   // it in the stream.
   | { type: "output_limit_recovery"; turn: number; kind: "nudge" | "exhausted" | "overflow-detour"; maxTokens?: number }
@@ -804,14 +805,14 @@ export type LoopEvent =
   // tells the HUMAN, on both channels: the run-start submit and the steering
   // drain's steered event carries its own blockedReason).
   | { type: "prompt_blocked"; turn: number; reason: string }
-  // 夜移 001 (the upstream formatinterrupted-stream finalization): the user aborted the
+  // 夜移 001 (dsh interrupted-stream finalization): the user aborted the
   // model call mid-stream AND a delivered prefix existed — the loop has just
   // committed it as an `interrupted` assistant message (state.messages tail).
   // text is the full committed text (for delta-less frontends); hasReasoning
   // says whether a thinking prefix rode along. Additive-only: unknown-event
   // consumers ignore it.
   | { type: "assistant_interrupted"; turn: number; text: string; hasReasoning: boolean }
-  // 124b 项 1（the upstream projectinstant_interrupt）：一个在飞模型流被用户的新提交
+  // 124b 项 1（codex instant_interrupt）：一个在飞模型流被用户的新提交
   // 抢占（streamPreempt.request()，运行级 signal 未触发）。被弃的
   // streamed 前缀【没有】进入转录/JSONL/模型所见（与 assistant_interrupted
   // 的提交语义相对——那是运行中止时转录保真）；dropped*Chars 是被弃
@@ -821,7 +822,7 @@ export type LoopEvent =
   // 字节为零（首 delta 前）时计数诚实为 0，事件照发（中断这个事实本身
   // 对用户可见）。Additive-only：未知事件的消费者忽略它。
   | { type: "stream_preempted"; turn: number; droppedTextChars: number; droppedReasoningChars: number; preemptedAt: string }
-  // ω99-9 (the upstream harness #571 engine-level recovery + wudao 转录语义): a transport
+  // ω99-9 (penguin #571 engine-level recovery + wudao 转录语义): a transport
   // failure landed mid-stream AFTER this turn had already delivered deltas —
   // the loop committed the delivered prefix (the assistant_interrupted event
   // immediately precedes this one), appended the frozen TURN_RECOVERY_NOTE
@@ -836,7 +837,7 @@ export type LoopEvent =
   // "clip"/"compact"/"emergency" are the overflow ladder's three inner retry
   // legs (the recovery used to wrap only the main call, so a leg drop killed
   // the run; the shared helper now covers all four). Additive field: evals
-  // and frontends can tell WHERE the transport failed. the upstream harness #571 has no
+  // and frontends can tell WHERE the transport failed. penguin #571 has no
   // equivalent dimension.
   | { type: "turn_retried"; turn: number; attempt: number; reason: string; /** ω99-315: the failure class (idle/429/5xx/network/other) — additive to the raw reason message; downstream counters (run-stats 断流重连) key on it. */ reasonClass: TurnRetryClass; leg: RecoveryLeg };
 
@@ -978,15 +979,15 @@ async function* runAgentLoopBody(
   // above buildModelInput, consumed by it; reset every turn).
   let admissionClip: number | undefined;
 
-  // 借鉴弧 B1/B2（the upstream project C1/C2）— run 级经济学追踪器 + 边界信号面。
+  // 借鉴弧 B1/B2（a reference project C1/C2）— run 级经济学追踪器 + 边界信号面。
   // pendingTodoBoundaries 由 gateTodoTransition 登记（callId → 新 board 未完
-  // 成数），结果落地且非 error 时兑现（被钩子拦下/出错的写不算边界——the upstream project
+  // 成数），结果落地且非 error 时兑现（被钩子拦下/出错的写不算边界——a reference project
   // turn_end 同款卫生）；boundarySignalThisTurn 为本轮兑现的边界（轮顶清零）。
   const economics = new CompactionEconomicsTracker(options.compaction?.cachePricing);
   let boundarySignalThisTurn: number | null = null;
   const pendingTodoBoundaries = new Map<string, number>();
 
-  // M70 §2 (the upstream project) — the usage-anchored occupancy estimate, behind the three
+  // M70 §2 (pi) — the usage-anchored occupancy estimate, behind the three
   // anti-spurious-compaction guards. The anchor is the last REAL provider
   // usage row (its promptTokens + the answering model identity + the message
   // count at report time); occupancy = max(char estimate, anchor + trailing
@@ -1026,7 +1027,7 @@ async function* runAgentLoopBody(
       : baseWindow;
     return w > 0 ? w : baseWindow;
   };
-  // 125 项 1（the upstream formatresolveCompactSpec 形）：触发线从平比 0.8×window 升格为
+  // 125 项 1（dsh resolveCompactSpec 形）：触发线从平比 0.8×window 升格为
   // 预留感知 —— min(ratio×window, window − outputReserve − headroom)。
   // outputReserveTokens 缺席（未画像端点/未解析请求帽/一切既有测试夹具）时
   // resolver 返回 floor(ratio×window) = 平比，字节不变；只在请求帽相对窗口
@@ -1068,7 +1069,7 @@ async function* runAgentLoopBody(
   // input's onUsage wrapper, which stamps the turn_usage receipt with
   // coldTurnExpected + cacheBreakAttribution.
   let coldAttribution: string | undefined;
-  // 125 项 1/项 2（the upstream project窗口链/WorldState 差分）— the run's rotation
+  // 125 项 1/项 2（codex 窗口链/WorldState 差分）— the run's rotation
   // bookkeeping. tier2Boundaries counts THIS run's landed tier-2 boundaries
   // (each is one window rotation; the cheap tiers never are); the window
   // index of the next boundary = baseWindowCount + tier2Boundaries + 1.
@@ -1358,7 +1359,7 @@ async function* runAgentLoopBody(
           trigger: staticFallback ? "static-fallback" : trigger,
           reason: econDecision?.reason === "economic" ? "economic" : compactionReason(trigger),
           firstKeptEntryId: messageEntryId(firstKept),
-          // M70 §2 (the upstream project): what the compact kept VERBATIM after the boundary —
+          // M70 §2 (pi): what the compact kept VERBATIM after the boundary —
           // carried so future compactions can rebuild from it.
           retainedTail: t2.retainedTail,
           ...(econDecision !== undefined ? { economics: economicsReport(econDecision, economics.carriedDebtTokens) } : {}),
@@ -1373,7 +1374,7 @@ async function* runAgentLoopBody(
     return { events };
   };
 
-  // 夜移 035 (the upstream projectturn_timing.rs): compaction is its OWN latency bucket
+  // 夜移 035 (codex turn_timing.rs): compaction is its OWN latency bucket
   // (its internal tier-2 summary LLM time rides with it). A thin wrapper so
   // every trigger arm — threshold, boundary, immediate, reactive, and the
   // 033 overflow detour — gets the guard without touching runCompact's body.
@@ -1390,7 +1391,7 @@ async function* runAgentLoopBody(
     }
   };
 
-  // 125 项 1（the upstream projectnew_context 形）— the MODEL-side rotation lane. The
+  // 125 项 1（codex new_context 形）— the MODEL-side rotation lane. The
   // new_context tool's execute reaches this port through the host-shared box;
   // the port validates (budget / one-per-turn / a PreCompact defer) and fires
   // a tier-2 rotation boundary RIGHT THERE (inside the sequential tool
@@ -1757,7 +1758,7 @@ async function* runAgentLoopBody(
     // cut by this check; preemption is `signal`'s job, not the budget's.
     if (maxRunMs !== undefined && runStart !== undefined) {
       const elapsedMs = now() - runStart;
-      // 波次 7 #40 (the upstream project #6) soft landing: at 80% of the wall, inject ONE
+      // 波次 7 #40 (hive #6) soft landing: at 80% of the wall, inject ONE
       // answer-now note at the turn boundary — the same append-only-tail
       // shape as the maxTurns last-chance nudge below. Without it a model
       // still exploring sails into the wall and the run ends with no answer
@@ -1896,7 +1897,7 @@ async function* runAgentLoopBody(
       preemptedPrevTurn = false;
       notes.push(PREEMPTED_PREV_TURN_NOTE);
     }
-    // 夜移 003 (the upstream projecttime_reminder, drift-thresholded): ground the model in
+    // 夜移 003 (codex time_reminder, drift-thresholded): ground the model in
     // the current time — first boundary of the run, then only when the wall
     // clock has drifted ≥ intervalMs since the last injection. Rides the same
     // notes projection below (pure suffix, never persisted).
@@ -1907,14 +1908,14 @@ async function* runAgentLoopBody(
         notes.push(formatTimeReminderNote(new Date(t)));
       }
     }
-    // 夜移 036 (the upstream projectrollout_budget): the budget reminder — the model is
+    // 夜移 036 (codex rollout_budget): the budget reminder — the model is
     // told its remaining shared budget so it can pace itself (wrap up, skip
     // exploratory reads). Rides the same projection channel (never
     // persisted). Window = the count of compaction boundaries in the active
     // message chain: a compaction rewrites the prefix → new window → the
     // dedup misses → the current remainder is restated on the first request
-    // AFTER the summary (the upstream project's window-change restatement). Index 0 (the
-    // first request of every window) restates the full remaining — the upstream project's
+    // AFTER the summary (codex's window-change restatement). Index 0 (the
+    // first request of every window) restates the full remaining — codex's
     // initial reminder. Marked delivered AFTER the note is pushed onto this
     // request's payload (the projection is built synchronously — there is no
     // cancellation window between push and request).
@@ -1997,7 +1998,7 @@ async function* runAgentLoopBody(
     // that reports usage draws from the shared budget (a retried-then-
     // overwritten pendingUsage still charged at its own callback). The
     // exhaustion flag parks here and surfaces at the settle seam below
-    // (the upstream project: the turn fails right after RawResponseCompleted).
+    // (codex: the turn fails right after RawResponseCompleted).
     let sessionBudgetExhausted = false;
     // M48 §2: same parking pattern for the terminal-shape repair audit — the
     // provider fired it from inside the call, the loop surfaces the event.
@@ -2119,7 +2120,7 @@ async function* runAgentLoopBody(
       }
       return model.generate(callInput);
     };
-    // 夜移 035 (the upstream projectturn_timing.rs): the sampling bucket rides INSIDE
+    // 夜移 035 (codex turn_timing.rs): the sampling bucket rides INSIDE
     // callModel so every call site — the happy path AND the three reactive-
     // ladder retries (clip / compact-resend / emergency) — is instrumented
     // exactly once per request. The finally covers stream aborts mid-delta.
@@ -2131,7 +2132,7 @@ async function* runAgentLoopBody(
         guard?.end();
       }
     };
-    // 夜移 001 (the upstream formatinterrupted-stream finalization): an abort mid-stream
+    // 夜移 001 (dsh interrupted-stream finalization): an abort mid-stream
     // COMMITS the delivered text/reasoning prefix as an `interrupted`
     // assistant message — the human transcript keeps exactly what streamed
     // (UI 与转录一致), resume/replay stay valid, and the next request sees
@@ -2159,7 +2160,7 @@ async function* runAgentLoopBody(
         hasReasoning: streamedReasoning.length > 0,
       };
     };
-    // 124b 项 1（the upstream projectinstant_interrupt）：finalizeInterruptedStream 的
+    // 124b 项 1（codex instant_interrupt）：finalizeInterruptedStream 的
     // 抢占孪生——语义相反。运行中止把已交付前缀提交进转录（UI 与转录一
     // 致，resume 保真）；流抢占则把被弃前缀【完全丢弃】：不 push 进
     // state.messages、不落 JSONL、不进模型所见（M24 声明：下一次请求的
@@ -2178,7 +2179,7 @@ async function* runAgentLoopBody(
         preemptedAt: new Date(now()).toISOString(),
       };
     };
-    // ω99-48 (the upstream formatattempt log-only settlement): finalizeInterruptedStream's
+    // ω99-48 (dsh attempt log-only settlement): finalizeInterruptedStream's
     // FAILURE twin. A mid-stream failure (non-abort — the abort path above
     // keeps its bytes) that is about to rethrow settles the delivered prefix
     // as a log-only assistant_attempt session entry through the
@@ -2214,7 +2215,7 @@ async function* runAgentLoopBody(
     // ω99-11: the per-turn recovery budget, SHARED by all four call sites —
     // main plus the ladder's three legs — so the worst case stays bounded
     // (recovery resends ≤ MAX_TURN_RECOVERY_ATTEMPTS per turn no matter
-    // which leg dropped; the upstream harness #571 counts per call site, which multiplies
+    // which leg dropped; penguin #571 counts per call site, which multiplies
     // the budget across a multi-leg chain). Still deliberately NOT the
     // provider ladder's own counter (混计的教训).
     let turnRecoveryAttempts = 0;
@@ -2646,10 +2647,10 @@ async function* runAgentLoopBody(
       yield { type: "usage", turn, usage: pendingUsage };
     }
     // 夜移 036: budget exhausted → the run ends HERE, before the tool batch
-    // (the upstream project: break Err(SessionBudgetExceeded) right after the response
+    // (codex: break Err(SessionBudgetExceeded) right after the response
     // completes — the response's tool calls never execute). No retry, and
     // the flag is sticky across later runs (each subsequent run burns one
-    // call, records, fails — same as the upstream project's later-turns behavior).
+    // call, records, fails — same as codex's later-turns behavior).
     if (sessionBudgetExhausted) {
       yield { type: "session_budget_exhausted", turn, usedUnits: options.sessionBudget?.budget.usedUnits() ?? 0 };
       return { reason: "session_budget_exhausted" };
@@ -2679,7 +2680,7 @@ async function* runAgentLoopBody(
       const newItems = parseTodoItems(rawTodos);
       const { created, completed } = todoTransitionDelta(lastBoardItems(state.messages), newItems);
       if (created.length === 0 && completed.length === 0) return undefined;
-      // B2（the upstream project C2）：完成 transition = 子任务边界候选。这里登记（新 board
+      // B2（a reference project C2）：完成 transition = 子任务边界候选。这里登记（新 board
       // 的未完成数为期距的「剩余边界数」），结果落地且非 error 时在下方两个
       // 落点兑现——被钩子拦下/出错的写不算边界。
       if (completed.length > 0) {
@@ -2767,12 +2768,12 @@ async function* runAgentLoopBody(
     const blocksInterrupt = (name: string): boolean =>
       execTools.find((t) => t.name === name)?.interruptBehavior === "block";
 
-    // 弧 δ (the upstream harness 367ab084): the batch's detach machinery — the SAME
+    // 弧 δ (penguin 367ab084): the batch's detach machinery — the SAME
     // lifetime as abortRace (created per tool phase, torn down in the same
     // finally). Requests are PER-CALL: the listener resolves the one armed
     // race whose callId matches, anything else parks in `detachPending` (a
     // request that landed during the call's GATE arms-and-wins the moment
-    // its race is built — the upstream's already-detached check, same posture as
+    // its race is built — penguin's already-detached check, same posture as
     // createAbortRace's signal.aborted fast path). Block tools never arm a
     // leg (their settle contract outranks backgrounding — the same exemption
     // the abort race gives them).
@@ -2836,7 +2837,7 @@ async function* runAgentLoopBody(
     // the abort race — same termination point).
     const toolGuard = options.turnProfile?.beginToolBlocking();
     try {
-      // 波次 8 #45 (the upstream formatsession-checkpoint-policy): the pre-dispatch
+      // 波次 8 #45 (dsh session-checkpoint-policy): the pre-dispatch
       // durability barrier. One await per tool-carrying turn, before the
       // truncation guard and both execution paths — the consumer lands the
       // assistant's tool_use batch on the session store HERE, so a crash
@@ -2851,7 +2852,7 @@ async function* runAgentLoopBody(
           persistFailed = true;
         }
       }
-      // M70 §1 (the upstream project) — truncated tool-call guard: a length-cut generation
+      // M70 §1 (pi) — truncated tool-call guard: a length-cut generation
       // never executes. Every call in the message fails with the explanatory
       // error result (the model re-issues complete calls next turn); gates,
       // hooks, and execution are all skipped. The calls still feed the
@@ -2914,7 +2915,7 @@ async function* runAgentLoopBody(
           }
           // 弧 δ: with a detach port, every non-block execution carries its
           // own controller (the ONLY stop path for the backgrounded task)
-          // and races a detach leg alongside the abort race — the upstream's
+          // and races a detach leg alongside the abort race — penguin's
           // union collect window (collectUntil(signal, detachSignal)):
           // execution / abort / detach, whichever settles first wins, and
           // only a DETACH win leaves the execution promise alive past the
@@ -2978,7 +2979,7 @@ async function* runAgentLoopBody(
             };
             continue;
           }
-          // 波次 8 #41 (the upstream format#13): a non-block call that COMPLETED even as the
+          // 波次 8 #41 (dsh #13): a non-block call that COMPLETED even as the
           // abort landed keeps its real result + finished event — the side
           // effect happened; discarding its output burns it. Hook/batch side
           // channels stay skipped (the run is ending; the abort return must
@@ -3037,7 +3038,7 @@ async function* runAgentLoopBody(
           // 永远走顺序路径；此位是双路径对称的保险）。
           while (parkedRotationEvents.length > 0) yield parkedRotationEvents.shift()!;
         }
-        // 波次 8 #41 (the upstream format#18): every in-flight call that lost the abort race
+        // 波次 8 #41 (dsh #18): every in-flight call that lost the abort race
         // (the sentinel) gets the UNKNOWN synthetic — paired history, honest
         // about the unverifiable outcome. Same started+finished event pairing
         // as the truncated-call guard above.
@@ -3053,7 +3054,7 @@ async function* runAgentLoopBody(
           return { reason: "aborted" };
         }
       } else {
-        // 波次 8 #41 (the upstream format#13+#18): the sequential path's three abort-return
+        // 波次 8 #41 (dsh #13+#18): the sequential path's three abort-return
         // sites below each leave the batch's tail un-answered. Every one now
         // synthesizes PAIRED results before returning — UNKNOWN for a call
         // that was in flight, NOT-STARTED for the never-dispatched tail — so
@@ -3150,7 +3151,7 @@ async function* runAgentLoopBody(
           // cancellation must not discard it. The next iteration's top abort
           // check still ends the run.
           // #41: a non-block call that COMPLETED as the abort landed keeps
-          // its real result (the upstream format#13 — don't burn a finished side effect's
+          // its real result (dsh #13 — don't burn a finished side effect's
           // output), then the tail synthesizes NOT-STARTED and the run ends.
           if (signal?.aborted && !blocksInterrupt(call.name)) {
             state.messages.push(message);
@@ -3440,7 +3441,7 @@ async function* runAgentLoopBody(
       // escalation flag gives the continuation call a raised cap when the
       // request is cap-free. Exhausted (budget spent or turn budget reached)
       // → the typed terminal, WITHOUT consulting the stop hooks (same
-      // discipline as real the upstream's "skip stop hooks after an API error" — a
+      // discipline as real CC's "skip stop hooks after an API error" — a
       // policy hook must not re-drive a mechanical failure into a spiral).
       // The exhausted event fires only when nudges were actually attempted —
       // maxNudges:0 is the opt-out (feature off: zero events, the typed
@@ -3449,7 +3450,7 @@ async function* runAgentLoopBody(
       // output_limit) and falls through to the pre-013 exit path, whose
       // next-iteration abort check owns the terminal.
       if (finalAssistant.stopReason === "length" && !options.signal?.aborted) {
-        // 夜移 033 (the upstream projectoverflow.ts Case 3) — re-diagnose BEFORE the nudge
+        // 夜移 033 (pi overflow.ts Case 3) — re-diagnose BEFORE the nudge
         // budget: a zero-output length-stop over a ≥99%-full window is a
         // disguised context overflow (the server truncated the oversized
         // input), and nudging would append MORE tokens into that same full
@@ -3501,7 +3502,7 @@ async function* runAgentLoopBody(
         }
         return { reason: "output_limit", finalMessage: finalAssistant };
       }
-      // 133 #5（the upstream projectff）— content_filter 终因的恢复指导：被
+      // 133 #5（codex 8bd5a136ff）— content_filter 终因的恢复指导：被
       // 内容安全过滤拦截不是网络故障（重试同内容只会再撞墙）。一次性
       // MetaNote 注入（同 run 不重复——模型已被告知，重复是噪音），注入
       // 后走 completed 终态（内容问题不是机械截断——013 的 output_limit
@@ -3576,7 +3577,7 @@ async function* runAgentLoopBody(
       return { reason: "completed", finalMessage: finalAssistant };
     }
 
-    // Turn boundary (M24 B5 → 借鉴弧 B1/B2, the upstream project C1/C2): the deferred
+    // Turn boundary (M24 B5 → 借鉴弧 B1/B2, a reference project C1/C2): the deferred
     // "approaching" compaction AND the boundary-signal candidate are decided
     // HERE. B1（经济学门）：盈亏平衡对期距裁决、债连本带息、窗口保护覆盖一
     // 切、压力无边界证据 fail-open（ω-2b 语义不动，债照记）。B2（边界优先）：

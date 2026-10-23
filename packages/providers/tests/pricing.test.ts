@@ -1,4 +1,4 @@
-// 借鉴弧 B1（the reference project C1）— 价目面验收：ratio 自动推导的优先级与边界形状
+// 借鉴弧 B1（a reference project C1）— 价目面验收：ratio 自动推导的优先级与边界形状
 //（catalog > env > 保守缺省）、免费缓存的永不经济档、registry 行的
 // prices 校验（fail-visible）、overlay 的空字段继承。
 import { describe, it, expect } from "vitest";

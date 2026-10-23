@@ -1,4 +1,4 @@
-// M70 §2 (the upstream project) — the three usage-anchor guards on the occupancy estimate that
+// M70 §2 (pi) — the three usage-anchor guards on the occupancy estimate that
 // drives auto-compaction, plus retainedTail on compaction entries:
 //   (a) model switch — an anchor reported by a DIFFERENT model than the
 //       current client is dropped (its tokenizer/window no longer describes

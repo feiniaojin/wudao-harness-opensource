@@ -1,4 +1,4 @@
-// 133 #5（the upstream projectff 引进）— content_filter 终因的恢复指导。
+// 133 #5（codex 8bd5a136ff 引进）— content_filter 终因的恢复指导。
 //
 // 问题：流被 content_filter 掐断时模型不知道自己被内容过滤挡了——重试只会
 // 原样再撞一次墙（甚至换个格式试图绕过）。DeepSeek/GLM 系的敏感词过滤
@@ -6,7 +6,7 @@
 // 化但无任何分类处理——既不进 013 输出上限梯（"length" 专属），也不进
 // failure_streak 恢复语义。
 //
-// 机制（the upstream project形）：stopReason==="content_filter" 时注入一条有界指导
+// 机制（codex 形）：stopReason==="content_filter" 时注入一条有界指导
 // MetaNote（512 字节帽）——核心纪律：不当瞬时故障、**禁止**以重复尝试/
 // 变格式/拆分/编码/工具/子代理/后续唤醒绕过、简述限制并给出许可的替代、
 // 继续无关的授权工作。注入卫生：不复述被拦内容，只描述终因与替代路径。
@@ -17,7 +17,7 @@
 // output_limit——被拦是内容问题不是机械截断）。
 import type { AgentMessage } from "./types.js";
 
-/** 指导文本（512B 帽——the upstream project同值；中文定制+国产模型现实） */
+/** 指导文本（512B 帽——codex 同值；中文定制+国产模型现实） */
 export const CONTENT_FILTER_GUIDANCE = `[内容过滤] 你的回复被内容安全过滤拦下了。这不是网络故障,重试同样的内容只会再次被拦。
 请遵守:1) 不要以重复、换格式、拆分、编码、用工具或子代理等方式绕过过滤;2) 简述你能完成的替代方案(换一个合规的表述角度继续任务);3) 如果当前话题无法继续,转到用户授权的其它工作上。`;
 

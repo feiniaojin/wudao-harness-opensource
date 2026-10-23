@@ -1,4 +1,4 @@
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— detachToolCall op 的三段门
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— detachToolCall op 的三段门
 // （arc-alpha-ops 同款形状）：
 //   typed 门      (callId string|undefined) → driver 未被调
 //   能力门        无该可选方法的 driver 干净拒答 + 连接存活

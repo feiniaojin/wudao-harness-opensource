@@ -5,7 +5,7 @@
 // defaults (silent); malformed JSON or wrong-typed values → warning +
 // per-field fallback (never fatal); unknown keys → warning listing them.
 //
-// ⚠️ enabled defaults FALSE — the upstream project ships auto-refine ON, wudao
+// ⚠️ enabled defaults FALSE — prime-agent ships auto-refine ON, wudao
 // reverses that ruling: a feature that silently spends model calls must be
 // explicitly enabled per workspace. WUDAO_AUTO_REFINE=off is the emergency
 // kill switch (resolveRefineAutoSettings).

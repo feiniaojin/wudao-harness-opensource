@@ -2,7 +2,7 @@
 // from packages/core; NOT matched by `vitest run`, so benchmarks stay out of
 // the CI gate by construction). The numbers are recorded in
 // docs/research/107-storage-bench-2026-09.md and exist to inform a future
-// SQLite decision — the upstream projectdecided sharding on exactly this shape (94108a1ac);
+// SQLite decision — pi decided sharding on exactly this shape (94108a1ac);
 // wudao will need the same data when that question arrives.
 // Tiers: JSONL is the real backend; the memory tier is a reference point for
 // what pure scheduling overhead looks like. Fork is a FILESYSTEM byte-copy

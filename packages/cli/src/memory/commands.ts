@@ -5,7 +5,7 @@
 // append-only JSONL and not hand-edit friendly).
 import { truncateSafe } from "@wudao/core"; // 113-A4
 import { openSessionMemoryStore, openMemoryStore } from "./store.js";
-// 永续 v6 弧 A（the upstream project C3）：被拦学习输入的可见面——list 尾行报「已拦 N 条」，
+// 永续 v6 弧 A（reef C3）：被拦学习输入的可见面——list 尾行报「已拦 N 条」，
 // 绝不静默丢（台账 .wudao/memory-blocked.jsonl 全文可查）。
 import { blockedLearningCountAt, blockedLearningHint } from "./guard.js";
 import { runDreamVerb } from "./dream.js";
@@ -97,7 +97,7 @@ export async function surfacePendingReview(workspaceRoot: string): Promise<strin
  *  synchronous recall seam from the cache, and bumps `hits` fire-and-forget
  *  (shadow-ranking telemetry only). 夜移 015 (#22): the pool is capped to the
  *  newest RECALL_POOL_CAP entries, and hits counts ONCE per entry per session
- *  — alreadySurfaced's honest adaptation. Real the upstream formatfilters surfaced memories
+ *  — alreadySurfaced's honest adaptation. Real CC filters surfaced memories
  *  from re-injection because injected memories STAY in the conversation;
  *  wudao's MetaNote channel is per-run ephemeral (projection-only, never
  *  persisted), so re-injection each run is the design — what must not repeat

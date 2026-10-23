@@ -19,7 +19,7 @@ export type Block =
   | { kind: "table"; header: string[]; rows: string[][] }
   | { kind: "para"; lines: string[] };
 
-// M72 §1 — the lex cache front end (research 38 §1, the upstream's Markdown.tsx):
+// M72 §1 — the lex cache front end (research 38 §1, CC's Markdown.tsx):
 // parseBlocks is the hot cost on every parent re-render (a streaming status
 // frame re-renders the whole history column per delta) and on unmount→remount
 // (mode swap, settings-page swap) — useMemo survives neither history-array
@@ -42,7 +42,7 @@ export type Block =
  * to parseBlocks (review F3): new grammar constructs must extend this
  * regex — parseBlocks carries the mirror warning. */
 const MD_SYNTAX_RE = /[#*`>|\[]|^\s*-\s/m;
-/** the upstream formatsamples the first 500 chars ("if markdown exists it's usually early")
+/** CC samples the first 500 chars ("if markdown exists it's usually early")
  * and accepts mis-rendering late syntax in long texts; our milestone
  * contract is byte-identical output, so the tail beyond the sample is probed
  * too (still one cheap linear scan, and short messages never pay for it). */
@@ -87,7 +87,7 @@ const stats = {
  * build (blank-line runs split paragraphs; syntax cannot occur — the probe
  * proved it) without the per-line syntax walk. Deliberately NOT cached: the
  * rebuild is a couple of allocations, and caching would retain the content
- * twice for zero repeated-lex saving (the upstream's rationale, and ours). */
+ * twice for zero repeated-lex saving (CC's rationale, and ours). */
 function plainParagraphBlocks(source: string): Block[] {
   const blocks: Block[] = [];
   let para: string[] = [];
@@ -290,7 +290,7 @@ export function parseInline(s: string): { text: string; bold?: boolean; code?: b
   return spans;
 }
 
-// M72 §2 — streaming boundary advance (research 38 §1, the upstream's
+// M72 §2 — streaming boundary advance (research 38 §1, CC's
 // StreamingMarkdown): while a source string GROWS delta by delta, everything
 // before the last stable seam is lexically final, so it is committed to a ref
 // once and never parsed again — per-delta lex cost is O(unstable suffix),

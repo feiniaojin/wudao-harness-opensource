@@ -1,4 +1,4 @@
-// ω99-58 (the upstream projectC8 mechanism, wudao placement): adopting an EXTERNALLY-HELD
+// ω99-58 (pi C8 mechanism, wudao placement): adopting an EXTERNALLY-HELD
 // session transcript — an entries array from a database / server / mirror —
 // into a SessionStore as a CONTINUABLE session. Replaying through append()
 // cannot do this: the branch-tree choreography (uuid/parentUuid links, fork
@@ -9,18 +9,18 @@
 //  - IDS ARE NEVER RE-MINTED: every adopted entry is written through
 //    store.appendEntries as given — the store's canonical serializer is the
 //    only transform, so uuid/parentUuid chains ride byte-identically.
-//  - ISOLATE-AND-CONTINUE (the upstream project's _loadEntries throws on a bad row): rows the
+//  - ISOLATE-AND-CONTINUE (pi's _loadEntries throws on a bad row): rows the
 //    store's own validator rejects are skipped and COUNTED in a receipt —
 //    the same tolerant posture as load()'s lastLoadSkipped, made observable
 //    at write time so evals/server callers can report adoption quality.
-//  - NEVER OVERWRITES (the upstream project's COPYFILE_EXCL file-import law, made assertable
+//  - NEVER OVERWRITES (pi's COPYFILE_EXCL file-import law, made assertable
 //    at the store layer): adopting into an id the store already lists is a
 //    typed SessionAdoptConflictError — the caller mints a fresh v7 id.
 //  - FORMAT-MARKER COMPOSITION (ω99-47): an external transcript may carry
 //    its own wudao_meta header (position 0 — the read-side law). A header
 //    this build supports (version ≤ SUPPORTED_FORMAT_VERSION) is transport
 //    framing: stripped, never adopted as data, the store re-stamps its own
-//    byte-pinned current marker at first write (the upstream project's no-header branch —
+//    byte-pinned current marker at first write (pi's no-header branch —
 //    "synthesize current version header"; the ≤-supported with-header
 //    branch is the same thing, because this format is additive and the
 //    no-op "migration" IS stamping current). A header naming a NEWER
@@ -43,7 +43,7 @@ import { SUPPORTED_FORMAT_VERSION, isFormatMarker, UnsupportedSessionFormatExcep
 const SESSION_ID_RE = /^[A-Za-z0-9_-]+$/;
 
 /** Typed refusal: adoption never overwrites an existing session id (the
- *  store-layer analog of the upstream project's COPYFILE_EXCL import guard). The caller picks
+ *  store-layer analog of pi's COPYFILE_EXCL import guard). The caller picks
  *  a fresh id itself — newSessionId() is the minter; retry-with-suffix is a
  *  consumer policy, not a store law. */
 export class SessionAdoptConflictError extends Error {

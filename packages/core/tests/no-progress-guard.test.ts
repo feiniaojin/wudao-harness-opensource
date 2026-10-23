@@ -254,7 +254,7 @@ describe("runAgentLoop — no-progress integration", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 129-3（the upstream project 1bb0c93a 引进）— 对级无进展台账（A,B,A,B 交错盲区）
+// 129-3（DeepCode 1bb0c93a 引进）— 对级无进展台账（A,B,A,B 交错盲区）
 // ---------------------------------------------------------------------------
 describe("129-3 — the pair ledger (alternating stalls)", () => {
   const turnAB = (name: string, arg: string, out: string): { calls: NoProgressTurn["calls"]; results: NoProgressTurn["results"] } => ({

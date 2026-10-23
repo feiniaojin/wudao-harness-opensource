@@ -378,7 +378,7 @@ describe("report 95 R1 — every turn submit goes through the chain (source pin)
 // `wudao> ` entered a SECOND concurrent runTurn over the single-owner turn
 // state (state.messages, activeGen/activeAbort, the /loop re-arm) — the exact
 // race named in design 95 §1.2. The chain collapses admission to one entry
-// point (real the upstream's "reserve before the first await" discipline): a submit
+// point (real CC's "reserve before the first await" discipline): a submit
 // landing while a turn is queued/in flight QUEUES with a one-line notice
 // instead of racing, and runs next in submission order.
 // ---------------------------------------------------------------------------
@@ -518,7 +518,7 @@ describe("report 95 R1 — turn serialization (runRepl integration: a gate-fired
 // with a one-line notice; after the turn settles the main loop replays them
 // FIFO-first through the SAME parsing path as a typed line, so a parked line
 // becomes the next turn's input instead of a lost byte. An interrupted turn
-// clears the FIFO (the upstream project's "the queue never orphans" rule, editor-less form) —
+// clears the FIFO (pi's "the queue never orphans" rule, editor-less form) —
 // the abort rejects the turn, its parked lines go with it.
 // ---------------------------------------------------------------------------
 

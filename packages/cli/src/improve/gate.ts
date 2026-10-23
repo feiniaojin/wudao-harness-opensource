@@ -1,4 +1,4 @@
-// 永续 v6 wave2（the upstream project C1）——门禁子进程运行器（cli 侧）。evals 包的
+// 永续 v6 wave2（reef C1）——门禁子进程运行器（cli 侧）。evals 包的
 // gate-cli bin 以独立 node 进程拉起：依赖图方向是 evals→cli（evals 要用
 // wudao-harness 的真实车道），cli 反向 import evals 会成环（server/ports.ts
 // 的无环律），所以「用其 dist/API 跑」的唯一合法通道=子进程。解析不到

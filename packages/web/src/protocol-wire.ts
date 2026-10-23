@@ -22,7 +22,7 @@ import type { SlashCommandInfo } from "./slash.js";
 // ---------------------------------------------------------------------------
 
 /** setMode values (the harness's modes; PROTOCOL "setMode"). 0.3.12: the
- *  three-mode redesign (对齐 the upstream harness 模式设计) — workspace(默认,工作区可
+ *  three-mode redesign (对齐 Claude 模式设计) — workspace(默认,工作区可
  *  读写)/ask(每次执行工具都问)/auto(完全权限); 0.3.14 adds plan(只读探查
  *  — reads and safe read-only commands only, everything else denied). The
  *  retired read-only and the 0.3.11 default/acceptEdits pair are gone, and
@@ -223,7 +223,7 @@ export interface PluginToggleResult {
 }
 
 // ---------------------------------------------------------------------------
-// 永续 v6 wave2（the upstream project C1）——门控自改进面（PROTOCOL "improvementFace"）。
+// 永续 v6 wave2（reef C1）——门控自改进面（PROTOCOL "improvementFace"）。
 // The web mirror of the cli improve store's wire rows (.wudao/proposals/ 记录
 // 卡——设置→偏好→改进提案 的数据)。Optional-op era：老 server 缺 op → 整节
 // 隐藏（零噪音门），绝不白屏。
@@ -643,7 +643,7 @@ export function isRetryableMutation(op: ClientOp): boolean {
     case "schedulesSetEnabled":
     case "schedulesRunNow":
       return true;
-    // 永续 v6 wave2（the upstream project C1）：改进提案面的五个决策是写副作用（镜像服务端
+    // 永续 v6 wave2（reef C1）：改进提案面的五个决策是写副作用（镜像服务端
     // isVaultedMutation——consent 起子代理、activate 写规则文件，恰一次）；
     // list 是读，不 retry。
     case "improvementFace":

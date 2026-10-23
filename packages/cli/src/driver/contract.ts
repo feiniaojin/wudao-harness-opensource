@@ -193,7 +193,7 @@ import {
   type ScheduleActionResult,
 } from "../schedules.js";
 import type { ScheduleDaemon, ScheduleListRow } from "../schedules.js";
-// 永续 v6 wave2（the upstream project C1）：门控自改进面的回执形状（提案仓 improve/store）。
+// 永续 v6 wave2（reef C1）：门控自改进面的回执形状（提案仓 improve/store）。
 import type { ImprovementFaceResult } from "../improve/store.js";
 import { extractFileReceipt } from "./file-receipt.js";
 
@@ -333,12 +333,12 @@ export interface AgentDriver {
    *  summarizer — a manual compaction runs while "not busy", so this is the
    *  one funnel every frontend (TUI Esc / WS interrupt / headless signal)
    *  already reaches. An aborted compaction writes no boundary.
-   *  借鉴弧 δ (the upstream harness 367ab084): the SAME funnel now also stops background
+   *  借鉴弧 δ (penguin 367ab084): the SAME funnel now also stops background
    *  (detached) tool tasks — an explicit user stop outranks a background run
    *  (用户意图优先); the per-call controllers get the abort, shell groups
    *  get TERM→KILL. */
   interrupt(): void;
-  /** 借鉴弧 δ（the upstream harness 367ab084 思想）— move ONE in-flight tool call to the
+  /** 借鉴弧 δ（penguin 367ab084 思想）— move ONE in-flight tool call to the
    *  background: its result stops blocking the turn, the run closes at the
    *  turn boundary (Terminal.backgrounded — the conversation comes back),
    *  and the landed result merges later through the monitor-sibling lane.
@@ -453,7 +453,7 @@ export interface AgentDriver {
    *  store's load() passed through STRUCTURED (file order, active+pending,
    *  every field mirrored; the web faces render, never parse TUI text). No
    *  workspace → {entries:[]} (the panel's empty state, the card's hide).
-   *  永续 v6 弧 A（the upstream project C3）：blocked = 被拦学习输入计数（凭据值/指令注入
+   *  永续 v6 弧 A（reef C3）：blocked = 被拦学习输入计数（凭据值/指令注入
    *  形状，未入库）——记忆管理面/审批面的「已拦 N 条」数据源；0 = 零渲染。
    *  Read-only, busy-safe, fetched on demand — never a status frame. */
   memoryList(): Promise<{ readonly entries: readonly MemoryEntryMirror[]; readonly blocked: number }>;
@@ -471,7 +471,7 @@ export interface AgentDriver {
    *  must never write). tags/hits ride update verbatim; the reply is the
    *  structured {ok, message} verdict. */
   memoryEdit(id: string, content: string): Promise<{ readonly ok: boolean; readonly message: string }>;
-  /** 永续 v6 wave2（the upstream project C1）：门控自改进面（PROTOCOL "improvementFace"）——
+  /** 永续 v6 wave2（reef C1）：门控自改进面（PROTOCOL "improvementFace"）——
    *  失败指纹 persisting 触发的改进提案，两道人工门（list 拉全部记录卡；
    *  consent=同意生成[第一道]、ignore=忽略触发、activate=激活规则[第二道]、
    *  reject=驳回留档、undo=撤销已激活）。决策幂等收敛（重放/二次点击走
@@ -515,7 +515,7 @@ export interface AgentDriver {
    *  fileWriteContent for the guard order and the CAS semantics. */
   fileWrite(path: string, content: string, base: string): Promise<FileWriteResult>;
   /** ω99-314: 文件级时光机——把指定文件恢复到指定快照（PROTOCOL
-   *  "fileRevert"，改动面板「恢复到这里」的引擎）。守卫序（the upstream format
+   *  "fileRevert"，改动面板「恢复到这里」的引擎）。守卫序（a reference harness
    *  钉死答案）：①活跃回合 busy 拒（286 同判据）；②pre-restore 安全快照
    *  （恢复前旧内容再落一份——恢复本身可撤销）；③哈希核验：当前文件 sha ≠
    *  索引最新 afterSha（用户手改过）→ 不拒但 stale:true 回执明示；④blob
@@ -587,7 +587,7 @@ export interface AgentDriver {
    *  web menu's session/always answer (absent = allow once); the rule lands
    *  through the onAskRule sink when the owner wired one. */
   answerPermission(allow: boolean, reason?: string, scope?: "session" | "always"): boolean;
-  /** 借鉴弧 α2（the upstream format2.1.269 思想）— recall ONE still-queued steering message.
+  /** 借鉴弧 α2（CC 2.1.269 思想）— recall ONE still-queued steering message.
    *  CAS semantics: removes `queue[index]` iff it still equals `text` (both
    *  from the same status frame); an entry already consumed by the loop's
    *  mid-run drain (or started as the settle follow-up run) is gone from the
@@ -633,7 +633,7 @@ export interface AgentDriver {
 // setMode 此前只设变量+emit+peer tier，模型不知道托付已发生，仍在回复里反
 // 复向用户提问。本弧把模式语义对模型一等公民化（超越点，写此存照）：档位不
 // 只是权限管线参数，也是行动契约——进 auto = 显式托付（自主决策 + 三例外停
-// 问边界 (a)(b)(c)）；出 auto = 姿态恢复声明。行业对照（the upstream formatpermission
+// 问边界 (a)(b)(c)）；出 auto = 姿态恢复声明。行业对照（CC permission
 // modes）模型侧同样盲，本设计超越该盲区。信封走 <workspace_changed> 同款
 // MetaNote（随下次首个模型调用冲刷、投影面零持久化——append-only 单次注入，
 // M24 缓存零代价）；两个触发点全覆盖：boot 播种（session 以 auto 起步，见

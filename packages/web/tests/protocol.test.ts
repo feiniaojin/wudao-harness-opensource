@@ -625,7 +625,7 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
     expect(isRetryableMutation({ op: "switch" })).toBe(false);
     expect(isRetryableMutation({ op: "recentWorkspaces", add: "/w" })).toBe(true);
     expect(isRetryableMutation({ op: "recentWorkspaces" })).toBe(false);
-    // 永续 v6 wave2（the upstream project C1）：improvementFace 是第三个 dual-form——list 拉
+    // 永续 v6 wave2（reef C1）：improvementFace 是第三个 dual-form——list 拉
     // 记录卡是纯读；五决策是写副作用（镜像服务端 isVaultedMutation：consent
     // 起子代理+模型调用、activate 写规则文件——恰一次）。
     expect(isRetryableMutation({ op: "improvementFace", action: "list" })).toBe(false);
@@ -683,7 +683,7 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
     // the mutations above → 65 + 2.
     // 借鉴弧 δ: detachToolCall (mutation — convergent refusals on replay,
     // vaulted like the α2/α1 twins) joined the mutations above → 67 + 1.
-    // 永续 v6 wave2 (the upstream project C1): improvementFace (dual-form — list 读/五决策写，
+    // 永续 v6 wave2 (reef C1): improvementFace (dual-form — list 读/五决策写，
     // mirrors the server's isVaultedMutation branch) joined the dual-form
     // family above → 68 + 1.
     // PB-2 (探针基础设施弧): probeStream + probeRecent + probeStats (reads —
@@ -737,7 +737,7 @@ describe("location helpers", () => {
 });
 
 describe("mode helpers (TUI parity)", () => {
-  it("modeLabel: the 0.3.13 the upstream format vocabulary — workspace displays as accept; plan is itself", () => {
+  it("modeLabel: the 0.3.13 CC vocabulary — workspace displays as accept; plan is itself", () => {
     expect(modeLabel("workspace")).toBe("accept");
     expect(modeLabel("ask")).toBe("ask");
     expect(modeLabel("auto")).toBe("auto");

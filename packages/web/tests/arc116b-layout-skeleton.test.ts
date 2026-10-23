@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // 116 弧 B「骨架升级」的收据套件——去廉价化第二弧（布局骨架，116 报告 §3.e
 // + 廉价感来源 #1 对话面 / #5 宽度面）。三面钉：
-//   ① 自适应内容宽：--content-max 从 720px 死宽改 the upstream format配方 clamp(680px,64%,
+//   ① 自适应内容宽：--content-max 从 720px 死宽改 dsh 配方 clamp(680px,64%,
 //      920px)（CSSOM 解析值钉死），六个消费点（.chat/.composer/.approval/
 //      .permission-card/.ask-card/.set-body）全量 census 在册、公式同源；
 //      styles 里不得再有 720px 内容定宽残留（视口断点不在此列）；
@@ -40,10 +40,10 @@ const prop = (name: string): string =>
   getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 // ---------------------------------------------------------------------------
-// ① —— 自适应内容宽（the upstream format配方 clamp + 消费点 census）。
+// ① —— 自适应内容宽（dsh 配方 clamp + 消费点 census）。
 // ---------------------------------------------------------------------------
-describe("116 弧 B — adaptive content width (the a ref a ref clamp recipe)", () => {
-  it("--content-max is the a ref a ref clamp, in BOTH themes (the token lives in :root)", () => {
+describe("116 弧 B — adaptive content width (the dsh clamp recipe)", () => {
+  it("--content-max is the dsh clamp, in BOTH themes (the token lives in :root)", () => {
     applyTheme("dark");
     applyAccent("green");
     expect(prop("--content-max")).toBe("clamp(680px, 64%, 920px)");
@@ -99,7 +99,7 @@ describe("116 弧 B — the de-framed conversation surface", () => {
   });
 
   it("tool/receipt cards KEEP their frames on the arc-A hairline tokens (工具卡留框)", () => {
-    // 框是机器回执的语言（a ref：工具卡保留卡面）——hair-1 描边 + surface 底
+    // 框是机器回执的语言（dsh：工具卡保留卡面）——hair-1 描边 + surface 底
     // 是弧 A 令牌，本弧零改。longhand 声明（cssstyle 读不了带 var() 的
     // border shorthand）。
     expect(decl(".toolcard", "border-color")).toBe("var(--hair-1)");

@@ -150,7 +150,7 @@ function formatPlan(items: readonly TodoItem[], completedAt: ReadonlyMap<string,
   return [header, "", ...body, ""].join("\n");
 }
 
-// the upstream format-style contract description: the rules are stated once and the three
+// CC-style contract description: the rules are stated once and the three
 // <example> blocks (create the board / advance it / skip with a reason) show
 // the exact payloads. Static string — byte-stable for prefix caching.
 const TODO_DESCRIPTION = `Create or replace the task board (full replacement, idempotent). This is the task-state memory: for any task needing more than ~3 steps, create the board when work starts, keep exactly ONE item in_progress, and update the board immediately after every step. The run is not finished while items are incomplete.

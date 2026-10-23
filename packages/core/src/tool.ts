@@ -44,10 +44,10 @@ export interface ModelToolDefinition {
 }
 
 // ω99-49 — the streaming-output delta protocol (two kinds, deliberately:
-// the upstream project's replace|append|slide|metadata collapses here). "append" is a pure
+// pi's replace|append|slide|metadata collapses here). "append" is a pure
 // tail extension of the consumer's view; "snapshot" REPLACES the view and
 // carries the cumulative raw head bytes the sliding window has trimmed
-// (the upstream project's slide is the snapshot special case; its metadata rides the field).
+// (pi's slide is the snapshot special case; its metadata rides the field).
 // Consumers render with exactly two paths — append concatenates, snapshot
 // substitutes — and never see anything else.
 export type OutputDelta =
@@ -63,7 +63,7 @@ export type ToolUpdateFn = (delta: OutputDelta) => void;
  *  OutputDelta plus the emitting call's identity. The identity is a LOOP-LEVEL
  *  INVARIANT: the loop's single executeToolCall point enriches every delta at
  *  the one place `call.id`/`call.name` are authoritative, so every tool and
- *  every caller gets the association for free (the upstream project's shape — consumers
+ *  every caller gets the association for free (pi's shape — consumers
  *  capturing identity per call site — is deliberately NOT taken). Tool
  *  implementations never see this type: `execute(args, onUpdate?)` keeps the
  *  base ToolUpdateFn (zero changes on the tool side, base types untouched). */
@@ -83,7 +83,7 @@ export interface Tool {
    *  caller and tool) → behavior is byte-identical to the single-parameter
    *  era; single-parameter execute implementations still satisfy the
    *  interface (optional parameter, zero breakage).
-   *  借鉴弧 δ (the upstream harness 367ab084): the optional per-call cancellation signal.
+   *  借鉴弧 δ (penguin 367ab084): the optional per-call cancellation signal.
    *  Armed by the loop ONLY when a detach port exists, and aborted ONLY on
    *  the detached lane's stop path (an explicit user stop of a backgrounded
    *  task — 用户意图优先). Normal executions and ordinary aborts NEVER fire
@@ -110,7 +110,7 @@ export interface Tool {
    *  run waits for it to settle (the loop never races it against the abort
    *  signal). Reserve for calls where cancellation itself is the hazard. */
   interruptBehavior?: "cancel" | "block";
-  /** 夜移 002 (the upstream formatguard/timeout-policy, hardened): opt-in execution
+  /** 夜移 002 (dsh guard/timeout-policy, hardened): opt-in execution
    *  deadline, armed by the loop's executor (not the tool) — the call is
    *  raced against a timer and a timeout returns a structured
    *  `[timeout after Nms]` error result instead of hanging the run. The

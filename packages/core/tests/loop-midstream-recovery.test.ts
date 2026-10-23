@@ -9,7 +9,7 @@ import {
 import type { ModelClient, ModelInput, ModelStreamEvent } from "../src/model-client.js";
 import type { AgentMessage, AssistantMessage } from "../src/types.js";
 
-// ω99-9（the upstream harness #571 引擎级恢复 + wudao 转录语义）：模型已流出 delta 后的
+// ω99-9（penguin #571 引擎级恢复 + wudao 转录语义）：模型已流出 delta 后的
 // 传输失败不再是 run 终止 + 已生成内容全丢。loop 层恢复臂把已送达前缀落为
 // `interrupted` 助手消息（复用 abort 路径的 finalizeInterruptedStream 语义），
 // 追加字节稳定续写指令 TURN_RECOVERY_NOTE，然后带着 append-only 后缀重发模型

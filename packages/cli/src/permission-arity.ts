@@ -1,11 +1,11 @@
-// 夜移 006（2026-08-28 night porting，the upstream project permission/arity port，加强版）：
+// 夜移 006（2026-08-28 night porting，opencode permission/arity port，加强版）：
 // `a`/`p` 批准一条 shell 时记录的 allowlist 规则。此前 wudao 记录裸
-// `shell` —— 批准一条命令 = 放开本会话/项目所有命令。移植 the upstream project 的
-// BashArity 前缀思路，收紧三处（the upstream project 均未做）：
+// `shell` —— 批准一条命令 = 放开本会话/项目所有命令。移植 opencode 的
+// BashArity 前缀思路，收紧三处（opencode 均未做）：
 //   1. 复合命令（引号外出现 ; | & < > ` $( 或换行）不记录规则 —— 管道的
 //      第二段永远不会被第一段的前缀预先放行；
 //   2. 破坏性命令头（rm/dd/kill…）退化为精确匹配，绝不记前缀；
-//   3. 未知命令头记录精确命令 —— the upstream project 的 arity-1 缺省会把
+//   3. 未知命令头记录精确命令 —— opencode 的 arity-1 缺省会把
 //      `python a.py` 放大成 `python *`（任意脚本全放行）。
 // 匹配侧（permission.ts ruleMatches 的 command lane）复用同一个
 // commandHeadTokens，规则生成与匹配共享一套头部语义。

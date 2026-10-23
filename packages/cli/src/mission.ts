@@ -46,7 +46,7 @@ import {
   MISSION_MAX_NOTES, MISSION_NOTE_KINDS, MISSION_NOTE_TITLE_MAX_CHARS, MISSION_NOTE_CONTENT_MAX_CHARS,
   MISSION_KNOW_LIST_MAX, MISSION_BUNDLE_NAME_PATTERN, missionBundleSkillsRoot,
 } from "./mission-model.js";
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest C2）——失败指纹清单：mission 失败结算
+// 永续迭代 v6 · reef 借鉴弧 A（digest C2）——失败指纹清单：mission 失败结算
 // 的三路（门红/棘轮红/终检红）+ 人工 fail 各记一条「失败模式」观察；修复
 // 信号（门命令再绿/任务落地）把未结指纹翻 fixed 并沉淀一条 pitfall 知识。
 // 纯层在 failure-fingerprints.ts（归一化/指纹/状态机 fold/JSONL IO——
@@ -331,7 +331,7 @@ export async function createMissionController(opts: MissionControllerOptions): P
     }
   };
 
-  // 永续 v6 弧 A（the upstream project C2）——失败指纹清单的运行时。装载=fold 一次事件流
+  // 永续 v6 弧 A（reef C2）——失败指纹清单的运行时。装载=fold 一次事件流
   // （工作区级 .wudao/failure-fingerprints.jsonl，跨会话/跨 mission 稳定）；
   // 之后每次观察/修复都是「追加一行 + 内存重 fold」（事件是唯一持久真相，
   // manifest 是派生视图——运行时状态 ≠ 持久化状态）。全部 IO fail-open

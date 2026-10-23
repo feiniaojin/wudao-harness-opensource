@@ -1,5 +1,5 @@
 // det-77-night-porting-20 — the deterministic pins for 夜移 032 (the
-// per-run net file-change ledger, ported from the upstream project's
+// per-run net file-change ledger, ported from codex's
 // turn_diff_tracker.rs). Five sequential edits to one file today leave five
 // receipts and no answer to "what did THIS run actually change?" — the
 // tracker collapses them to one before→after pair (first write's pre-state
@@ -83,7 +83,7 @@ export const det77Eval: EvalDefinition<Record<string, never>, NightPorting20Evid
       && !five.includes("f4.ts");
 
     // ⑥ before === after still listed — a run that rewrote identical bytes
-    //    is evidence, not noise (the deliberate divergence from the upstream project's
+    //    is evidence, not noise (the deliberate divergence from codex's
     //    renderer, which drops left==right).
     const t4 = createTurnDiffTracker();
     t4.record("/w/same.ts", "s", "s");
@@ -103,7 +103,7 @@ export const det77Eval: EvalDefinition<Record<string, never>, NightPorting20Evid
     need(e.resetFreshBaseline, "③ resetRun must empty the ledger and start the next run's baseline fresh");
     need(e.pathSorted, "④ files() must be path-sorted regardless of write order");
     need(e.previewRollup, "⑤ the preview line must list ≤3 names and roll up the count beyond");
-    need(e.identicalNetListed, "⑥ an identical-net write must still be listed (evidence, not noise — the wudao divergence from the upstream project's renderer)");
+    need(e.identicalNetListed, "⑥ an identical-net write must still be listed (evidence, not noise — the wudao divergence from codex's renderer)");
 
     return errs;
   },

@@ -5,7 +5,7 @@
 // failed or empty read (null is the ZERO-RENDER semantic: the web chip and
 // the TUI segment omit entirely; a failure never throws into the caller).
 //
-// COST DISCIPLINE (this arc's own ruling, vs the the upstream formatstatusline family's
+// COST DISCIPLINE (this arc's own ruling, vs the CC statusline family's
 // per-frame shell calls): the caller caches — the driver reads ONCE at
 // boot and re-reads at RUN-SETTLE boundaries + agent-root switches, NEVER
 // per status frame (the status channel re-broadcasts far more often than

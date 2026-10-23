@@ -1,4 +1,4 @@
-// 113-B2（the upstream project #2465 形）— goal 续跑在 /bg（detach lane）有活任务时挂起：
+// 113-B2（prime-agent #2465 形）— goal 续跑在 /bg（detach lane）有活任务时挂起：
 //   • /bg 活任务 → 本轮 goal 续跑谓词 hold（不烧续跑轮、评估器零调用、
 //     "evaluation skipped" 通知落史）；
 //   • settle → 恢复信号复用既有机制：landed 注入的 startRun 开新 run，

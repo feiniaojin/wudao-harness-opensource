@@ -1,7 +1,8 @@
-// cc-plugins A1 — the marketplace module: the upstream format-compatible source parsing
+// cc-plugins A1 — the marketplace module: CC-compatible source parsing
 // (owner/repo | git url#ref | local dir | local marketplace.json), the
 // marketplace.json reader (unknown fields ignored, bad plugin entries
-// dropped + counted, missing plugins array = typed error; E1b: the upstream format// object-form entry sources — url/git/github — normalize to the string
+// dropped + counted, missing plugins array = typed error; E1b: CC
+// object-form entry sources — url/git/github — normalize to the string
 // grammar), and the
 // add/list/update/remove lifecycle over `<globalHome>/marketplaces/` + the
 // `marketplaces.json` registry. All git paths run against LOCAL fixture
@@ -56,7 +57,7 @@ function makeLocalMarket(dir: string, name: string): string {
   writeMarketJson(dir, {
     name,
     description: `the ${name} market`,
-    strict: true, // the upstream format field we do not consume — must be ignored, not fatal
+    strict: true, // CC field we do not consume — must be ignored, not fatal
     plugins: [
       { name: "greet", source: "./plugins/greet", description: "greets", version: "1.0.0" },
       { name: "odd", source: "./plugins/odd", category: "bonus" }, // unknown entry field — ignored
@@ -189,7 +190,7 @@ describe("parseMarketSource", () => {
 });
 
 // ---------------------------------------------------------------------------
-// readMarketplaceFile — the upstream formatformat, tolerant reads, typed failures
+// readMarketplaceFile — CC format, tolerant reads, typed failures
 // ---------------------------------------------------------------------------
 
 describe("readMarketplaceFile", () => {
@@ -315,16 +316,16 @@ describe("readMarketplaceFile", () => {
 });
 
 // ---------------------------------------------------------------------------
-// E1b — the upstream formatobject-form ENTRY sources. Real the upstream formatmarketplaces (obra/
+// E1b — CC object-form ENTRY sources. Real CC marketplaces (obra/
 // superpowers-marketplace) spell each plugins[] entry's source as an OBJECT:
 // {"source":"url","url":"https://github.com/obra/superpowers.git"} — the recon
 // install saw 10/10 entries skipped because parseEntry only accepted strings.
-// The three the upstream formatkinds normalize INTO the existing string grammar (url
+// The three CC kinds normalize INTO the existing string grammar (url
 // passthrough; git → url#ref; github → owner/repo[#ref]); `local` objects and
 // any malformed shape stay bad entries (skipped + counted, market survives).
 // ---------------------------------------------------------------------------
 
-describe("readMarketplaceFile: the upstream format object-form entry sources (E1b)", () => {
+describe("readMarketplaceFile: CC object-form entry sources (E1b)", () => {
   it("the obra marketplace shape (url objects + version + strict ignored) parses 10/10 into string sources", () => {
     const { dir, cleanup } = tmpDir("wudao-e1b-obra-");
     try {
@@ -383,7 +384,7 @@ describe("readMarketplaceFile: the upstream format object-form entry sources (E1
         name: "mixed-market",
         plugins: [
           { name: "ok", source: { source: "url", url: "https://example.com/ok.git" } },
-          { name: "local-obj", source: { source: "local", path: "/somewhere/on/disk" } }, // the upstream format has it; v1 does not → bad entry
+          { name: "local-obj", source: { source: "local", path: "/somewhere/on/disk" } }, // CC has it; v1 does not → bad entry
           { name: "weird-kind", source: { source: "ipfs", url: "ipfs://qed" } }, // unknown kind
           { name: "url-not-string", source: { source: "url", url: 42 } },
           { name: "git-no-url", source: { source: "git", ref: "v1" } },

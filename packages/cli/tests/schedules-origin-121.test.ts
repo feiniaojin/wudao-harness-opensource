@@ -1,4 +1,4 @@
-// 121 项 2（the upstream project d72beaf9e durable wake + the upstream project 5ab0e6df3 形）—
+// 121 项 2（prime-agent d72beaf9e durable wake + goose 5ab0e6df3 形）—
 // 「agent 自己安排的周期性再注入」：schedule_add 工具面自动盖 origin 章
 // （当前会话 id），fire 时 spawn 车道 resume 该会话（--resume，跨重启
 // durable）+「[定时续跑]」prompt 前缀；用户手设（无 origin）路径字节不变；

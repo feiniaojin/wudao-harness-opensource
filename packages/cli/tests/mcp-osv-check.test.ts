@@ -2,7 +2,7 @@
 //
 // 分层：
 //   1. 纯函数单元：commandEcosystem（命令→生态）、parseFirstPackageArg
-//      （npm/PyPI token 解析——the upstream project :87-110/:216-248/:250-292 的移植面）。
+//      （npm/PyPI token 解析——goose :87-110/:216-248/:250-292 的移植面）。
 //   2. denyIfMalicious（经 checkMcpCommand 注入 fetchImpl——确定性、零网络）：
 //      MAL-* 命中才 throw；fetch reject / 非 2xx / 非 JSON 一律放行（fail-open
 //      红线：离线不能拖死所有 MCP 服务器）；翻页跟随 next_page_token。

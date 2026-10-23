@@ -15,8 +15,8 @@ import subprocess
 import sys
 import time
 
-REPO = "./wudao-harness"
-BENCH = "./wudao-bench"
+REPO = "~/xdev/github/wudao-harness-project/wudao-harness"
+BENCH = "~/xdev/github/wudao-harness-project/wudao-bench"
 RUNS = f"{BENCH}/gaia-runs"
 CLI = f"{REPO}/packages/cli/dist/index.js"
 DATA = f"{BENCH}/gaia-validation.parquet"

@@ -1,7 +1,7 @@
 // M58 §C#12 — bang mode: an input line starting with `!` runs the rest as a
 // shell command in the user's shell. USER-INITIATED by construction (the
 // human typed the line) — it never crosses the permission gate, the same
-// trust class as the user typing in a terminal (the upstream's `!` semantics). The
+// trust class as the user typing in a terminal (CC's `!` semantics). The
 // captured output is echoed (capped) and the command+output prefix the NEXT
 // submitted user message as context, so the model sees what the user saw.
 import { truncateSafe } from "@wudao/core"; // 113-A4

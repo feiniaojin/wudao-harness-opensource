@@ -1,4 +1,4 @@
-// 133 #3（the upstream format journal 身份模型，M11 线第一弧）— 运行身份 + 纯度违例
+// 133 #3（a reference harness journal 身份模型，M11 线第一弧）— 运行身份 + 纯度违例
 // 检测收据。四象限：同身份+键漂移=大声失败（journal 不截断）/异身份（脚本
 // 或参数编辑）=既有截断语义/旧日志无身份=fail-open 截断/同身份+键一致=
 // 全重放零误伤。附 workflowIdentity 的稳定性单测。

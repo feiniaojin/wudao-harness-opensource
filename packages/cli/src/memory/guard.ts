@@ -1,4 +1,4 @@
-// 永续迭代 v6 · the upstream project 借鉴弧 A（digest-the upstream project C3）——学习入口防污染三件套。
+// 永续迭代 v6 · reef 借鉴弧 A（digest-reef C3）——学习入口防污染三件套。
 //
 // 比较裁决（对垒 wudao 在位者，2026-09-15）：
 //   在位者 = M49 记忆评审门（凭据形状→pending 等人审 + 一次性 surfaced 提醒）
@@ -18,17 +18,17 @@
 //      唯一写路径已过 store 门）；④召回侧转义维持 det-70 原样（结构伪造已
 //      覆盖，语义注入由本层入口拦）。
 //
-// 三件套（the upstream project nodes.py:93-116 + strategies.py:151-158 的 wudao 化）：
+// 三件套（reef nodes.py:93-116 + strategies.py:151-158 的 wudao 化）：
 //   1. 围栏 fenceUntrusted——随机 nonce 定界，块内文本无法提前闭合围栏冒充
 //      提示词作者（闭标记携带 nonce，猜不中即闭不上）。
 //   2. 双正则 screenLearningInput——CREDENTIAL_VALUE_RE（凭据值形状）+
-//      DIRECTIVE_RE（指令覆盖措辞，带宾语——the upstream project nodes.py:107-110 的教训：
+//      DIRECTIVE_RE（指令覆盖措辞，带宾语——reef nodes.py:107-110 的教训：
 //      "a task about prompts" 这类话题文本必须放过）。
 //   3. 上限——拦截台账 BLOCKED_LEDGER_MAX 帽（旧条裁剪，文件有界）；学习
 //      输入本体的尺寸帽沿用在位者（MEMORY_MAX_CONTENT_CHARS=500 /
 //      REFINE_TRAJECTORY_CHARS / DREAM_EMBED_MAX_CHARS，不另造）。
 //
-//   脱敏纪律（the upstream project redact_secret_shaped）：拦截台账的 preview 必须先过
+//   脱敏纪律（reef redact_secret_shaped）：拦截台账的 preview 必须先过
 //   CREDENTIAL_VALUE_RE 替换——拦截台账自己绝不落第二个密钥副本。
 //
 //   M24：零缓存代价——围栏只进 dream/refine **子代理**提示词（fresh child
@@ -97,7 +97,7 @@ export const CREDENTIAL_VALUE_RE =
   /(sk-[a-z0-9]{8,}|ghp_[a-z0-9]{16,}|gho_[a-z0-9]{16,}|github_pat_[a-z0-9_]{20,}|xox[abprs]-[a-z0-9-]{10,}|akia[0-9a-z]{16}|-----begin [a-z0-9 ]*private key-----|bearer\s+[a-z0-9._~+/=-]{16,}|(?:api[_-]?key|apikey|secret|token|passwd|password|passphrase|access[_-]?token|auth[_-]?token)\s*[:=]\s*["']?[a-z0-9_~+/=-]{8,}["']?)/i;
 
 /** Instruction-override / chat-template-impersonation shapes. The directive
- *  arm matches verb + instruction-family OBJECT (the upstream project nodes.py:107-110: match
+ *  arm matches verb + instruction-family OBJECT (reef nodes.py:107-110: match
  *  directives with objects, not topics — "a task about prompts" passes); the
  *  template arm matches control tokens that impersonate the chat format. */
 export const DIRECTIVE_RE =
@@ -130,7 +130,7 @@ export function redactSecretShaped(text: string): string {
 // ---------------------------------------------------------------------------
 
 /** Which learning entry attempted the write (the receipt/audit dimension).
- *  永续 v6 wave2（the upstream project C1）：+improve——改进提案器生成的规则文本过同一道
+ *  永续 v6 wave2（reef C1）：+improve——改进提案器生成的规则文本过同一道
  *  准入筛查（screenLearningInput 的「任何未来 learned-behavior 文本」条款
  *  的第一个新调用方）。 */
 export type LearningSource = "memory_write" | "refine" | "review" | "dream" | "edit" | "btw" | "improve";

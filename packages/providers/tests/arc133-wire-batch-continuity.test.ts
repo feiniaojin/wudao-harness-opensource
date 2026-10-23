@@ -1,5 +1,5 @@
 // 133 #12（goose 6d5eba9b1 补测试）— wire 工具结果批内连续性不变量。
-// the reference project 的 bug 形状：工具结果里的图片被合成为 user 图片消息后，若内联
+// goose 的 bug 形状：工具结果里的图片被合成为 user 图片消息后，若内联
 // 插在同一个 assistant tool_calls 批的工具结果之间，严格 OpenAI 兼容
 // 端点直接拒收整个请求（批内 tool 结果必须连续，中间不许插 user）。
 // 我们结构免疫：合成 carrier 只在非 tool 消息到达时冲刷

@@ -301,7 +301,7 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
 [data-pet-skin="lake"] .hero .logo, [data-pet-skin="lake"] .connect-card .logo { background-image: url("/pet/skin-lake.png"); }
 [data-pet-skin="honey"] .hero .logo, [data-pet-skin="honey"] .connect-card .logo { background-image: url("/pet/skin-honey.png"); }
 /* 助手回复正文容器（2026-08-26 spec §3.1 → 116 弧 B 去框化）：surface 底 +
-   1px 边线 + radius-md 的卡壳退役——assistant 回复平铺裸底（the upstream format「90% 面积
+   1px 边线 + radius-md 的卡壳退役——assistant 回复平铺裸底（dsh「90% 面积
    无框」，116 报告廉价感来源 #1 的对话面），只承排版职责（fs-body/1.55/
    text-1）。工具卡/回执卡（.toolcard/.act 家族）保留 hair-1 框——框是机器
    回执的语言，不是正文的语言。退役以显式声明（background:none/border:0/
@@ -316,7 +316,7 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
   color: var(--text-1);
 }
 /* 0.3.15（用户需求：LLM 回复耗时展示）：卡尾 dim 耗时行（· 2.1s）。
-   116 弧 B：该行升格为回合收尾——hair-1 上缘细线 + 时间戳文案（the upstream format「回合
+   116 弧 B：该行升格为回合收尾——hair-1 上缘细线 + 时间戳文案（dsh「回合
    分隔=留白+时间戳细线」），卡片边框退役后它是回合边界的唯一标记。 */
 .reply-card .reply-meta {
   margin-top: var(--sp-3);

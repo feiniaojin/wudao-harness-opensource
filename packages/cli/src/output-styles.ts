@@ -5,10 +5,10 @@
 // Cache law: the style is chosen at SESSION START and byte-frozen for the
 // session — changing settings/`/config` mid-session is a no-op until the
 // next session (the selection is read once, before any prompt is built, and
-// the resolved section is memoized per workspace root). This mirrors the upstream's
+// the resolved section is memoized per workspace root). This mirrors CC's
 // restart-only semantics and keeps the prefix cache intact.
 //
-// Default posture (deliberately the OPPOSITE of the upstream format): the style body is
+// Default posture (deliberately the OPPOSITE of CC): the style body is
 // APPENDED and the coding instructions (`# Tool usage`) section is KEPT —
 // a coding harness puts safety first; a style is voice, not a replacement
 // for tool discipline. A style can opt out per-file with the frontmatter

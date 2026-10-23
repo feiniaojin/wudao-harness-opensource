@@ -13,10 +13,15 @@ function formatMtime(iso: string): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 16).replace("T", " ");
 }
 
-export function ResumePicker({ rows, onPick, onCancel }: {
+export function ResumePicker({ rows, onPick, onCancel, intent = "resume" }: {
   rows: readonly SessionRow[];
   onPick: (id: string) => void;
   onCancel: () => void;
+  /** 小精灵会话弧 — 选择器的两种意图（OPTIONAL，缺省 resume=既有行为字节
+   *  同形）："resume"=恢复选中的会话；"followup"=追问流（选中的会话被
+   *  fork 成副本继续问，原对话不动）。只影响标题/说明文案——拣选语义由
+   *  App 接的 onPick 决定（选择器保持哑组件，回调进回调出）。 */
+  intent?: "resume" | "followup";
 }): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   // UI-5 INFO-2: the focus-return sweep — the composer the /resume command
@@ -47,7 +52,7 @@ export function ResumePicker({ rows, onPick, onCancel }: {
           }
         }}
       >
-        <h3>选择要恢复的会话</h3>
+        <h3>{intent === "followup" ? "选择要追问的会话" : "选择要恢复的会话"}</h3>
         {/* tokfinish §7 (批1 review M2 单行歧义): the weak scope note — data
             source read before writing it. The sessions op (agent-driver's
             sessions()) lists <workspaceRoot>/.wudao/sessions filtered to
@@ -57,8 +62,9 @@ export function ResumePicker({ rows, onPick, onCancel }: {
             not missing/broken — it is out of this list's scope by design.
             The row-level 「暂无会话」 fallback (no name, no first message)
             stays as-is; the M2 rename to 「空会话」 remains copy-batch
-            material, not this batch's scope. */}
-        <div className="muted">仅列出记录在当前工作区的会话</div>
+            material, not this batch's scope. 小精灵会话弧：followup 意图换
+            追问语（选中后开副本继续问，原对话不动——收益向文案）。 */}
+        <div className="muted">{intent === "followup" ? "选中后开一份副本继续问，原对话保持不变" : "仅列出记录在当前工作区的会话"}</div>
         <div className="picker">
           {rows.map((r, i) => (
             <button key={r.id} type="button" className="pickrow" onClick={() => onPick(r.id)}>

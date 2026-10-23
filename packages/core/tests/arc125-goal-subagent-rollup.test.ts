@@ -1,4 +1,4 @@
-// 125 项 3（the upstream project预算上卷 4761851ff3 形）— goal_state 行的 subagentsUsed
+// 125 项 3（codex 预算上卷 4761851ff3 形）— goal_state 行的 subagentsUsed
 // 附加车道 + 渲染面钉子。计入报告、不计入触发（ω99-8b 分区不动）；
 // 零子代理缺席（缺省隐藏，旧读侧零感知）。
 import { describe, it, expect } from "vitest";

@@ -1,4 +1,4 @@
-// 永续 v6 wave2（the upstream project C1）——improvementFace op 的 server 件：list 读形
+// 永续 v6 wave2（reef C1）——improvementFace op 的 server 件：list 读形
 // （UiDriverPort 可选 + unsupported 干净拒答 + 不进 vault 直证）+ 决策形
 // （入 vault 表直证——五决策恰一次；形状门：action 枚举 + 决策必带非空 id
 // typed 拒）。全 mock（scripted driver 零真 store 零真模型零子进程零网络）；

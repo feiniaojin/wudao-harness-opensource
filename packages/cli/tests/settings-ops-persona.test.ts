@@ -118,7 +118,7 @@ describe("personaSave", () => {
     if (r.ok) throw new Error("unreachable");
     expect(r.errors.length).toBe(1);
     expect(r.errors[0]).toContain("anthropic-cli");
-    expect(existsSync(join(home, "personas", "claude-code.json"))).toBe(false);
+    expect(existsSync(join(home, "personas", "a reference harness.json"))).toBe(false);
   });
 
   it("refuses an id colliding with a workspace persona", async () => {

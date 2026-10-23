@@ -1,4 +1,4 @@
-// ω99-13 — /goal --gate/--budget (digest 101, the upstream project long-run arcs):
+// ω99-13 — /goal --gate/--budget (digest 101, prime-agent long-run arcs):
 // the deterministic gate (shell exit code, git-snapshot dedup, retry
 // exhaustion) and the token budget (wrap-up round, forced close, main-only
 // metering on the ω99-8b querySource rail). The gate runner and the snapshot

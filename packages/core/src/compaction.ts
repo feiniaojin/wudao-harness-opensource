@@ -81,12 +81,12 @@ export {
   planModeLine, verifiedRunHead,
   // 113-B1 — kept-tail recency anchor + the summary authority line.
   recencyAnchorOf, summaryAuthorityLine, SUMMARY_AUTHORITY_LINE, RECENCY_ANCHOR_CAP_CHARS,
-  // 125 项 1 — agent-rotation identity riders (the upstream projectnew_context 形).
+  // 125 项 1 — agent-rotation identity riders (codex new_context 形).
   ROTATION_HEADER_LEAD, ROTATION_RATIONALE_HEADER_CAP_CHARS,
   rotationHeaderLine, PRESERVED_BY_AGENT_LEAD, preserveSection, parseRotationHeader,
 } from "./compaction-riders.js";
 export type { FileLedger } from "./compaction-riders.js";
-// 125 项 1/项 2 — 窗口身份链 + WorldState 差分（the upstream projectbaton-pass 件）。
+// 125 项 1/项 2 — 窗口身份链 + WorldState 差分（codex baton-pass 件）。
 export {
   windowIdentityLine, windowIdentitySection, windowId,
   worldStateDiff, worldDiffSection, WORLD_DIFF_CAP_CHARS,
@@ -106,7 +106,7 @@ export {
 } from "./compaction-tier2-static.js";
 export type { Tier2Result, Tier2Options, DualSummaryOptions, DualPartition } from "./compaction-tier2-static.js";
 export {
-  // economics 域（借鉴弧 B1/B2，the upstream project C1/C2）
+  // economics 域（借鉴弧 B1/B2，a reference project C1/C2）
   CompactionEconomicsTracker, economicsReport, latestBoardIncomplete,
   DEFAULT_CACHE_WRITE_READ_RATIO, DEFAULT_CACHE_PRICING,
   ECONOMICS_WINDOW_RESERVE_TOKENS, SUMMARY_MEMO_TOKEN_ESTIMATE,
@@ -137,7 +137,7 @@ export async function tier2Compact(
   // ω-5b (I22): the effective focus — explicit (manual /compact) wins over
   // the derived task anchor; both halves below read this ONE seam.
   const focus = effectiveFocus(options.focus, span);
-  // 113-B1 (the upstream project #2385 形): the recency anchor — the LATEST kept-tail
+  // 113-B1 (prime-agent #2385 形): the recency anchor — the LATEST kept-tail
   // assistant text. The summarizer only sees `span`; without the anchor its
   // output describes the world BEFORE `rest`. Derived here (deterministic,
   // zero extra model calls) and threaded into the summary request's TAIL
@@ -196,7 +196,7 @@ export async function tier2Compact(
 }
 
 // ---------------------------------------------------------------------------
-// M52 §1 — single turn over budget: the DUAL merged summary (the upstream project). When the
+// M52 §1 — single turn over budget: the DUAL merged summary (pi). When the
 // recent window ITSELF is what blows the budget, standard tier-2 has no span
 // (everything is "recent") and used to give up — a 413 was one call away.
 // Instead of dropping the whole oversized turn, shed a PREFIX of it: the dual

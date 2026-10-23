@@ -45,7 +45,7 @@ describe("BUILTIN_PERSONAS", () => {
   });
 
   it("no builtin header value carries an unresolved ${…} template placeholder", () => {
-    // 2026-08-31 lesson: the claude-code/codex UAs were transcribed as source
+    // 2026-08-31 lesson: the a reference harness/codex UAs were transcribed as source
     // templates verbatim; their ${…} segments have no resolution slot, so they
     // reached the wire unresolved (kimi 后台显示模板原文) and UA-whitelisting
     // providers rejected the runs. Evaluated constants are pinned instead —
@@ -129,10 +129,10 @@ describe("BUILTIN_PERSONAS", () => {
   });
 
   it("the reference harness anthropic-beta carries only the non-haiku-always beta", () => {
-    // doc90 §1.1 beta table: `claude-code-20250219` is always sent for
+    // doc90 §1.1 beta table: `a reference harness-20250219` is always sent for
     // non-haiku models (betas.ts:3); every other beta is model/identity/
     // feature-conditional and therefore not encoded.
-    expect(byId("anthropic-cli").headers.anthropic?.["anthropic-beta"]).toBe("claude-code-20250219");
+    expect(byId("anthropic-cli").headers.anthropic?.["anthropic-beta"]).toBe("a reference harness-20250219");
   });
 
   it("the reference harness body: none (all §1.2 rows conditional or wire-mechanical)", () => {
@@ -228,8 +228,8 @@ describe("BUILTIN_PERSONAS", () => {
 
   it("the reference harness attribution user-agent is the pinned resolved value", () => {
     // doc90 §3.1 (attribution.ts:53-54 template, :40-44 identity, package
-    // manifest 0.1.1-rc.2): `deepseek-harness/${version}
-    // (+https://github.com/deepseek-ai/deepseek-harness)`, always sent,
+    // manifest 0.1.1-rc.2): `a reference harness/${version}
+    // (+https://github.com/deepseek-ai/a reference harness)`, always sent,
     // cannot be suppressed.
     expect(byId("deepseek-native").headers["openai-chat"]?.["user-agent"]).toBe(
       "wudao-harness/0.4.14 (+https://github.com/feiniaojin/wudao-harness-opensource)",
@@ -237,11 +237,11 @@ describe("BUILTIN_PERSONAS", () => {
   });
 
   it("the reference harness session header uses the sessionId slot; no body overlay", () => {
-    // doc90 §3.1: x-deepseek-harness-session-id sent when a sessionId
+    // doc90 §3.1: x-a reference harness-session-id sent when a sessionId
     // exists. thinking (§3.2) is outside the v1 openai-chat whitelist and is
     // not forced in (disclosed conflict, see task-4 report).
     const dsh = byId("deepseek-native");
-    expect(dsh.headers["openai-chat"]?.["x-deepseek-harness-session-id"]).toBe("{{sessionId}}");
+    expect(dsh.headers["openai-chat"]?.["x-a reference harness-session-id"]).toBe("{{sessionId}}");
     expect(dsh.body).toBeUndefined();
   });
 

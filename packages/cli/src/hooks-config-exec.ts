@@ -8,7 +8,7 @@ import { join } from "node:path";
 import type { HookCommandConfig, HookWarn } from "./hooks-config-types.js";
 import { peerHookEnvBox as livePeerHookEnv } from "./peer/runtime.js";
 
-// M63-C §3: the DEFAULT hook timeout is 600s (the upstream formatparity); the two
+// M63-C §3: the DEFAULT hook timeout is 600s (CC parity); the two
 // prompt-class events (onPromptSubmit/onRunStop — the prompt-based contracts)
 // default to 30s. A per-entry timeoutMs always wins.
 export const DEFAULT_TIMEOUT_MS = 600_000;
@@ -25,7 +25,7 @@ export interface HookRun {
   readonly reason: string; // stderr first line | "blocked by hook" — set for non-zero exits
 }
 
-/** cc-plugins E4: the upstream's plugin-hook convention — commands may reference the
+/** cc-plugins E4: CC's plugin-hook convention — commands may reference the
  *  plugin's install dir as `${CLAUDE_PLUGIN_ROOT}` or bare
  *  `$CLAUDE_PLUGIN_ROOT`. execFile runs no shell, so the token is replaced
  *  textually before tokenization (braced form first so the bare pattern
@@ -56,7 +56,7 @@ export function runHookCommand(
 
   return execHookArgv(argv, { payload, workspaceRoot, env, timeoutMs, cmd, warn }).then((first) => {
     if (first.outcome !== "enoexec") return first.run;
-    // cc-plugins E4: shebang-less executable (execve ENOEXEC). Real the upstream formatruns
+    // cc-plugins E4: shebang-less executable (execve ENOEXEC). Real CC runs
     // hooks via a shell, and POSIX shells fall back to interpreting such
     // files — superpowers' run-hook.cmd batch/shell polyglot relies on it.
     // Retry once with /bin/sh interpreting the same argv[0]. On win32 /bin/sh

@@ -1,4 +1,4 @@
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— /bg：把一个正在前台执行的
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— /bg：把一个正在前台执行的
 // 工具调用转入后台（结果不再阻塞本轮；run 在轮界收口，落定结果稍后经
 // 后台车道并入对话）。命令形状照 /recall 的先例（recall-core.ts）：TUI 自
 // 有命令，在共享 parseReplCommand 之前拦截——不需要驱动路由臂

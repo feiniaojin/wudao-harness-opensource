@@ -4,7 +4,7 @@ import { buildTool } from "../src/index.js";
 import { createScriptedModel, type ModelClient } from "../src/model-client.js";
 import type { AgentMessage } from "../src/types.js";
 
-// 夜移 002（2026-08-28 night porting，the upstream formatguard/timeout-policy，设计加强）：
+// 夜移 002（2026-08-28 night porting，dsh guard/timeout-policy，设计加强）：
 // Tool 可声明 timeoutMs —— executor 对调用做兜底竞速，超时返回结构化
 // [timeout after Nms] 错误结果（底层 promise 不取消，弃结果不断进程）。
 // fail-open：缺省 = 无限等待（既有行为）；interruptBehavior:"block" 工具

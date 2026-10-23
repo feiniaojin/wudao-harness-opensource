@@ -3,7 +3,7 @@
 // version.ts import (never a hardcoded string) so the text stays current.
 import { VERSION } from "./version.js";
 
-// End-of-options `--` (the upstream projectprecedent): the FIRST bare `--` in argv ends flag
+// End-of-options `--` (pi precedent): the FIRST bare `--` in argv ends flag
 // parsing — every token after it is a positional (prompt word), even
 // flag-looking ones; the `--` itself belongs to neither side. A second and
 // later `--` are ORDINARY positionals. Without a bare `--` the split is the
@@ -174,7 +174,7 @@ export function parseProviderFlags(argv: readonly string[]): ProviderFlags {
   return { provider, reasoningEffort, ...(model !== undefined ? { model } : {}) };
 }
 
-// M36: `--plugin <path>` mounts the upstream harness plugin dirs for this run
+// M36: `--plugin <path>` mounts Claude Code plugin dirs for this run
 // (repeatable). Same conventions as the other value flags: `--plugin <v>` /
 // `--plugin=<v>` / single-dash variants; a missing or flag-looking value is
 // not consumed. Paths resolve against the workspace root in loadPlugins.
@@ -251,6 +251,82 @@ export function parseImageFlags(argv: readonly string[]): string[] {
   return paths;
 }
 
+// 小精灵会话弧 —— 恢复即追问：`wudao --resume <id> --ask "问题"` 把 resume
+// 与开场问题合成一步（one-shot 路径：恢复后自动提交该问题）。语义裁决：
+// --ask 的既有含义是权限档位（permission-modes 的 modeFromArgv，「每次改动
+// 前都先问你」），在**无恢复上下文**时原样保留（`wudao --ask "修个 bug"`
+// 仍 = ask 档跑一次性任务，零回归）；有恢复上下文（--resume <id> 或
+// --continue）时 --ask 升级为追问旗标——后跟的自由文本即问题。空格形的
+// 「值」不在此消费（promptFromArgv 产出的自由文本提示词就是问题本身）；
+// 等号形（--ask=<v>）的值是自含的，从这里取出。缺值一律 fail-closed（见
+// resolveAskOpening）：绝不静默把追问降级成别的语义。
+export interface AskFlags {
+  /** 任意 --ask 拼法（空格形/等号形/单杠容错）出现在 argv。 */
+  readonly present: boolean;
+  /** `--ask=<v>` / `-ask=<v>` 等号形的非空值。 */
+  readonly value?: string;
+  /** 等号形给了空值（`--ask=`）——显式缺值信号，入口据此 fail-closed。 */
+  readonly emptyEquals?: boolean;
+}
+
+export function parseAskFlags(argv: readonly string[]): AskFlags {
+  let present = false;
+  let value: string | undefined;
+  let emptyEquals = false;
+  for (const a of argv) {
+    if (a === undefined) continue;
+    if (a === "--ask" || a === "-ask") {
+      present = true; // 空格形：下一 token 留给自由文本提示词（promptFromArgv 的领地）
+      continue;
+    }
+    if (a.startsWith("--ask=") || a.startsWith("-ask=")) {
+      present = true;
+      const v = a.slice(a.indexOf("=") + 1);
+      if (v === "") emptyEquals = true;
+      else value = v;
+    }
+  }
+  return { present, ...(value !== undefined ? { value } : {}), ...(emptyEquals ? { emptyEquals: true } : {}) };
+}
+
+/** The 恢复即追问 gate's decision (pure; the one-shot entry applies it). */
+export interface AskOpeningDecision {
+  readonly kind: "off" | "question";
+  /** kind==="question" 时：作为开场提交的问题文本。 */
+  readonly question?: string;
+  /** kind==="off" 且非空时：fail-closed 的拒答文案（缺值/混用），入口打印后非零退出。 */
+  readonly error?: string;
+}
+
+/** 把 --ask 与恢复上下文（--resume/--continue）合成一个开场决定。`prompt`
+ *  是 promptFromArgv 的产出（自由文本提示词）。三类结果：
+ *  ① off 无 --ask，或 --ask 无恢复上下文（权限档位语义原样，字节不变）；
+ *  ② question 追问题目（= 自由文本或等号形的值），入口以它替换 one-shot
+ *    prompt（resume 由 runReal 内的 resolveSession 完成）；
+ *  ③ off+error fail-closed：恢复上下文里 --ask 缺值（含 `--ask=` 空值），
+ *    或等号形与自由文本混用（两处都给了问题——拒绝猜测，绝不静默丢一边）。 */
+export function resolveAskOpening(argv: readonly string[], prompt: string): AskOpeningDecision {
+  const ask = parseAskFlags(argv);
+  if (!ask.present) return { kind: "off" };
+  const { resumeId, cont } = parseSessionFlags(argv);
+  if (resumeId === undefined && !cont) return { kind: "off" }; // 权限档位语义（今日行为）
+  if (ask.emptyEquals === true) {
+    return { kind: "off", error: '--ask 需要问题内容：wudao --resume <id> --ask "<问题>"' };
+  }
+  if (ask.value !== undefined) {
+    // 等号形：prompt 里只应剩这个旗标 token 本身（stripLogFlags 不剥等号形）；
+    // 多出的自由文本=两处都给了问题，拒绝混用。
+    if (prompt !== `--ask=${ask.value}` && prompt !== `-ask=${ask.value}`) {
+      return { kind: "off", error: '--ask=<问题> 不能再带自由文本任务——二选一' };
+    }
+    return { kind: "question", question: ask.value };
+  }
+  if (prompt.trim() === "") {
+    return { kind: "off", error: '--ask 需要问题内容：wudao --resume <id> --ask "<问题>"（如需恢复后手动继续，去掉 --ask）' };
+  }
+  return { kind: "question", question: prompt };
+}
+
 // M53 §5 — the ablation flag matrix: `--no-<feature>` fully disables one
 // feature for the run (evals use them for ablation comparisons; production
 // never sets them). Parsing is pure; the flags are bridged into
@@ -272,7 +348,7 @@ export const ABLATION_FEATURES = [
   "login-shell",
   // ω-5a I23: the cold-cache pre-send ❄️ notice.
   "cold-cache-warning",
-  // P0-1 (the upstream projectcache-stats port): the per-turn prefix-cache waste attribution
+  // P0-1 (pi cache-stats port): the per-turn prefix-cache waste attribution
   // notice (idle TTL / model switch; per-cause deduped).
   "cache-waste-notice",
   // design 70 Phase 2: the ask-tier LLM reviewer (`WUDAO_ASK_REVIEWER=1`
@@ -393,6 +469,7 @@ export const CLI_USAGE_TEXT = `wudao-harness v${VERSION} —— 终端里的 AI 
 
 接续会话：
   --resume <会话id>              从指定会话继续；--continue 接最近一次
+  --resume <id> --ask "问题"     恢复会话并直接把这个问题发给它
   --resume <id> --fork-session   在旧会话的副本上继续，原会话保持原样
   --list-sessions               列出可恢复的会话（加 --all 看全部）
 

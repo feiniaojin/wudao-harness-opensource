@@ -1,4 +1,4 @@
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— 运行中工具调用转后台的核心面：
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— 运行中工具调用转后台的核心面：
 // hub 事件盒、loop 的三腿赛跑（执行/abort/detach 并集收集窗——detach 是
 // 「不再等待」绝不是「打断」）、BACKGROUNDED 合成配对、轮界收口终态
 // （backgrounded）、收集器交接（承诺活到落定）、诚实边界（block 族不武装）。

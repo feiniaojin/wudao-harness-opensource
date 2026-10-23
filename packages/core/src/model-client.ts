@@ -12,7 +12,7 @@ import { canonicalJson } from "./loop-safety.js";
  *  reports it (workflow budgets/journals bill prompt + completion); older
  *  constructors may omit it and consumers must default it to 0.
  *
- *  M56 §2 (turn_usage receipts, the upstream format AGENT_RUNTIME): the optional
+ *  M56 §2 (turn_usage receipts, a reference harness AGENT_RUNTIME): the optional
  *  receipt fields below follow the omit-never-null discipline — present when
  *  known, OMITTED when unknown, never null, never backfilled with zeros.
  *  `cacheWriteTokens` ≈ cacheMiss on cache-reporting endpoints (every DeepSeek
@@ -91,7 +91,7 @@ export interface ModelInput {
    *  call passing the session's effort through). Absent = the provider
    *  config's own effort (the main loop's requests stay byte-identical). */
   readonly reasoningEffort?: string;
-  /** M70 §3 (the upstream format): the QuerySource tag — WHO is waiting on this call.
+  /** M70 §3 (CC): the QuerySource tag — WHO is waiting on this call.
    *  Foreground sources (and untagged calls, the backward-compatible
    *  default) may retry on overload; BACKGROUND sources ("summarizer" — the
    *  compaction summarizer, "evaluator" — the /goal judge, "title" ...)
@@ -310,11 +310,11 @@ export function createScriptedModel(
 }
 
 // ---------------------------------------------------------------------------
-// 120-a A2 (the upstream format #6540 形) — the summary-call prefix-freeze contract.
+// 120-a A2 (a reference harness #6540 形) — the summary-call prefix-freeze contract.
 // A summary/review-class call is supposed to be "the parent turn's request
 // bytes + a declared tail": same system prompt, same tool-table bytes, a
 // leading slice of the parent's messages, and the session's reasoning tier.
-// the upstream's live incident: a 219K-token compaction-summary call silently
+// a reference harness's live incident: a 219K-token compaction-summary call silently
 // DROPPED its reasoning tier and hit 0% prefix cache — nothing red anywhere.
 // This pure comparator is the contract's single enforcement point (the
 // createScriptedModel family: test-support, zero runtime reach). A probe
@@ -333,7 +333,7 @@ export interface PrefixFreezeContract {
    *  and the member's call must resolve to on the wire. The parent turn's
    *  ModelInput never carries the override (the provider config applies it
    *  there); the member's call carries it as ModelInput.reasoningEffort —
-   *  so this field pins the CHILD's override, the exact spot the upstream format
+   *  so this field pins the CHILD's override, the exact spot a reference harness
    *  #6540 lost. Undefined = neither side declares (deliberate omission is
    *  itself part of the contract). */
   readonly expectedEffort?: string;
@@ -373,7 +373,7 @@ export function summaryPrefixDrift(
   const childEffort = child.reasoningEffort === "" ? undefined : child.reasoningEffort;
   if (childEffort !== expectedEffort) {
     drift.push(
-      `reasoningEffort: ${label} carries ${JSON.stringify(childEffort ?? null)} where the session declares ${JSON.stringify(expectedEffort ?? null)} — request-param drift (the upstream format #6540: the dropped tier cost a 219K-token summary call its entire prefix cache)`,
+      `reasoningEffort: ${label} carries ${JSON.stringify(childEffort ?? null)} where the session declares ${JSON.stringify(expectedEffort ?? null)} — request-param drift (a reference harness #6540: the dropped tier cost a 219K-token summary call its entire prefix cache)`,
     );
   }
   return drift;

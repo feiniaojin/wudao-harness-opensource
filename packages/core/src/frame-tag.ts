@@ -1,4 +1,4 @@
-// 129 弧（the upstream project e6124ade 引进）——注入框架的闭合标签中和。
+// 129 弧（DeepCode e6124ade 引进）——注入框架的闭合标签中和。
 //
 // 问题：harness 用 XML 形框架（<monitor_event>…</monitor_event>）包裹不可信
 // 数据（被监视进程的输出）注入模型上下文。被监视进程只需在输出里打印

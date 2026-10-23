@@ -1,4 +1,4 @@
-// 借鉴弧 δ（the upstream harness 367ab084 思想）— the busy tool row's 转入后台
+// 借鉴弧 δ（penguin-harness 367ab084 思想）— the busy tool row's 转入后台
 // button 的 op 处理器（模块级：client + notify 就是全部依赖；App 以
 // useCallback 包装）。ok 无需 toast（driver 的 🔄 回执通知是真相点反馈）；
 // typed 拒绝即时呈现，绝不静默。

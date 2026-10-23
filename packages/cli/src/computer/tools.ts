@@ -533,7 +533,7 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
           return err(`computer_click: 点击助手执行失败（exit ${r.code}）：${truncateSafe((r.stderr || r.stdout).trim(), 400)}`);
         }
         // 回执点名 role/title（241 displayRole 中文角色），绝不回显 value——
-        // 安全纪律的回执层（the upstream format有 secure 处理，我方再加回执层纪律）。
+        // 安全纪律的回执层（dsh 有 secure 处理，我方再加回执层纪律）。
         const named = `[${ref}] ${displayRole(entry.role)}${entry.title !== "" ? `「${entry.title}」` : ""}`;
         const both = args["x"] !== undefined || args["y"] !== undefined ? "（按 ref 点选；同时提供的坐标已忽略）" : "";
         const receipt = await withSettle(await withStatus(exec, `已点按 ${named}${both}。`), settleBase);

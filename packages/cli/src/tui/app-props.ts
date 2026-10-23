@@ -39,7 +39,7 @@ export interface WudaoAppProps {
   /** M62 §7: the auto-compaction master switch (false → the driver gets NO
    *  compaction; manual /compact still works). */
   readonly compactionEnabled?: boolean;
-  /** 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线的 misc 旋钮
+  /** 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线的 misc 旋钮
    *  （compaction.thresholdRatio/headroomTokens；boot 由 index.ts 解析一次）。
    *  缺席 = 缺省（0.8/2048 —— reserve 缺席时平比字节不变）。 */
   readonly compactionSettings?: import("../misc-config.js").CompactionSettings;

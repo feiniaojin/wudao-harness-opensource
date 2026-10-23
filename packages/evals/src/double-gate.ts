@@ -1,8 +1,8 @@
-// 借鉴弧 C2（the upstream project C4）— 双门验收裁决报告器：「排除少干活省出来的钱」
-// 的可执行形状。the upstream project 原话：双门 rule out "savings that come from getting
+// 借鉴弧 C2（a reference project C4）— 双门验收裁决报告器：「排除少干活省出来的钱」
+// 的可执行形状。a reference project 原话：双门 rule out "savings that come from getting
 // less done"。任何标榜效率的改动（省 token/省轮次/省延迟）必须同时过：
 //   门一（能力门）：改动前后，每一个套件的能力分都不低于「预先声明的
-//     容差」——逐套件裁决，不做聚合平均（the upstream project 自曝的漏洞：per-mechanism
+//     容差」——逐套件裁决，不做聚合平均（a reference project 自曝的漏洞：per-mechanism
 //     门放走小损失，聚合后只剩 94%；我们逐套件把关，小损失当场现形）。
 //   门二（效率门）：至少一项效率指标实测改善（严格变好，方向感知——
 //     token/轮次/延迟/成本是越低越好，命中率是越高越好）。

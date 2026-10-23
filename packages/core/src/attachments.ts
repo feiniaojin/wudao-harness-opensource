@@ -1,5 +1,5 @@
 // M79 §1 — the attachment domain: durable image refs + the AttachmentStore
-// port. The a ref-verified split (research 40 §1): IMAGE BYTES NEVER ENTER THE
+// port. The dsh-verified split (research 40 §1): IMAGE BYTES NEVER ENTER THE
 // SESSION LOG — messages carry only `ImageAttachmentRef`, and the transient
 // `data:` URL exists solely during one request build. That keeps the M24
 // cache invariants intact by construction: history stays append-only, the
@@ -42,11 +42,11 @@ export interface ImageBlock {
 // Limits + typed admission errors
 // ---------------------------------------------------------------------------
 
-/** Default per-request image count cap (the upstream formatparity). */
+/** Default per-request image count cap (dsh parity). */
 export const DEFAULT_MAX_IMAGES = 9;
 
 /** Default cumulative per-request image budget, counted in base64 bytes
- *  (the upstream formatparity: 20 MiB). A batch whose encoded total exceeds this is
+ *  (dsh parity: 20 MiB). A batch whose encoded total exceeds this is
  *  rejected at admission; smaller per-request budgets offload oldest-first
  *  at request build instead (see offloadRequestImages). */
 export const DEFAULT_MAX_REQUEST_IMAGE_BYTES = 20 * 1024 * 1024;
@@ -135,13 +135,13 @@ export function estimateImageTokens(byteLength: number): number {
   return IMAGE_TOKEN_ESTIMATE.base + Math.ceil(byteLength / IMAGE_TOKEN_ESTIMATE.bytesPerToken);
 }
 
-/** The fixed offload placeholder (the upstream formatparity): deterministic bytes so two
+/** The fixed offload placeholder (dsh parity): deterministic bytes so two
  *  builds of the same input produce the same request. */
 export function imageOffloadPlaceholder(ref: ImageAttachmentRef): string {
   return `[image omitted: ${ref.attachmentId}]`;
 }
 
-/** The request-build offload plan (M79 §2, the upstream formatcontent.ts parity): when the
+/** The request-build offload plan (M79 §2, dsh content.ts parity): when the
  *  cumulative base64 of `blocks` exceeds `budgetBytes`, replace images with
  *  the fixed text placeholder FROM THE OLDEST until the remainder fits. Pure
  *  and deterministic — same input, same output — and the omitted bytes are
@@ -299,7 +299,7 @@ export function createFileAttachmentStore(workspaceRoot: string, deps: Attachmen
         let bytes: Uint8Array = Buffer.from(input.data, "base64");
         if (bytes.length === 0) throw new Error("image data is empty (zero-length base64)");
         let mediaType = input.mediaType;
-        // 借鉴弧 β2 — sniff-authoritative HEIC/HEIF/AVIF admission (the upstream
+        // 借鉴弧 β2 — sniff-authoritative HEIC/HEIF/AVIF admission (hermes
         // 0a545f7fa5): the ftyp box is read from the BYTES (the claimed
         // mediaType is never trusted), and a decodable family converts to
         // JPEG via the injected decoder — the batch then admits by the
@@ -429,7 +429,7 @@ export function createFileAttachmentStore(workspaceRoot: string, deps: Attachmen
 // ω99-55 — the FILE attachment domain: content-addressed storage + the
 // model-visible hardlink + the request-build text projection.
 //
-// One attachment domain, two lanes (the upstream format2026-08-26-generic-file-upload):
+// One attachment domain, two lanes (dsh 2026-08-26-generic-file-upload):
 // images ride the normalized pipeline above; ANY other file kind enters here
 // as exact bytes, stored verbatim under a content-addressed digest —
 //
@@ -443,11 +443,11 @@ export function createFileAttachmentStore(workspaceRoot: string, deps: Attachmen
 // (offloadRequestFiles — the file lane's offloadRequestImages), and the model
 // reads it lazily with the ordinary file tools (their existing result
 // budgets govern). Placing uploads under the workspace's `.wudao` root keeps
-// the user's tree and git status clean (the the upstream formatDSH_HOME rule, adapted to
+// the user's tree and git status clean (the dsh DSH_HOME rule, adapted to
 // wudao's workspace-rooted store).
 // ---------------------------------------------------------------------------
 
-/** A generic uploaded file riding a user turn. FLAT like a ref's block (no
+/** A generic uploaded file riding a user turn. FLAT like dsh's block (no
  *  ref wrapper): `attachmentId` is the content digest `sha256:<64 hex>`,
  *  `name` the sanitized display name, `bytes` the exact stored byte count.
  *  Only user turns carry files (no builtin tool emits them; the subagent
@@ -500,7 +500,7 @@ const FILE_DIGEST_RE = /^[a-f0-9]{64}$/;
  *  character, so path.basename would keep a Windows client's full path and
  *  leak it into the reference and the session log), drop control chars,
  *  replace Windows-refused characters, trim trailing dots/spaces, refuse
- *  Windows device names, cap at 255 UTF-8 bytes (the upstream formatfileLeafName parity). */
+ *  Windows device names, cap at 255 UTF-8 bytes (dsh fileLeafName parity). */
 export function fileLeafName(value: string): string {
   const leaf = value.slice(Math.max(value.lastIndexOf("/"), value.lastIndexOf("\\")) + 1);
   let clean = leaf
@@ -555,7 +555,7 @@ export function isValidFileBlock(v: unknown): v is FileBlock {
 }
 
 /** One file's deterministic handle text — the ONLY model-visible form a file
- *  ever takes (the upstream formatfileHandleText parity, workspace-relative). Names the
+ *  ever takes (dsh fileHandleText parity, workspace-relative). Names the
  *  file, its size, its digest prefix, and the saved read-only path; teaches
  *  lazy reads (existing file tools), copy-before-edit, and path-based
  *  delegation (subagents read the PATH — they never receive blocks). */
@@ -566,7 +566,7 @@ export function fileHandleText(block: FileBlock): string {
 }
 
 /** The request-build file projection (the file lane's offloadRequestImages
- *  — the upstream formatprojectFilesToText): every file-bearing user turn's content gains
+ *  — dsh projectFilesToText): every file-bearing user turn's content gains
  *  one handle line per file, and the `files` field drops before ANY wire
  *  converter sees it. Pure and deterministic; returns the SAME array
  *  reference when nothing rides files (text/image requests are untouched,

@@ -46,7 +46,7 @@ afterEach(() => {
 
 const LIST: PersonaListResult = {
   personas: [
-    { id: "the upstream format", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
+    { id: "deepseek-native", displayName: "DeepSeek Native", source: "builtin", layers: "headers+prompt", editable: false },
     { id: "alpha", displayName: "Alpha", source: "global", layers: "headers", editable: true },
   ],
 };
@@ -327,7 +327,7 @@ describe("ProviderDetail Persona binding (mocked op client)", () => {
     expect(h.personaListMock).toHaveBeenCalledTimes(1);
     const sel = bindingSelect(h.container);
     const options = [...sel.querySelectorAll("option")].map((o) => (o as HTMLOptionElement).value);
-    expect(options).toEqual(["", "the upstream format", "alpha", "::none"]);
+    expect(options).toEqual(["", "deepseek-native", "alpha", "::none"]);
     // The custom's existing binding seeds the selector (visible state).
     expect(sel.value).toBe("alpha");
   });
@@ -410,9 +410,9 @@ describe("ProviderDetail Persona layer qualifier (mocked op client)", () => {
 
   it("the headers+prompt choice writes the + joined spec", async () => {
     const h = await renderDetail({ card: BUILTIN_CARD });
-    selectOption(bindingSelect(h.container), "the upstream format");
+    selectOption(bindingSelect(h.container), "deepseek-native");
     selectOption(layerSelect(h.container), "headers+prompt");
-    expect((await savePayload(h))?.["persona"]).toBe("the upstream format:headers+prompt");
+    expect((await savePayload(h))?.["persona"]).toBe("deepseek-native:headers+prompt");
   });
 
   it("a layer picked BEFORE the persona still qualifies it; the sentinels never carry one", async () => {

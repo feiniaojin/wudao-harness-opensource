@@ -237,7 +237,7 @@ export function forkPredatesCompaction(chain: readonly AgentMessage[], forkIndex
   return false;
 }
 
-/** The retention budget for one branch-summary (the upstream project's 16k). */
+/** The retention budget for one branch-summary (pi's 16k). */
 export const BRANCH_SUMMARY_BUDGET_CHARS = 16_000;
 
 const FILE_TOOL_NAMES = new Set(["read_file", "write_file", "edit", "glob", "grep"]);

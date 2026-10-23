@@ -1,4 +1,4 @@
-// ω-5a I18 — per-trial eval receipts (the the upstream harness import): a failing
+// ω-5a I18 — per-trial eval receipts (the better-harness import): a failing
 // trial used to vanish with its temp dir; the report kept status + error
 // strings only. A receipt moves the trial's workspace OUT of tmp before the
 // runner's cleanup and drops a receipt.json beside it with the joinable

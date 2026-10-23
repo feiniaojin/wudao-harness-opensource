@@ -1,11 +1,11 @@
 // det-75-night-porting-18 — the deterministic behavior pins for 夜移 030
 // (the file-operations ledger riding tier-2 compaction summaries, ported
-// from the upstream project's compaction/utils.ts). Post-compaction the model used to lose its
+// from pi's compaction/utils.ts). Post-compaction the model used to lose its
 // file footprint: redundant re-reads (full tokens, fresh cache-miss bytes)
 // and lost "already edited X" awareness. The ledger is mechanical — span
 // assistant toolCall blocks, never LLM-dependent — and survives N chained
 // compactions by re-parsing the tags out of the prior frozen summary (the
-// wudao delta: state-free re-derivation where the upstream projectpersists entry details).
+// wudao delta: state-free re-derivation where pi persists entry details).
 // Pinned through the PUBLIC `@wudao/core` exports: the constants, the
 // extraction classification (modified-wins, recency bump, non-file tools
 // ignored), the parse round-trip (omission line stripped, torn tags
@@ -55,7 +55,7 @@ const fileOpsSpan = (): AgentMessage[] => [
 ];
 
 export interface NightPorting18Evidence {
-  // ① the exported constants: the upstream projecttag names + the wudao cap (the upstream projectis unbounded)
+  // ① the exported constants: pi tag names + the wudao cap (pi is unbounded)
   readonly constants: boolean;
   // ② extraction classification: read_file→read, write_file/edit→modified,
   //    same-arg non-file tools ignored, non-string/empty paths ignored

@@ -9,9 +9,9 @@ import { join, dirname, relative } from "node:path";
 import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, cumulativeModifiedFiles, activeToolsOf, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao/core";
 import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao/providers";
 import { createFileAttachmentStore, type ImageBlock } from "@wudao/core";
-// 夜移 035 (the upstream projectturn_timing): the one-shot run's phase recorder (debug tier).
+// 夜移 035 (codex turn_timing): the one-shot run's phase recorder (debug tier).
 import { createTurnProfileRecorder } from "@wudao/core";
-// 夜移 032 stage-2 (the upstream projectturn_diff_tracker): the one-shot run's net-change
+// 夜移 032 stage-2 (codex turn_diff_tracker): the one-shot run's net-change
 // tracker — one instance for the whole command, shared by the tool set and
 // both passes (reset per pass), rendered once at settle.
 import { createTurnDiffTracker } from "@wudao/core";
@@ -45,7 +45,7 @@ import { createBrowserRuntime } from "@wudao/browser";
 // ω-4a: the monitor runtime (monitor tools + steering-lane event delivery).
 import { createMonitorRuntime } from "./monitor.js";
 import { createGoalController, buildEvaluatorModel, goalEvaluatorAvailable, parseGoalCommand, routeHeadlessGoalCommand, type GoalController } from "./goal.js";
-import { parseSessionFlags, parseSandboxFlags, parseProviderFlags, parsePluginFlags, parsePlanFlag, parseForkSessionFlag, parseAblationFlags, applyAblationFlagsToEnv, isFeatureAblated, parseImageFlags, parseSessionNameFlag, splitEndOfOptions, subcommandArgv, parseTrustWorkspaceFlag, parseHelpVersionFlags, CLI_USAGE_TEXT } from "./args.js";
+import { parseSessionFlags, parseSandboxFlags, parseProviderFlags, parsePluginFlags, parsePlanFlag, parseForkSessionFlag, parseAblationFlags, applyAblationFlagsToEnv, isFeatureAblated, parseImageFlags, parseSessionNameFlag, splitEndOfOptions, subcommandArgv, parseTrustWorkspaceFlag, parseHelpVersionFlags, resolveAskOpening, CLI_USAGE_TEXT } from "./args.js";
 // M64-A §A: the one-shot peer-messaging runtime (UDS inbox + registry).
 import { createPeerRuntime, readPeerDialogExpiry, sidecarMessageReview } from "./peer/runtime.js";
 import { buildPlanPrompt, buildPlanExecutionPrompt, createTodoBoardSource, planModeDenied, appendPlanApprovalTrace, planConfirmApproves } from "./plan.js";
@@ -118,7 +118,7 @@ import { getContextRules, createContextRuleMatcher } from "./rules.js";
 import { setSessionOutputStyle } from "./output-styles.js";
 import { setProjectContextExcludes } from "./project-context.js";
 import {
-  parseContextExcludes,
+  parseClaudeMdExcludes,
   resolveAutoCompactSettings,
   resolveMemorySettings,
   resolveMcpEnabled,
@@ -128,7 +128,7 @@ import {
   resolveTerminalEnabled,
   resolveDocSuiteEnabled,
   loadPythonKernelSettings,
-  // 125 项 1：预留感知触发线（the upstream formatresolveCompactSpec 形）的旋钮 + 装配缝。
+  // 125 项 1：预留感知触发线（dsh resolveCompactSpec 形）的旋钮 + 装配缝。
   compactionSettingsFromNode,
   compactionThresholdFields,
 } from "./misc-config.js";
@@ -142,7 +142,10 @@ import { loadEffectiveProfiles, resolveSessionWindowTokens, resolveSessionCacheP
 // R6 quickwin: the Ctrl+S pick defaults read (the ui boot applies them).
 import { readStoredModelDefaults } from "./driver/settings-ops.js";
 import { setSessionDeferMode } from "./tools.js";
-import { openSessionMemoryStore, setSessionMemorySettings } from "./memory/index.js";
+import { setSessionMemorySettings } from "./memory/index.js";
+// M-Memory 弧第二半 — 长期记忆装配（REPL/one-shot 的 runtime + 工具换轨 +
+// 首轮召回注入 + 会话终了沉淀）。
+import { createLongtermMemoryRuntime, setLongtermMemoryRuntime } from "./longterm-memory.js";
 import { parseMcpTimeouts } from "./mcp/tools.js";
 import {
   runLifecycleSweep,
@@ -187,7 +190,7 @@ import {
 
 async function main(): Promise<void> {
   loadEnvFile();
-  // End-of-options `--` (the upstream projectprecedent): the FIRST bare `--` ends flag
+  // End-of-options `--` (pi precedent): the FIRST bare `--` ends flag
   // parsing — later tokens are prompt positionals, never flags. Splice argv
   // once HERE and normalize process.argv to the pre-`--` flag window so every
   // flag consumer in this entry AND the downstream re-reads (driver/session
@@ -433,7 +436,7 @@ async function main(): Promise<void> {
 
   // M62: session-static config surfaces, resolved ONCE here — BEFORE any
   // prompt is built (the memoized loaders freeze bytes from the first read).
-  //   §7 contextExcludes → which M54b context files the loader skips;
+  //   §7 claudeMdExcludes → which M54b context files the loader skips;
   //   §4 outputStyle     → the style whose body joins the prompt tail;
   //   §6 tools.defer     → auto|on|off for the defer candidates;
   //   §7 memory*/mcp*    → the memory store's switch/dir, the MCP master
@@ -450,7 +453,7 @@ async function main(): Promise<void> {
   // BEFORE any provider or web_fetch request can go out. No proxy env and
   // no settings node → nothing installs (direct path byte-identical, the
   // red line). Rejected values warn; an install that cannot load its
-  // transport warns and stays direct — never fatal (the upstream formatcontract).
+  // transport warns and stays direct — never fatal (dsh contract).
   {
     const egressPolicy = resolveEgressPolicy(process.env, readEgressSettings(m62Effective, mcpWarn));
     for (const d of egressPolicy.diagnostics) mcpWarn(`⚠️ egress: ${d.message}`);
@@ -461,7 +464,7 @@ async function main(): Promise<void> {
       }
     }
   }
-  setProjectContextExcludes(parseContextExcludes(m62Effective, mcpWarn));
+  setProjectContextExcludes(parseClaudeMdExcludes(m62Effective, mcpWarn));
   setSessionOutputStyle(typeof m62Effective["outputStyle"] === "string" && m62Effective["outputStyle"] !== "" ? m62Effective["outputStyle"] : undefined);
   // M62 §6: tools.defer default is "auto" — readDeferModeSetting returns
   // undefined for an absent/junk key (warning on junk), and resolveDeferMode
@@ -674,7 +677,7 @@ async function main(): Promise<void> {
     const sessionsDir = join(process.cwd(), ".wudao", "sessions");
     const store = createJsonlSessionStore(sessionsDir);
     const { sessionId, history, lastModel, forked, fresh } = await resolveSession(argv, store, sessionsDir);
-    // #48 (the upstream turn-lease slice): fail-fast — this process is about to
+    // #48 (hermes#4 turn-lease slice): fail-fast — this process is about to
     // become the session's run-writer; a live foreign holder refuses the
     // boot outright (terminal `wudao --resume X` vs a desktop server on X).
     // Fresh ids acquire trivially; the boot lease rides the root-memoized
@@ -875,7 +878,16 @@ async function main(): Promise<void> {
 
   // The prompt: the pre-`--` flag window minus known flags, then every
   // post-`--` positional appended (the bare `--` itself never joins).
-  const prompt = promptFromArgv(rawArgv.slice(2));
+  // 小精灵会话弧 — 恢复即追问：--ask 配 --resume/--continue 时以追问问题
+  // 替换 one-shot prompt（resolveSession 在 runReal 里完成 resume；问题即
+  // 开场）。缺值/混用 fail-closed（打印后非零退出，绝不静默降级）。
+  let prompt = promptFromArgv(rawArgv.slice(2));
+  const askOpening = resolveAskOpening(argv, prompt);
+  if (askOpening.error !== undefined) {
+    process.stderr.write(`${askOpening.error}\n`);
+    process.exit(1);
+  }
+  if (askOpening.kind === "question") prompt = askOpening.question ?? prompt;
   // M37 §1: --plan turns the one-shot prompt into a plan run (read-only
   // whitelist, board as the plan) followed — on a TTY — by the ok-to-execute
   // question. Without a prompt there is nothing to plan.
@@ -925,7 +937,7 @@ async function main(): Promise<void> {
       const { sessionId, history, lastModel, forked } = await resolveSession(argv, store, sessionsDir);
       // M63-C R1: ONE assignment, from the ADORNED config (the TUI runs
       // decorateConfig(plan.config) — the raw plan config can diverge).
-        // #48 (the upstream turn-lease slice): fail-fast — this process is about to
+        // #48 (hermes#4 turn-lease slice): fail-fast — this process is about to
       // become the session's run-writer; a live foreign holder refuses the
       // boot outright (terminal `wudao --resume X` vs a desktop server on X).
       // Fresh ids acquire trivially; the boot lease rides the root-memoized
@@ -1016,7 +1028,7 @@ async function main(): Promise<void> {
           // M62 §7: the auto-compaction master switch (false = the loop runs
           // without compaction; manual /compact still works).
           compactionEnabled: autoCompact.enabled,
-          // 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线的 misc 旋钮
+          // 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线的 misc 旋钮
           // （boot 一次读；窗口语义/请求帽由 app-agent-opts 从 live config 重读）。
           compactionSettings: compactionSettingsFromNode(m62Effective["compaction"], mcpWarn),
           resumeHistory: history,
@@ -1161,13 +1173,19 @@ async function main(): Promise<void> {
     // shared by the buildTools closure below (write_file/edit record) and
     // runRepl's own opts (reset at each turn boundary, receipt at settle).
     const replTurnDiff = createTurnDiffTracker();
-    // M62 §7: the REPL's memory surface honors memoryEnabled/memoryDirectory.
-    const replMemoryStore = openSessionMemoryStore(process.cwd());
+    // M62 §7 曾在此解析 M49 的 replMemoryStore；M-Memory 弧第二半起模型记忆
+    // 工具面换轨长期记忆三件套（M49 的 memory_write/memory_search 不再挂载，
+    // 回滚见下方 buildTools 缝注释）。
+    // M-Memory 弧第二半 — REPL 的长期记忆 runtime（boot 召回注入走 runTurn
+    // 首轮缝 + 会话终了沉淀；单例供 repl.ts 的注入/rescan 位点与 /memory
+    // 命令道取用）。
+    const replLtsMemory = await createLongtermMemoryRuntime({ workspaceRoot: process.cwd() });
+    setLongtermMemoryRuntime(replLtsMemory);
     // §7: the REPL's per-model boot window (the tool set's defer gate and the
     // compaction trigger share it); the resolver rides along so /model and
     // /provider switches re-resolve at their turn boundaries.
     const replWindowTokens = sessionWindowFor(decorateConfig(plan.config));
-    // 125 项 2（the upstream projectget_context_remaining 形）：水位线查询工具的触发线晚绑盒
+    // 125 项 2（codex get_context_remaining 形）：水位线查询工具的触发线晚绑盒
     // + boot 兜底（replEffortLiveBox 同款：buildTools 闭包读，runRepl 武装）。
     const replCompactionThresholdBox: {
       get?: () => {
@@ -1247,7 +1265,7 @@ async function main(): Promise<void> {
           contextProbe: () => stateHandle.state?.messages ?? [],
           getForkContext: () => stateHandle.state,
           getSystemPrompt: () => stateHandle.state?.systemPrompt ?? "",
-          // 125 项 2（the upstream projectget_context_remaining 形）：水位线查询工具——读
+          // 125 项 2（codex get_context_remaining 形）：水位线查询工具——读
           // runRepl 武装的晚绑盒（live 窗口/config；replEffortLiveBox 同款），
           // 武装前（首 run 前）回落 boot 值。
           contextRemaining: {
@@ -1262,7 +1280,9 @@ async function main(): Promise<void> {
           // M49 §1: the memory store rides the tool set (write+search at top
           // level; child sets draw memory_search only). M62 §7: session
           // settings (enabled/directory) honored via openSessionMemoryStore.
-          ...(replMemoryStore !== undefined ? { memory: { store: replMemoryStore } } : {}),
+          // M-Memory 弧第二半：换轨长期记忆三件套（memory_search 同名互斥，
+          // M49 两件不再挂载；回滚=换回 replMemoryStore 行）。
+          ...(replLtsMemory.enabled ? { longtermMemory: { store: replLtsMemory.store } } : {}),
           ...(writeVerify ? { writeVerify } : {}),
           ...(longOutput ? { longOutput } : {}),
           ...(replLogSlimming !== undefined ? { logSlimming: replLogSlimming } : {}),
@@ -1486,7 +1506,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       model: config.model,
     });
   const compactionEnabled = autoCompactRuntime?.enabled ?? true;
-  // 125 项 1（the upstream formatresolveCompactSpec 形）— 预留感知触发线的 misc 旋钮
+  // 125 项 1（dsh resolveCompactSpec 形）— 预留感知触发线的 misc 旋钮
   // （compaction.thresholdRatio/headroomTokens；缺省 0.8/2048，reserve 缺席时
   // 平比字节不变）。one-shot 会话静态，boot 一次读（python kernel 同款纪律）。
   const oneShotCompactionSettings = compactionSettingsFromNode(
@@ -1512,7 +1532,8 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     // M58 §C#8: the git status block rides the SAME MetaNote queue — session
     // start (first probe) + on fingerprint change (HEAD sha / branch / entry
     // count), recomputed at turn boundaries via beforeModelCall below.
-    // Projection-only: the stable prompt prefix never carries it (the the upstream format    // coupling the spec §C#8 hard rule rejects — see git-status-note.ts).
+    // Projection-only: the stable prompt prefix never carries it (the CC
+    // coupling the spec §C#8 hard rule rejects — see git-status-note.ts).
     const gitProber = createGitStatusProber({ workspaceRoot, push: (t) => metaNotes.push(t) });
     // M49 §1: the run's bounded auto-recall rides the FIRST model call via
     // the MetaNote queue — projection-only, the JSONL stays clean.
@@ -1522,7 +1543,10 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     // a ZERO memory surface — `openSessionMemoryStore(...) ?? openMemoryStore(...)`
     // reopened the DEFAULT store exactly when memory was disabled (the ?? fired
     // on the disabled undefined). Same conditional-spread shape as app.tsx/REPL.
-    const oneShotMemoryStore = openSessionMemoryStore(workspaceRoot);
+    // M-Memory 弧第二半：换轨长期记忆三件套（memory_search 同名互斥，M49 两
+    // 件不再挂载）；runtime 同时承载首轮召回注入与 run 终了沉淀。
+    const oneShotLtsMemory = await createLongtermMemoryRuntime({ workspaceRoot });
+    setLongtermMemoryRuntime(oneShotLtsMemory);
     // M37 §2: one-shot runs snapshot too (the history dir is keyed by session
     // id, so a resumed interactive session can /rewind them later).
     const fileHistory = createFileHistory(join(workspaceRoot, ".wudao", "history", sessionId));
@@ -1585,7 +1609,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     // monitor, the driver's lane order); the process exits after the pass, so
     // no idle wake exists here by design.
     const oneShotChildMail = createChildMailLane();
-    // 125 项 1（the upstream projectnew_context 形）：模型侧轮转端口盒——headless 同样
+    // 125 项 1（codex new_context 形）：模型侧轮转端口盒——headless 同样
     // 接线（session-engine 同款；compaction 关=不注册工具）。
     const oneShotContextRotationBox: import("@wudao/core").NewContextPortBox = {};
     const tools = buildToolSet({
@@ -1633,7 +1657,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       contextProbe: () => state.messages,
       getForkContext: () => state,
       getSystemPrompt: () => state.systemPrompt,
-      // 125 项 2（the upstream projectget_context_remaining 形）：one-shot 会话静态——窗口/
+      // 125 项 2（codex get_context_remaining 形）：one-shot 会话静态——窗口/
       // 请求帽/设置都是 boot 定值（无 /model 切换面）。
       contextRemaining: {
         getThreshold: () => ({
@@ -1644,10 +1668,11 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       ...(sandboxOpts ? { sandbox: sandboxOpts.sandbox } : {}),
       readState,
       history: fileHistory,
-      // M49 §1: the memory store rides the tool set. M62 §7: session
-      // settings (memoryEnabled/memoryDirectory) honored — disabled → the
-      // key is absent entirely (no memory tools, no store IO).
-      ...(oneShotMemoryStore !== undefined ? { memory: { store: oneShotMemoryStore } } : {}),
+      // M49 §1（换轨 M-Memory 弧第二半）: the memory store rides the tool set.
+      // 长期记忆三件套（memory_save/memory_search/memory_forget）——M49 的
+      // memory_write/memory_search 不再挂载（同名互斥）；enabled=false → 键
+      // 整体缺席（零记忆面，M62 §7 同纪律）。
+      ...(oneShotLtsMemory.enabled ? { longtermMemory: { store: oneShotLtsMemory.store } } : {}),
       ...(writeVerify ? { writeVerify } : {}),
       ...(longOutput ? { longOutput } : {}),
       logSlimming: await loadLogSlimmingPortsForBoot(config),
@@ -1721,6 +1746,10 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       tools,
       status: "idle",
     };
+    // M-Memory 弧第二半：one-shot 的首轮召回注入——prompt 已在 messages 里
+    // （首条真实用户消息即种子），构造后、首个模型调用前注入一次（幂等；
+    // replaceSystemPrompt 的追加语义 = 前缀字节不动）。
+    oneShotLtsMemory.injectAtFirstRun(state);
     // M63-A: the one-shot's single session boundary fires before the run
     // (source: fork > resume > startup — the same derivation the driver uses,
     // applied here because the one-shot drives the loop directly).
@@ -1767,7 +1796,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     // above (the --budget metering seam).
     headlessGoalBox.current = headlessGoal;
 
-    // 波次8 #45 (the upstream formatsession-checkpoint-policy): one index instance serves the
+    // 波次8 #45 (dsh session-checkpoint-policy): one index instance serves the
     // pre-dispatch barrier below AND the run-complete tail (one flush; creation
     // is side-effect-free — the file only lands at flush()).
     const searchIndex = createSessionSearchIndex(workspaceRoot);
@@ -1782,7 +1811,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     const runStartMs = performance.now();
     let llmMs: number | null = null;
     let toolMs = 0;
-    // 夜移 035 (the upstream projectturn_timing): the pass's phase recorder (threaded into
+    // 夜移 035 (codex turn_timing): the pass's phase recorder (threaded into
     // the loop only in the debug tier — zero overhead otherwise).
     const runProfile = createTurnProfileRecorder();
     // 夜移 032 stage-2: each pass is its own run — the plan pass and the
@@ -1798,7 +1827,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       join(workspaceRoot, ".wudao", "spill", sessionId),
       process.env,
     );
-    // 波次8 #45 (the upstream formatsession-checkpoint-policy): the pre-dispatch durability
+    // 波次8 #45 (dsh session-checkpoint-policy): the pre-dispatch durability
     // barrier — a tool-carrying assistant turn persists BEFORE any tool body
     // runs, so a crash mid-tool leaves a durable unmatched tool_use (the input
     // repairOrphanedToolCalls answers with the UNKNOWN-outcome text instead of
@@ -1833,6 +1862,9 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     emergencySettle = async (err: unknown): Promise<void> => {
       await persistNewMessages({ store, sessionId, searchIndex, messages: state.messages, history });
       await appendRunStatsReceipt(store, sessionId, { runStartMs, llmMs, toolMs, toolCalls, idleReconnects, cacheDebtTokens }, { errName: err instanceof Error ? err.name : "Error" });
+      // M-Memory 弧第二半：异常收尾同样沉淀（确定性提炼——run 中断不代表
+      // 用户没给过纠正；失败静默不改写原始异常）。
+      await oneShotLtsMemory.captureAtSessionEnd({ sessionId, messages: state.messages }).catch(() => {});
     };
     const gen = runAgentLoop(state, model, {
       maxTurns: longTask?.maxTurns,
@@ -1853,7 +1885,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       // M62 §7: autoCompactEnabled:false runs the loop WITHOUT compaction
       // (a 413 then surfaces the hard-overflow guidance immediately; manual
       // /compact still works — it calls the compactor directly).
-      // 125 项 1（the upstream projectnew_context 形）：模型侧轮转端口接线——顶层选项
+      // 125 项 1（codex new_context 形）：模型侧轮转端口接线——顶层选项
       // （与 compaction 同级，不是嵌套）；同一个 oneShotContextRotationBox。
       ...(compactionEnabled ? { contextRotation: { port: oneShotContextRotationBox, rotationsUsed: 0 } } : {}),
       ...(compactionEnabled
@@ -1869,12 +1901,12 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
                   activeTools: activeToolsOf(state.messages),
                 }),
               },
-              // 125 项 1（the upstream formatresolveCompactSpec 形）：预留感知触发线 ——
+              // 125 项 1（dsh resolveCompactSpec 形）：预留感知触发线 ——
               // ratio×window 的平比帽永远在；outputReserveTokens 在场（已画像
               // 窗口语义 + 请求帽已知）时收紧到
               // min(ratio×window, window − reserve − headroom)。
               ...compactionThresholdFields(config, oneShotCompactionSettings),
-              // 借鉴弧 B1（the upstream project C1）：压缩经济学定价（catalog > env > 缺省）。
+              // 借鉴弧 B1（a reference project C1）：压缩经济学定价（catalog > env > 缺省）。
               cachePricing: resolveSessionCachePricing(config.provider, config.model),
               classifySkillRead: createSkillReadClassifier(skills ?? []),
               // M58 §C#2: the session's standing compact-instructions rider (the
@@ -1922,7 +1954,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       metaNotes: { take: () => metaNotes.shift() },
       // M62 §1: path-gated context rules (absent when the workspace has none).
       ...(ruleMatcher !== undefined ? { contextRules: { match: ruleMatcher } } : {}),
-      // 夜移 035 (the upstream projectturn_timing): per-pass phase recorder — a fresh one
+      // 夜移 035 (codex turn_timing): per-pass phase recorder — a fresh one
       // per runPass (plan pass and execution pass are separate runs; a
       // shared recorder would freeze at the first complete). Surfaced in the
       // debug tier right after the run-stats receipt.
@@ -2162,10 +2194,13 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     {
       await appendRunStatsReceipt(store, sessionId, { runStartMs, llmMs, toolMs, toolCalls, idleReconnects, cacheDebtTokens }).catch(() => { /* ω99-217 同款：收据落盘失败绝不破坏 run 的收尾 */ });
       if (ge("info")) stdoutGuard.writeRawStdout(`\x1b[2m${formatRunStats(performance.now() - runStartMs, llmMs, toolMs, toolCalls, idleReconnects, 0, cacheDebtTokens)}\x1b[0m\n`);
+      // M-Memory 弧第二半：one-shot 的会话终了沉淀（确定性提炼，静默；AWAIT
+      // ——one-shot 此后就是 process exit，fire-and-forget 会跟退出竞速丢条）。
+      await oneShotLtsMemory.captureAtSessionEnd({ sessionId, messages: state.messages }).catch(() => {});
     }
-    // 夜移 035 (the upstream projectturn_timing): the run's six-bucket phase split, debug
+    // 夜移 035 (codex turn_timing): the run's six-bucket phase split, debug
     // tier only — answers "where did the wall clock go" with the same
-    // buckets the upstream project's completion timeline reports (sampling / tools /
+    // buckets codex's completion timeline reports (sampling / tools /
     // compaction / harness overhead). Buckets re-sum to totalMs.
     if (ge("debug")) {
       const tp = runProfile.complete();

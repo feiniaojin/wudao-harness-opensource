@@ -1,10 +1,10 @@
-// 借鉴弧 δ（v7 第三梯队，the upstream harness 367ab084 思想）— 运行中工具调用
+// 借鉴弧 δ（v7 第三梯队，penguin-harness 367ab084 思想）— 运行中工具调用
 // 转后台的 CLI 侧车道。core 的 loop 只管三腿赛跑与合成配对；本模块拥有
 // 机制外的一切会话态：
 //   • typed 裁决（detach()）：在请求口就拒掉不该转的工具——block 族
 //     （interruptBehavior:"block"，取消本身就是危险，比移后台强）与
 //     「没有在飞调用」（not_in_flight）。裁决材料=驱动面的 busyTools +
-//     工具表（the upstream harness 的 409 not_detachable 对应件）。
+//     工具表（penguin 的 409 not_detachable 对应件）。
 //   • 收集登记（register()）：loop 的 onDetachedCall 把仍在跑的执行承诺
 //     交到这里；落定时格式化为注入文本排队。结果注入走既有后台结果
 //     车道——run 在飞时被 take() 在 monitor 之后 drain（轮尾并入，前缀
@@ -39,7 +39,7 @@ export function backgroundedNotice(name: string | undefined, summary: string | u
   return `🔄 已转入后台：${head}——完成后自动并入对话`;
 }
 
-/** the upstream's 409 shape: the typed refusal at the request site. */
+/** penguin's 409 shape: the typed refusal at the request site. */
 export type DetachVerdict =
   | { readonly kind: "ok"; readonly callId: string; readonly toolName: string }
   | { readonly kind: "refused"; readonly reason: "not_in_flight" | "not_detachable"; readonly toolName?: string };

@@ -155,7 +155,7 @@ export function HistoryItem({ entry }: { entry: HistoryEntry }): React.JSX.Eleme
         </Box>
       );
     case "tool":
-      // the upstream format-style tool line: `⏺ name(params)` — name default, params dim;
+      // CC-style tool line: `⏺ name(params)` — name default, params dim;
       // errored tools swap the marker for `⏹` in err. 0.3.15：行尾 dim 耗时
       // （I21 per-call 墙钟，出错调用照显——失败也花时间）。
       return (

@@ -1,4 +1,4 @@
-// 113-B3（the upstream project #2375 形 + 超越点）— CLI 驱动侧的配额停泊策略件：
+// 113-B3（prime-agent #2375 形 + 超越点）— CLI 驱动侧的配额停泊策略件：
 // 常量、归因行（M35 §2 泛型车道 receipt）、唤醒注入的编码/解码、用户提示
 // 文案。纯函数模块（零 driver 依赖），行为接线在 agent-driver.ts 的错误收尾
 // 缝与 cron 注入缝。

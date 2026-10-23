@@ -1,4 +1,4 @@
-// #48 (the upstream turn-lease slice) — the cross-process session RUN lease.
+// #48 (hermes#4 turn-lease slice) — the cross-process session RUN lease.
 // The store's promise-tail (夜移 031) serializes writers IN one process; two
 // OS processes on the same `<workspace>/.wudao/sessions` had nothing —
 // interleaved appends, a heal-rename racing a live append (rename swaps the

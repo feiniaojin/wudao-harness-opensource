@@ -290,13 +290,13 @@ describe("113-B3 — bounded re-park", () => {
   });
 });
 
-describe("124 项 1 — the wake re-arm budget exhausts honestly (a ref a ref b6775f6d4f lesson pin)", () => {
+describe("124 项 1 — the wake re-arm budget exhausts honestly (dsh b6775f6d4f lesson pin)", () => {
   it("a persistently refused wake re-arms exactly QUOTA_PARK_REARM_CAP times, then notifies and STOPS — never a silent hang", { timeout: 40_000 }, async () => {
-    // the upstream formatb6775f6d4f: a wake budget that dies silently deadlocked every
+    // dsh b6775f6d4f: a wake budget that dies silently deadlocked every
     // background-driven session (issue #641). Our only bounded wake counter
     // is the quota-park re-arm cap: exhaustion must land a user notice, stop
     // the auto-retry chain, and leave the session in the resting parked state
-    // (busy=false, disposeable) — the anti-the upstream formatshape. Make every resume
+    // (busy=false, disposeable) — the anti-dsh shape. Make every resume
     // refused by deleting the parked session's JSONL (empty entries →
     // continueSession answers started:false every time).
     const h = await makeHarness(["park"], 1_000);

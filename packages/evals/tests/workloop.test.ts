@@ -1,4 +1,4 @@
-// M48 §4 — the the upstream harness Agent Work Loop scorer: 5 dimensions × 15
+// M48 §4 — the better-harness Agent Work Loop scorer: 5 dimensions × 15
 // checks over a transcript + terminal, evidence-state ceilings, findings
 // decoupled from scores ("a score never creates or suppresses a finding").
 import { describe, it, expect } from "vitest";
@@ -9,7 +9,7 @@ import {
 import type { AgentMessage } from "@wudao/core";
 
 // ---------------------------------------------------------------------------
-// the evidence-state ceiling table (the upstream harness models/agent-work-loop.md)
+// the evidence-state ceiling table (better-harness models/agent-work-loop.md)
 // ---------------------------------------------------------------------------
 
 describe("evidence ceilings", () => {
@@ -198,7 +198,7 @@ describe("loadSessionMessages", () => {
 });
 
 // ---------------------------------------------------------------------------
-// M56 §4 — no-evidence success = 0.5 partial, never a pass (the upstream format C7).
+// M56 §4 — no-evidence success = 0.5 partial, never a pass (a reference harness C7).
 // ---------------------------------------------------------------------------
 describe("scoreWorkloop — evidence verdict (M56 §4)", () => {
   it("a completed run with writes + a verification run is evidence-verified", () => {

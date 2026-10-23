@@ -11,7 +11,7 @@
 // image/* picker, an OS drag-drop onto the card adds too, picked files mint
 // blob-URL thumbnails (browser-only drafts, src/attachments.ts), and submit
 // exchanges them through the host: onSubmit(text, imageInputs) returns
-// success/failure and ONLY success releases the drafts (the upstream formatpattern — a
+// success/failure and ONLY success releases the drafts (dsh pattern — a
 // failed send keeps the rail and the text for retry).
 import { useEffect, useId, useRef, useState } from "react";
 import type { Mode } from "../protocol.js";

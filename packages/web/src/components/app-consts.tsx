@@ -123,7 +123,7 @@ export const WORKSPACE_LABEL = "工作区";
  *  listener share one threshold (<900px). */
 export const isNarrowWindow = (): boolean => typeof window !== "undefined" && window.innerWidth < 900;
 
-// R6 quickwin (the upstream tips pattern) — the advanced/Buddy composer's idle
+// R6 quickwin (hermes tips pattern) — the advanced/Buddy composer's idle
 // placeholder rotates ONCE PER SESSION through short feature hints (reusing
 // existing feature copy). A module-level cursor advanced once per App MOUNT
 // picks the tip: one page load = one stable placeholder (a per-INPUTBOX
@@ -140,7 +140,7 @@ export const COMPOSER_TIPS: readonly string[] = [
 export let composerTipCursor = 0;
 
 /** 0.3.13: ONE receipt voice for BOTH mode paths (shield pick + shift+tab
- *  cycle), in the the upstream formatvocabulary — ask/accept/auto/plan are the words, the
+ *  cycle), in the CC vocabulary — ask/accept/auto/plan are the words, the
  *  paren keeps the one-line Chinese semantics (accept is the default and
  *  names the sensitive classes that still ask: 命令/网络/MCP; 0.3.14 adds
  *  plan's read-only 探查 wording). */
@@ -235,7 +235,7 @@ export const SEARCH_RESULTS_CAP = 50;
 /** ui-review-r3 P3: the ranked cap — a scored query caps at 20 (the
  *  unfiltered listing keeps the 50-row SEARCH_RESULTS_CAP; ranking earns
  *  the tighter screen). The ranking itself lives in file-fuzzy.ts (夜移 019:
- *  real the upstream's file-index paradigms — smart-case, bitmap pre-reject, fused
+ *  real CC's file-index paradigms — smart-case, bitmap pre-reject, fused
  *  nucleo-style scoring — plus wudao's kept basename-class separation). */
 export const SEARCH_MATCHED_CAP = 20;
 
@@ -401,7 +401,7 @@ export function FileSearch({ getAllKnownPaths, onOpenPath, onClose }: {
   // finish synchronously inside the first call (a chunk boundary never hits
   // under 256 paths), so first results land on the same render; large trees
   // become queryable after their first chunk — readyTick re-renders as the
-  // ready prefix grows, answering BEFORE the build finishes (real the upstream's
+  // ready prefix grows, answering BEFORE the build finishes (real CC's
   // queryable-prefix paradigm).
   const [readyTick, setReadyTick] = useState(0);
   const indexRef = useRef<{ source: readonly string[] | null; build: AsyncPathIndexBuild } | null>(null);

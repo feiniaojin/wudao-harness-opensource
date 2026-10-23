@@ -1,4 +1,4 @@
-// M52 §1 — the upstream projectcompaction correctness pack: boundary alignment (tier0/tier1
+// M52 §1 — pi compaction correctness pack: boundary alignment (tier0/tier1
 // share tier2's pairing-safe cutoff), the single-turn-over-budget dual
 // summary, chained compaction spans (a second compaction continues after the
 // prior summary instead of re-summarizing it), and the manual reason.

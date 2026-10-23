@@ -162,12 +162,12 @@ export async function loadHooksSettings(workspaceRoot: string, warn: HookWarn = 
   // top-level keys, not warnings. Fix-round M57: the check runs PER TIER
   // (tier-tagged) so a key only the GLOBAL tier owns never masquerades as a
   // project-file mistake. M62 §7 adds the misc keys (cleanup/softDelete
-  // lifecycle, autoCompact*, contextExcludes, memory*, mcp*, fallbackModel,
+  // lifecycle, autoCompact*, claudeMdExcludes, memory*, mcp*, fallbackModel,
   // outputStyle, tools.defer) — legit top-level names, not warnings.
   const known = (k: string): boolean =>
     k === "hooks" || k === "longTask" || k === "permissions" || k === "writeVerify" || k === "longOutput" || k === "sidecar" || k === "web" || k === "slack" || k === "env"
     || k === "cleanupPeriodDays" || k === "softDeletePeriodDays"
-    || k === "autoCompactWindow" || k === "autoCompactEnabled" || k === "contextExcludes"
+    || k === "autoCompactWindow" || k === "autoCompactEnabled" || k === "claudeMdExcludes"
     || k === "memoryEnabled" || k === "memoryDirectory"
     || k === "mcpEnabled" || k === "mcpTimeouts"
     // P2-9（96 队列 #9）: the LSP tool's opt-in node (default off).
@@ -426,7 +426,7 @@ function firstLineOfText(text: string): string {
 }
 
 /** §2 output fields: surface a hook's user-facing systemMessage (warn sink)
- *  unless the SAME JSON sets suppressOutput (the the upstream formatdisplay-suppression
+ *  unless the SAME JSON sets suppressOutput (the CC display-suppression
  *  semantics applied to the hook's own chatter). */
 function surfaceHookOutput(stdout: string, warn: (message: string) => void): void {
   const text = stdout.trim();
@@ -599,7 +599,7 @@ export function buildConfiguredHooks(
   }
 
   // M63-C §3: preToolUse/postToolUse now honor the tool-name matcher (the
-  // the upstream formatdimension — the skill/subagent positions declare per-tool hooks; a
+  // CC dimension — the skill/subagent positions declare per-tool hooks; a
   // matcherless entry still fires for every tool).
   // M33 §2: observer semantics — commands run with the result payload on
   // stdin; exit codes and output are ignored (post hooks never block).
@@ -630,7 +630,7 @@ export function buildConfiguredHooks(
   // -------------------------------------------------------------------------
 
   // SessionStart (matcher: startup|resume|clear|compact|fork). cc-plugins E4:
-  // the upstream's SessionStart is a CONTEXT hook — a command exiting 0 whose stdout
+  // CC's SessionStart is a CONTEXT hook — a command exiting 0 whose stdout
   // parses as {"hookSpecificOutput":{"additionalContext":"…"}} RETURNS that
   // string (the superpowers bootstrap's whole purpose); the driver parks it
   // on the MetaNote projection. Same house rules as M62 §5 postToolUse:

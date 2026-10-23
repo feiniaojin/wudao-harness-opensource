@@ -174,7 +174,7 @@ function hostName(host: string | undefined): string {
   return idx === -1 ? host : host.slice(0, idx);
 }
 
-// ω-3a — the mutation idempotency vault (adapted from the upstream project's WS vault,
+// ω-3a — the mutation idempotency vault (adapted from nanobot's WS vault,
 // channels/websocket/runtime.py: _WebUIRequestOperation + the request map).
 // Client MUTATIONS carrying a client-instance qualifier are keyed by
 // `cid` + the op envelope's id: a retry with the same payload digest JOINS
@@ -219,7 +219,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
   // per-client-process monotonic (a page reload restarts it at 1), so the
   // client-instance qualifier keeps a reloaded page from joining or
   // conflicting with the previous page's ops. In-memory by design (a server
-  // restart loses it — same trade as the upstream project; the client replays and the op
+  // restart loses it — same trade as nanobot; the client replays and the op
   // simply re-executes). Pruned lazily on access: no timers to unref.
   const vault = new Map<string, VaultEntry>();
   const pruneVault = (): void => {
@@ -348,7 +348,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
   // settles the vault entry (result cached, joiners flushed); the dispatch
   // below is otherwise untouched, so per-connection execution order stays
   // the synchronous arrival order it always was (no lock introduced). `ws`
-  // is the REQUESTING socket: delivery is connection-bound (the upstream project's
+  // is the REQUESTING socket: delivery is connection-bound (nanobot's
   // model) — when the requester is no longer the authenticated client, its
   // own delivery is dropped (the vault cache serves the retry) instead of
   // landing on the new client as a duplicate.
@@ -368,7 +368,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
       const key = `${cid}:${id}`;
       // The digest covers the whole op object — action AND fields in one
       // hash (digest equality implies action equality, the stronger form of
-      // the upstream project's action-or-digest conflict check).
+      // nanobot's action-or-digest conflict check).
       const digest = createHash("sha256").update(canonicalJson(o), "utf8").digest("hex");
       pruneVault();
       const existing = vault.get(key);
@@ -492,7 +492,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           }
           // ω99-242 invariant 7 — a MANUAL client submit invalidates the
           // pending recovery of the session the user took over (BEFORE the
-          // engine sees it, the upstream project's forward-seam order). Permission and
+          // engine sees it, openwork's forward-seam order). Permission and
           // form replies ride answerPermission — a different op that
           // deliberately never lands here: a reply may UNLOCK a tracked
           // blocked turn, so it must not cancel anything.
@@ -542,7 +542,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
             o.scope,
           ));
           return;
-        // 借鉴弧 α2（the upstream format2.1.269 思想）— steering 未读撤回：CAS 面（index+text
+        // 借鉴弧 α2（CC 2.1.269 思想）— steering 未读撤回：CAS 面（index+text
         // 同帧相符才删）。OPTIONAL like searchSessions：未挂车道的老 driver 干净
         // 拒答（真实车道由 ui host 的 ask-lane 包装挂上）。
         case "recallSteer":
@@ -574,7 +574,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           }
           reply(lane.answerAskUser(typeof o.answer === "string" ? o.answer : undefined));
           return;
-        // 借鉴弧 δ（the upstream harness 367ab084 思想）— 运行中工具调用转后台：callId 取
+        // 借鉴弧 δ（penguin 367ab084 思想）— 运行中工具调用转后台：callId 取
         // 状态帧 busyTools 行；缺省=第一个可转的在飞行。typed 裁决联合原样
         // 回（ok / not_detachable / not_in_flight）。收敛写（重放对已转/已
         // 落定的调用答 not_in_flight）→ vaulted 同 recallSteer。
@@ -873,9 +873,28 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
             (err) => reply(undefined, errText(err)),
           );
           return;
-        case "resume":
+        case "resume": {
           if (typeof o.id !== "string") {
             reply(undefined, "resume needs an id string");
+            return;
+          }
+          // 小精灵会话弧 — resume 的 fork 形（追问）：先把目标换成字节副本 id
+          // 再 resume（driver.forkSession 内完成 fork+resume 两段，一次回执；
+          // 原会话文件永不以写模式打开）。v1 不与 sid 车道组合——上面的通用
+          // sid 路由按原始 id 开车道，对 fork 是错的目标，干净拒答（fail-closed）。
+          if (o.fork === true) {
+            if (o.sid !== undefined) {
+              reply(undefined, "resume fork 不支持 sid 车道（v1）");
+              return;
+            }
+            if (opts.driver.forkSession === undefined) {
+              reply(undefined, "fork not supported by this driver");
+              return;
+            }
+            void opts.driver.forkSession(o.id).then(
+              (result) => reply(result),
+              (err) => reply(undefined, errText(err)),
+            );
             return;
           }
           // ω99-225: #2 — the outcome object relays verbatim (occupied carries
@@ -886,6 +905,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
             (err) => reply(undefined, errText(err)),
           );
           return;
+        }
         case "rewind": {
           const t = o.target;
           if (t !== "list" && t !== "last" && typeof t !== "number") {
@@ -1004,7 +1024,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           );
           return;
         }
-        // 永续 v6 wave2（the upstream project C1）：门控自改进面。list 是读（memoryList 同
+        // 永续 v6 wave2（reef C1）：门控自改进面。list 是读（memoryList 同
         // 形：optional port, clean refusal, never vaulted）；五个决策是写
         // 副作用（vaulted——isVaultedMutation 的 improvementFace 分支）。
         // 形状门在到达驱动之前：action 枚举 + 决策必带非空 id。

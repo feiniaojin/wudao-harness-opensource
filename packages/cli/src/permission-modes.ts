@@ -12,24 +12,24 @@ import { DOC_SUITE_READ_TOOLS, DOC_SUITE_EDIT_TOOLS } from "./doc-suite.js";
 
 export type Mode = "workspace" | "ask" | "auto" | "plan";
 
-// 0.3.12（用户裁定，对齐 the upstream harness 模式设计）— 三档权限制，read-out 四档
+// 0.3.12（用户裁定，对齐 Claude Code 模式设计）— 三档权限制，read-out 四档
 // 退役。档位语义（用户原话）：
 //   workspace  工作空间本来就应该可读写（默认档）：工作区文件读写自由，
 //              只读命令类（git status/diff/log/show/blame、ls/pwd/cat/
 //              head/tail/wc）也放行，其他操作（命令/网络/MCP）仍询问。
-//              ≈ the upstream formatacceptEdits。
+//              ≈ CC acceptEdits。
 //   ask        每次执行工具都要询问：除 harness 自身元工具外每个工具都
-//              问。≈ the upstream formatdefault（按用户字面收紧到"每个工具"）。
-//   auto       完全权限：全部放行（sidecar 分类器照跑）。≈ the upstream formatbypassPermissions。
+//              问。≈ CC default（按用户字面收紧到"每个工具"）。
+//   auto       完全权限：全部放行（sidecar 分类器照跑）。≈ CC bypassPermissions。
 //              ω99-226 产品裁定：电脑/浏览器八件套动作类也跟随本档放行
 //              （sidecar 照审）——auto 是真放行，不再逐动作问。#452（0.3.81）
 //              终局：托付+审计不打断——sidecar high/error/熔断判决同样自动
 //              放行，审计走响亮回执；还问的只剩旁路免疫静态面（保护设置写/
 //              凭据物料/操作员 ask 规则，见 4.65/夜移010/层4 注记）。
 //   plan       只读探查（0.3.14 #3）：读取类 + 安全只读命令放行，其余一律
-//              deny 带 reason（不询问，不打断）。≈ the upstream formatplan mode。完成方案后
+//              deny 带 reason（不询问，不打断）。≈ CC plan mode。完成方案后
 //              切回 accept/auto 执行。
-// 0.3.13 展示词汇对齐 the upstream format：界面一律显示 ask/accept/auto（workspace 显示为
+// 0.3.13 展示词汇对齐 CC：界面一律显示 ask/accept/auto（workspace 显示为
 // accept）；mode 值不变（持久化/协议零改动）。旧持久值迁移见
 // readGlobalDefaultPermissionMode：default→ask、acceptEdits→workspace、
 // auto→auto。
@@ -37,7 +37,7 @@ export type Mode = "workspace" | "ask" | "auto" | "plan";
 // Harness meta tools — never gated in ANY mode (not even ask): ask_user IS
 // the ask (permission-gating it would ask permission to ask), and todo_write
 // writes only the harness's own state file (.wudao/plan.md), not user code
-// (M23 §1; the upstream formatprecedent: TodoWrite is auto-allowed everywhere, plan mode
+// (M23 §1; CC precedent: TodoWrite is auto-allowed everywhere, plan mode
 // included).
 export const META_TOOLS = new Set(["ask_user", "todo_write"]);
 
@@ -162,8 +162,8 @@ export function resolveInitialMode(argv: readonly string[], env: NodeJS.ProcessE
   return readGlobalDefaultPermissionMode(readGlobalSettingsSync(env)) ?? "workspace";
 }
 
-/** Display label for a mode — the 0.3.13 the upstream formatvocabulary: workspace shows as
- *  "accept" (≈ the upstream formatacceptEdits); ask/auto show as themselves. The mode VALUE
+/** Display label for a mode — the 0.3.13 CC vocabulary: workspace shows as
+ *  "accept" (≈ CC acceptEdits); ask/auto show as themselves. The mode VALUE
  *  is unchanged (persistence + the wire protocol never see "accept"). */
 export function modeLabel(mode: Mode): string {
   return mode === "workspace" ? "accept" : mode;

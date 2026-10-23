@@ -394,7 +394,7 @@ export function captureTmpPath(): string {
 // （前台应用 · 其最前窗口标题 · 焦点元素角色）——回执自带验证语义：模型看得
 // 见「动了之后世界变成什么样」，不必每步截图复查（ω99-239 R4 根因）。
 //
-// 安全纪律（the upstream formatsecure 移植，逐字钉）：焦点元素**只读角色，绝不读 value**——
+// 安全纪律（dsh secure 移植，逐字钉）：焦点元素**只读角色，绝不读 value**——
 // AXSecureTextField 场景角色显示「密码框」，值永不入上下文。
 //
 // 降级纪律：osascript 任一步失败 → 整行不附（诚实缺席，不放半截状态）；动作
@@ -566,11 +566,11 @@ export async function fetchScreenPoints(exec: ExecSeam): Promise<ScreenPoints | 
 //   1. ref 语法与 browser 同一形（e<正整数>，validRef 单源复用）——一个心智
 //      模型跨 browser_snapshot 与 screen_observe，认知与代码双重复用。
 //   2. 观察输出=带编号元素表（`[eN] role "title" value=…` 行），预算三参
-//      （maxNodes/maxDepth/maxTextBytes——the upstream formatobserveSnapshot 范式）封顶；
+//      （maxNodes/maxDepth/maxTextBytes——dsh observeSnapshot 范式）封顶；
 //      未列出（被截断）的元素没有编号——refs map 只收「行幸存」的编号
 //      （browser 纪律：模型看不见的 ref 是绝不发放的空头承诺）。
 //   3. secure 字段（AXSecureTextField）绝不输出 value——helper 侧守卫
-//      （比 the upstream format的 value="[secure]" 占位更严：本弧连占位都不给）；TS 侧的
+//      （比 dsh 的 value="[secure]" 占位更严：本弧连占位都不给）；TS 侧的
 //      回执层纪律=ref 命中只点名 role/title，永不回显 value（241 状态行
 //      同源纪律的桌面元素版）。
 // helper 输出契约（stdout，全 mock 可测）：
@@ -580,11 +580,11 @@ export async function fetchScreenPoints(exec: ExecSeam): Promise<ScreenPoints | 
 //   WUDAO_END nodes=<n> truncated=<0|1> sha256=<hex>
 // sha256=当次观察的元素树身份（helper 内部按 app+窗口+逐元素身份行哈希）；
 // press/settext 前置同参重观察 + 比对——不符=stale（exit 6），fail-closed
-// 在任何 AX 动作之前（the upstream formatstateHash 纪律），TS 绝不静默改坐标猜。
+// 在任何 AX 动作之前（dsh stateHash 纪律），TS 绝不静默改坐标猜。
 
-/** 预算三钉（the upstream format范式、数值按我方口径裁定，见弧报告 §一）：
+/** 预算三钉（dsh 范式、数值按我方口径裁定，见弧报告 §一）：
  *  maxNodes=400（browser 元素帽 200 的两倍——AX 树连容器一起枚举）、
- *  maxDepth=20（the upstream format同值）、maxTextBytes=24000（UTF-8 字节——browser
+ *  maxDepth=20（dsh 同值）、maxTextBytes=24000（UTF-8 字节——browser
  *  12000 字符预算的家族量级）。预算是固定纪律不是模型可调参数（browser
  *  MAX_SNAPSHOT_CHARS 同款单源常量）。 */
 export const OBSERVE_MAX_NODES = 400;
@@ -737,21 +737,21 @@ export function isEmptyObservation(table: ObserveTable): boolean {
 }
 
 // ω99-250: #1 — settle/wait 的纯层（computer 弧 D：动作回执自带「界面变没变」
-// 的确定性事实 + computer_wait 显式等待面）。蓝本 the upstream formatservice.ts:510-529 的
+// 的确定性事实 + computer_wait 显式等待面）。蓝本 dsh service.ts:510-529 的
 // settle-loop（动作后短窗轮询观察、对比前后摘要、回执带变化事实），三点我方
 // 裁定：
 //   1. 比对基准=observeContentDigest（app+窗口+元素行全量，**值在内**）——
 //      247 的 helper sha256 刻意不含值（同窗打字不作废其余编号），settle 若
 //      直接复用会在每次输入后误报「未变」；摘要只在本进程内比对，绝不外发。
 //   2. 收敛语义=连续两拍相同才算「停」（变化中不下结论）——三态：变了/没变/
-//      窗内未稳。the upstream format只有两态（一变即 settled）；「未稳」是我方为等待闭环
+//      窗内未稳。dsh 只有两态（一变即 settled）；「未稳」是我方为等待闭环
 //      补的第三态（此时该走 computer_wait 或截图，不该拿半截事实当结论）。
-//   3. 绝不报 verified/failed 语义结论（the upstream project的 expect 是模型侧判断）——harness
+//   3. 绝不报 verified/failed 语义结论（pi 的 expect 是模型侧判断）——harness
 //      只见确定性事实，语义留给模型（§二诚实边界）。
 
 /** settle 对比窗（ms）：动作后最多观察这么久——窗到仍在变=「未稳定」。 */
 export const SETTLE_WINDOW_MS = 1_500;
-/** settle 采样间隔（ms）：窗内两拍之间的停顿（the upstream formatsettleMs 范式）。 */
+/** settle 采样间隔（ms）：窗内两拍之间的停顿（dsh settleMs 范式）。 */
 export const SETTLE_SAMPLE_INTERVAL_MS = 150;
 /** computer_wait 超时缺省（ms）。 */
 export const WAIT_TIMEOUT_DEFAULT_MS = 5_000;
@@ -842,7 +842,7 @@ export type SettleOutcome =
   | { readonly kind: "restless"; readonly windowMs: number }
   | { readonly kind: "no-tree" };
 
-/** settle 行渲染（纯，逐字钉——收益语言零实现术语；「未变」带 the upstream format式注意行：
+/** settle 行渲染（纯，逐字钉——收益语言零实现术语；「未变」带 dsh 式注意行：
  *  像素级细节不在观察范围）。 */
 export function formatSettleLine(o: SettleOutcome): string {
   switch (o.kind) {

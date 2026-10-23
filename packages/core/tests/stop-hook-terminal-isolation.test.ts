@@ -1,4 +1,4 @@
-// 夜移 016 (#29) — 停止钩死亡螺旋守卫的行为 pin。真 the upstream format纪律：「最后消息是
+// 夜移 016 (#29) — 停止钩死亡螺旋守卫的行为 pin。真 CC 纪律：「最后消息是
 // API 错误 → 跳过停止钩」——一个对错误终态做反应的策略钩不得把机械故障再
 // 驱成螺旋（钩拦停 → 模型重试 → 又错 → 钩又拦停……）。wudao 的架构已经
 // 满足它（onRunStop 咨询点 loop.ts 只在「成功产出最终回答」分支可达），
@@ -70,7 +70,7 @@ const spyStop = (): { onRunStop: () => Promise<"allow">; count: () => number } =
 
 const params = { type: "object" as const, properties: {}, additionalProperties: false as const };
 
-describe("stop-hook terminal isolation (夜移 016, 真 the upstream format「API 错误跳停止钩」纪律)", () => {
+describe("stop-hook terminal isolation (夜移 016, 真 CC「API 错误跳停止钩」纪律)", () => {
   it("① control: a clean completed answer consults onRunStop exactly once", async () => {
     const spy = spyStop();
     const model = recordingModel([{ role: "assistant", content: "all done", stopReason: "end_turn" }]);

@@ -127,7 +127,7 @@ export interface MissedFireOutcome {
   readonly missedIds: readonly string[];
 }
 
-/** The missed-fire catch-up (the upstream project paradigm): everything that came due
+/** The missed-fire catch-up (nanobot paradigm): everything that came due
  *  while the app was not running fires ONCE on the next boot — never once
  *  per missed occurrence. Pure: it CLAMPS stale nextRunAt values to `now`;
  *  the daemon's post-fire bookkeeping recomputes from the actual fire time,
@@ -146,13 +146,13 @@ export function applyMissedFire(entries: readonly DurableTask[], now: number): M
   return { entries: next, missedIds };
 }
 
-/** 借鉴弧 α3（the upstream 思想）— 漏火补跑的武装判定（纯函数）：一次 cron fire
+/** 借鉴弧 α3（hermes 思想）— 漏火补跑的武装判定（纯函数）：一次 cron fire
  *  失败后，是否给这个任务武装一次 missRetryAt。四门全过才武装：
  *   1. 仅 recurring（`at` 一次性任务失败即失败——没有「下一个自然周期」可
  *      期待，补跑会复活一个已自删的语义）；
  *   2. 没有awaiting中的补跑（不叠堆——missRetryAt 已在场即弃）；
  *   3. 任务活着（未暂停、未熔断停用）；
- *   4. 补跑时刻严格早于下一个自然 fire（the upstream「不晚于 next_run_at」——
+ *   4. 补跑时刻严格早于下一个自然 fire（hermes「不晚于 next_run_at」——
  *      自然周期都到了，补跑没有意义，只添乱）。
  *  输入的 task 应是 advanceAfterFire 之后的表内现行值（nextRunAt/lastFiredAt
  *  已前进），fireAt 是刚消耗的那次 fire 的时刻。 */

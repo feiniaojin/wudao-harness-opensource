@@ -1,20 +1,21 @@
 // ShieldSelector — M63 §B's permission tier picker (research 35 #4, DSH
 // PermissionSelect/RiskConfirmation), collapsed by M64-visual §2 into a
 // 26px chip that opens a popup menu. The four tiers map onto the harness's
-// runtime modes (0.3.14, 对齐 the upstream harness 词汇):
+// runtime modes (0.3.14, 对齐 Claude Code 词汇):
 //
 //   ask      每次询问   → mode "ask"        (每个工具执行前都确认 — safest)
 //   accept   接受编辑   → mode "workspace"  (工作区内读写与只读命令类放行,
 //                                           其余操作仍确认 — THE DEFAULT 档;
-//                                           ≈ the upstream formatacceptEdits)
+//                                           ≈ CC acceptEdits)
 //   auto     全自动     → mode "auto"       (RISKY tier — confirm-gated;
-//                                           ≈ the upstream formatbypassPermissions)
+//                                           ≈ CC bypassPermissions)
 //   plan     只读探查   → mode "plan"       (READ-only exploration — reads
 //                                           and safe read-only commands pass,
 //                                           everything else denied with a
-//                                           "finish the plan" reason; ≈ the upstream format//                                           plan mode)
+//                                           "finish the plan" reason; ≈ CC
+//                                           plan mode)
 //
-// 0.3.13 (user trial feedback): the labels are the the upstream format-style English words
+// 0.3.13 (user trial feedback): the labels are the CC-style English words
 // (ask/accept/auto/plan) — NO emoji, no shield stack; the mode VALUES stay
 // workspace/ask/auto/plan (persistence + the wire protocol are unchanged;
 // only the display word for workspace is "accept").
@@ -40,7 +41,7 @@ export interface ShieldTier {
 }
 
 /** The tier table (exported for tests + the hosts that mount the chip).
- *  0.3.13: the upstream formatvocabulary — the label IS the English word; the hints stay
+ *  0.3.13: CC vocabulary — the label IS the English word; the hints stay
  *  one-line Chinese, with accept named the default and its sensitive
  *  classes (命令/网络/MCP) still asking. 0.3.14: plan joins as the
  *  read-only 探查 tail. */

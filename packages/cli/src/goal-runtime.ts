@@ -54,7 +54,7 @@ import {
 } from "@wudao/core";
 import type { MissionState, MissionTask } from "./mission.js";
 
-/** 121 §4（the upstream format budget death salvage）— the ONE system-authored wrap-up
+/** 121 §4（a reference harness budget death salvage）— the ONE system-authored wrap-up
  *  prompt the driver's salvage lane fires after a budget crossing settles.
  *  The directive itself rides goalBudgetNote on the MetaNote queue (drained
  *  by this run's first model call); the prompt is the persisted user-side
@@ -99,7 +99,7 @@ export interface GoalRuntime {
   /** A compaction fired during the goal's life → continuationsUsed +1
    *  (persisted on the next settle row; mid-turn semantics, no rollback). */
   onCompacted(): void;
-  /** 125 项 3（the upstream project预算上卷 4761851ff3 形）：子代理用量归账——task 工具的
+  /** 125 项 3（codex 预算上卷 4761851ff3 形）：子代理用量归账——task 工具的
    *  onSubagentUsage 回传（每个子代理模型调用一行，childId 去重计子代理数）
    *  汇入本目标的 subagentsUsed 计数器。**计入报告、不计入触发**（ω99-8b
    *  分区不动：applyGoalSettlement 的 tokensUsed 只收根 loop 的行——预算穿
@@ -126,7 +126,7 @@ export function createGoalRuntime(opts: GoalRuntimeOptions): GoalRuntime {
   let current: GoalStateData | undefined;
   let closed: GoalStateData | undefined;
   let pendingCompactions = 0;
-  // 125 项 3（the upstream project预算上卷）：本目标生命周期内的子代理用量累计器——
+  // 125 项 3（codex 预算上卷）：本目标生命周期内的子代理用量累计器——
   // tokens 全加、childId 去重（无 childId 的旧行每行算一个——诚实高估好过
   // 静默低估；生产路径 task-tool-support 的包装器总盖 childId）。settle 行
   // 落盘后清零；restore 从最后一行重建起点（目标跨 resume 连续计）。展示面

@@ -1,4 +1,4 @@
-// 夜移 035 — 回合相位计时（the upstream project/core/src/turn_timing.rs 移植）。
+// 夜移 035 — 回合相位计时（codex codex-rs/core/src/turn_timing.rs 移植）。
 // wudao 有缓存取证（M24 字节断言）无延迟取证——「这回合为何 90s」不可答。
 // 六桶归账：beforeFirstSampling（run 起点到首个采样相——排队/投影/首投
 // 影开销）/ sampling（模型流往返，含消费者背压）/ compaction（压缩梯，
@@ -6,17 +6,17 @@
 // 行）/ betweenSamplingOverhead（两轮采样之间的恢复梯/注记/批次钩子等
 // harness 开销）/ afterLastSampling（末采后的收尾）。采样请求计数与重试
 // 计数分离（重试也是一次请求）。
-// 语义（the upstream project同款）：advance() 在每个转换点把流逝时间归账给「当前活动
+// 语义（codex 同款）：advance() 在每个转换点把流逝时间归账给「当前活动
 // 相」，无活动相时按 seenSampling 分到 pendingIdle（下一轮采样开启时转
 // between_overhead）或 beforeFirstSampling；嵌套 begin 惰性（活动相不换
 // ——guard 的 active=false，end 无操作）；complete() 幂等且冻结（记忆化，
 // 之后一切 begin/end 惰性）；各桶 ms 向下取整产生的舍入残差吸入「终相」
-// 桶（六桶恒重加 = total，the upstream project的尾相吸收取整）；时钟回退饱和为零
+// 桶（六桶恒重加 = total，codex 的尾相吸收取整）；时钟回退饱和为零
 // （saturating_duration_since）。guard 显式 end()（无 RAII——TS 的
 // try/finally 由调用方持）。
-// 分叉：the upstream project的 TurnTimingState 还带 TTFT/TTFM 与 item 起始表——那是
+// 分叉：codex 的 TurnTimingState 还带 TTFT/TTFM 与 item 起始表——那是
 // 协议层逐 item 事件的计时，wudao 的流事件形状不同，第一刀只移植相位归
-// 账本体；时钟注入（the upstream project用真 Instant，测试不可控）。
+// 账本体；时钟注入（codex 用真 Instant，测试不可控）。
 export interface TurnProfile {
   readonly beforeFirstSamplingMs: number;
   readonly samplingMs: number;

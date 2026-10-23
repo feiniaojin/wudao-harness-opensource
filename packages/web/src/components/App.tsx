@@ -198,6 +198,10 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // 弧 C：按会话分键（useSessionViews）——旧单数组 retired。
   const localNotes = viewSlot.notes;
   const [resumeRows, setResumeRows] = useState<readonly SessionRow[] | null>(null);
+  /* 小精灵会话弧 — 选择器意图：resume（/resume 命令的既有面）| followup
+   * （空态「从历史会话提问」的追问面——拣选走 fork 流）。同一份 rows/挂载
+   * 点，两套文案两套 onPick 路由。 */
+  const [resumeIntent, setResumeIntent] = useState<"resume" | "followup">("resume");
   const [clearPending, setClearPending] = useState(false);
   // M53 §1: an armed /edit — the driver's branch point is set; the original
   // text sits in the input for editing (nonce keys the buffer replacement).
@@ -832,6 +836,12 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // connection-gated op effect, beside the picker's own sessions read — the
   // boot listing lands as op #4 and the seam stands.
   const [activeName, setActiveName] = useState<string | null>(null);
+  // 小精灵会话弧 — 空态双入口的数据门（同一趟 sessions 读的第 4 个消费者：
+  // activeName/schedSessions/行位之后顺手喂 hero——零新增 boot op、零新增读
+  // 节拍，ω99-317「同一趟读顺手留给面板」同款范式；ui-review-r2 I8 的两次
+  // mount 取数钉不动）。有可续会话才亮双入口；失败/空 → 零渲染（hero 字节
+  // 同形）。
+  const [heroRows, setHeroRows] = useState<readonly SessionRow[] | null>(null);
   // ω99-286: #6 — 断点续跑的「当前会话未完成」位：与 activeName 同一趟
   // sessions 读（零新增 boot op、零新增读节拍——255 W2 的「帧推送零多余
   // 重读」钉住 busy 帧不是读信号，deps 保持原样），同一批行里找自己的行读
@@ -859,10 +869,13 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
         // ω99-317: 同一趟读顺手把全量行留给定时任务面板的会话名 join——
         // 零新增读节拍（255 W2 的「零多余重读」钉），节拍恰是本车道的。
         if (!cancelled) setSchedSessions(rows);
+        // 小精灵会话弧：同一趟读喂空态双入口的数据门（见 heroRows 声明注）。
+        if (!cancelled) setHeroRows(rows);
       })
       .catch(() => {
         if (!cancelled) setActiveName(null);
         if (!cancelled) setSchedSessions(null);
+        if (!cancelled) setHeroRows([]); // 失败=空（双入口静默隐藏，零报错面）
       });
     return () => {
       cancelled = true;
@@ -1654,6 +1667,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
               notify("(暂无可恢复的会话)");
               return;
             }
+            setResumeIntent("resume"); // 小精灵会话弧：/resume 命令面恒为恢复意图（followup 是空态入口专属）
             setResumeRows(rows);
           })
           .catch((e: unknown) => notify(`⚠️ /resume 失败：${e instanceof Error ? e.message : String(e)}`)); // ω99-202: #2
@@ -2138,6 +2152,73 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // undefined=老 server（无 lanes）→ 面隐藏，字节不变。
   const busySessionIds = useMemo(() => busySessionIdsOf(status, snap.lanes), [status, snap.lanes]);
 
+  // 小精灵会话弧 — heroRows 的读面在 activeName 那一趟（零新增 boot op，见
+  // 其声明注）；这里只派生「继续上次会话」的目标：mtime 最新的非 pet 行
+  // （pet 会话活在精灵窗口，租约互斥不可恢复——235 行点击同判据；服务端序
+  // 已按 mtime，客户端再排一次（侧栏同款防御性重排））。
+  const heroLatest = useMemo(() => {
+    const rows = [...(heroRows ?? [])].filter((r) => r.lane !== "pet");
+    rows.sort((a, b) => (a.mtime < b.mtime ? 1 : a.mtime > b.mtime ? -1 : 0));
+    return rows[0] ?? null;
+  }, [heroRows]);
+
+  // 小精灵会话弧 — 追问发射口：resumeFork（resume 的 fork 形 op——服务端字节
+  // 复制原会话到全新 id 再 resume 副本，原会话永不改写）。成功后视图随主车
+  // 道的 reset 帧自然切到副本；聚焦输入框（seed 语义=以当前 buffer 值重播+
+  // focus——不打断未发送草稿），收据话术收益向（不露 fork/副本实现词）。
+  // 老服务端（无该 op）→ 干净拒答 err → 失败 toast（入口不隐藏，桌面端捆绑
+  // 当前 server 必有；独立旧 server 的降级面留此收据）。
+  const onFollowUp = useCallback(
+    (id: string) => {
+      setResumeRows(null);
+      void client.resumeFork(id).then(
+        (outcome) => {
+          if (outcome.ok) {
+            setViewLane(null); // fork 永远落在主车道——视图切回主车道跟随副本
+            notify("已基于这段对话开了新篇——直接输入你的问题，原对话保持不变");
+            setSeedDraft((cur) => ({ text: draftRef.current, nonce: (cur?.nonce ?? 0) + 1 }));
+            return;
+          }
+          if (outcome.reason === "busy") {
+            notify("⚠️ 任务进行中——等它跑完再追问");
+            return;
+          }
+          if (outcome.reason === "occupied") {
+            notify(`⚠️ 会话正被另一个 wudao 进程（#${outcome.holderPid}）占用——请关闭旧窗口，或稍候重试`);
+            return;
+          }
+          notify("(会话不存在 —— 可能已被删除)");
+        },
+        (e: unknown) => notify(`⚠️ 追问失败：${e instanceof Error ? e.message : String(e)}`),
+      );
+    },
+    [client, notify, setViewLane],
+  );
+
+  // 小精灵会话弧 — 空态双入口：①继续上次会话=既有选中通路（onPickSession
+  // 的 busy 门/占用回执原样复用）；②从历史会话提问=装载选择器（followup
+  // 意图——拣选走 onFollowUp 的 fork 流）。装载失败/空列表各给安静回执。
+  const onResumeLatest = useCallback((): void => {
+    if (heroLatest !== null) onPickSession(heroLatest.id);
+  }, [heroLatest, onPickSession]);
+  const onAskFromHistory = useCallback((): void => {
+    if (busy && !view.capable) {
+      notify("⚠️ 运行中无法 切换会话（任务进行中）");
+      return;
+    }
+    void client
+      .sessions()
+      .then((rows) => {
+        if (rows.length === 0) {
+          notify("(暂无可追问的会话)");
+          return;
+        }
+        setResumeIntent("followup");
+        setResumeRows(rows);
+      })
+      .catch((e: unknown) => notify(`⚠️ 打开会话列表失败：${e instanceof Error ? e.message : String(e)}`));
+  }, [busy, view.capable, client, notify]);
+
   // ω99-276: #3 — buddy 侧栏「新对话」直通（用户令 09-11「开新会话就应该
   // 直接切到新的空的会话窗口，旧的会话随时通过历史会话切换恢复」）：不再
   // 走 ClearConfirm 的 清空/保留 二选一。onNewChat 移到 performClear 之后
@@ -2356,7 +2437,13 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
             拒答/占用提示原样）。无等待时 EmptyHero 字节同形（空数组不渲染点名
             行——组件内零噪音门）。 */}
         {isConversationEmpty(history) ? (
-          <EmptyHero awaiting={awaitingNames} onOpenSession={onPickSession} />
+          <EmptyHero
+            awaiting={awaitingNames}
+            onOpenSession={onPickSession}
+            /* 小精灵会话弧 — 空态双入口：有可续会话才接线（无历史/读取失败 →
+               双 prop 缺席，hero 字节同形——251 点名行同款零噪音门）。 */
+            {...(heroLatest !== null ? { onResumeLatest, onAskFromHistory } : {})}
+          />
         ) : null}
         <HistoryList
           history={history}
@@ -2880,6 +2967,9 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
                 /* 弧 C — 「运行中」徽标集（主车道 busy 会话 + busy 副车道的会
                    话）；undefined=老 server → 面隐藏，字节不变。 */
                 busySessionIds={busySessionIds}
+                /* 小精灵会话弧 — 行内「追问」：fork 该会话进副本继续问（原会话
+                   不动），与行点击的「恢复」并存。 */
+                onFollowUp={onFollowUp}
                 /* ω99-147: the five model props are gone with the footer's
                    ModelSelector — 模型切换归输入框下的 chips（双入口去重）. */
               />
@@ -3183,7 +3273,19 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
           toggle's optimistic pattern, minus the optimism: the flip waits
           for the persisted reply). */}
       {resumeRows !== null ? (
-        <ResumePicker rows={resumeRows} onPick={onPickSession} onCancel={() => setResumeRows(null)} />
+        /* 小精灵会话弧 — 同一挂载点两套意图：resume（/resume 命令）走既有
+           onPickSession；followup（空态「从历史会话提问」）走 onFollowUp 的
+           fork 流（选中的会话开副本继续问）。取消复位意图（下次 /resume 面
+           恒为恢复语）。 */
+        <ResumePicker
+          rows={resumeRows}
+          intent={resumeIntent}
+          onPick={resumeIntent === "followup" ? onFollowUp : onPickSession}
+          onCancel={() => {
+            setResumeRows(null);
+            setResumeIntent("resume");
+          }}
+        />
       ) : null}
       {/* ui-review-r2 C1: both confirms ride the SAME performClear — the
           typed /clear and the + button are one path now. */}

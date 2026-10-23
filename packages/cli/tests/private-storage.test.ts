@@ -1,4 +1,4 @@
-// ω99-2b — 私有存储原语：目录级 0700（只收紧新建组件，the upstream project was_missing
+// ω99-2b — 私有存储原语：目录级 0700（只收紧新建组件，DeepCode was_missing
 // 语义）、父链目录链接拒绝（不把子目录建进链接目标）、tmp+rename+chmod 的
 // 0600 修复语义、harden 遍历边界（不跟链接），以及 Windows icacls 编排
 // （platform 注入 "win32" + 假 runner 收集调用 —— 开发机是 macOS，绝不真跑

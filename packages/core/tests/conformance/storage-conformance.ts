@@ -3,7 +3,7 @@
 // The session-store CONTRACT made executable: any SessionStore implementation
 // runs the same cases (round-trips, entry views, sidechains, list, leases,
 // torn-tail healing) and is a backend only if they all pass. Shape learned
-// from the upstream projectC5's forBackend suites; the contract is wudao's own — the upstream project's durable
+// from pi C5's forBackend suites; the contract is wudao's own — pi's durable
 // lanes/operations/values semantics are deliberately NOT ported.
 //
 // Capabilities: a backend declares what it can express; faces it cannot are

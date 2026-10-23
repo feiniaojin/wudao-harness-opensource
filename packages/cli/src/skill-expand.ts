@@ -5,7 +5,7 @@
 // Two stages, one law each:
 //
 //   expandSubstitutions — PURE. $ARGUMENTS / $ARGUMENTS[N] / $N (0-based,
-//     real the upstream harness semantics) / a declared $name (positional mapping,
+//     real Claude Code semantics) / a declared $name (positional mapping,
 //     argumentSubstitution.ts:111) / ${CLAUDE_SESSION_ID} /
 //     ${CLAUDE_SKILL_DIR} / ${CLAUDE_PROJECT_DIR}, with \$ escaping to a
 //     literal dollar. A single scanner walk: substituted VALUES are never
@@ -43,7 +43,7 @@ export interface SkillSubstitutionCtx {
   /** The session id (${CLAUDE_SESSION_ID}). */
   readonly sessionId: string;
   /** Declared argument names (frontmatter `arguments:`) — `$name` maps
-   *  POSITIONALLY onto the parsed args, exactly the upstream's mapping. */
+   *  POSITIONALLY onto the parsed args, exactly CC's mapping. */
   readonly argsDecl?: readonly string[];
 }
 
@@ -54,7 +54,7 @@ export interface SkillSubstitutionCtx {
 /** Parse an invocation args string into positional words: whitespace-split
  *  with single/double-quoted multi-word spans kept whole and backslash
  *  escapes honored inside double quotes. `$KEY` tokens survive literally
- *  (args are data, not shell — the upstream's tryParseShellCommand posture). An
+ *  (args are data, not shell — CC's tryParseShellCommand posture). An
  *  UNBALANCED quote degrades to a plain whitespace split (never throws). */
 export function parseSkillArgs(args: string): string[] {
   const text = args.trim();
@@ -120,7 +120,7 @@ export function parseSkillArgs(args: string): string[] {
   return out;
 }
 
-/** Windows-path normalization for the dir variables (the upstream formatnormalizes
+/** Windows-path normalization for the dir variables (CC normalizes
  *  backslashes to forward slashes so shell commands don't read them as
  *  escapes); a no-op on posix. */
 function toShellPath(p: string): string {
@@ -173,7 +173,7 @@ export function expandSubstitutions(body: string, ctx: SkillSubstitutionCtx): st
         i += "${CLAUDE_PROJECT_DIR}".length;
         continue;
       }
-      // $ARGUMENTS[N] — 0-based indexed (the upstream formatsemantics).
+      // $ARGUMENTS[N] — 0-based indexed (CC semantics).
       if (body.startsWith("$ARGUMENTS[", i)) {
         const m = /^\$ARGUMENTS\[(\d+)\]/.exec(body.slice(i));
         if (m !== null) {
@@ -191,7 +191,7 @@ export function expandSubstitutions(body: string, ctx: SkillSubstitutionCtx): st
           continue;
         }
       }
-      // $name — declared argument at this position's index (the upstream formatmapping).
+      // $name — declared argument at this position's index (CC mapping).
       let matched = false;
       for (const name of names) {
         if (!body.startsWith(`$${name}`, i)) continue;
@@ -203,7 +203,7 @@ export function expandSubstitutions(body: string, ctx: SkillSubstitutionCtx): st
         break;
       }
       if (matched) continue;
-      // $ARGUMENTS — the whole (trimmed) arg string. the upstream formatsubstitutes the raw
+      // $ARGUMENTS — the whole (trimmed) arg string. CC substitutes the raw
       // string; wudao trims the edges (the slash parser's tail whitespace is
       // never meaningful, and every pre-D2 pin expects the trimmed form).
       if (body.startsWith("$ARGUMENTS", i)) {
@@ -222,13 +222,13 @@ export function expandSubstitutions(body: string, ctx: SkillSubstitutionCtx): st
 // Dynamic injection — !`cmd` and ```! fenced blocks
 // ---------------------------------------------------------------------------
 
-// Real-the upstream formatpatterns (promptShellExecution.ts:49-56): the inline form requires
+// Real-CC patterns (promptShellExecution.ts:49-56): the inline form requires
 // line start or whitespace before the bang (no mid-word matches); the fence
 // form is a ```! block.
 const BLOCK_PATTERN = /```!\s*\n?([\s\S]*?)\n?```/g;
 const INLINE_PATTERN = /(?<=^|\s)!`([^`]+)`/gm;
 
-/** The disabled-mode placeholder (the upstream's disableSkillShellExecution posture:
+/** The disabled-mode placeholder (CC's disableSkillShellExecution posture:
  *  nothing executes; the command stays visible so the reader knows what was
  *  withheld). */
 export function skillInjectionDisabledPlaceholder(command: string): string {
@@ -281,10 +281,10 @@ function collectInjections(body: string): readonly InjectionMatch[] {
  *  matches are collected from the ORIGINAL body and spliced in positionally —
  *  output text is never scanned, so an echoed `` !`…` `` lands as literal
  *  data. Commands run in DOCUMENT ORDER (sequential — deterministic approval
- *  order; the upstream's Promise.all has no ordering guarantee to preserve). An empty
+ *  order; CC's Promise.all has no ordering guarantee to preserve). An empty
  *  (whitespace-only) command stays verbatim. `disabled` replaces each span
  *  with a placeholder naming the command, executing nothing. A rejected
- *  `exec` propagates — the upstream's fail-loud posture (a denied/broken injection
+ *  `exec` propagates — CC's fail-loud posture (a denied/broken injection
  *  fails the invocation rather than silently degrading). */
 export async function expandInjections(
   body: string,

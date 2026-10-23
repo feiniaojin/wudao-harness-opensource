@@ -52,7 +52,7 @@ export function fileChangeTargets(settings: HooksSettings): readonly string[] {
 // The stdout-first-line block protocol for preToolUse hooks: exactly
 // {"block":true,"reason":"…"} (extra keys tolerated; reason falls back to a
 // generic). Anything else — plain text, other JSON, malformed JSON — is not a
-// block. M63-A §2: "blockReason" is the accepted alias spelling (the the upstream format
+// block. M63-A §2: "blockReason" is the accepted alias spelling (the CC
 // UserPromptSubmit contract) — same meaning wherever "block" appears.
 export function parseBlockJsonLine(stdout: string): { block: true; reason: string } | undefined {
   const first = stdout.split("\n").map((l) => l.trim()).find((l) => l !== "");
@@ -158,7 +158,7 @@ export function parseStopHookJson(stdout: string): StopHookDecision | undefined 
 }
 
 // M62 §5 — the additionalContext contract. A postToolUse hook exiting 0 may
-// answer on stdout with the the upstream format-style envelope; the inner string becomes
+// answer on stdout with the CC-style envelope; the inner string becomes
 // model-visible context at the next model call. Anything else (plain text,
 // other JSON, junk) is NOT context.
 export const MAX_ADDITIONAL_CONTEXT_CHARS = 8_192;

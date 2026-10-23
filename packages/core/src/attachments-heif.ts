@@ -1,11 +1,11 @@
-// 借鉴弧 β2 — HEIC/HEIF/AVIF 解码准入（the upstream 思想，digest-b C4）。
+// 借鉴弧 β2 — HEIC/HEIF/AVIF 解码准入（hermes 0a545f7fa5 思想，digest-b C4）。
 // 在位者对垒：IMAGE_MEDIA_TYPES 白名单（attachments.ts，fail-closed 拒绝式）对
 // iPhone 默认格式 image/heic 硬拒——目标平台 macOS + iPhone 用户把照片拖进
 // 附件口即失败。本模块把「拒」变「能用」，准入边界一步扩展且零新依赖：
 //
 //   嗅探   ISO-BMFF `ftyp` 魔数（major + 兼容 brand，按声明盒长扫描，畸形
 //          尺寸 fail-closed 归 null）；**扩展名/声称的 mediaType 永不信任**
-//          ——字节说了算（the upstream rule）。png/jpeg/webp/gif 首盒永不是 ftyp，
+//          ——字节说了算（hermes 原令）。png/jpeg/webp/gif 首盒永不是 ftyp，
 //          现有白名单路径零漂移。
 //   解码   macOS 系统 sips 子进程转 JPEG（目标平台内置；非 darwin 或 sips
 //          失败→维持现拒，typed 诚实报因）。
@@ -67,7 +67,7 @@ const ascii = (bytes: Uint8Array, start: number, len: number): string => {
  *  (16 bytes), non-ftyp type, declared box size < 16 or running past the
  *  buffer — all return null (the caller then falls back to the whitelist
  *  rejection, exactly as before β2). Compatible brands are scanned only up
- *  to the DECLARED box length (the upstream: scan by declared box length) and never past the
+ *  to the DECLARED box length (hermes: 按声明盒长扫描) and never past the
  *  buffer. */
 export function sniffBmffImageKind(bytes: Uint8Array): BmffImageKind | null {
   if (bytes.length < 16) return null;

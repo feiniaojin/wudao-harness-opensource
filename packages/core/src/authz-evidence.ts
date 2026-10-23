@@ -1,5 +1,5 @@
 // ω-4e — reviewer authorization evidence (the Guardian pattern, import-queue
-// item 15): the the upstream projectevidence algebra, imported verbatim where wudao has the
+// item 15): the codex evidence algebra, imported verbatim where wudao has the
 // same seam and adapted where it does not (63-omega-4e-design.md §3.2).
 //
 // What this module owns, end to end:
@@ -7,9 +7,10 @@
 //   synthetic / not-evidence) via ONE frozen marker registry;
 // - bound the excerpt: filter FIRST, keep the LAST AUTHZ_MAX_MESSAGES
 //   survivors (a synthetic message inside the window never displaces a
-//   genuine one — the upstream projectuser_authorization.rs:33-63 order, test-pinned);
+//   genuine one — codex user_authorization.rs:33-63 order, test-pinned);
 // - truncate each kept message at exactly ONE point (head + omission marker +
-//   tail, code-point-safe) — the render never truncates again (the the upstream project//   `51ebf5b184` double-truncation lesson);
+//   tail, code-point-safe) — the render never truncates again (the codex
+//   `51ebf5b184` double-truncation lesson);
 // - render role-prefixed per line: the role label comes from the harness's
 //   classification of the message object, NEVER from anything inside the
 //   text, and EVERY line (continuations included) is prefixed — a forged
@@ -50,9 +51,9 @@ import { SCHEDULED_INJECTION_LEAD } from "./scheduler.js";
 
 export type AuthzMessageClass = "genuine-user" | "assistant" | "synthetic";
 
-export const AUTHZ_MAX_MESSAGES = 8; // the upstream project user_authorization.rs:13
-export const AUTHZ_MAX_MESSAGE_TOKENS = 900; // the upstream project user_authorization.rs:14
-export const AUTHZ_APPROX_CHARS_PER_TOKEN = 4; // the upstream project approx_bytes_for_tokens
+export const AUTHZ_MAX_MESSAGES = 8; // codex user_authorization.rs:13
+export const AUTHZ_MAX_MESSAGE_TOKENS = 900; // codex user_authorization.rs:14
+export const AUTHZ_APPROX_CHARS_PER_TOKEN = 4; // codex approx_bytes_for_tokens
 
 /** The single registry of user-role message markers that are NOT genuine
  *  human input (the design's §2 poisoning map, one entry per seam class).
@@ -118,7 +119,8 @@ export interface AuthzExcerpt {
 
 /** The ONE truncation point in the evidence pipeline. Under budget →
  *  verbatim; over → head + omission marker + tail with the budget split
- *  half/half. Chars ≈ tokens × AUTHZ_APPROX_CHARS_PER_TOKEN (the the upstream project *  bytes≈tokens×4 approximation, on code points — never into a surrogate
+ *  half/half. Chars ≈ tokens × AUTHZ_APPROX_CHARS_PER_TOKEN (the codex
+ *  bytes≈tokens×4 approximation, on code points — never into a surrogate
  *  pair). The marker's own bytes do not count against the budget. */
 export function truncateEvidenceText(text: string, tokenCap: number): { text: string; truncated: boolean } {
   const chars = Array.from(text);
@@ -260,7 +262,7 @@ function canonicalReviewJson(value: unknown): string {
  *  buildSidecarInput discipline): fixed system prompt, ONE user message
  *  (pre-rendered evidence + the audited call as canonical JSON), and
  *  `tools: []` — no tool array means no MCP projection, so no executor MCP
- *  server availability can ever block or fail a review (the upstream projectae,
+ *  server availability can ever block or fail a review (codex e482cc66ae,
  *  adapted as a construction rule). The reviewer is a direct
  *  `model.generate` consumer, never a tool-bearing runSubagent child. */
 export function buildReviewerModelInput(
