@@ -763,6 +763,18 @@ export async function pluginInstallLocal(
   const name = inspect.name;
   assertSafePluginName(name);
 
+  // 产品门：CCB 家族的「纯代码插件」（package.json + dsh.bundle/client 运行时
+  // 模块、零静态资产）在本运行时按配置包法律不执行外部代码——装上即僵尸
+  // 登记，用户得不到任何功能。与其装完再降级提示，不如装前拒之并说明：
+  // 支持的是带 skills/commands/agents/hooks/MCP 静态资产的插件包。
+  if (inspect.format === "ccb-family"
+    && inspect.detail.skills + inspect.detail.commands + inspect.detail.agents + inspect.detail.hooks + inspect.detail.mcp === 0) {
+    throw new MarketplaceError(
+      "invalid-plugin",
+      `"${name}" declares runtime code (dsh bundle/client) but carries no static assets (skills/commands/agents/hooks/MCP) — this harness maps plugins as configuration packs and does not execute plugin code, so it would be unusable here. Nothing was installed. Assets-bearing CCB-family packages install fine.`,
+    );
+  }
+
   // fail-closed：同名 local 安装只此一份；孤儿目录（拷贝中途崩溃的残留）
   // 报告而非覆写。
   const installed = await readInstalledRegistry(env);

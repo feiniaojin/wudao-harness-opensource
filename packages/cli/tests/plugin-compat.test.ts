@@ -207,6 +207,31 @@ describe("plugin-compat: CCB 家族插件装载", () => {
 // ---------------------------------------------------------------------------
 
 describe("plugin-compat: 本地路径安装", () => {
+  it("install <path>：零静态资产的纯代码 CCB 包 → 装前拒绝（配置包法律：装上即僵尸登记），无目录无登记", async () => {
+    resetRegistry();
+    const { ws, cleanup } = tmpWs();
+    const srcRoot = mkdtempSync(join(tmpdir(), "plugin-compat-codeonly-"));
+    try {
+      // 纯代码插件：package.json + dsh.bundle/client 声明 + src/ 模块，零静态资产
+      mkdirSync(join(srcRoot, "pkg", "src"), { recursive: true });
+      writeFileSync(join(srcRoot, "pkg", "package.json"), JSON.stringify({
+        name: "@acme/code-only", version: "0.1.0",
+        dsh: { manifestVersion: 1, bundle: "cordis.patch.yml", client: "./src/index.js" },
+      }), "utf8");
+      writeFileSync(join(srcRoot, "pkg", "src", "index.js"), "throw new Error('must never run');\n", "utf8");
+      const res = await cli(ws, ["install", join(srcRoot, "pkg")]);
+      expect(res.code).toBe(1);
+      expect(res.text).toContain("no static assets");
+      expect(res.text).toContain("Nothing was installed");
+      // 门是装前的：目录与登记都不存在
+      expect(existsSync(join(ws, ".wudao", "plugins", "acme-code-only"))).toBe(false);
+      expect(installedRows()).toEqual([]);
+    } finally {
+      rmSync(srcRoot, { recursive: true, force: true });
+      cleanup();
+    }
+  });
+
   it("install <path>：拷入 .wudao/plugins/、登记 market=local、装载即可见；重复装被拒；卸载走既有引擎", async () => {
     resetRegistry();
     const { ws, cleanup } = tmpWs();
