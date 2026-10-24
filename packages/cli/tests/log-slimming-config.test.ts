@@ -1,4 +1,4 @@
-// 借鉴弧 C1（a reference project C3）— logSlimming 的 cli 配置面：loader 契约（缺省关
+// 借鉴弧 C1（SoL-Pi C3）— logSlimming 的 cli 配置面：loader 契约（缺省关
 // /字段回退/未知键告警）、fail-closed runtime（enabled 无 model = 关）、
 // 廉价档客户端的 config 形状（sidecar 同款：effort none 标 soft + 2048
 // 完成上限）、以及 createLogSlimmingPorts 只透传显式覆盖的阈值。

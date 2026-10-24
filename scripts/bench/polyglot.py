@@ -16,7 +16,7 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BENCH = os.environ.get("BENCH_DIR", "~/xdev/github/wudao-harness-project/wudao-bench")
+BENCH = os.environ.get("BENCH_DIR", "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench")
 SRC = f"{BENCH}/polyglot/javascript/exercises/practice"
 RUNS = f"{BENCH}/poly-runs"
 CLI = f"{REPO}/packages/cli/dist/index.js"

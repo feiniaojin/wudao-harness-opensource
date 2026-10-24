@@ -139,7 +139,7 @@ export function protectedSettingsFile(toolName: string, input: Record<string, un
   return undefined;
 }
 
-// 夜移 010 (a reference harness-Py permissions/checker.py:18-200) — credential-material
+// 夜移 010 (OpenHarness-Py permissions/checker.py:18-200) — credential-material
 // detection. OH-Py fnmatch-denies `*/.ssh/*`, `*/.aws/credentials`, `*/.gnupg/*`,
 // `*/.kube/config` and its own credential store before mode, surviving even
 // --dangerously-skip-permissions. Wudao's tools are workspace-confined

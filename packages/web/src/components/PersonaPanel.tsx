@@ -14,7 +14,7 @@
 // the reference inventory (bound providers + the global-default flag), the
 // confirm card's 「解绑并删除」 re-sends with unbind:true.
 // Iteration 2 T2: a loaded definition OPENS on the first wire with content
-// (`initialWireFor` — a reference harness's anthropic-only headers must not land on
+// (`initialWireFor` — claude-code's anthropic-only headers must not land on
 // an empty openai-chat page), each wire tab carries a row-count badge (zero
 // dims), and the global-default picker pairs with a layer-qualifier select
 // writing the `<id>[:layers]` spec through settingsSet persona.id.
@@ -117,7 +117,7 @@ export function editorFromDefinition(d: PersonaDefinition): PersonaEditorState {
 }
 
 /** The detail view's OPENING wire (iteration 2 T2): the FIRST wire carrying
- *  content (headers OR body rows) — the a reference harness shape (headers ONLY on
+ *  content (headers OR body rows) — the claude-code shape (headers ONLY on
  *  anthropic) must not open on an empty openai-chat page (the「header 是空
  *  的」bug). An all-empty persona keeps the first wire. */
 export function initialWireFor(def: PersonaDefinition): PersonaProtocolId {

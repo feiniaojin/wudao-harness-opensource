@@ -55,7 +55,7 @@ afterEach(() => {
   delete (window as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 });
 
-const ROOT = "~/xdev/github/wudao-harness";
+const ROOT = "/Users/qinyujie/xdev/github/wudao-harness";
 
 /** A FileOpsClient with the recents op scripted (the structural port: the
  *  two file methods as plain vi.fn's, recentWorkspaces optional). */

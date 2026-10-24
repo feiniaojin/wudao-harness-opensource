@@ -78,12 +78,12 @@ export interface AgentRegistryOptions {
    *  regardless of the value passed: a schema fight between harness and
    *  model must never loop (death-spiral guard). */
   readonly reportRepairRounds?: number;
-  /** 121 项 1 — AIMD 速率自适应并发门（a reference harness DynamicGate 形）：在场时
+  /** 121 项 1 — AIMD 速率自适应并发门（CodeWhale DynamicGate 形）：在场时
    *  pump 的准入读 gate.current()（而非冻结的 maxConcurrent），子代结算喂
    *  信号（ok → onSuccess；失败且 isThrottleFailure 命中 → onThrottle）。
    *  缺席 = 纯静态帽，行为与既往字节等价（既有测试与嵌入方零演进）。
    *  gate.current() 只影响新准入——已在跑的子代不被杀（收容量的
-   *  是「新进入」，与 a reference harness 的 pause-new-admissions 同律）。 */
+   *  是「新进入」，与 CodeWhale 的 pause-new-admissions 同律）。 */
   readonly concurrencyGate?: ConcurrencyGate;
   /** 121 项 1 — 结算失败的降容判据（providers 的 isOverloadClassFailure 由
    *  部署层注入；core 对 provider 错误分类保持零依赖——与 validateReport

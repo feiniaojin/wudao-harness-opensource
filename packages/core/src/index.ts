@@ -35,7 +35,7 @@ export { createSessionBudget } from "./session-budget.js";
 export type { SessionBudget } from "./session-budget.js";
 
 export { createScriptedModel } from "./model-client.js";
-// 120-a A2 (a reference harness #6540 形): the summary-call prefix-freeze contract —
+// 120-a A2 (CodeWhale #6540 形): the summary-call prefix-freeze contract —
 // the pure comparator every summary/review-class call's test pins through.
 export { summaryPrefixDrift } from "./model-client.js";
 export type { PrefixFreezeContract } from "./model-client.js";
@@ -223,7 +223,7 @@ export type { LongOutputConfig } from "./tools/long-output.js";
 export { DEFAULT_GENERIC_RESULT_CONFIG } from "./tools/generic-result.js";
 export type { GenericResultShaping } from "./tools/generic-result.js";
 
-// 借鉴弧 C1（a reference project C3）— evidence-preserving log slimming: the verified
+// 借鉴弧 C1（SoL-Pi C3）— evidence-preserving log slimming: the verified
 // cheap-tier first-read for oversized diagnostic logs. The seam is shell.ts's
 // finish() (spill/M46 相邻处); every gate failure fails open to the exact
 // pre-C1 bytes. Feature is opt-in at the wiring layer (default OFF).
@@ -460,7 +460,7 @@ export {
 } from "./compaction.js";
 export type { OccupancyBreakdown } from "./compaction.js";
 export type { WindowIdentity, WorldState } from "./window-chain.js";
-// 借鉴弧 B1/B2（a reference project C1/C2）— 压缩经济学决策层的类型面 + 缺省 ratio 常量
+// 借鉴弧 B1/B2（SoL-Pi C1/C2）— 压缩经济学决策层的类型面 + 缺省 ratio 常量
 //（providers 的推导链与 core 的 tracker 共用同一缺省——单一真值点）。其余
 // 运行面（tracker/常量）走 compaction.ts 域门面与 core 内部直连，不进 barrel
 //（ω99-96 钉的面纪律：表面增长要可辩护——外部消费者只需要事件与配置的
@@ -650,7 +650,7 @@ export type {
   ColdCacheOffer,
 } from "./cache-clock.js";
 
-// 133 #4（a reference harness collection-planner 引进，轻量形）— todo 板生成器治理四闸
+// 133 #4（ZCode collection-planner 引进，轻量形）— todo 板生成器治理四闸
 // （frontier 帽/新完成门槛+首扩豁免/轮数帽/无增长熔断→显式封盘）。barrel
 // 放出全件（goal 续跑缝与测试复用）；表面增长声明：+8 函数/常量、+4 类型。
 export {

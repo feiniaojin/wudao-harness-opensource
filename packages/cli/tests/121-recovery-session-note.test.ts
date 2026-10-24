@@ -1,5 +1,5 @@
 // 121 #4 — 幸存现场对模型可见：恢复 admission 成功后注入一次性 system note
-// （a reference harness eefdcb42f「Prior Session」形，超越点=MetaNote 瞬态投影）。钉四
+// （CodeWhale eefdcb42f「Prior Session」形，超越点=MetaNote 瞬态投影）。钉四
 // 件事：恢复路径注入 / 干净路径零注入 / 注入一次不复注 / 恢复后新消息不带残
 // 留。★红线（242 同款）：全 mock/脚本化（scripted model、stub driver/port），
 // 夹具只写 tmpdir，无真模型调用、无真进程重启。

@@ -50,7 +50,7 @@ export async function exportTasks(limit = 0) {
   const { execSync } = await import("node:child_process");
   const py = `
 import pandas as pd, json
-df = pd.read_parquet("external/gaia-validation.parquet")
+df = pd.read_parquet("/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench/gaia-validation.parquet")
 ${limit > 0 ? `df = df.head(${limit})` : ""}
 tasks = [{"id": r["task_id"], "question": r["Question"], "want": r["Final answer"], "level": int(r["Level"])} for _, r in df.iterrows()]
 print(json.dumps(tasks))

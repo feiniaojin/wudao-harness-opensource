@@ -108,7 +108,7 @@ export interface JournalLoadResult {
   readonly tasks: readonly TaskJournalEntry[];
   /** M11 #2: completed run() commands re-sorted by `seq` (cmd replay list). */
   readonly cmds: readonly CmdJournalEntry[];
-  /** 133 #3（a reference harness journal 身份模型）：首条携带 scriptHash+argsHash 的
+  /** 133 #3（ZCode journal 身份模型）：首条携带 scriptHash+argsHash 的
    *  run-started——同身份 resume 下的键漂移=纯度违例（大声失败），异身份
    *  =脚本/参数被编辑（既有截断语义）。旧日志无此字段 → undefined（回落
    *  旧行为，fail-open 到 legacy）。 */
@@ -250,7 +250,7 @@ export function cmdKey(cmd: string, args: readonly string[] | undefined, granted
   return "c:" + createHash("sha256").update(cmd + "\n" + JSON.stringify([...(args ?? [])]) + "\n" + (granted === true ? "g" : "d")).digest("hex");
 }
 
-/** 133 #3（a reference harness journal 身份模型）— 运行身份：脚本字节 + 参数规范形的
+/** 133 #3（ZCode journal 身份模型）— 运行身份：脚本字节 + 参数规范形的
  *  双哈希。同身份 resume 下任务键漂移 = 纯度违例（脚本在绊线之外引入了
  *  非确定性——读文件/网络/全局态），engine 大声失败而非静默重跑；异身份
  *  = 脚本或参数被编辑，走既有截断语义。args 缺省以 "undefined" 哨兵入

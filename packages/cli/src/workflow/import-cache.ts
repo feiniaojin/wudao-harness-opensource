@@ -1,8 +1,8 @@
-// M11 #3（a reference harness amend-resume 导入缓存引进，第一写关闭规则）— 跨 run 结果
+// M11 #3（ZCode amend-resume 导入缓存引进，第一写关闭规则）— 跨 run 结果
 // 复用的失效判据。
 //
 // 问题定义：修订脚本后 resume，前缀的旧结果按编辑点截断——但编辑点之后
-// **不依赖编辑处变化的任务**也被丢弃重跑。a reference harness 的教训：曾按"第一个未
+// **不依赖编辑处变化的任务**也被丢弃重跑。ZCode 的教训：曾按"第一个未
 // 命中后关全部兄弟"关缓存，50 路扇出丢 6 个命中、5 路丢唯一 1 个——
 // "那是拿时钟代替依赖"。正确关门规则是**第一笔写入**（有副作用的实际
 // 执行），不是位置/时间/首个未命中。
@@ -13,8 +13,8 @@
 //   - **关门规则**：首个带工具的实际执行（副作用写入）关闭导入池的非纯
 //     项；纯项（toolCalls===0）永远可导入——"只依赖指令与转录前缀，旧
 //     世界的答案对新世界同样成立"
-//   - **cmd 执行永远关门**（live 副作用，a reference harness 的 world.run live 执行同义）
-//   - 已关后仍可导入纯项：a reference harness 明示"缓存已关后仍放行纯 ask"
+//   - **cmd 执行永远关门**（live 副作用，ZCode 的 world.run live 执行同义）
+//   - 已关后仍可导入纯项：ZCode 明示"缓存已关后仍放行纯 ask"
 
 import type { TaskJournalEntry } from "./journal.js";
 

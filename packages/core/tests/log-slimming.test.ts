@@ -1,4 +1,4 @@
-// 借鉴弧 C1（a reference project C3）— evidence-preserving log slimming 的伪造对抗
+// 借鉴弧 C1（SoL-Pi C3）— evidence-preserving log slimming 的伪造对抗
 // 电池：digest 验收口径「一组伪造回执用例（错哈希/编造引用/洗失败为
 // 干净）必须全部 fallback」。每个门都要可证地咬人：任何一门不过 = 整张
 // 回执作废、fail-open（主模型回看原文，绝不喂未验证摘要）。外加预筛门

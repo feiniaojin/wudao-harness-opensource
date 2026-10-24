@@ -118,7 +118,7 @@ describe("scorers", () => {
 });
 
 // ---------------------------------------------------------------------------
-// M56 §4 — evidence-shape rules (a reference harness task_spec):
+// M56 §4 — evidence-shape rules (CodeWhale task_spec):
 //   Transport vs Task   a None exit code is a TRANSPORT failure ("worker
 //                       transport did not report a process result") — never
 //                       the task's fault; a real nonzero code is TASK.

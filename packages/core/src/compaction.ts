@@ -106,7 +106,7 @@ export {
 } from "./compaction-tier2-static.js";
 export type { Tier2Result, Tier2Options, DualSummaryOptions, DualPartition } from "./compaction-tier2-static.js";
 export {
-  // economics 域（借鉴弧 B1/B2，a reference project C1/C2）
+  // economics 域（借鉴弧 B1/B2，SoL-Pi C1/C2）
   CompactionEconomicsTracker, economicsReport, latestBoardIncomplete,
   DEFAULT_CACHE_WRITE_READ_RATIO, DEFAULT_CACHE_PRICING,
   ECONOMICS_WINDOW_RESERVE_TOKENS, SUMMARY_MEMO_TOKEN_ESTIMATE,

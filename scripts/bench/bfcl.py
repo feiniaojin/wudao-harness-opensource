@@ -15,8 +15,8 @@ import subprocess
 import sys
 import time
 
-REPO = "~/xdev/github/wudao-harness-project/wudao-harness"
-DATA = "external/gorilla/berkeley-function-call-leaderboard/bfcl_eval/data"
+REPO = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness"
+DATA = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench/gorilla/berkeley-function-call-leaderboard/bfcl_eval/data"
 
 VARIANT = sys.argv[4] if len(sys.argv) > 4 else "BFCL_v4_simple_python"
 START, COUNT = int(sys.argv[1]), int(sys.argv[2])
@@ -71,7 +71,7 @@ def to_schema(params):
 
 
 # ── 一次调用：题面 → 我们的 provider 线 → 首个 toolCalls ──
-DRIVER = "~/xdev/github/wudao-harness-project/wudao-harness/scripts/bench/bfcl-driver.mjs"
+DRIVER = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/scripts/bench/bfcl-driver.mjs"
 
 
 

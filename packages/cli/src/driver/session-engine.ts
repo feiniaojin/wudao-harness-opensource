@@ -237,7 +237,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
     (await loadLayeredSettings(workspaceRoot, () => {}, process.env)).effective["compaction"],
     (line) => (props.startupNotice ?? ((l) => stdoutGuard.writeRawStdout(`${l}\n`)))(line),
   );
-  // 121 项 1（a reference harness 498490680 形）— AIMD 速率自适应并发门：设置缺省时
+  // 121 项 1（CodeWhale 498490680 形）— AIMD 速率自适应并发门：设置缺省时
   // 门上限=kernel-policy 静态帽（3）且初值=上限——与既有静态帽字节等价，
   // 直到第一个 overload 信号。agents.aimdMaxConcurrent 可抬/降上限
   // （[1,16]，misc 家族纪律：junk→warning+缺省）。这一个 gate 同时喂两路：
@@ -615,7 +615,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       ...(props.sandbox ? { sandbox: props.sandbox } : {}),
       ...(props.writeVerify ? { writeVerify: props.writeVerify } : {}),
       ...(props.longOutput ? { longOutput: props.longOutput } : {}),
-      // 借鉴弧 C1（a reference project C3）：长日志瘦身端口——引擎自解析 settings+env
+      // 借鉴弧 C1（SoL-Pi C3）：长日志瘦身端口——引擎自解析 settings+env
       // （loadLayeredSettings 同款纪律），缺省关 = undefined。
       logSlimming: await loadLogSlimmingPortsForBoot(config),
       // 114: the kernel's session knob (idle-reap window).

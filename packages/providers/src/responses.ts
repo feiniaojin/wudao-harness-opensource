@@ -247,7 +247,7 @@ function isResponsesStreamTerminal(ev: { type?: unknown }): boolean {
 export function createResponsesProvider(config: ProviderConfig, options: ProviderOptions = {}): ModelClient {
   const doFetch = options.fetch ?? fetch;
   const keyPool = options.keyPool ?? createKeyPool(config.apiKeys ?? [config.apiKey]);
-  // 波次 7 #37 (a reference harness C1)：provider 级 429 暂停窗（同 openai-compatible 引擎）。
+  // 波次 7 #37 (CodeWhale C1)：provider 级 429 暂停窗（同 openai-compatible 引擎）。
   const ratePause = options.ratePauseWindow ?? createRatePauseWindow();
   const persona = options.personaRuntime;
   // 加固移植（r8 §4.1）：梯子与看门狗选项此前被忽略 —— 现在与 openai 引擎同解析

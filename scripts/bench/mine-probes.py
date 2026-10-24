@@ -7,7 +7,7 @@ import glob
 import os
 from collections import Counter, defaultdict
 
-RUNS = os.environ.get("BENCH_DIR", "~/xdev/github/wudao-harness-project/wudao-bench") + "/poly-runs"
+RUNS = os.environ.get("BENCH_DIR", "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench") + "/poly-runs"
 
 model_calls = []
 tool_calls = []

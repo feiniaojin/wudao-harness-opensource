@@ -118,7 +118,7 @@ export function validatePersonaDefinition(raw: unknown): { ok: true; persona: Pe
  *    prompt:false} ← persona.defaultLayers（与历史逐字节一致）。
  *  - 带显式限定（override 存在且至少一键有值）→ 限定列出的是**完整启用集**
  *    （mask）：未列出的层 = 关，persona.defaultLayers 不参与——
- *    `a reference harness:headers` = 只启用 headers 层。 */
+ *    `claude-code:headers` = 只启用 headers 层。 */
 export function effectiveLayers(persona: PersonaDefinition, override?: Partial<LayerFlags>): LayerFlags {
   if (
     override !== undefined &&

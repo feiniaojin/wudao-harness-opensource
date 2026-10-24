@@ -29,7 +29,7 @@ const REASONING_CONTENT_FORMATS: ReadonlySet<ReasoningFormat> = new Set([
 ]);
 
 /** 模型级 effort 钉：只钉有平台文档出处的限制（kimi-k2.7-code 家族——
- *  platform.kimi.com/docs/guide/a reference harness-kimi：该模型必须显式 thinking，
+ *  platform.kimi.com/docs/guide/claude-code-kimi：该模型必须显式 thinking，
  *  effort none（不发 thinking 块）会被端点 400）。键序：provider → model →
  *  完整支持集合。 */
 export const MODEL_EFFORT_PINS: Readonly<

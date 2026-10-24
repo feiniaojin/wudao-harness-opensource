@@ -19,7 +19,7 @@ import { hardenedGitArgs } from "./git-hardened.js";
 import type { GoalSetData } from "./session-entry.js";
 import { loadLayeredSettings } from "./settings-layer.js";
 import type { AgentState, ModelClient, ModelInput, ModelUsage, StopHookDecision } from "@wudao/core";
-// 133 #4（a reference harness collection-planner 轻量形）— 工作集生成器治理件。
+// 133 #4（ZCode collection-planner 轻量形）— 工作集生成器治理件。
 import {
   parseTodoBoard,
   censusFromBoard,
@@ -529,7 +529,7 @@ export function createGoalController(opts: GoalControllerOptions): GoalControlle
         return "allow";
       }
       // not-yet: the reason is the next turn's guidance.
-      // 133 #4（a reference harness collection-planner 轻量形）— 工作集生成器：先结算上
+      // 133 #4（ZCode collection-planner 轻量形）— 工作集生成器：先结算上
       // 一轮扩板指令的成果（板总项数较基线有增长吗），再过四闸决定是否
       // 附加"从任务集合派生下一批工作项"的指令；封盘走 notify（一次性），
       // 不写板字节（板是模型所有权）。M24：指令经既有 block-reason 车道

@@ -1,4 +1,4 @@
-// 借鉴弧 C2（a reference project C4）— 双门验收裁决报告器的判例矩阵：双门全过、
+// 借鉴弧 C2（SoL-Pi C4）— 双门验收裁决报告器的判例矩阵：双门全过、
 // 能力回退拒绝（逐套件，聚合掩盖不了）、无效率收益拒绝、坏输入 fail-closed、
 // 方向感知（higher-better）、容差内下降的诚实标注、中文人话输出、CLI 退出码。
 // 原话锚点：双门 rule out "savings that come from getting less done"。

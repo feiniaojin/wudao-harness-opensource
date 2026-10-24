@@ -67,7 +67,7 @@ interface McpToolDescriptor {
 // 夜移 021: MCP text boundary hygiene. Every string an MCP server sends
 // across the wire — tool descriptions and tools/call text — is untrusted
 // input to both the model's context and any terminal that renders tool
-// results. The reference (a reference harness mcp-client sanitization) strips C0
+// results. The reference (claude-code mcp-client sanitization) strips C0
 // controls and NFC-normalizes server responses; we go one further and also
 // strip DEL + the C1 range (CSI-adjacent controls some terminals honor) and
 // drop U+FFFD (mojibake smuggling). Tool descriptions additionally carry a

@@ -1,4 +1,4 @@
-// 借鉴弧 C2（a reference project C4）— 盲 held-out 在记忆精化入口的过滤：带 heldout
+// 借鉴弧 C2（SoL-Pi C4）— 盲 held-out 在记忆精化入口的过滤：带 heldout
 // 标签的条目不进 /refine 的 overview（模型连 id 都拿不到）、不进 Dream 的
 // 未处理批与 ground-truth 嵌入、不计入 due-gate 计数；无标签条目行为与
 // pre-C2 字节相同（既有 dream/refine 套件继续钉住这一点）。

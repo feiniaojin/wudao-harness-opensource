@@ -515,7 +515,7 @@ export interface AgentDriver {
    *  fileWriteContent for the guard order and the CAS semantics. */
   fileWrite(path: string, content: string, base: string): Promise<FileWriteResult>;
   /** ω99-314: 文件级时光机——把指定文件恢复到指定快照（PROTOCOL
-   *  "fileRevert"，改动面板「恢复到这里」的引擎）。守卫序（a reference harness
+   *  "fileRevert"，改动面板「恢复到这里」的引擎）。守卫序（CodeWhale
    *  钉死答案）：①活跃回合 busy 拒（286 同判据）；②pre-restore 安全快照
    *  （恢复前旧内容再落一份——恢复本身可撤销）；③哈希核验：当前文件 sha ≠
    *  索引最新 afterSha（用户手改过）→ 不拒但 stale:true 回执明示；④blob

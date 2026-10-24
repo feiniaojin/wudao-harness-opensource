@@ -495,6 +495,8 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
       { op: "pluginMarketUpdate", name: "n" },
       { op: "pluginMarketRemove", name: "n" },
       { op: "pluginInstall", name: "n", market: "m", scope: "user" },
+      // guided-install 弧：spec 直装（git 克隆是幂等副作用 — 重放收敛到同目录登记的 already-exists 拒绝）。
+      { op: "pluginInstallSpec", spec: "owner/repo" },
       { op: "pluginUninstall", id: "i" },
       { op: "pluginEnable", id: "i" },
       { op: "pluginDisable", id: "i" },
@@ -689,7 +691,7 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
     // PB-2 (探针基础设施弧): probeStream + probeRecent + probeStats (reads —
     // the probe telemetry face; a replay re-subscribes/re-scans, never vaulted)
     // joined the reads above → 69 + 3.
-    expect(actions.size).toBe(72);
+    expect(actions.size).toBe(73); // guided-install 弧:pluginInstallSpec 入表(72→73)
 
     // Report-86 review M1 (report 89 item 1): the count pin above is
     // RUNTIME-only — a new ClientOp action that never enters the lists trips

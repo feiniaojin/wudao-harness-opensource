@@ -87,7 +87,7 @@ export async function recordPersonaChange(args: {
     readonly id: string | null;
     readonly layers: LayerFlags;
     /** SDD 2026-08-23 layer-selection Task 1（additive，可选）：生效的限定引
-     * 用（`<id>:<层集>`，如 `a reference harness:headers`）——胜出腿带层限定时由链
+     * 用（`<id>:<层集>`，如 `claude-code:headers`）——胜出腿带层限定时由链
      * 解析带上；纯 id/手动切换无此键（历史记录形状不变）。 */
     readonly spec?: string;
   };

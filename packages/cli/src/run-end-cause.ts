@@ -1,4 +1,4 @@
-// v7 借鉴弧 γ2（digest-a 候选 2，源 a reference harness #6162「取消的 run 有回执」
+// v7 借鉴弧 γ2（digest-a 候选 2，源 CodeWhale #6162「取消的 run 有回执」
 // + #6118 的「Failed 带原因而非静默 Canceled」）——运行终态留名：取消/中止
 // 的 run 记录「谁/什么结束了它」。
 //
@@ -9,7 +9,7 @@
 // 「跑挂了」。
 //
 // 本模块 = 终态成因的唯一词表家：稳定 ASCII 枚举（跨进程/跨版本可 grep、
-// 可入指纹 subject）+ 中文人话（回执面）+ a reference harness 正派边界——「legacy
+// 可入指纹 subject）+ 中文人话（回执面）+ CodeWhale 正派边界——「legacy
 // 无因记录降级为无 detail，绝不臆造」（describeRunEndCause 对缺席返回
 // 空串，调用方以缺席=不加括注的形态消费，永不发明原因）。
 //
@@ -56,7 +56,7 @@ export function describeRunEndCause(cause: RunEndCause | undefined | null): stri
     case "approval-deny":
       return "未获授权而结束";
     default:
-      return ""; // legacy/未知：无因=无 detail（a reference harness #6162 的正派边界）
+      return ""; // legacy/未知：无因=无 detail（CodeWhale #6162 的正派边界）
   }
 }
 

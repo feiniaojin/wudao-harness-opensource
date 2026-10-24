@@ -96,6 +96,7 @@ import {
   marketplaceUpdate as engineMarketUpdate,
   pluginEnable as engineSetEnabled,
   pluginInstall as engineInstall,
+  pluginInstallSpec as engineInstallSpec,
   pluginListInstalled as engineListInstalled,
   pluginUninstall as engineUninstall,
   type InstallDetail,
@@ -562,6 +563,9 @@ export interface SettingsOps {
   /** Install a market's plugin into a scope root; the reply carries the
    *  loader dry-run's InstallDetail (the 将安装 preview counts). */
   pluginInstall(name: string, market: string, scope: "user" | "project"): Promise<{ readonly dir: string; readonly detail: InstallDetail; readonly warnings: readonly string[]; readonly rescan?: { readonly skills: number; readonly plugins: number; readonly hooks: number } }>;
+  /** 引导安装（guided-install 弧）：spec 三形态（本地路径 / GitHub 简写 / git
+   *  URL）→ 浅克隆 → inspect → 零资产门 → 拷装；preview 只 inspect 不装。 */
+  pluginInstallSpec(spec: string, preview?: boolean): Promise<{ readonly preview: boolean; readonly name?: string; readonly dir?: string; readonly format?: string; readonly detail: { readonly skills: number; readonly commands: number; readonly agents: number; readonly hooks: number; readonly mcp: number }; readonly warnings: readonly string[]; readonly rescan?: { readonly skills: number; readonly plugins: number; readonly hooks: number } }>;
   /** Delete the install dir + registry record + enable key. Busy → refuses
    *  before any engine call (the /clear-family notice). */
   pluginUninstall(id: string): Promise<{ readonly id: string; readonly warnings: readonly string[]; readonly rescan?: { readonly skills: number; readonly plugins: number; readonly hooks: number } }>;
@@ -1224,6 +1228,25 @@ export function createSettingsOps(deps: SettingsOpsDeps): SettingsOps {
       const receipt = await rescanReceipt();
       return {
         removedPlugins,
+        warnings: [...d.warns(), ...(receipt.warning !== undefined ? [receipt.warning] : [])],
+        ...(receipt.rescan !== undefined ? { rescan: receipt.rescan } : {}),
+      };
+    },
+
+    pluginInstallSpec: async (spec, preview) => {
+      const d = engDeps();
+      if (preview === true) {
+        const r = await engineInstallSpec(spec, { preview: true }, d.deps);
+        return { preview: true, ...(r.name !== undefined ? { name: r.name } : {}), detail: r.detail, warnings: [...d.warns()] };
+      }
+      const { dir, name, format, detail } = await engineInstallSpec(spec, {}, d.deps);
+      const receipt = await rescanReceipt();
+      return {
+        preview: false,
+        dir,
+        name,
+        ...(format !== undefined ? { format } : {}),
+        detail,
         warnings: [...d.warns(), ...(receipt.warning !== undefined ? [receipt.warning] : [])],
         ...(receipt.rescan !== undefined ? { rescan: receipt.rescan } : {}),
       };

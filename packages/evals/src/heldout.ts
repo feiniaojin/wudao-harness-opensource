@@ -1,7 +1,7 @@
-// 借鉴弧 C2（a reference project C4）— 盲 held-out 的机械面：密封清单检查、训练面
+// 借鉴弧 C2（SoL-Pi C4）— 盲 held-out 的机械面：密封清单检查、训练面
 // 报告剥离、泄漏扫描。
 //
-// 纪律（a reference project blog 的防自我欺骗核心）："no agent inside the auto-research
+// 纪律（SoL-Pi blog 的防自我欺骗核心）："no agent inside the auto-research
 // loop sees the held-out results"——held-out 套件的结果绝不进入改进循环的
 // 任何分析输入。在 wudao 的落地分工：
 //   * 训练面选择：contracts.ts 的 `--changed`（本包）——已排除 held-out；

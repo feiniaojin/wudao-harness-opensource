@@ -1,4 +1,4 @@
-// M29 §1 — deterministic scorers (a reference harness §3.3): exitCode / fileExists /
+// M29 §1 — deterministic scorers (CodeWhale §3.3): exitCode / fileExists /
 // regexMatch / jsonPath evaluated AFTER a task run, each producing a
 // pass/fail/skip/timeout receipt. They never call the model — a scorer is the
 // cheap, replayable half of verification. (`toolUsed` is the fifth, internal

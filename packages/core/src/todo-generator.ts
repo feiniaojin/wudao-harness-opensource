@@ -1,5 +1,5 @@
-// 133 #4（a reference harness collection-planner 引进，轻量形）— todo 板生成器治理：
-// 无界任务集的动态扩板四闸。a reference harness 的 collection-planner 是图执行器里
+// 133 #4（ZCode collection-planner 引进，轻量形）— todo 板生成器治理：
+// 无界任务集的动态扩板四闸。ZCode 的 collection-planner 是图执行器里
 // 的独立 LLM 规划轮（94 文件的大工程）；wudao 的裁决（123"不建图"维持）
 // 是把它的**治理原语**搬到 todo 板上——比图轻得多，语义全保留。
 //
@@ -7,7 +7,7 @@
 // 能一次列全；模型把板做完就停，除非有人往板上加活。深挖报告的原话：
 // "无界任务集 = LLM 生成器（planner 每轮扩工作集）+ 预算化执行器"。
 //
-// 机制（a reference harness 反压四闸的直译 + wudao 超越点）：
+// 机制（ZCode 反压四闸的直译 + wudao 超越点）：
 //   (a) frontier 帽——在飞项（pending+in_progress）≥ frontierTarget 不扩
 //       （在飞不足才补活）；
 //   (b) 新完成门槛——上一轮扩板后没有新的 done 不再扩（没有新证据不
@@ -17,22 +17,22 @@
 //       （exhausted: max_planner_runs）；
 //   (d) 无增长熔断——连续 maxNoGrowthRounds 轮扩板指令没有换来板增长
 //       （模型忽略了指令）→ 显式封盘（exhausted: error_threshold——
-//       a reference harness 用连续失败计数，我们的"失败"形态是模型不响应）。
+//       ZCode 用连续失败计数，我们的"失败"形态是模型不响应）。
 //
 // 超越点（引进不许照搬，三条声明）：
-// 1. **planner 轮 = 主模型同会话有界注入**，不是独立 LLM 调用——a reference harness 的
+// 1. **planner 轮 = 主模型同会话有界注入**，不是独立 LLM 调用——ZCode 的
 //    plannerRunner 是独立 agent 会话（每轮一次完整模型调用+落盘产物）；
 //    wudao 复用 goal 续跑的 block-reason 车道（轮界 append-only 的下一轮
 //    指导，M24 零前缀代价，STOP_BLOCK_CAP 停滞守卫天然兜底）。
-// 2. **熔断信号 = 无增长轮**——a reference harness 的 planner 会结构化失败（errorCount）；
+// 2. **熔断信号 = 无增长轮**——ZCode 的 planner 会结构化失败（errorCount）；
 //    我们的主模型没有"失败回执"形态，忽略指令不扩板就是唯一可见的
 //    "规划失败"，用它当熔断计数。
-// 3. **封盘是通知+停扩，不写板字节**——a reference harness 在图上标 exhausted(reason)；
+// 3. **封盘是通知+停扩，不写板字节**——ZCode 在图上标 exhausted(reason)；
 //    wudao 的板是模型所有权（todo_write 契约不动），封盘走 notice 车道，
 //    板字节永不因 harness 而变。
 import type { ParsedTodoBoard } from "./tools/todo.js";
 
-/** 治理策略（a reference harness 缺省直译：frontierTarget 3 / maxPlannerRuns 10 /
+/** 治理策略（ZCode 缺省直译：frontierTarget 3 / maxPlannerRuns 10 /
  * 连续失败帽 3——wudao 的第三项换义为"无增长轮帽"）。 */
 export interface TodoGeneratorPolicy {
   /** 在飞项（pending+in_progress）低于此数才允许扩板。 */
@@ -102,7 +102,7 @@ export type TodoExpansionGate =
   | {
       readonly expand: false;
       readonly suppressed: "no-board" | "frontier-busy" | "no-new-completions" | "max-planner-runs" | "error-threshold";
-      /** 两类封盘终因带 exhausted（a reference harness 的 exhaust 语义）。 */
+      /** 两类封盘终因带 exhausted（ZCode 的 exhaust 语义）。 */
       readonly exhausted?: TodoExhaustionReason;
     };
 
@@ -152,7 +152,7 @@ export function todoExpansionDirective(census: TodoBoardCensus): string {
   return `[工作集生成] todo 板只剩 ${census.incomplete} 项在飞（done ${census.done}/${census.total}）。若任务集合还有未覆盖的工作，请立即用 todo_write 从中派生下一批工作项（一次一批，别等板清空再扩）；若集合已穷尽，把剩余项做完即可，不要为扩而扩。`;
 }
 
-/** 封盘通知（显式终态带理由——a reference harness 的 exhaust(reason) 直译，走 notice
+/** 封盘通知（显式终态带理由——ZCode 的 exhaust(reason) 直译，走 notice
  * 车道不写板字节）。 */
 export function todoExhaustionNote(reason: TodoExhaustionReason): string {
   if (reason === "max_planner_runs") {

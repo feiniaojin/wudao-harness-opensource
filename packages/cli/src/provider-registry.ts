@@ -42,7 +42,7 @@ export function loadEffectiveProfiles(path?: string): ReadonlyMap<string, Effect
   return effectiveProfiles(loadProviderRegistry(path).entries);
 }
 
-/** 借鉴弧 B1（a reference project C1）：会话级压缩经济学定价——catalog pin > WUDAO_PRICE
+/** 借鉴弧 B1（SoL-Pi C1）：会话级压缩经济学定价——catalog pin > WUDAO_PRICE
  *  env > 保守缺省（来源类型化；零用户配置面）。env+registry 内联，三个前端
  *  调用点（index/repl/driver）一行接线。 */
 export function resolveSessionCachePricing(provider: string | undefined, model: string | undefined): CachePricing {

@@ -1123,7 +1123,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // 前端按「系统注入」回退。信封与投影字节零变化（标签只进 UI 历史）。
   const metaNotes: { text: string; source: string }[] = [];
   const takenNoteSources: string[] = [];
-  // 121 §4（a reference harness budget death salvage）— the ONE-SHOT wrap-up round armed
+  // 121 §4（CodeWhale budget death salvage）— the ONE-SHOT wrap-up round armed
   // at the settle that crossed the goal's budget, fired at the settle seam's
   // system-injection lane (before cron/peer/child-mail: a dying goal outranks
   // scheduled work). Cleared by ANY startRun — whichever run comes next, its
@@ -3008,7 +3008,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         // never reached model_call_finished must not wedge /provider closed.
         modelInFlight = false;
         if (state.status === "running") state.status = "idle";
-        // v7 γ2——终态成因回执（a reference harness #6162 的 wudao 落点）：取消/中止的
+        // v7 γ2——终态成因回执（CodeWhale #6162 的 wudao 落点）：取消/中止的
         // run 在会话 JSONL 留「谁/什么结束了它」的结构化一行（含 user-abort
         // ——UI 括注是噪音，账面不缺席）；正常/失败结束缺席（omit-when-no-
         // cause，老读侧零感知）。resume/考古面据此回答「这轮为什么没了」。
@@ -3566,7 +3566,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           // low-priority take lane delivers it before its next model call
           // (or the next pollCron/pollPeer tick / settle seam, once idle).
           else if (!busy) {
-            // 121 §4（a reference harness budget death salvage）— the budget-dead goal's
+            // 121 §4（CodeWhale budget death salvage）— the budget-dead goal's
             // wrap-up round, strictly BEFORE cron/peer/child-mail: the dying
             // goal's last answer outranks scheduled work. ONE round per
             // crossing (armed above at the crossing settle; cleared by any

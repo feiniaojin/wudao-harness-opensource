@@ -1,5 +1,5 @@
-// 借鉴弧 B2（a reference project C2）+ B1 的轮界面 — 边界时机压缩、同 run 续跑注记、
-// 类型化推迟、压力回落与窗口保护在真实 loop 形状下的验收。a reference project 用
+// 借鉴弧 B2（SoL-Pi C2）+ B1 的轮界面 — 边界时机压缩、同 run 续跑注记、
+// 类型化推迟、压力回落与窗口保护在真实 loop 形状下的验收。SoL-Pi 用
 // settlement barrier + 假消息绕 Pi 的 API 形状；wudao 自有 loop：压缩点 =
 // 轮边界原生操作（本测试钉「压缩后同 run 继续，无 barrier hack」）。
 import { describe, it, expect } from "vitest";
@@ -201,7 +201,7 @@ describe("B2 边界时机压缩 + 同 run 续跑", () => {
     expect(events.find((e) => e.type === "compact_deferred")).toBeUndefined();
   });
 
-  it("被 todo 钩子拦下的完成 transition 不算边界（a reference project turn_end 卫生）", async () => {
+  it("被 todo 钩子拦下的完成 transition 不算边界（SoL-Pi turn_end 卫生）", async () => {
     const model = createScriptedModel([
       { role: "assistant", content: "", toolCalls: [todoCall("t1", ADVANCE)] },
       { role: "assistant", content: "done" },

@@ -321,7 +321,7 @@ export function detectLoop(turns: readonly LoopSafetyTurn[]): LoopVerdict | unde
 }
 
 // ---------------------------------------------------------------------------
-// 121 #5 — the no-progress guard (advisory-only). a reference harness f088466d3 形的保
+// 121 #5 — the no-progress guard (advisory-only). CodeWhale f088466d3 形的保
 // 守版：四条 verdict 车道全部不看工具「结果」——不同调用返回相同结果
 // （换着花样问同一件事）四处漏检：调用不同（identical_calls 的指纹按
 // name+args 算，不命中）、无报错（failure_streak/edit_repeat 只看

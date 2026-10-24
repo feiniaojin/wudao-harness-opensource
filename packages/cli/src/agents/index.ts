@@ -58,7 +58,7 @@ export { parseReportSchema, createFinalOutputTool, FINAL_OUTPUT_TOOL_NAME, FINAL
  *  without the injection every reportSchema spawn would fail closed.
  *  M41: core keeps no defaults; every operating point below comes from
  *  kernel-policy.ts, the single policy source.
- *  121 项 1（a reference harness 498490680 形）: an AIMD gate rides the registry by
+ *  121 项 1（CodeWhale 498490680 形）: an AIMD gate rides the registry by
  *  default — initial = the effective static cap, so the fresh gate behaves
  *  byte-identically to the pre-121 static cap until the first overload
  *  signal. Settlement feeds it (child ok → onSuccess; overload-class death →

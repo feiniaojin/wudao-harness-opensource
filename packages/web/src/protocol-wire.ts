@@ -207,6 +207,18 @@ export interface PluginInstallResult {
   readonly rescan?: RescanReceiptWire;
 }
 
+/** pluginInstallSpec's reply — preview:true 携带 inspect 面（未安装）；
+ *  安装形与 pluginInstall 同构（name/format 补齐）。 */
+export interface PluginSpecInstallResult {
+  readonly preview: boolean;
+  readonly name?: string;
+  readonly dir?: string;
+  readonly format?: string;
+  readonly detail: InstallDetailWire;
+  readonly warnings: readonly string[];
+  readonly rescan?: RescanReceiptWire;
+}
+
 /** pluginUninstall's reply (`warnings` non-empty when the engine refused to
  *  guess a deletion — e.g. a rootless project record). */
 export interface PluginUninstallResult {
@@ -611,6 +623,8 @@ export function isRetryableMutation(op: ClientOp): boolean {
     case "pluginMarketUpdate":
     case "pluginMarketRemove":
     case "pluginInstall":
+    // guided-install 弧：spec 直装 — 重放收敛到 already-exists 拒绝（同目录唯一登记），与 pluginInstall 同族。
+    case "pluginInstallSpec":
     case "pluginUninstall":
     case "pluginEnable":
     case "pluginDisable":

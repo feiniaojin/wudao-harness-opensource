@@ -249,7 +249,7 @@ export const PROVIDER_PROFILES: Readonly<Record<BuiltinProviderName, ProviderPro
     windowMode: "independent",
     wire: "anthropic",
     bearerAuth: true,
-    // platform.kimi.com/docs/guide/a reference harness-kimi AUTO_COMPACT_WINDOW
+    // platform.kimi.com/docs/guide/claude-code-kimi AUTO_COMPACT_WINDOW
     // table, verbatim numbers. kimi-k2.6 has NO documented window — left
     // unpinned (a wrong pin fires autocompact late → 413; env fallback is
     // safer). Known edge: kimi-k2.7-code demands explicit thinking — effort

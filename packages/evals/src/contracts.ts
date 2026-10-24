@@ -36,7 +36,7 @@ export interface UnmappedSuite {
   readonly reason: string;
 }
 
-/** 借鉴弧 C2（a reference project C4）— 盲 held-out 密封清单：这些套件的结果永不进入
+/** 借鉴弧 C2（SoL-Pi C4）— 盲 held-out 密封清单：这些套件的结果永不进入
  *  任何精化输入（Dream/refine/训练面选择）；只在弧的最终盲测验收时运行。
  *  密封 = 冻结字面量（M28 密封清单纪律：先封再算，防事后挑选）；derivation
  *  记录选取规则，重开密封须换 sealedAt 并记档。 */

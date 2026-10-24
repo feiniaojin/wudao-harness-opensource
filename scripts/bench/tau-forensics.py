@@ -77,7 +77,7 @@ _l.provider_list = ["openai"]
 _l.completion = _litellm_completion
 sys.modules["litellm"] = _l
 
-TAU = "external/tau-bench"
+TAU = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench/tau-bench"
 sys.path.insert(0, TAU)
 os.environ.setdefault("OPENAI_BASE_URL", "http://127.0.0.1:8791/v1")
 os.environ.setdefault("OPENAI_API_KEY", "shim-placeholder")

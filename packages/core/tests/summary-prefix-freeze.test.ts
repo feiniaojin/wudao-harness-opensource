@@ -1,5 +1,5 @@
-// 120-a A2 (a reference harness #6540 形) — the summary-call byte-prefix freeze
-// contract, unified across the whole summary-family census. a reference harness's live
+// 120-a A2 (CodeWhale #6540 形) — the summary-call byte-prefix freeze
+// contract, unified across the whole summary-family census. CodeWhale's live
 // incident: a 219K-token compaction-summary call silently DROPPED its
 // reasoning tier and hit 0% prefix cache — every dimension of the request
 // that drifts from the parent turn's (system, tools, message prefix,
@@ -109,7 +109,7 @@ describe("summaryPrefixDrift — break attribution (the (c) clause)", () => {
     expect(drift[0]).toContain("messages[1]");
   });
 
-  it("a DROPPED reasoning tier names reasoningEffort and cites the a reference harness shape", () => {
+  it("a DROPPED reasoning tier names reasoningEffort and cites the CodeWhale shape", () => {
     // The exact #6540 failure: the summary request lost the session's tier.
     const drift = summaryPrefixDrift(parent, { ...frozenChild, reasoningEffort: undefined }, contract);
     expect(drift).toHaveLength(1);

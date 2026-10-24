@@ -1562,6 +1562,26 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           );
           return;
         }
+        case "pluginInstallSpec": {
+          if (opts.driver.pluginInstallSpec === undefined) {
+            reply(undefined, "plugin ops not supported by this driver");
+            return;
+          }
+          if (typeof o.spec !== "string" || o.spec.trim() === "") {
+            reply(undefined, "pluginInstallSpec needs a spec string");
+            return;
+          }
+          if (o.preview !== undefined && typeof o.preview !== "boolean") {
+            reply(undefined, "pluginInstallSpec preview must be a boolean when present");
+            return;
+          }
+          // handleFrame 是同步体 — 异步 op 走 promise 形（pluginMarketAdd 同款）
+          void opts.driver.pluginInstallSpec(o.spec, o.preview === true).then(
+            (result) => reply(result),
+            (err) => reply(undefined, err instanceof Error ? err.message : String(err)),
+          );
+          return;
+        }
         case "pluginInstall": {
           if (opts.driver.pluginInstall === undefined) {
             reply(undefined, "plugin ops not supported by this driver");

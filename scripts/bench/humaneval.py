@@ -18,7 +18,7 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BENCH = os.environ.get("BENCH_DIR", "external/humaneval")
+BENCH = os.environ.get("BENCH_DIR", "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench/humaneval")
 CLI = f"{REPO}/packages/cli/dist/index.js"
 TAG = os.environ.get("BENCH_TAG", "ds")
 RUNS = f"{BENCH}/runs-{TAG}"

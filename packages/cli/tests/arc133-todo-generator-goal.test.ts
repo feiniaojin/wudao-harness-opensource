@@ -1,4 +1,4 @@
-// 133 #4（a reference harness collection-planner 轻量形）— goal 续跑缝的工作集生成器
+// 133 #4（ZCode collection-planner 轻量形）— goal 续跑缝的工作集生成器
 // 集成收据：not-yet 组装（四闸附加扩板指令）、封盘一次性 notify、板增长
 // 重置无增长计数、板契约字节零改动（指令走 block-reason 车道）。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

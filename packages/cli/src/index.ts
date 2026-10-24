@@ -1906,7 +1906,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
               // 窗口语义 + 请求帽已知）时收紧到
               // min(ratio×window, window − reserve − headroom)。
               ...compactionThresholdFields(config, oneShotCompactionSettings),
-              // 借鉴弧 B1（a reference project C1）：压缩经济学定价（catalog > env > 缺省）。
+              // 借鉴弧 B1（SoL-Pi C1）：压缩经济学定价（catalog > env > 缺省）。
               cachePricing: resolveSessionCachePricing(config.provider, config.model),
               classifySkillRead: createSkillReadClassifier(skills ?? []),
               // M58 §C#2: the session's standing compact-instructions rider (the

@@ -78,7 +78,7 @@ export interface LoadRosterOptions {
 }
 
 // Doctrine prompts. The three M9 types migrate verbatim (their prompts are
-// load-bearing for existing behavior); the new roles adapt a reference harness's fleet
+// load-bearing for existing behavior); the new roles adapt CodeWhale's fleet
 // doctrine (manager dispatches and never does the unit of work; adversarial
 // reviewers must assume guilt and cite evidence) plus hive's
 // identity-independent worker essence: the child's context is disposable and

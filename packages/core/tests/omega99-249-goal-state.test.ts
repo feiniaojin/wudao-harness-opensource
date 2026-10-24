@@ -309,7 +309,7 @@ describe("114 长任务纪律 ② — 预算感知收尾：goalStatusLine 的近
 });
 
 // ---------------------------------------------------------------------------
-// 121 §4（a reference harness budget death salvage）— 预算善终协议：the crossing stamps
+// 121 §4（CodeWhale budget death salvage）— 预算善终协议：the crossing stamps
 // the honest death cause, and the budget note carries the wrap-up directive
 // (the driver fires ONE salvage round whose first model call drains it).
 // ---------------------------------------------------------------------------

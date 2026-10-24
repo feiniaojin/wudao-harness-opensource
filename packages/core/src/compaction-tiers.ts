@@ -170,7 +170,7 @@ export function alignedCutoff(messages: readonly AgentMessage[], keepRecent: num
 // walk stubs/clears/summarizes results the model has never responded to (its
 // next call — the one compaction is preparing — would read previews of the
 // fan-out it just issued). The floor: nothing after the LAST assistant
-// message may be degraded by the routine tiers (learn-a reference harness b5bd0dd:
+// message may be degraded by the routine tiers (learn-claude-code b5bd0dd:
 // "preserve the latest tool result batch during compaction", translated from
 // their batch-inside-user-message shape to wudao's one-result-per-message
 // shape via the index rule). emergencyDrop and the dual turnPrefix growth

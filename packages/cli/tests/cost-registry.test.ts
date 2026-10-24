@@ -1,4 +1,4 @@
-// M56 §3 — the cost stack core (a reference harness cost_status, pragmatic subset).
+// M56 §3 — the cost stack core (CodeWhale cost_status, pragmatic subset).
 // A per-session ledger of per-call rows {model, provider, usage, price
 // lookup}; prices come from WUDAO_PRICE_<MODEL> ("in,out,cacheRead,cacheWrite
 // per-M-USD"). The completeness rule is the point: UNPRICED ≠ FREE — a turn
@@ -253,7 +253,7 @@ describe("CostRegistry.flushToLedger — the cross-session wallet", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 借鉴弧 B1（a reference project C1）— 压缩经济学定价解析：catalog pin > WUDAO_PRICE env
+// 借鉴弧 B1（SoL-Pi C1）— 压缩经济学定价解析：catalog pin > WUDAO_PRICE env
 // > 保守缺省，来源类型化（不暴露为用户配置）。
 // ---------------------------------------------------------------------------
 describe("resolveRunCachePricing (B1 compaction economics)", () => {

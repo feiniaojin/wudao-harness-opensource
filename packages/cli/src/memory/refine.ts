@@ -312,7 +312,7 @@ export async function planRefinement(
   store: MemoryStore,
   instructions?: string,
 ): Promise<RefineProposal> {
-  // 借鉴弧 C2（a reference project C4）：heldout 标记条目在精化入口被过滤——密封套件
+  // 借鉴弧 C2（SoL-Pi C4）：heldout 标记条目在精化入口被过滤——密封套件
   // 的结果永不进入任何精化输入（overview 不可见、update/delete 不可指——
   // 模型连它们的 id 都拿不到；/memory del 仍是人删除它们的唯一通道）。
   const entries = (await store.load()).filter((e) => !isHeldOutEntry(e));

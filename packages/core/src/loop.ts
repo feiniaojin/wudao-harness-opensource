@@ -438,7 +438,7 @@ export interface LoopOptions {
      *  false restores the always-LLM path. Threaded straight into
      *  tier2Compact. */
     readonly zeroLlmDigest?: boolean;
-    /** 借鉴弧 B1（a reference project C1）：压缩经济学定价（cacheWriteReadRatio 由调用
+    /** 借鉴弧 B1（SoL-Pi C1）：压缩经济学定价（cacheWriteReadRatio 由调用
      *  方从 providers 价目推导后传入，不暴露为用户配置；缺省=保守缺省，
      *  ratioSource:"default" 类型化）。 */
     readonly cachePricing?: CachePricing;
@@ -714,7 +714,7 @@ export type LoopEvent =
   | { type: "tool_call_started"; turn: number; toolCallId: string; toolName: string; input: Record<string, unknown> }
   | { type: "tool_call_finished"; turn: number; toolCallId: string; isError: boolean; result: string; provenance?: string; /** ω-5b (I21): wall time from this call's gate start to result settle (gate + execution, performance.now()). Omitted on the truncated-guard path (never executed) and absent on pre-I21 events (additive-only). */ durationMs?: number; /** 弧 δ (additive-only): present when the call was moved to the background mid-flight — the result field is the BACKGROUNDED synthetic (the execution is still running; its real result merges later through the consumer's background lane). The started+finished pairing doctrine holds. */ backgrounded?: true }
   | { type: "turn_finished"; turn: number; toolCallCount: number }
-  | { type: "compacted"; turn: number; summaryMessage?: AgentMessage; beforeTokens: number; afterTokens: number; tier: 0 | 1 | 2 | 3; trigger: "threshold" | "boundary" | "immediate" | "reactive" | "static-fallback" | "manual" | "emergency" | "agent-rotation"; /** M52 §1: WHY it fired — manual (/compact), threshold (the 0.8×window trigger, any timing), overflow (post-413 reactive). */ reason: "manual" | "threshold" | "overflow" | "economic"; /** 借鉴弧 B1（a reference project C1）：economic = 边界经济学门放行（盈亏平衡 ≤ 期距）。 */ /** M52 §1: tier-2 only — the fingerprint of the first kept ORIGINAL message; persisted as the compact_boundary session entry so a resumed session's next compaction continues the chain. */ firstKeptEntryId?: string; /** M70 §2 (pi): the messages the compact kept VERBATIM after the boundary (tier 0/1: the keep-recent window; tier 2: the post-span tail). Carried on compaction entries so future compactions can rebuild from it. */ retainedTail?: readonly AgentMessage[]; /** 借鉴弧 B1（a reference project C1）：边界经济学的决策回执——只在轮边界审议武装的压缩上携带（压力/溢出/手动路径不带）。面板与测试的消费面。 */ economics?: CompactionEconomicsReport; /** 125 项 1：tier-2 only — 该边界开启的窗口序号（base + 本 run 已落边界数 + 1）；驱动层把它落进 compact_boundary 条目的 additive 字段 windowIndex。缺省 = 无窗口概念（pre-125 行为）。 */ windowIndex?: number; /** 125 项 2：tier-2 only — 轮转时刻的世界快照（driver 侧提取），作为 additive 字段落进 compact_boundary，供下一窗口做差分基线。 */ worldState?: WorldState; /** 125 项 1（codex new_context 形）：模型侧轮转的回执字段——trigger 为 agent-rotation 时携带。 */ agentRotation?: { window: number; rationale: string } }
+  | { type: "compacted"; turn: number; summaryMessage?: AgentMessage; beforeTokens: number; afterTokens: number; tier: 0 | 1 | 2 | 3; trigger: "threshold" | "boundary" | "immediate" | "reactive" | "static-fallback" | "manual" | "emergency" | "agent-rotation"; /** M52 §1: WHY it fired — manual (/compact), threshold (the 0.8×window trigger, any timing), overflow (post-413 reactive). */ reason: "manual" | "threshold" | "overflow" | "economic"; /** 借鉴弧 B1（SoL-Pi C1）：economic = 边界经济学门放行（盈亏平衡 ≤ 期距）。 */ /** M52 §1: tier-2 only — the fingerprint of the first kept ORIGINAL message; persisted as the compact_boundary session entry so a resumed session's next compaction continues the chain. */ firstKeptEntryId?: string; /** M70 §2 (pi): the messages the compact kept VERBATIM after the boundary (tier 0/1: the keep-recent window; tier 2: the post-span tail). Carried on compaction entries so future compactions can rebuild from it. */ retainedTail?: readonly AgentMessage[]; /** 借鉴弧 B1（SoL-Pi C1）：边界经济学的决策回执——只在轮边界审议武装的压缩上携带（压力/溢出/手动路径不带）。面板与测试的消费面。 */ economics?: CompactionEconomicsReport; /** 125 项 1：tier-2 only — 该边界开启的窗口序号（base + 本 run 已落边界数 + 1）；驱动层把它落进 compact_boundary 条目的 additive 字段 windowIndex。缺省 = 无窗口概念（pre-125 行为）。 */ windowIndex?: number; /** 125 项 2：tier-2 only — 轮转时刻的世界快照（driver 侧提取），作为 additive 字段落进 compact_boundary，供下一窗口做差分基线。 */ worldState?: WorldState; /** 125 项 1（codex new_context 形）：模型侧轮转的回执字段——trigger 为 agent-rotation 时携带。 */ agentRotation?: { window: number; rationale: string } }
   // M24: prompt usage for the model call that just finished, forwarded from
   // ModelInput.onUsage (the provider's only usage channel). Emitted after
   // model_call_finished, before any tool events of the same turn.
@@ -979,9 +979,9 @@ async function* runAgentLoopBody(
   // above buildModelInput, consumed by it; reset every turn).
   let admissionClip: number | undefined;
 
-  // 借鉴弧 B1/B2（a reference project C1/C2）— run 级经济学追踪器 + 边界信号面。
+  // 借鉴弧 B1/B2（SoL-Pi C1/C2）— run 级经济学追踪器 + 边界信号面。
   // pendingTodoBoundaries 由 gateTodoTransition 登记（callId → 新 board 未完
-  // 成数），结果落地且非 error 时兑现（被钩子拦下/出错的写不算边界——a reference project
+  // 成数），结果落地且非 error 时兑现（被钩子拦下/出错的写不算边界——SoL-Pi
   // turn_end 同款卫生）；boundarySignalThisTurn 为本轮兑现的边界（轮顶清零）。
   const economics = new CompactionEconomicsTracker(options.compaction?.cachePricing);
   let boundarySignalThisTurn: number | null = null;
@@ -2680,7 +2680,7 @@ async function* runAgentLoopBody(
       const newItems = parseTodoItems(rawTodos);
       const { created, completed } = todoTransitionDelta(lastBoardItems(state.messages), newItems);
       if (created.length === 0 && completed.length === 0) return undefined;
-      // B2（a reference project C2）：完成 transition = 子任务边界候选。这里登记（新 board
+      // B2（SoL-Pi C2）：完成 transition = 子任务边界候选。这里登记（新 board
       // 的未完成数为期距的「剩余边界数」），结果落地且非 error 时在下方两个
       // 落点兑现——被钩子拦下/出错的写不算边界。
       if (completed.length > 0) {
@@ -3577,7 +3577,7 @@ async function* runAgentLoopBody(
       return { reason: "completed", finalMessage: finalAssistant };
     }
 
-    // Turn boundary (M24 B5 → 借鉴弧 B1/B2, a reference project C1/C2): the deferred
+    // Turn boundary (M24 B5 → 借鉴弧 B1/B2, SoL-Pi C1/C2): the deferred
     // "approaching" compaction AND the boundary-signal candidate are decided
     // HERE. B1（经济学门）：盈亏平衡对期距裁决、债连本带息、窗口保护覆盖一
     // 切、压力无边界证据 fail-open（ω-2b 语义不动，债照记）。B2（边界优先）：

@@ -52,6 +52,7 @@ export function isVaultedMutation(o: Record<string, unknown>): boolean {
     case "pluginMarketUpdate":
     case "pluginMarketRemove":
     case "pluginInstall":
+    case "pluginInstallSpec": // guided-install 弧 — 与 pluginInstall 同族（重放收敛 already-exists）
     case "pluginUninstall":
     case "pluginEnable":
     case "pluginDisable":

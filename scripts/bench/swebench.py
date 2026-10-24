@@ -17,8 +17,8 @@ import subprocess
 import sys
 import time
 
-REPO = "~/xdev/github/wudao-harness-project/wudao-harness"
-BENCH = "~/xdev/github/wudao-harness-project/wudao-bench"
+REPO = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness"
+BENCH = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench"
 LITE = f"{BENCH}/swebench-lite"
 RUNS = f"{BENCH}/swe-runs"
 REPOS = f"{BENCH}/swe-repos"

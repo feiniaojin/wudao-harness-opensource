@@ -564,6 +564,7 @@ export type ClientOp =
   | { op: "pluginMarketUpdate"; name: string }
   | { op: "pluginMarketRemove"; name: string }
   | { op: "pluginInstall"; name: string; market: string; scope: "user" | "project" }
+  | { op: "pluginInstallSpec"; spec: string; preview?: boolean }
   | { op: "pluginUninstall"; id: string }
   | { op: "pluginEnable"; id: string }
   | { op: "pluginDisable"; id: string }

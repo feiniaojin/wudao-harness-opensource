@@ -1,4 +1,4 @@
-// M11 #3（a reference harness amend-resume 导入缓存）— 第一写关闭规则收据：
+// M11 #3（ZCode amend-resume 导入缓存）— 第一写关闭规则收据：
 // 编辑点后键未变的任务从导入池复用（零模型调用）；首个带工具的实际执行
 // 关闭非纯项；纯项（toolCalls===0）关门后仍可导入；cmd 执行永远关门。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

@@ -253,7 +253,7 @@ describe("ruleMatches — tool / tool:path-prefix patterns", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 波次 7 #32 (a reference harness A1+A2+A3): operator glob rules. Explicit `glob:`
+// 波次 7 #32 (OpenHarness A1+A2+A3): operator glob rules. Explicit `glob:`
 // suffix opt-in — plain suffixes keep byte-identical semantics (a literal `*`
 // in a 夜移006 exact command rule must never silently widen into a wildcard).
 // ---------------------------------------------------------------------------
@@ -682,7 +682,7 @@ describe("recordAskRules — 夜移 009: the `a` answer's session rule gets rece
 });
 
 // ---------------------------------------------------------------------------
-// 夜移 010 (a reference harness-Py permissions/checker.py:18-200): credential-material
+// 夜移 010 (OpenHarness-Py permissions/checker.py:18-200): credential-material
 // ask gate. OH-Py hard-DENIES a fnmatch denylist (`*/.ssh/*`, `*/.aws/credentials`,
 // `*/.gnupg/*`, `*/.kube/config`, its own credential store) before mode — even
 // --dangerously-skip-permissions cannot override. Wudao's deliberate divergence,

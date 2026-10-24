@@ -61,7 +61,7 @@ export interface GoalStateData {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly lastReason?: string;
-  /** 121 §4（a reference harness budget death salvage）— the honest death cause. Set
+  /** 121 §4（CodeWhale budget death salvage）— the honest death cause. Set
    *  ONCE at the budget crossing (applyGoalSettlement) and carried into every
    *  later row of the same goal (moveTo spreads it): a goal that died by
    *  budget NEVER terminal-izes as a bare "completed" — the row names its
@@ -383,7 +383,7 @@ export function goalBudgetNote(
   }
   lines.push(
     `进度：${progress.done}/${progress.total} 任务完成（以任务台账为准）。`,
-    // 121 §4（a reference harness budget death salvage）— the wrap-up directive: budget
+    // 121 §4（CodeWhale budget death salvage）— the wrap-up directive: budget
     // death must not stop mid-air with the work unsummarized. Advisory-only
     // (GoalState's standing semantics — nothing is killed or forced), but
     // this IS the final advice: the driver fires ONE salvage round whose

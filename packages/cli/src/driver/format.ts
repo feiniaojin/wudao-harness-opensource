@@ -272,7 +272,7 @@ export function formatRunStats(totalMs: number, llmMs: number | null, toolMs: nu
   // 警告之和（慢≠断：与「断流重连」同一行分开看，网络健康一眼分清）。
   // 缺省 0 = 老调用方字节不变（omit-when-zero）。
   if (softIdleWarns > 0) parts.push(`等待较久 ${softIdleWarns} 次`);
-  // 借鉴弧 B1（a reference project C1）：cacheDebtTokens > 0 追加「缓存债 ~N」——本
+  // 借鉴弧 B1（SoL-Pi C1）：cacheDebtTokens > 0 追加「缓存债 ~N」——本
   // run 最近一次压缩立账、尚未被归档节省摊掉的前缀重建溢价（token 记
   // 账；回执之后的逐请求偿还在事件流里静默递减，这里如实显示最近回执
   // 值）。缺省 0 = 老调用方字节不变（omit-when-zero）。

@@ -34,6 +34,7 @@ import { useCallback, useEffect, useState } from "react";
 import type {
   InstalledPluginRowWire,
   InstallDetailWire,
+  PluginSpecInstallResult,
   MarketplaceRowWire,
   RescanReceiptWire,
   SettingsStatus,
@@ -178,6 +179,35 @@ export function PluginTab({
     });
   };
 
+  /** guided-install：spec 直装流（本地路径 / GitHub 简写 / git URL）。
+   *  三态：输入 → 预览卡（inspect 面）→ 安装。preview/install 共用 run()
+   *  的 pending 键；零资产/克隆失败的人话错误走 notify 警告形。 */
+  const [specDraft, setSpecDraft] = useState("");
+  const [specPreview, setSpecPreview] = useState<PluginSpecInstallResult | null>(null);
+
+  const previewSpec = (): void => {
+    const spec = specDraft.trim();
+    if (spec === "") return;
+    run(`spec-preview`, async () => {
+      const r = await client.pluginInstallSpec(spec, true);
+      setSpecPreview(r);
+      notify(r.preview ? `预览 ${spec}:${r.name ?? "未知名称"}(${detailText(r.detail)})` : "服务器未走预览路径——未安装");
+    });
+  };
+
+  const installSpec = (): void => {
+    const spec = specDraft.trim();
+    if (spec === "") return;
+    run(`spec-install`, async () => {
+      const r = await client.pluginInstallSpec(spec, false);
+      setSpecPreview(null);
+      setSpecDraft("");
+      notify(`已安装 ${r.name ?? spec} → ${r.dir ?? ""}(${detailText(r.detail)})${rescanText(r.rescan)}`);
+      for (const w of r.warnings) notify(warnText(w));
+      await fetchBoth();
+    });
+  };
+
   const updateMarket = (name: string): void => {
     run(`update:${name}`, async () => {
       const info = await client.pluginMarketUpdate(name);
@@ -257,6 +287,43 @@ export function PluginTab({
             onChange={(e) => setDocSuite(e.target.checked)}
           />
         </label>
+      </div>
+      {/* guided-install 弧：spec 直装——本地路径 / GitHub 简写 / git URL。
+          先预览（名称·格式·将映射计数）再安装；零资产纯代码包装前被引擎
+          拒（人话错误直达这里）。 */}
+      <div className="settings-section" data-plugin-spec-install>
+        <div className="section-title">从来源安装</div>
+        <div className="hint">{"直接安装一个插件包:本地目录(./dir)、GitHub 简写(owner/repo)、git URL(#ref 可选)——纯代码包(无可映射的技能/命令)会被拒绝"}</div>
+        <div className="keyrow">
+          <input
+            type="text"
+            className="wudao-input plugin-spec-input"
+            placeholder="插件来源(./本地目录、owner/repo 或 git URL)"
+            aria-label="插件来源"
+            value={specDraft}
+            onChange={(e) => { setSpecDraft(e.target.value); setSpecPreview(null); }}
+          />
+          <button type="button" className="wudao" disabled={specDraft.trim() === "" || busy} onClick={previewSpec}>
+            预览
+          </button>
+        </div>
+        {specPreview !== null ? (
+          <div className="market-row" data-plugin-spec-preview>
+            <span className="market-name">
+              {specPreview.name ?? "未知名称"}
+              {specPreview.format !== undefined ? ` · ${specPreview.format === "ccb-family" ? "上游包格式" : "claude-plugin"}` : ""}
+            </span>
+            <span className="hint">{`将映射:${detailText(specPreview.detail)}`}</span>
+            <span className="keyrow">
+              <button type="button" className="wudao" disabled={busy} onClick={installSpec}>
+                安装
+              </button>
+              <button type="button" className="wudao" disabled={busy} onClick={() => setSpecPreview(null)}>
+                取消
+              </button>
+            </span>
+          </div>
+        ) : null}
       </div>
       <div className="settings-section">
         <div className="section-title">市场</div>

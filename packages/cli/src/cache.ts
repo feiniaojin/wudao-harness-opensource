@@ -244,7 +244,7 @@ export function detectCacheBreak(input: CacheBreakInput): string | undefined {
     if (currLines < prevLines) {
       return expectedOrRaw(`⚠️ cache break: history truncated (turn ${turn})${tier}`, turn);
     }
-    // 夜移 008 (a reference harness break-forensics port, hardened): pure extension —
+    // 夜移 008 (claude-code break-forensics port, hardened): pure extension —
     // the ONLY legitimate miss source is the appended delta. A miss far
     // beyond what the delta can explain means the provider re-processed the
     // PREFIX: eviction/TTL, not a harness defect. (The old code was silent

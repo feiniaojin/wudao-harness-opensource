@@ -101,7 +101,7 @@ export interface ProviderOptions {
    *  (`apiKeys` when set, else the single `apiKey`) — pass one in to observe
    *  cooldowns from /status and the statusline (`keys n/m`). */
   readonly keyPool?: KeyPool;
-  /** 波次 7 #37 (a reference harness C1): the provider-level 429 pause window. Built
+  /** 波次 7 #37 (CodeWhale C1): the provider-level 429 pause window. Built
    *  per factory when absent; inject one to share a single window across
    *  factories/tests behind one endpoint. */
   readonly ratePauseWindow?: RatePauseWindow;
@@ -158,7 +158,7 @@ export function createOpenAICompatibleProvider(config: ProviderConfig, options: 
   // with per-key cooldown. The key rides only the Authorization header — the
   // body bytes (and the prefix cache) never see it.
   const keyPool = options.keyPool ?? createKeyPool(config.apiKeys ?? [config.apiKey]);
-  // 波次 7 #37 (a reference harness C1): the provider-level 429 pause window — one per
+  // 波次 7 #37 (CodeWhale C1): the provider-level 429 pause window — one per
   // factory closure, shared across every leg and every concurrent request of
   // this provider instance (keyPool topology). The pool answers "rotate to a
   // spare key"; the window answers "the provider itself said stop" (single

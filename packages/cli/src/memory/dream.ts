@@ -185,7 +185,7 @@ export interface DreamPrompt {
  *  (nanobot memory.py:1190-1192: advance only through the captured batch).
  *  Nothing unprocessed → undefined.
  *
- *  借鉴弧 C2（a reference project C4）：heldout 标记条目不进批也不进 ground-truth 嵌入
+ *  借鉴弧 C2（SoL-Pi C4）：heldout 标记条目不进批也不进 ground-truth 嵌入
  *  ——密封套件的结果永不进入精化输入。lastSeq 取自「seq 批」（过滤前），
  *  游标照常越过密封条目（它们永不阻塞、永不反复计数）；若批在过滤后为
  *  空，返回 undefined（不出模型调用），且 due-gate 的计数同样排除它们，

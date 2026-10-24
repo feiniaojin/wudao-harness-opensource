@@ -5,9 +5,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AssistantMessage, ModelClient } from "@wudao/core";
-import { runScriptWorkflow } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/src/workflow/engine.js";
-import { journalFilePath, loadJournal, openJournal, workflowIdentity } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/src/workflow/journal.js";
-import type { JsflowOptions } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/src/workflow/engine.js";
+import { runScriptWorkflow } from "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/packages/cli/src/workflow/engine.js";
+import { journalFilePath, loadJournal, openJournal, workflowIdentity } from "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/packages/cli/src/workflow/journal.js";
+import type { JsflowOptions } from "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/packages/cli/src/workflow/engine.js";
 
 let root: string;
 beforeEach(() => { root = mkdtempSync(join(tmpdir(), "wf-audit-t007-4b-")); });

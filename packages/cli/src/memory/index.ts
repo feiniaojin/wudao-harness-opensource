@@ -12,7 +12,7 @@ export {
   CREDENTIAL_RE,
   MEMORY_MAX_CONTENT_CHARS,
   MEMORY_NOVELTY_JACCARD,
-  // 借鉴弧 C2（a reference project C4）：盲 held-out 的精化入口标记（refine/dream 过滤）。
+  // 借鉴弧 C2（SoL-Pi C4）：盲 held-out 的精化入口标记（refine/dream 过滤）。
   HELDOUT_MEMORY_TAG,
   isHeldOutEntry,
 } from "./store.js";

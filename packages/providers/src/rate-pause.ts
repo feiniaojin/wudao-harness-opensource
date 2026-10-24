@@ -1,11 +1,11 @@
-// 波次 7 #37 (a reference harness C1): the provider-level 429 pause window.
+// 波次 7 #37 (CodeWhale C1): the provider-level 429 pause window.
 //
 // The M56 key pool already handles the KEY dimension of a 429 — the limited
 // key cools for every request through the shared pool. What it cannot handle
 // is the PROVIDER dimension under concurrency: with a single key (or every
 // key cooling), each concurrent request still enters its OWN retry ladder and
 // hammers a provider that just said "stop" — under subagent fanout, N
-// requests burn N ladders against the same rate limit (the self-harm a reference harness
+// requests burn N ladders against the same rate limit (the self-harm CodeWhale
 //'s C1 exists for). The window closes that gap:
 //
 //   trip()   — called at the HTTP boundary the moment a 429 arrives while the
@@ -16,7 +16,7 @@
 //              deadline.
 //   wait()   — the leg entry gate, before every generate/stream call. While a
 //              pause is active the caller re-checks the clock in ≤250ms
-//              slices (a reference harness's sliced re-check) and fires its first HTTP
+//              slices (CodeWhale's sliced re-check) and fires its first HTTP
 //              attempt only after the window lapses. The originator's own
 //              ladder retries are NOT gated (they sit INSIDE one leg call): a
 //              transient 429 still recovers on its normal backoff — today's
@@ -30,7 +30,7 @@
 // protocol factories behind a single endpoint.
 import { RETRY_AFTER_FAIL_CAP_MS } from "./retry-after.js";
 
-/** Slice ceiling for the sliced re-check loop (a reference harness C1's 250ms). */
+/** Slice ceiling for the sliced re-check loop (CodeWhale C1's 250ms). */
 export const RATE_PAUSE_SLICE_MS = 250;
 
 /** Default pause when a 429 carries no Retry-After — the key pool's rate

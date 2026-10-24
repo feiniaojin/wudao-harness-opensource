@@ -75,7 +75,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-const ROOT = "~/xdev/github/wudao-harness";
+const ROOT = "/Users/qinyujie/xdev/github/wudao-harness";
 
 /** A mock FileOpsClient over a mutable path→entries table: later edits are
  *  what the refresh assertions read (the tree must re-fetch, not reuse).

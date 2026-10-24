@@ -369,7 +369,7 @@ export function buildToolSet(opts: {
    *  TOP-LEVEL shell only — it needs the per-session spillDir seam the
    *  worktree children don't carry. */
   readonly longOutput?: LongOutputConfig;
-  /** 借鉴弧 C1（a reference project C3）：超长诊断日志的证据保全瘦身端口（廉价档
+  /** 借鉴弧 C1（SoL-Pi C3）：超长诊断日志的证据保全瘦身端口（廉价档
    *  ModelClient + 可选阈值覆盖）。缺省不注入 = shell 字节同 pre-C1。
    *  Rides the TOP-LEVEL shell only（与 longOutput 同界——需要 spill 缝）。 */
   readonly logSlimming?: LogSlimmingPorts;

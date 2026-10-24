@@ -33,6 +33,7 @@ import {
   pluginEnable,
   pluginInstall,
   pluginInstallLocal,
+  pluginInstallSpec,
   pluginListInstalled,
   pluginUninstall,
   readMarketplaceFile,
@@ -56,6 +57,7 @@ export type PluginOp =
   | { readonly t: "list" }
   | { readonly t: "install"; readonly name: string; readonly market: string; readonly scope: "user" | "project" }
   | { readonly t: "install-local"; readonly path: string }
+  | { readonly t: "install-spec"; readonly spec: string; readonly preview?: true }
   | { readonly t: "uninstall"; readonly id: string }
   | { readonly t: "enable"; readonly id: string }
   | { readonly t: "disable"; readonly id: string }
@@ -72,6 +74,8 @@ export function parsePluginArgs(argv: readonly string[]): { kind: "op"; op: Plug
   let json = false;
   let scope: string | undefined;
   let nameFlag: string | undefined;
+  /** --preview（值空串标记出现；仅 install-spec 消费）。 */
+  let preview: string | undefined;
   const positionals: string[] = [];
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i] ?? "";
@@ -84,6 +88,10 @@ export function parsePluginArgs(argv: readonly string[]): { kind: "op"; op: Plug
       const v = a === "--scope" ? argv[++i] : a.slice("--scope=".length);
       if (v === undefined || v === "") return { kind: "usage", reason: "--scope expects user|project" };
       scope = v;
+      continue;
+    }
+    if (a === "--preview") {
+      preview = "";
       continue;
     }
     if (a === "--name" || a.startsWith("--name=")) {
@@ -109,12 +117,22 @@ export function parsePluginArgs(argv: readonly string[]): { kind: "op"; op: Plug
     // plugin-compat：路径形 token（./ · / · ~ · 含 /）= 本地直装（外部/
     // 上游格式插件）；rest 按空格拼回（带空格的本地路径在 slash face 是一个
     // 引号 token，在 CLI face 是多个 argv 词）。非路径形走市场安装语法。
-    const isPathLike = second.startsWith(".") || second.startsWith("/") || second.startsWith("~") || second.includes("/");
-    if (isPathLike) {
+    // 三形态 spec：本地路径（./ · / · ~ 前缀）→ 本地直装；GitHub 简写
+    // （owner/repo[#ref]，无 @market）或 git URL → 引导安装（浅克隆→装）。
+    // 带 @ 的一律走市场语法，不与简写歧义。
+    const isLocalPath = second.startsWith(".") || second.startsWith("/") || second.startsWith("~");
+    if (isLocalPath) {
       if (scope !== undefined) return { kind: "usage", reason: "--scope is not valid for a local path install (fixed project scope)" };
       if (nameFlag !== undefined) return { kind: "usage", reason: "--name is only valid with marketplace add" };
       return { kind: "op", op: { t: "install-local", path: [second, ...rest].join(" ") }, json };
     }
+    const isGitSpec = !second.includes("@") && (/^[A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*(#\S+)?$/.test(second) || /^https?:\/\/.*\.git(#\S+)?$/.test(second) || second.startsWith("file://"));
+    if (isGitSpec) {
+      if (scope !== undefined) return { kind: "usage", reason: "--scope is not valid for a git spec install (fixed project scope)" };
+      if (nameFlag !== undefined) return { kind: "usage", reason: "--name is only valid with marketplace add" };
+      return { kind: "op", op: { t: "install-spec", spec: second, ...(preview === "" ? { preview: true } : {}) }, json };
+    }
+    if (preview !== undefined) return { kind: "usage", reason: "--preview is only valid with a git spec (owner/repo or git URL) install" };
     if (rest.length > 0) return { kind: "usage", reason: `install takes one <name>@<market> (unexpected "${rest[0]}")` };
     const at = second.indexOf("@");
     if (at <= 0 || at === second.length - 1) {
@@ -270,6 +288,30 @@ async function runPluginOp(op: PluginOp, ctx: RunContext): Promise<OpResult> {
           receipt.text,
         ];
         return finish(0, lines.join("\n"), { id, scope: op.scope, dir, detail, ...receipt.json });
+      }
+      case "install-spec": {
+        // 引导安装：GitHub 简写 / git URL → 浅克隆 → inspect → 零资产门 → 拷装。
+        // --preview 只看不装（inspect 元数据 + 资产计数 + 未安装声明）。
+        const res = await pluginInstallSpec(op.spec, op.preview === true ? { preview: true } : {}, engDeps);
+        if (res.previewOnly) {
+          return finish(0, [
+            `👁 预览 ${op.spec}`,
+            `   名称：${res.name} · 版本目录：${res.dir}`,
+            `   清单格式：${res.format === "ccb-family" ? "上游 CCB 家族包（package.json 声明）" : "claude-plugin"}`,
+            `   将映射：技能 ${res.detail.skills} · 命令 ${res.detail.commands} · agents ${res.detail.agents} · hooks ${res.detail.hooks} · MCP ${res.detail.mcp}`,
+            `   未安装（--preview）— 去掉 --preview 即安装到 .wudao/plugins/`,
+          ].join("\n"), { spec: op.spec, preview: true, name: res.name, format: res.format, detail: res.detail });
+        }
+        const { dir, name, format, detail } = res;
+        const receipt = await rescanReceipt(ctx);
+        const id = `${name}@${LOCAL_PLUGIN_MARKET}`;
+        return finish(0, [
+          `✅ 已安装 ${id}（${op.spec}·project 作用域）→ ${dir}`,
+          `   清单格式：${format === "ccb-family" ? "上游 CCB 家族包（package.json 声明）" : "claude-plugin"}`,
+          `   将映射：技能 ${detail.skills} · 命令 ${detail.commands} · agents ${detail.agents} · hooks ${detail.hooks} · MCP ${detail.mcp}`,
+          ...(detail.mcp > 0 ? ["   插件的 MCP 服务器在重启后生效（热重扫只换合并配置，不换已生成的工具集）"] : []),
+          receipt.text,
+        ].join("\n"), { id, scope: "project", dir, format, detail, ...receipt.json });
       }
       case "install-local": {
         // plugin-compat：本地直装 — 外部（CCB 家族上游包）或 claude-plugin

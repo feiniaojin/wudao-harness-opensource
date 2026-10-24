@@ -1,10 +1,10 @@
 // wudao OpenAI 兼容 shim（τ-bench 等第三方 harness 接入我们的 provider 线）。
 // 监听 127.0.0.1:8790/v1/chat/completions，转 buildRunPlan+createProvider。
 // 非流式；tools 透传（OpenAI tools → 我们的 Tool 面）；persona/baseURL/key
-// 全走 registry 解析（glm-code 含 a reference harness:headers）。
+// 全走 registry 解析（glm-code 含 claude-code:headers）。
 import http from "node:http";
-import { buildRunPlan } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/run.js";
-import { createProvider } from "~/xdev/github/wudao-harness-project/wudao-harness/packages/providers/dist/index.js";
+import { buildRunPlan } from "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/run.js";
+import { createProvider } from "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/packages/providers/dist/index.js";
 
 const PORT = Number(process.env.SHIM_PORT ?? 8790);
 // 取证落盘：SHIM_TRACE=1 时每个请求/响应对追加 JSONL（不设则零行为差异）。

@@ -152,6 +152,7 @@ export type {
   RescanReceiptWire,
   PluginMarketRemoveResult,
   PluginInstallResult,
+  PluginSpecInstallResult,
   PluginUninstallResult,
   PluginToggleResult,
   PersonaProtocolId,
@@ -196,6 +197,7 @@ import {
   PluginInstallResult,
   PluginUninstallResult,
   PluginToggleResult,
+  PluginSpecInstallResult,
   // 永续 v6 wave2（reef C1）：门控自改进面的回执形状 + 外提归位的
   // WudaoClientOptions（纯移动，protocol-wire.ts 现为唯一定义点）。
   ImprovementFaceResult,
@@ -955,6 +957,11 @@ export class WudaoClient {
    *  install preview (InstallDetail) + the rescan receipt. */
   pluginInstall(name: string, market: string, scope: "user" | "project"): Promise<PluginInstallResult> {
     return this.sendOp<PluginInstallResult>({ op: "pluginInstall", name, market, scope });
+  }
+
+  /** 引导安装（guided-install）：spec 三形态；preview 只 inspect 不装。 */
+  pluginInstallSpec(spec: string, preview?: boolean): Promise<PluginSpecInstallResult> {
+    return this.sendOp<PluginSpecInstallResult>({ op: "pluginInstallSpec", spec, ...(preview === true ? { preview: true } : {}) });
   }
 
   /** Uninstall (delete dir + registry record + enable key). Refuses while a

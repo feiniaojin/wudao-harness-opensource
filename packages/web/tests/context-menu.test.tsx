@@ -82,7 +82,7 @@ afterEach(() => {
   delete (navigator as { clipboard?: unknown }).clipboard;
 });
 
-const ROOT = "~/xdev/github/wudao-harness";
+const ROOT = "/Users/qinyujie/xdev/github/wudao-harness";
 
 // 墨线 T14: the menu family's raw-sheet pins (cssstyle drops var()-bearing
 // shorthands, so surface/radius/height ride regexes off the source).

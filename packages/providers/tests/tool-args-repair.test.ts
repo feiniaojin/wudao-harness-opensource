@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parseToolCallArguments, TRUNCATED_MARK } from "../src/openai-compatible.js";
 
 // ---------------------------------------------------------------------------
-// 波次 7 #33 (a reference harness parse_json_with_repair + truncation salvage): the
+// 波次 7 #33 (CodeWhale parse_json_with_repair + truncation salvage): the
 // deterministic repair ladder for streamed tool-call arguments. The old
 // parseArguments catch{} turned torn JSON into {} SILENTLY — the tool ran
 // with no arguments (or a misleading "missing required field" validation
@@ -23,7 +23,7 @@ describe("parseToolCallArguments — strict fast path (zero-change pins)", () =>
   });
 });
 
-describe("parseToolCallArguments — a reference harness ladder stages", () => {
+describe("parseToolCallArguments — CodeWhale ladder stages", () => {
   it("strips a ```json fence", () => {
     expect(parseToolCallArguments('```json\n{"a":1}\n```')).toEqual({ a: 1 });
   });

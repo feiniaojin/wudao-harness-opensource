@@ -14,7 +14,7 @@ import sys
 import time
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-BENCH = os.environ.get("BENCH_DIR", "~/xdev/github/wudao-harness-project/wudao-bench")
+BENCH = os.environ.get("BENCH_DIR", "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench")
 LANG = os.environ.get("BENCH_LANG", "python")
 SRC = f"{BENCH}/polyglot/{LANG}/exercises/practice"
 RUNS = f"{BENCH}/poly-{LANG}-runs"

@@ -1355,7 +1355,7 @@ export async function runRepl(opts: {
                 // min(ratio×window, window − reserve − headroom)。每次 run 从
                 // liveConfig 重读（/model //provider 切换自然生效）。
                 ...compactionThresholdFields(liveConfig, compactionSettings),
-                // 借鉴弧 B1（a reference project C1）：压缩经济学定价（catalog > env > 缺省；
+                // 借鉴弧 B1（SoL-Pi C1）：压缩经济学定价（catalog > env > 缺省；
                 // 每次 run 重解析，/provider 切换自然生效）。
                 cachePricing: resolveSessionCachePricing(liveConfig.provider, liveConfig.model),
                 classifySkillRead: createSkillReadClassifier(live.skills),

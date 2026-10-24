@@ -198,7 +198,7 @@ describe("loadSessionMessages", () => {
 });
 
 // ---------------------------------------------------------------------------
-// M56 §4 — no-evidence success = 0.5 partial, never a pass (a reference harness C7).
+// M56 §4 — no-evidence success = 0.5 partial, never a pass (CodeWhale C7).
 // ---------------------------------------------------------------------------
 describe("scoreWorkloop — evidence verdict (M56 §4)", () => {
   it("a completed run with writes + a verification run is evidence-verified", () => {

@@ -328,6 +328,8 @@ export interface UiDriverPort {
   /** Install a market's plugin into a scope root (reply carries the loader
    *  dry-run's InstallDetail). */
   pluginInstall?(name: string, market: string, scope: "user" | "project"): Promise<unknown>;
+  /** 引导安装（guided-install 弧）：spec 三形态（本地路径/GitHub 简写/git URL）+ 可选预览。 */
+  pluginInstallSpec?(spec: string, preview?: boolean): Promise<unknown>;
   /** Delete the install dir + registry record + enable key (busy → refusal). */
   pluginUninstall?(id: string): Promise<unknown>;
   /** Re-enable a disabled plugin (deletes the enabledPlugins key). */

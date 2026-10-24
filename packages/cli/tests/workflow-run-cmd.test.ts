@@ -1,4 +1,4 @@
-// M11 #2（a reference harness world.run 形）— 脚本级命令门原语收据：非零退出=正常返回
+// M11 #2（ZCode world.run 形）— 脚本级命令门原语收据：非零退出=正常返回
 // （门控循环常态）、无 shell（args 直传）、允许清单 fail-closed、journaled
 // 重放零进程派生、同身份键漂移=纯度违例、超时/spawn 失败数据化。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";

@@ -15,7 +15,7 @@
 //     （FORBIDDEN_HEADER_KEYS —— ω99-69 起定义在本文件单一来源，schema.ts
 //     re-export），根本到不了 wire；本弧只对"程序化构造绕过 schema"的兜底
 //     路径加一次性 stderr 可见性（静默丢弃 → 告知丢弃），行为零变化。
-//     anthropic-version 不在警告集：内置 a reference harness persona 按设计钉它
+//     anthropic-version 不在警告集：内置 claude-code persona 按设计钉它
 //     （builtins.ts 身份仿真），警告即常态噪音。
 //
 // 红线：合法 header 请求字节零变化；`...(wire?.headers)` 仍在 auth 后 spread。
@@ -23,7 +23,7 @@
  *  one of these names is SKIPPED (never sent) by resolvePersonaHeaders — the
  *  once-per-process notice below is visibility for that silent drop, not a
  *  behavior change. Deliberately excludes anthropic-version (pinned by design
- *  on the a reference harness builtin persona). */
+ *  on the claude-code builtin persona). */
 export const RESERVED_CREDENTIAL_HEADER_KEYS: ReadonlySet<string> = new Set(["authorization", "x-api-key"]);
 
 /** ω99-69（64 停泊 C1 收口）：persona 永不控制、hand-built 配置也永不覆盖的

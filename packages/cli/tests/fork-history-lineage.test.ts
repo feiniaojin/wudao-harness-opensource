@@ -1,4 +1,4 @@
-// 120-a A3 (a reference harness #6483 形) — the file time-machine's session-lineage
+// 120-a A3 (CodeWhale #6483 形) — the file time-machine's session-lineage
 // invariant. Snapshots were bound to the minting session id: a fork mints a
 // FRESH id, so its /rewind started empty and every pre-fork snapshot became
 // an orphan the branch could never select. The fork seam now inherits the
@@ -175,7 +175,7 @@ describe("fork inherits the file-history lineage (120-a A3)", () => {
     const { root, sessionsDir } = workspace();
     try {
       // A source session carrying pre-fork file_snapshot rows (run = the
-      // PARENT's id — the a reference harness #6483 binding shape).
+      // PARENT's id — the CodeWhale #6483 binding shape).
       const shaA = "a".repeat(64);
       const shaB = "b".repeat(64);
       const lines = [

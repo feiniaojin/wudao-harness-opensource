@@ -54,7 +54,7 @@ import {
 } from "@wudao/core";
 import type { MissionState, MissionTask } from "./mission.js";
 
-/** 121 §4（a reference harness budget death salvage）— the ONE system-authored wrap-up
+/** 121 §4（CodeWhale budget death salvage）— the ONE system-authored wrap-up
  *  prompt the driver's salvage lane fires after a budget crossing settles.
  *  The directive itself rides goalBudgetNote on the MetaNote queue (drained
  *  by this run's first model call); the prompt is the persisted user-side

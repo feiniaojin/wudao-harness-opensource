@@ -152,7 +152,7 @@ export function ProviderTab({
   const cards = settings?.providers ?? [];
   const validCards = cards.filter((c) => c.invalidReason === undefined);
   // Cross-field search — label/id/baseUrl/endpoint/model names; a model-name
-  // hit surfaces its provider (the a reference harness picker rule). Front-end filter
+  // hit surfaces its provider (the CodeWhale picker rule). Front-end filter
   // only; no virtualization at registry scale (spec §6's own call).
   const q = query.trim().toLowerCase();
   const visibleCards =

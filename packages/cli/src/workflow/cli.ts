@@ -562,7 +562,7 @@ export async function workflowMain(argv: readonly string[], deps: WorkflowCliDep
     ...(resumeTasks !== undefined ? { resumeTasks } : {}),
     // M11 #2：命令授予 + cmd 重放清单。
     ...(parsed.allowCmd !== undefined && parsed.allowCmd.length > 0 ? { commandAllowlist: new Set(parsed.allowCmd) } : {}),
-    // 133 #3（a reference harness journal 身份模型）：js 路径带运行身份（脚本+参数双
+    // 133 #3（ZCode journal 身份模型）：js 路径带运行身份（脚本+参数双
     // 哈希，与她bang 剥离后的执行字节一致）；resumeIdentity 与之全等时
     // 纯度武装生效。适配器路径无脚本字节，不带（行为不变）。
     ...(jsonPlan === undefined ? { identity: workflowIdentity(text.replace(/^#![^\n]*\n/, ""), parsed.args, parsed.allowCmd) } : {}), // T007 P1：授予面随身份（--allow-cmd 变化=世界变化）

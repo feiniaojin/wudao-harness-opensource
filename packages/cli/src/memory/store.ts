@@ -483,7 +483,7 @@ export function assessMemoryWrite(input: MemoryWriteInput, existing: readonly Me
 }
 
 // ---------------------------------------------------------------------------
-// 借鉴弧 C2（a reference project C4）— 盲 held-out 的精化入口标记。
+// 借鉴弧 C2（SoL-Pi C4）— 盲 held-out 的精化入口标记。
 // 纪律：从盲 held-out 评估结果派生的记忆条目必须携带 heldout 标签；
 // /refine 与 Dream 的输入组装处（refine.ts / dream.ts）以此标签过滤——
 // 密封套件的结果永不进入任何精化输入。套件名单本身密封在

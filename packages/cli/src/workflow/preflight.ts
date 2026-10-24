@@ -1,4 +1,4 @@
-// M56 §5 — route preflight (a reference harness crates/workflow/fleet_preflight.rs).
+// M56 §5 — route preflight (CodeWhale crates/workflow/fleet_preflight.rs).
 // Everything that must be true for a spawn/step is frozen and checked WHERE
 // THE RUN IS ADMITTED, not discovered at the first API call:
 //   provider configured  the provider profile resolves (name, baseUrl);

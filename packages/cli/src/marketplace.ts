@@ -31,8 +31,8 @@
 // install registry — deleting plugins is exactly the guess it refuses.)
 import { execFile } from "node:child_process";
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { mkdir, readFile, readdir, rename, rm, rmdir, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
+import { mkdir, mkdtemp, readFile, readdir, rename, rm, rmdir, writeFile } from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { promisify } from "node:util";
 import { readGlobalSettings, resolveGlobalHome, saveGlobalSettings } from "./settings-layer.js";
@@ -734,6 +734,99 @@ export const LOCAL_PLUGIN_MARKET = "local";
  *  命名空间即登记侧的 market="local"），登记进 installed.json。与
  *  pluginInstall 同一份契约：可失败的检查全部先于任何写入；中途失败清掉
  *  半成品目录；登记只在树完整落位后追加；永不执行插件代码。 */
+
+// ---------------------------------------------------------------------------
+// Guided install: `wudao plugin install <spec> [--preview]`
+// ---------------------------------------------------------------------------
+
+/** A resolved install spec: local directory, GitHub shorthand, or git URL. */
+export type PluginSpec =
+  | { readonly kind: "dir"; readonly path: string }
+  | { readonly kind: "git"; readonly url: string; readonly ref?: string };
+
+/** Classify a raw user spec. GitHub shorthand (`user/repo[#ref]`) wins over
+ *  relative paths — the CC-family meaning; a LOCAL directory must be spelled
+ *  `./x`, `~`, or absolutely (the error says so when the shapes collide). */
+export function parsePluginSpec(raw: string, cwd: string, exists: (p: string) => boolean): PluginSpec | undefined {
+  const trimmed = raw.trim();
+  if (trimmed === "") return undefined;
+  const expanded = trimmed.startsWith("~") ? join(homedir(), trimmed.slice(1)) : trimmed;
+  if (isAbsolute(expanded) || expanded.startsWith("./") || expanded.startsWith(".\\") || expanded === "." || expanded.startsWith("~")) {
+    return { kind: "dir", path: isAbsolute(expanded) ? expanded : resolve(cwd, expanded) };
+  }
+  const parsed = parseMarketSource(trimmed);
+  if (parsed?.kind === "github") {
+    return { kind: "git", url: `https://github.com/${parsed.repo}.git`, ...(parsed.ref !== undefined ? { ref: parsed.ref } : {}) };
+  }
+  if (parsed?.kind === "git") {
+    return { kind: "git", url: parsed.url, ...(parsed.ref !== undefined ? { ref: parsed.ref } : {}) };
+  }
+  // bare relative name that exists as a directory → still ambiguous with
+  // shorthand; CC semantics say shorthand, so refuse with guidance rather
+  // than guess (fail-closed, actionable).
+  if (exists(resolve(cwd, trimmed))) {
+    return undefined;
+  }
+  return undefined;
+}
+
+export interface SpecInstallResult {
+  readonly dir: string;
+  readonly name: string;
+  readonly format: PluginFormat;
+  readonly detail: InstallDetail;
+  readonly previewOnly: boolean;
+}
+
+/** The guided install: classify → (git specs: shallow clone to a tmpdir) →
+ *  inspect → zero-asset CCB gate → copy into .wudao/plugins/ → register.
+ *  `preview: true` stops after inspect and installs nothing. A failed or
+ *  refused install leaves NOTHING behind (tmp clones are always cleaned). */
+export async function pluginInstallSpec(
+  spec: string,
+  opts: { readonly preview?: boolean } = {},
+  deps: PluginEngineDeps = {},
+): Promise<SpecInstallResult> {
+  const ws = deps.workspaceRoot ?? process.cwd();
+  const exists = (p: string): boolean => { try { statSync(p); return true; } catch { return false; } };
+  const parsed = parsePluginSpec(spec, ws, exists);
+  if (parsed === undefined) {
+    throw new MarketplaceError(
+      "invalid-source",
+      `"${spec}" is not a recognized plugin source — use a local path (./dir, ~, or absolute), a GitHub shorthand (owner/repo[#ref]), or a git URL${exists(resolve(ws, spec)) ? ` (a directory "${spec}" exists — spell it "./${spec}" to install it locally)` : ""}`,
+    );
+  }
+
+  let srcDir: string;
+  let tmpClone: string | undefined;
+  try {
+    if (parsed.kind === "dir") {
+      srcDir = parsed.path;
+    } else {
+      const run = deps.run ?? runGitDefault;
+      const cloneDest = await mkdtemp(join(tmpdir(), "wudao-plugin-clone-"));
+      tmpClone = cloneDest;
+      try {
+        await cloneRepo(parsed.url, parsed.ref, cloneDest, run);
+      } catch (err) {
+        throw new MarketplaceError("invalid-source", err instanceof Error ? (err.message.split("\n")[0] ?? err.message) : `git clone failed for ${parsed.url}`);
+      }
+      srcDir = cloneDest;
+    }
+    if (opts.preview === true) {
+      const inspect = inspectPluginDir(srcDir, ws);
+      if (inspect === undefined) {
+        throw new MarketplaceError("invalid-plugin", `"${spec}" is not a loadable plugin (neither .claude-plugin/plugin.json nor a CCB-family package.json declaration)`);
+      }
+      return { dir: srcDir, name: inspect.name, format: inspect.format ?? "claude-plugin", detail: inspect.detail, previewOnly: true };
+    }
+    const installed = await pluginInstallLocal(srcDir, deps);
+    return { ...installed, previewOnly: false };
+  } finally {
+    if (tmpClone !== undefined) await rm(tmpClone, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {});
+  }
+}
+
 export async function pluginInstallLocal(
   source: string,
   deps: PluginEngineDeps = {},

@@ -131,12 +131,12 @@ const chatCall = (wire: readonly WireCall[]): WireCall => {
 };
 
 describe("final-review C1 — REPL runtime slots (runRepl integration)", () => {
-  it("/persona a reference harness: the wire carries the RESOLVED session header, never a literal {{sessionId}} (closes T13-M2)", async () => {
+  it("/persona deepseek-harness: the wire carries the RESOLVED session header, never a literal {{sessionId}} (closes T13-M2)", async () => {
     const { wire, out } = await driveRepl(["/persona deepseek-native", "hello", "/exit"], { sessionId: "wire-sess-1" });
     const call = chatCall(wire);
     // The Critical's exact pin: the openai-chat session header is the runtime
     // slot value — pre-fix this threw inside resolveTemplate on EVERY call.
-    expect(call.headers["x-a reference harness-session-id"]).toBe("wire-sess-1");
+    expect(call.headers["x-deepseek-harness-session-id"]).toBe("wire-sess-1");
     // The literal template layer: the pinned attribution header rides too.
     expect(call.headers["user-agent"]).toBe("wudao-harness/0.4.14 (+https://github.com/feiniaojin/wudao-harness-opensource)");
     // No templated value ever reaches the wire unresolved.
@@ -153,7 +153,7 @@ describe("final-review C1 — REPL runtime slots (runRepl integration)", () => {
     // opts.sessionId omitted → createPersonaRuntime falls back to "repl"; the
     // header still resolves (pre-fix: every call threw).
     const { wire } = await driveRepl(["/persona deepseek-native", "hello", "/exit"], {});
-    expect(chatCall(wire).headers["x-a reference harness-session-id"]).toBe("repl");
+    expect(chatCall(wire).headers["x-deepseek-harness-session-id"]).toBe("repl");
   });
 });
 

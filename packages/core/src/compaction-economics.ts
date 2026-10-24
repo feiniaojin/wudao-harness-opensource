@@ -1,4 +1,4 @@
-// 借鉴弧 B1（a reference project C1）— 压缩经济学决策层（OCC economics.ts 的 wudao 形）。
+// 借鉴弧 B1（SoL-Pi C1）— 压缩经济学决策层（OCC economics.ts 的 wudao 形）。
 //
 // 问题定义：wudao 的自动压缩只在占用压力（0.8×window 阶梯）下触发，时机从未
 // 给「打碎暖前缀」这笔账定价——对按前缀缓存计价的推理模型（DeepSeek/GLM/
@@ -12,19 +12,19 @@
 //   · 缓存债记账：上次压缩的溢价按每请求的归档节省逐请求偿还；后续压缩要
 //     连本带息（combined breakeven）过线，连续压缩自我限制。
 //
-// 与 a reference project 的三点差异（超越/收窄，均有出处）：
+// 与 SoL-Pi 的三点差异（超越/收窄，均有出处）：
 //   ① ratio 不手填——由调用方从 providers 价目（cache_hit 价 / 输入价）自动
 //     推导后传入（CachePricing）；价目未知时保守缺省
 //     （DEFAULT_CACHE_WRITE_READ_RATIO，ratioSource:"default" 类型化标注），
 //     不暴露给用户配置（N7 负裁决）。
-//   ② writeTokens 用压缩后实际要重读的前缀（occ − span + memo），不是 a reference project
+//   ② writeTokens 用压缩后实际要重读的前缀（occ − span + memo），不是 SoL-Pi
 //     的压缩前全量上下文——重读溢价只落在真正重读的字节上。
 //   ③ 无边界统计时压力路径 fail-open（reason:"pressure_fallback"）——C2 的
 //     「无边界信号才回落压力触发」：没有证据就不改变已钉死的压力语义，但债
 //     照记（每次前缀断裂都有账）。
 //
 // 状态面：tracker 是 run 级内存态（与 usageAnchor/calibRatio 同生命周期），
-// resume 后从下一个边界重新学习——不像 a reference project 持久化 OCC 状态（其 custom
+// resume 后从下一个边界重新学习——不像 SoL-Pi 持久化 OCC 状态（其 custom
 // entry 恢复是为了跨进程续跑同一计划；wudao 的 run 边界由 SessionRuntime
 // 协调，跨 run 的边界统计没有稳定语义）。
 import type { AgentMessage } from "./types.js";
@@ -60,18 +60,18 @@ export const DEFAULT_CACHE_PRICING: CachePricing = Object.freeze({
 });
 
 // ---------------------------------------------------------------------------
-// 常量（a reference project DEFAULT_COMPACTION_ECONOMICS 的 wudao 收窄：stddevK砍掉——
+// 常量（SoL-Pi DEFAULT_COMPACTION_ECONOMICS 的 wudao 收窄：stddevK砍掉——
 // 边界样本本身就是小样本，方差下界只会把期距压到 0，等价于永远推迟；scale
 // 融合进 first/subsequent 两档里）。
 // ---------------------------------------------------------------------------
 
 /** 窗口保护带：距窗口不足此数时无条件压（覆盖一切经济考量）。 */
 export const ECONOMICS_WINDOW_RESERVE_TOKENS = 16_384;
-/** 首次压缩的期距放大（a reference project firstCompactionRequestScale：首压激进）。 */
+/** 首次压缩的期距放大（SoL-Pi firstCompactionRequestScale：首压激进）。 */
 export const FIRST_COMPACTION_REQUEST_SCALE = 2;
-/** 后续压缩的期距裕度（a reference project subsequentCompactionMargin）。 */
+/** 后续压缩的期距裕度（SoL-Pi subsequentCompactionMargin）。 */
 export const SUBSEQUENT_COMPACTION_MARGIN = 1.5;
-/** 摘要回填的 token 估计（a reference project DEFAULT_NATIVE_SUMMARY_TOKEN_ESTIMATE）。
+/** 摘要回填的 token 估计（SoL-Pi DEFAULT_NATIVE_SUMMARY_TOKEN_ESTIMATE）。
  * 决策是压缩前的闭式估算——摘要还没生成；tier-0/1 无摘要时实际回填更小，
  * 估算偏保守（节省被高估一点点，盈亏平衡略偏高）。 */
 export const SUMMARY_MEMO_TOKEN_ESTIMATE = 1_000;
@@ -182,7 +182,7 @@ export class CompactionEconomicsTracker {
 
   /**
    * 一次已发生的自动压缩入账（决策后的实际值：事件里的 before/after）。
-   * 债是替换语义不是累积（a reference project 同款）：旧债摊销的前缀已不存在，新压缩
+   * 债是替换语义不是累积（SoL-Pi 同款）：旧债摊销的前缀已不存在，新压缩
    * 按自己的重读溢价重新立账——未摊完的旧债是已接受的沉没损失。
    */
   recordCompaction(writeTokens: number, removedTokens: number): void {
@@ -241,7 +241,7 @@ export class CompactionEconomicsTracker {
     const archive = input.spanTokens;
     // 窗口保护覆盖一切（含节省为负的角落）：距窗口不足保护带时压缩管线本身
     // 就是安全网——413 一念之间，经济性无话事权。含 threshold+8k 已被轮顶
-    // immediate 臂接走的情形；这里是 a reference project 的 16k 形——小窗口下比 immediate
+    // immediate 臂接走的情形；这里是 SoL-Pi 的 16k 形——小窗口下比 immediate
     // 更早触发。
     const windowProtection =
       input.windowTokens > 0 && input.occupancy >= input.windowTokens - ECONOMICS_WINDOW_RESERVE_TOKENS;
@@ -278,7 +278,7 @@ export class CompactionEconomicsTracker {
         breakeven: null, combined: null, effective: null, windowProtection: false,
       });
     }
-    // ---- 期距（a reference project estimateRemainingRequests 的 mean+scale 形）----
+    // ---- 期距（SoL-Pi estimateRemainingRequests 的 mean+scale 形）----
     const mean = this.meanInterval()!;
     const remaining = Math.max(0, this.remainingBoundaries ?? 0);
     const unbounded = 1 + Math.floor(mean * remaining);
@@ -386,7 +386,7 @@ export function economicsReport(
 }
 
 /**
- * B2（a reference project C2）：本轮消息里最新的 board 未完成项数——边界压缩后的「同 run
+ * B2（SoL-Pi C2）：本轮消息里最新的 board 未完成项数——边界压缩后的「同 run
  * 续跑」注记判断还有没有活（复用 parseTodoBoard 的单识别器；board restore
  * 后的 (restored) 后缀不破坏表头解析）。undefined = 无 board。
  */

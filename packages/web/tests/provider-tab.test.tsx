@@ -431,7 +431,7 @@ describe("provider management T4 — registry-scale search (R1)", () => {
     expect(h.container.textContent).toContain("无匹配");
   });
 
-  it("a MODEL-name hit surfaces its provider (the a reference harness picker rule)", async () => {
+  it("a MODEL-name hit surfaces its provider (the CodeWhale picker rule)", async () => {
     const h = mountedTab(bigFixture());
     const search = h.container.querySelector("input.provider-search") as HTMLInputElement;
     await act(async () => {

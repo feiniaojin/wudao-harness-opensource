@@ -142,7 +142,7 @@ export interface WorkloopReport {
   readonly evidence: "verified" | "partial";
 }
 
-/** The partial score an unevidenced success earns (a reference harness C7). */
+/** The partial score an unevidenced success earns (CodeWhale C7). */
 export const PARTIAL_SUCCESS_SCORE = 0.5;
 
 export interface WorkloopInput {
@@ -323,7 +323,7 @@ const evaluators: Readonly<Record<CheckId, Evaluator>> = {
     const checked = s.calls.some(({ call }) => call.name === "shell");
     if (wrote && checked) return ok("acceptance-evidence", "outcome-supported", "completed with an answer and a verification run");
     if (wrote) return ok("acceptance-evidence", "exercised", "completed with an answer, but writes were never verified");
-    // M56 §4 (a reference harness C7): success without evidence is a 0.5 PARTIAL, never
+    // M56 §4 (CodeWhale C7): success without evidence is a 0.5 PARTIAL, never
     // a pass — "worker exited successfully but produced no verifiable output".
     return ok("acceptance-evidence", "present", "completed with an answer but no verifiable artifact — 0.5 partial, never a pass");
   },

@@ -78,10 +78,10 @@ export function buildRecoveryPrompt(receipts: readonly string[], pending: string
 }
 
 // ---------------------------------------------------------------------------
-// 121 #4 — 幸存现场对模型可见（a reference harness eefdcb42f「Prior Session 前缀提
+// 121 #4 — 幸存现场对模型可见（CodeWhale eefdcb42f「Prior Session 前缀提
 // 示」形 + 超越）。恢复协调器恢复"本会话"，但模型不知道「我从哪恢复的」
 // ——上下文断层而模型不自知。恢复成功后在 verify-first run 首个模型调用注
-// 入一次性 system note。超越点 vs a reference harness：a reference harness 把提示钉进会话 prompt
+// 入一次性 system note。超越点 vs CodeWhale：CodeWhale 把提示钉进会话 prompt
 // 前缀（常驻字节）；本实现走 MetaNote 瞬态投影（尾侧追加、永不落盘、一次
 // 性可见）——干净会话字节不变，M24 零前缀代价（见文件头 121 #4 追加声明）。
 // ---------------------------------------------------------------------------

@@ -5,8 +5,8 @@
 """
 import json, os, subprocess, sys, time
 
-BENCH = "~/xdev/github/wudao-harness-project/wudao-bench"
-WUDAO = "~/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/index.js"
+BENCH = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-bench"
+WUDAO = "/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness/packages/cli/dist/index.js"
 PARQUET = os.path.join(BENCH, "gaia-validation.parquet")
 PROGRESS = os.path.join(BENCH, "gaia-minimax-progress")
 OUT = os.path.join(BENCH, "gaia-minimax-results.json")

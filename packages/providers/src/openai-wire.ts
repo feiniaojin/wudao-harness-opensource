@@ -131,7 +131,7 @@ export function toModelUsage(u: WireUsage): ModelUsage {
 }
 
 /** M56 §2: the receipt's client-side extras — the wall duration measured
- *  around the attempt (always set; a reference harness's duration_ms-always rule) and
+ *  around the attempt (always set; CodeWhale's duration_ms-always rule) and
  *  the replayed-reasoning estimate (only when the replay contract sent bytes
  *  back out). */
 export function enrichUsage(usage: ModelUsage, durationMs: number, replayTokens: number): ModelUsage {
