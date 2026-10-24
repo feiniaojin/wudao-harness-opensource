@@ -213,9 +213,37 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
+      # The workspace deps (@wudao/*) are not on npm — the publishable form is
+      # the verified single-file bundle: esbuild inlines the workspace graph,
+      # keeps the native/ESM-external deps (ink/react/node-pty/…) as declared
+      # dependencies, and the createRequire banner lets the CJS deps (ws etc.)
+      # require node builtins inside the ESM bundle (the exact recipe verified
+      # by a local `npm install -g` round-trip on 0.4.14).
+      - name: Bundle CLI (single-file, workspace deps inlined)
+        run: |
+          mkdir -p bundle-out
+          node node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild packages/cli/dist/index.js \
+            --bundle --platform=node --format=esm \
+            --external:ink --external:react --external:node-pty --external:cli-highlight \
+            --external:grok-mermaid --external:better-sqlite3 --external:sharp \
+            --external:fsevents --external:chromium-bidi --external:playwright \
+            '--banner:js=import { createRequire as __cr } from "node:module"; const require = __cr(import.meta.url);' \
+            --outfile=bundle-out/index.js
+          node -e '
+            const fs = require("node:fs");
+            const m = JSON.parse(fs.readFileSync("packages/cli/package.json", "utf8"));
+            const out = {
+              name: m.name, version: m.version, description: m.description, license: m.license,
+              type: "module", bin: { wudao: "./index.js" },
+              dependencies: Object.fromEntries(Object.entries(m.dependencies).filter(([k]) => !k.startsWith("@wudao/"))),
+              engines: m.engines,
+            };
+            fs.writeFileSync("bundle-out/package.json", JSON.stringify(out, null, 2));
+          '
+          chmod +x bundle-out/index.js
       - name: Publish CLI to npm
         run: |
-          cd packages/cli
+          cd bundle-out
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
