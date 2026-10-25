@@ -45,6 +45,14 @@ export {
 export type { TurnRetryClass } from "./loop-synthetics.js";
 import { detectLoop, advanceNoProgress, NO_PROGRESS_CLEAN } from "./loop-safety.js";
 import type { LoopSafetyCall, LoopSafetyTurn, NoProgressState } from "./loop-safety.js";
+// 弧 C（research-import-2026-10，nanobot turn_continuation）— 预算切片续跑：
+// maxTurns 从 run 终点变为切片边界（判定/构造纯函数在 turn-slicing.ts，
+// 本文件只做最小接线；接线点注释均以「弧 C」起头）。
+import {
+  shouldFinalizeOnLimit, internalContinuationMessage, lastStopReasonOf,
+  continuationMarkerEntry, CONTINUATION_SLICE_CAP,
+} from "./turn-slicing.js";
+import type { ContinuationMarkerEntry } from "./turn-slicing.js";
 // ω-1b — the loop's two tool-result guards (goose digest 98a): the repetition
 // circuit breaker and the generic large-result shaping backstop. Both ride
 // ONE run-scoped seam around executeToolCall (see executeGuardedToolCall).
@@ -577,6 +585,33 @@ export interface LoopOptions {
   // — and surfaced as a `steered` event. Absent, or a queue that stays
   // empty, changes nothing.
   readonly steering?: { take(): string | undefined };
+  // 弧 C（nanobot turn_continuation）— 预算切片续跑。在场时 maxTurns 从
+  // run 终点变为切片边界：上一停因是 tool_use（还有活儿）且本轮 drain 无
+  // steer 落地时，loop 不排「answer NOW」最终化 nudge，直接注入一条内部
+  // 续跑消息（internalContinuation 打标，显示层不渲染）作为下一片的首条
+  // 输入，预算窗重置续跑。C3 steering 优先：边界处有 pending steer 时永不
+  // 切片——steer 直接接管重置后的新预算窗（今天 run 结束后残留 steer 由
+  // 驱动层以新 run 消化的既有语义的切片内镜像；不占切片名额）。切片上
+  // 限缺省 CONTINUATION_SLICE_CAP（12）；超限走既有 max_turns 硬停路径，
+  // 最后一片照常排「answer NOW」nudge（nanobot 耗尽后 finalize 的对位）。
+  // 硬停后的恢复提示由消费层用 iterationLimitContextBlock(limit, stoppedAt)
+  // 附加到下一条用户消息（纯函数，见 turn-slicing.ts）。子 agent 的
+  // loopOptions 不透传本项（subagent 显式字段表）——子链保持硬 maxTurns
+  // 语义。缺席 = 零行为变化（maxTurns 仍是终点，字节不变）。
+  readonly continuation?: {
+    /** 驱动层已知的 session id——只进消息打标与 JSONL entry（关联用），
+     *  loop 自身不消费。缺席 = 不关联。 */
+    readonly sessionId?: string;
+    /** 切片上限（内部续跑消息条数）。缺省 CONTINUATION_SLICE_CAP（12，
+     *  nanobot _MAX_GOAL_CONTINUATION_ROUNDS 同源）。 */
+    readonly maxSlices?: number;
+    /** C2：类型化 continuation marker entry 的落盘缝（ω99-48
+     *  appendAttemptEntry 同款）：每次切片落地时同步回调一条
+     *  ContinuationMarkerEntry（骑 M35 §2 generic entry 通道 append-only
+     *  落 JSONL；内部消息本体不落用户输入）。隔离（safeCall）：落盘失败
+     *  绝不影响续跑。缺席 = 不落 JSONL（零行为变化）。 */
+    readonly appendEntry?: (entry: ContinuationMarkerEntry) => void | Promise<void>;
+  };
   // 124b 项 1（codex instant_interrupt）：流抢占通道。当用户在模型流式期
   // 间提交新消息（steering 队列非空 + 驱动调用 channel.request()）时，
   // 当前在飞模型流被中断——只中断这一次调用，绝不结束运行：
@@ -723,6 +758,11 @@ export type LoopEvent =
   // steered text (it never entered history) — the event is the notice channel
   // (front-ends render why the steer did not land); text is the dropped text.
   | { type: "steered"; turn: number; text: string; blockedReason?: string }
+  // 弧 C（nanobot turn_continuation）：一次预算切片落地——迭代上限边界
+  // 注入了第 sliceIndex 条内部续跑消息（internalContinuation 打标；前端
+  // 渲染一行「预算切片续跑 #N」通知而非消息本体）。Additive-only：未知
+  // 事件的消费者忽略它。
+  | { type: "continuation_injected"; turn: number; sliceIndex: number }
   // M32 §3: a MetaNote was projected for this model call — text is the
   // joined <system_note>… payload, channel is where it landed (the last
   // tool_result tail, or a degraded user message when none exists).
@@ -1741,12 +1781,38 @@ async function* runAgentLoopBody(
   // Manual turn accounting: gate injections re-enter the loop WITHOUT
   // consuming turn quota (a nudge for still-working is not a model turn).
   let turn = 0;
+  // 弧 C — 切片记账：turn 保持全局单调（事件/loop-safety 记录不断序）；
+  // sliceTurnBase 是当前片的预算窗原点（turn - sliceTurnBase 为片内已耗
+  // 轮数）；continuationsUsed 是已注入的内部续跑消息条数（上限 sliceCap）。
+  // continuation 缺席时 sliceTurnBase 恒为 0 ⇒ 一切预算判断在数学上退化为
+  // 今天的绝对 maxTurns 语义（字节不变）。
+  const continuationCfg = options.continuation;
+  const sliceCap = continuationCfg?.maxSlices ?? CONTINUATION_SLICE_CAP;
+  let continuationsUsed = 0;
+  let sliceTurnBase = 0;
+  let sliceBoundaryPending = false;
   // 夜移 035: the run's wall clock starts here (queueing/projection/first-
   // prompt overhead lands in beforeFirstSamplingMs until the first model
   // call begins). Guarded by markTurnStarted's own started-at gate.
   options.turnProfile?.markTurnStarted();
   for (;;) {
-    if (turn >= maxTurns) return { reason: "max_turns" };
+    // 弧 C — 预算切片边界：continuation 在场、切片名额未尽、上一停因是
+    // tool_use（还有活儿）时，maxTurns 不再终结 run。判定拆两段：顶部只做
+    // 结构性预筛（end_turn / 超限 / 未武装 → 原样 max_turns 硬停，与今天
+    // 逐字节一致）；切片是否真落地由 steering drain 之后的缝终裁——drain
+    // 是 loop 唯一能无损感知 steer 的位置（take() 之外没有 peek 缝，先取
+    // 再放回会破坏 onPromptSubmit 门与 steered 事件的恰好一次语义）。
+    if (turn - sliceTurnBase >= maxTurns) {
+      const sliceCandidate = continuationCfg !== undefined
+        && continuationsUsed < sliceCap
+        && shouldFinalizeOnLimit({ lastStopReason: lastStopReasonOf(state.messages), pendingSteers: false }).slice;
+      if (!sliceCandidate) return { reason: "max_turns" };
+      // 预算窗重置：本片从当前 turn 起重新计 maxTurns。注意此刻还没决定
+      // 注入续跑消息——若本轮 drain 有 steer 落地，则由 steer 接管这个新
+      // 窗（C3：永不切片、不占切片名额）。
+      sliceTurnBase = turn;
+      sliceBoundaryPending = true;
+    }
     if (options.signal?.aborted) return { reason: "aborted" };
     // run-budget (2026-08-24): the cooperative wall-clock fuse, top of turn,
     // BEFORE any model-call work runs. Checked after the abort and max-turn
@@ -1780,7 +1846,14 @@ async function* runAgentLoopBody(
     // burns every turn and the run ends with no answer at all (max_turns).
     // Guarded so a gate injection landing on the fuse turn can't stack a
     // second copy.
-    if (turn === maxTurns - 1) {
+    // 弧 C：预算片内相对轮数（turn - sliceTurnBase）判定；本片结束后还会
+    // 切片（名额未尽——含本轮待注入的那条，sliceBoundaryPending 时
+    // continuationsUsed 尚未自增）时不排「answer NOW」最终化 nudge——省掉
+    // 这次无工具最终化压力。名额用尽的最后一片恢复今天的行为（nanobot
+    // 耗尽后 finalize 的对位：给模型一次收口机会，仍不收口才真硬停）。
+    const sliceWillContinue = continuationCfg !== undefined
+      && continuationsUsed + (sliceBoundaryPending ? 1 : 0) < sliceCap;
+    if (turn - sliceTurnBase === maxTurns - 1 && !sliceWillContinue) {
       const last = state.messages.at(-1);
       if (!(last?.role === "user" && last.content.startsWith("[system note: turn limit reached"))) {
         state.messages.push({
@@ -1850,6 +1923,9 @@ async function* runAgentLoopBody(
     // drops the text (never enters history, the steered event is the notice),
     // rewrite pushes the rewritten text. A throwing hook degrades to the
     // original text (the run-start gate's posture).
+    // 弧 C：本调用内落地（非 block）的 steer 计数——切片边界终裁的
+    // pendingSteers 事实源（被 block 的 steer 从未进入历史，不算接管）。
+    let steeredThisCall = 0;
     if (options.steering) {
       for (;;) {
         const steered = options.steering.take();
@@ -1862,7 +1938,36 @@ async function* runAgentLoopBody(
         }
         const text = typeof steerDecision === "string" ? steerDecision : steered;
         state.messages.push({ role: "user", content: text });
+        steeredThisCall += 1;
         yield { type: "steered", turn, text };
+      }
+    }
+
+    // 弧 C — 切片终裁缝（steering drain 之后、MetaNote drain 与模型输入构
+    // 建之前）：此刻 pending steer 的事实已定。shouldFinalizeOnLimit 判
+    // slice ⇒ 注入内部续跑消息作为下一片首条输入（纯尾部追加，M24 前缀
+    // 零接触）+ continuation_injected 事件 + 类型化 JSONL entry 回调；
+    // 判 finalize（有 steer 落地）⇒ 什么都不注入——steer 文本已在历史，
+    // 它就是重置后新预算窗的输入（C3 决策：steer 接管；不占切片名额，
+    // continuation_injected 一条不发）。end_turn 分支不会走到这里（顶部
+    // 预筛已硬停）。
+    if (sliceBoundaryPending) {
+      sliceBoundaryPending = false;
+      const verdict = shouldFinalizeOnLimit({
+        lastStopReason: lastStopReasonOf(state.messages),
+        pendingSteers: steeredThisCall > 0,
+      });
+      if (verdict.slice) {
+        continuationsUsed += 1;
+        state.messages.push(internalContinuationMessage(continuationCfg?.sessionId, continuationsUsed));
+        yield { type: "continuation_injected", turn, sliceIndex: continuationsUsed };
+        const appendEntry = continuationCfg?.appendEntry;
+        if (appendEntry !== undefined) {
+          // 只在切片路径读时钟（maxRunMs 缺席的零行为变化路径不读 now）。
+          await safeCall(() => appendEntry(
+            continuationMarkerEntry(continuationCfg?.sessionId, continuationsUsed, turn, new Date(now()).toISOString()),
+          ));
+        }
       }
     }
 
@@ -3470,7 +3575,11 @@ async function* runAgentLoopBody(
             effectiveWindow(),
           )
         ) {
-          if (zeroOutputOverflowDetoured || turn + 1 >= maxTurns) {
+          // 弧 C：恢复梯的「还有没有下一轮可花」判定改为片内相对口径
+          // （turn - sliceTurnBase；continuation 缺席时恒等今天绝对口径）
+          // ——续跑 run 的后续片里，机械截断/空答/stop-block 的恢复同样
+          // 应拿到片内余量，而不是被 slice 0 的绝对轮号挡死。
+          if (zeroOutputOverflowDetoured || turn - sliceTurnBase + 1 >= maxTurns) {
             return { reason: "output_limit", finalMessage: finalAssistant };
           }
           zeroOutputOverflowDetoured = true;
@@ -3482,7 +3591,7 @@ async function* runAgentLoopBody(
           continue;
         }
         const maxNudges = options.outputLimitRecovery?.maxNudges ?? DEFAULT_OUTPUT_LIMIT_NUDGES;
-        if (outputLimitNudges < maxNudges && turn + 1 < maxTurns) {
+        if (outputLimitNudges < maxNudges && turn - sliceTurnBase + 1 < maxTurns) {
           outputLimitNudges += 1;
           const esc = options.outputLimitRecovery?.escalateTo;
           const applyEsc: boolean = esc !== undefined && callInput.maxTokens === undefined;
@@ -3528,7 +3637,7 @@ async function* runAgentLoopBody(
       // pre-existing exit path owns the terminal).
       if (finalAssistant.content.trim() === "" && !options.signal?.aborted) {
         const maxNudges = options.emptyFinalRecovery?.maxNudges ?? DEFAULT_EMPTY_FINAL_NUDGES;
-        if (emptyFinalNudges < maxNudges && turn + 1 < maxTurns) {
+        if (emptyFinalNudges < maxNudges && turn - sliceTurnBase + 1 < maxTurns) {
           emptyFinalNudges += 1;
           state.messages.push({ role: "user", content: EMPTY_FINAL_NUDGE });
           yield { type: "empty_final_recovery", turn, kind: "nudge" };
@@ -3561,7 +3670,7 @@ async function* runAgentLoopBody(
           ? stopDecision
           : { block: true, reason: stopDecision.reason ?? "the stop hook requested one more turn" }
         : undefined;
-      if (blocked !== undefined && turn + 1 < maxTurns) {
+      if (blocked !== undefined && turn - sliceTurnBase + 1 < maxTurns) {
         // M61 §3 block cap: three consecutive continuations with NO tool use
         // end the run (stopBlockCapped) — a stop hook can never wedge the
         // loop into an answer-restate spiral. Any tool use resets the count.

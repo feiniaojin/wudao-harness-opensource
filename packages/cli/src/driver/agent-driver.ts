@@ -10,7 +10,7 @@ import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
 import { open, readFile, readdir, realpath, rename, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput, isValidImageBlock, isValidFileBlock, clearTier, isQuotaParkError, createStreamPreemptChannel, microcompact, cumulativeModifiedFiles, activeToolsOf, worldStateDiff, goalTokensTotal } from "@wudao/core"
+import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, compactionOpportunity, resolveCompactionThresholdTokens, classifyCacheClock, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput, isValidImageBlock, isValidFileBlock, clearTier, isQuotaParkError, createStreamPreemptChannel, microcompact, cumulativeModifiedFiles, activeToolsOf, worldStateDiff, goalTokensTotal } from "@wudao/core"
 import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection, RosterPluginAgent, StreamPreemptChannel, WorldState } from "@wudao/core";
 import { renderTurnDiff } from "../turn-diff-render.js";
 import { truncate, formatCompactedLine, modelLabel, RESULT_PREVIEW_CHARS } from "../log.js";
@@ -1380,7 +1380,50 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     const idleCompactTimer = setInterval(() => {
       if (idleHeld() || !sessionIdle()) return;
       if (process.env.WUDAO_DISABLE_IDLE_MICROCOMPACT === "1") return;
-      if (state.messages.length === 0 || Date.now() - lastSettleAt < IDLE_MICROCOMPACT_AFTER_MS) return;
+      if (state.messages.length === 0) return;
+      const idleMs = Date.now() - lastSettleAt;
+      // 调研引入弧 B2（2026-10 spec research-import，deepagents TTL 窗口 ×
+      // nanobot 报告用量）：60 分钟门槛之前先问缓存感知时机——
+      // compactionOpportunity 内部先走 thresholdDecision（B1 用量驱动触发
+      // 面），再把 cache-clock 分类耦合进来：用量过线（usage_over，量到了
+      // 该压——反正下一 run 轮顶 loop 会做同样的免费层清理，此刻做用户零
+      // 等待）或时钟入将逝窗口且用量过软线（cache_dying，此刻改写历史的
+      // 边际成本最低——回来反正要付全量重算）时，提前做同一趟 tier-0/1
+      // 纯清理。保守性（「默认行为不变，仅当新判断更积极才提前压缩」）：
+      // 旧 60 分钟臂原样保留；新臂的一切缺省面（无窗口知识 / 时钟 warm /
+      // 读不到钟 age_unknown / 未过软线）都 return——字节等于现状。
+      let opportunityReason: "usage_over" | "cache_dying" | undefined;
+      if (idleMs < IDLE_MICROCOMPACT_AFTER_MS) {
+        const windowTokens = o.compaction?.contextWindowTokens;
+        if (windowTokens === undefined || !(windowTokens > 0)) return; // 无窗口知识 → 现状
+        const threshold = resolveCompactionThresholdTokens({
+          windowTokens,
+          thresholdRatio: o.compaction?.thresholdRatio,
+          headroomTokens: o.compaction?.headroomTokens,
+          outputReserveTokens: o.compaction?.outputReserveTokens,
+        });
+        // TODO(弧 B1 接线)：报告用量（lastPromptTokens）的采信需要报告时刻
+        // 的前缀指纹快照（usage 事件处拍 usagePrefixFingerprint，决策处
+        // shouldTrustUsage 比对）——本弧 cli 改动预算只有 autocompact 触发
+        // 点一处，先按估算值决策（loop pre-M70 触发语义，行为不回退）；
+        // 指纹快照接线就位后升级为 trusted 报告值（更准的占用）。
+        const decision = compactionOpportunity(
+          // 会话内空闲时钟：无台账身份可比（无换模型证据 → idle 车道），
+          // lastSettleAt 即「上次缓存承载请求」时刻（123-5 锚）。
+          classifyCacheClock(Date.now(), lastSettleAt, undefined, undefined),
+          { trusted: false, estimatedTokens: estimateTokens(state.systemPrompt, state.tools.map(toModelToolDefinition), state.messages) },
+          threshold,
+          // 软线取 0.8×触发线：may_be_cold 不是 expired——国产模型无文档
+          // TTL，「可能已冷」仍可能在暖；软线贴近触发线，只在「马上就要
+          // 压」的水位赌将逝窗口。M24 缓存声明：此臂改写历史的代价上限
+          // = 下次请求一次冷读，换来 aged 结果提前让位 + 用户零等待。
+          { softThresholdTokens: Math.floor(threshold * 0.8) },
+        );
+        if (!decision.compactNow) return;
+        // 判定序保证 compactNow=true 时 reason ∈ {usage_over, cache_dying}；
+        // 显式排除 "no" 仅为类型收窄（防御直接构造的 classification）。
+        opportunityReason = decision.reason === "no" ? undefined : decision.reason;
+      }
       const toolDefs = state.tools.map(toModelToolDefinition);
       const before = estimateTokens(state.systemPrompt, toolDefs, state.messages);
       const compacted = microcompact(state.messages, { retention: compactionRetentionFor(o.tools) });
@@ -1394,7 +1437,13 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       emit();
       appendHistory({
         kind: "notice",
-        text: `♻️ 空闲清理：你离开期间清掉了过期的旧工具结果（~${before.toLocaleString("en-US")} → ~${after.toLocaleString("en-US")} tokens）——上下文更轻，无需等待`,
+        text: `♻️ 空闲清理：你离开期间清掉了过期的旧工具结果（~${before.toLocaleString("en-US")} → ~${after.toLocaleString("en-US")} tokens）——上下文更轻，无需等待${
+          opportunityReason === undefined
+            ? ""
+            : opportunityReason === "cache_dying"
+              ? "（提前触发：缓存正处重建窗口，此刻整理最省）"
+              : "（提前触发：用量已过压缩线，先清过期结果再继续）"
+        }`,
       });
       lastSettleAt = Date.now(); // re-arm: another hour of quiet before the next pass
     }, CRON_POLL_MS);

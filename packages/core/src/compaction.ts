@@ -96,8 +96,19 @@ export type { WindowIdentity, WorldState } from "./window-chain.js";
 export {
   // summarizer 域
   summarizeSpan,
+  // 调研引入弧 A2（pi 压缩弧）：reasoning 不进摘要输入的投影。
+  stripReasoningForSummary,
+  // 调研引入弧 A3（prime-agent #3685 形）：Outstanding Work 节渲染。
+  renderOutstandingWork, OUTSTANDING_WORK_HEADING,
 } from "./compaction-summarizer.js";
-export type { SummaryReplayInput } from "./compaction-summarizer.js";
+export type { SummaryReplayInput, OutstandingWorkItem } from "./compaction-summarizer.js";
+export {
+  // summary-guard 域（调研引入弧 A，prime #3529/#3753 形）
+  guardSummaryReply, summaryStopReasonOf,
+  SHORTER_SUMMARY_INSTRUCTION, SUMMARY_TRUNCATED_MARKER,
+  compactNoticeReducer, COMPACT_NOTICE_MAX_ENTRIES, COMPACT_NOTICE_MAX_TOTAL_BYTES,
+} from "./compaction-summary-guard.js";
+export type { SummaryStopReason, SummaryGuardVerdict, SummaryGuardOptions, CompactNoticeLog } from "./compaction-summary-guard.js";
 export {
   // tier-2 static 域
   staticFallbackSummary, DIGEST_ASSISTANT_TEXT_CAP_CHARS, DIGEST_USER_TEXT_CAP_CHARS,

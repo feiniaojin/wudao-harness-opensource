@@ -51,6 +51,13 @@ export interface UserMessage {
    *  the model reads lazily with the ordinary file tools. User turns only:
    *  no tool emits files, and the subagent lane refuses them outright. */
   readonly files?: readonly FileBlock[];
+  /** 弧 C（nanobot turn_continuation）— 内部续跑打标：本条 user 消息不是
+   *  用户输入，是预算切片的内部续跑指令（loop 在迭代上限边界注入，见
+   *  turn-slicing.ts）。持久化专用元数据（同 uuid/images 契约）：序列化
+   *  器显式映射 role/content，本字段永不进 wire；显示层据此不渲染，
+   *  持久层据此把这条消息改落类型化 continuation entry（不落用户输入，
+   *  nanobot skip-user-persist 的同义转译）。 */
+  readonly internalContinuation?: { readonly sliceIndex: number; readonly sessionId?: string };
 }
 
 export interface AssistantMessage {

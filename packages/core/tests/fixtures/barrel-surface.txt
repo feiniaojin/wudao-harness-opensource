@@ -1,7 +1,7 @@
 # wudao core barrel surface snapshot (omega99-96 pin fixture)
 # caliber: comment-stripped export-name parse — see omega99-94 report §4.1;
 # audit-596/coarse-599 historical deltas are comment-position parse artifacts.
-# names: 567 (sorted; one identifier per line)
+# names: 599 (sorted; one identifier per line)
 # regenerate from the repo root:
 #   node scripts/count-barrel-exports.mjs --snapshot packages/core/src/index.ts > packages/core/tests/fixtures/barrel-surface.txt
 ABORTED_NOT_STARTED_TOOL_RESULT
@@ -44,6 +44,7 @@ COMPACTION_STUB_PREFIX
 COMPACTION_THRESHOLD_FLOOR_TOKENS
 CONFIG_CAP_ALSO_CONFLICTS_FIELD
 CONTEXT_ROTATION_ENTRY_TYPE
+CONTINUATION_SLICE_CAP
 CONTINUE_TASK_ACTIVE_CHAIN_CAP
 CONTINUE_TASK_CREATED_FROM
 CONTINUE_TASK_DEFAULT_DELAY_SECONDS
@@ -64,6 +65,7 @@ ColdReason
 CompactionEconomicsDecision
 CompactionEconomicsReason
 CompactionEconomicsReport
+CompactionOpportunityDecision
 CompactionThrashError
 CompactionThresholdSpec
 CompactionWindowMode
@@ -72,6 +74,7 @@ ConfigChangeDecision
 ConfigChangePosition
 ContextRemainingSnapshot
 ContextRotationEntryData
+ContinuationMarkerEntry
 Continue
 ContinueTaskPendingRow
 ContinueTaskScheduleFace
@@ -84,6 +87,7 @@ CronStoreRefusedError
 CronTask
 CronTaskSchedule
 DEFAULT_CACHE_CLOCK_POLICY
+DEFAULT_CACHE_DYING_SOFT_RATIO
 DEFAULT_CACHE_WRITE_READ_RATIO
 DEFAULT_COMPACTION_HEADROOM_TOKENS
 DEFAULT_COMPACTION_THRESHOLD_RATIO
@@ -94,6 +98,7 @@ DEFAULT_MAX_FILES
 DEFAULT_MAX_IMAGES
 DEFAULT_MAX_REQUEST_FILE_BYTES
 DEFAULT_MAX_REQUEST_IMAGE_BYTES
+DEFAULT_PENDING_READ_TOOL_NAMES
 DETACH_LANDING_NOTICE_PREFIX
 DetachedCall
 DiagnosticsLayer
@@ -110,6 +115,8 @@ FileHistory
 FileHistoryEntry
 FileLimits
 FileSaveInput
+FinalizeOnLimitInput
+FinalizeOnLimitVerdict
 ForkContext
 GOAL_NEAR_BUDGET_FRACTION
 GOAL_OBJECTIVE_MAX_CHARS
@@ -149,11 +156,17 @@ MAX_NEW_DIAGNOSTICS_PER_FILE
 MAX_NEW_DIAGNOSTICS_PER_TURN
 MAX_TOKENS_THINKING_BUDGET_CONFLICT_CODE
 MAX_TURN_RECOVERY_ATTEMPTS
+MEMORY_KINDS
 MONITOR_DISABLE_ENV
 MONITOR_INLINE_PAYLOAD_CHARS
 MONITOR_MAX_WATCHES_PER_SESSION
 MONITOR_RING_BYTES
 MONITOR_TTL_DEFAULT_MS
+MemoryEntry
+MemoryKind
+MemorySaveInput
+MemorySearchOptions
+MemoryStore
 MessagePlane
 ModelChangeEntry
 ModelClient
@@ -187,12 +200,14 @@ PACKAGE_NAME
 PARENT_MESSAGE_TOOL_NAME
 PENDING_ACTIONS_CAP
 PENDING_ACTIONS_TAG
+PENDING_READ_DOWNGRADE_PREFIX
 PERSIST_FAILED_TOOL_RESULT
 PROBE_ENV
 PYTHON_KERNEL_DEFAULT_IDLE_TIMEOUT_MS
 PYTHON_KERNEL_TMP_PREFIX
 ParentMailSink
 ParsedReceipt
+PendingReadDowngrade
 PendingWriteEntry
 PendingWriteGate
 PermissionDecision
@@ -262,6 +277,7 @@ TeammateIdleDecision
 Terminal
 TerminalRepairKind
 ThinkingLevelChangeEntry
+ThresholdDecision
 TodoBoardCensus
 TodoExhaustionReason
 TodoExpansionGate
@@ -289,6 +305,7 @@ UnicodeIssueCategory
 UnsupportedContentError
 UrlInspection
 UrlInspectionResult
+UsageEvidence
 UserMessage
 VerifiedEvidence
 WEB_FETCH_MAX_BYTES
@@ -339,7 +356,9 @@ classifyTurnRetryError
 clearTier
 coldCacheOffer
 commonPrefixLength
+compactionOpportunity
 compactionRetentionFor
+continuationMarkerEntry
 continueTaskContextHint
 continueTaskPrompt
 continueTaskPromptMatch
@@ -391,6 +410,7 @@ createWriteFileTool
 cronDisabled
 cronMatches
 cumulativeModifiedFiles
+degradePendingReads
 describeMessagePlane
 digestibleSpan
 domainMatchesAllowlist
@@ -413,6 +433,7 @@ formatFileOperations
 formatMailText
 formatMonitorInjection
 formatPendingActions
+formatPendingReadDowngrade
 formatScheduledInjection
 formatSearchResults
 formatSkillPrunedMarker
@@ -442,10 +463,12 @@ inspectText
 inspectToolInput
 inspectUrl
 installEgressProxy
+internalContinuationMessage
 intersectToolNames
 isContextLengthError
 isDiagnosticCommand
 isFormatMarker
+isInternalContinuation
 isIpLiteralHost
 isLiveGoalStatus
 isOneShotTask
@@ -456,6 +479,8 @@ isValidImageBlock
 isWriteScopeDeclaration
 isWriteScopeEmpty
 isZeroOutputOverflow
+iterationLimitContextBlock
+lastStopReasonOf
 listBranchLeaves
 listNotes
 loadCronStore
@@ -464,6 +489,7 @@ loginShellKindFromPath
 looksLikeSecret
 manualCompact
 matchesRetention
+memoryId
 mergeFileOps
 messageEntryId
 microcompact
@@ -489,6 +515,7 @@ occupancyBreakdown
 offloadRequestFiles
 offloadRequestImages
 oneshotEarlyJitterMs
+openMemoryStore
 parseContextRotationData
 parseCriticVerdict
 parseCronExpr
@@ -515,6 +542,7 @@ probeBus
 probeEnabled
 probeModelClient
 probeModelRetry
+readMemoryFile
 readStateEntry
 readTextWindow
 recencyAnchorOf
@@ -541,6 +569,8 @@ scrubChildEnvOf
 searchHistory
 sessionLeaseBoxFor
 settleExpansionRound
+shouldFinalizeOnLimit
+shouldTrustUsage
 slimToolLog
 staticTier2Compact
 stubFloor
@@ -553,6 +583,7 @@ taskChainBatonPath
 taskChainHeaderLine
 taskChainHistoryLine
 terminalEvent
+thresholdDecision
 tier2Compact
 toModelToolDefinition
 toSubagentType
@@ -562,6 +593,7 @@ todoProjection
 toolResultRef
 truncateSafe
 truncateTailSafe
+usagePrefixFingerprint
 validateNewContextArgs
 validateToolArguments
 verifyReceipt

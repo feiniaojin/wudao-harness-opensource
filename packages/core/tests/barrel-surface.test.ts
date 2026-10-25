@@ -83,7 +83,13 @@ const SNAPSHOT = join(import.meta.dirname, "fixtures", "barrel-surface.txt");
 /** 125b 撞车吸收：canonical oracle 再生。127 项 1（continue_task 工具面）—
  *  534 = 510 + 24（tools/continue-task.ts 的导出：工具工厂 + baton 纯层 +
  *  常量 + 类型）。 */
-const PINNED_COUNT = 567; // 133 #4 todo 生成器治理（+12：8 函数/常量 + 4 type 导）
+const PINNED_COUNT = 599; // 调研引入弧 B（2026-10）缓存感知压缩调度 +13（9 值：函数 6 + 常量 3；4 类型：UsageEvidence/ThresholdDecision/CompactionOpportunityDecision/PendingReadDowngrade），
+// 同树并行吸收（census 撞车纪律，后到者吸收）：memory-store 面 +9（MEMORY_KINDS/MemoryEntry/MemoryKind/
+// MemorySaveInput/MemorySearchOptions/MemoryStore/memoryId/openMemoryStore/readMemoryFile）+ 弧 C 预算切片
+// 续跑面 +10（CONTINUATION_SLICE_CAP/ContinuationMarkerEntry/FinalizeOnLimitInput/FinalizeOnLimitVerdict/
+// continuationMarkerEntry/internalContinuationMessage/isInternalContinuation/iterationLimitContextBlock/
+// lastStopReasonOf/shouldFinalizeOnLimit）；
+// 前值 567（133 #4 todo 生成器治理 +12：8 函数/常量 + 4 type 导）
 function listBarrelExports(): string[] {
   const out = execFileSync(process.execPath, [COUNTER, "--list", BARREL], { encoding: "utf8" });
   return out.split("\n").filter((line) => line.length > 0);

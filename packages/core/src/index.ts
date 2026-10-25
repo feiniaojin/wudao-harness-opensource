@@ -15,6 +15,15 @@ export {
   callFingerprint, canonicalJson,
 } from "./loop-safety.js";
 
+// 弧 C（research-import-2026-10，nanobot turn_continuation）— 预算切片续
+// 跑：maxTurns 从 run 终点变为切片边界的判定/构造纯函数面（loop 接线见
+// loop.ts；显示层用 isInternalContinuation 过滤内部续跑消息）。
+export {
+  shouldFinalizeOnLimit, lastStopReasonOf, internalContinuationMessage, isInternalContinuation,
+  iterationLimitContextBlock, continuationMarkerEntry, CONTINUATION_SLICE_CAP,
+} from "./turn-slicing.js";
+export type { ContinuationMarkerEntry, FinalizeOnLimitInput, FinalizeOnLimitVerdict } from "./turn-slicing.js";
+
 // ω-4b — the loop-safety reflection fork: ONE direct challenger model call
 // at the run's second loop verdict (prefix-shared with the run's own
 // requests; "recoverable" stays the abort once, everything else fails
@@ -479,6 +488,19 @@ export {
   COMPACTION_THRESHOLD_FLOOR_TOKENS,
 } from "./compaction-threshold.js";
 export type { CompactionThresholdSpec, CompactionWindowMode } from "./compaction-threshold.js";
+// 调研引入弧 B（2026-10 spec research-import）：缓存感知压缩调度的纯函数
+// 面——B1 前缀指纹信任门（usagePrefixFingerprint/shouldTrustUsage/
+// thresholdDecision）、B2 触发耦合 cache-clock（compactionOpportunity）、
+// B3 未读大结果降级（degradePendingReads）。cli 的空闲 autocompact 触发点
+// 消费 B2；表面增长声明：+9 值（函数 6 + 常量 3）+ 4 类型。
+export {
+  usagePrefixFingerprint, shouldTrustUsage, thresholdDecision, compactionOpportunity,
+  degradePendingReads, formatPendingReadDowngrade,
+  DEFAULT_CACHE_DYING_SOFT_RATIO, PENDING_READ_DOWNGRADE_PREFIX, DEFAULT_PENDING_READ_TOOL_NAMES,
+} from "./compaction-usage.js";
+export type {
+  UsageEvidence, ThresholdDecision, CompactionOpportunityDecision, PendingReadDowngrade,
+} from "./compaction-usage.js";
 
 export { runSubagent, BUILTIN_SUBAGENT_TYPES } from "./subagent.js";
 export type {
