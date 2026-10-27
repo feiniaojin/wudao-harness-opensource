@@ -1,0 +1,479 @@
+/* --- provider management §6 (2026-08-23, T4): the ProviderTab master-detail
+       rework — ADDITIVE names only (no rule above changes; the reduced-motion
+       block below stays the sheet's last by its own round rule). The master
+       column keeps the full cards (the keyrow + model chips are pinned inside
+       every card by the settings-page/provider-tab suites), so "detail" rides
+       a grid column beside it: the toolbar (search + add), the sticky detail
+       panel, the model table, and the fail-visible invalid rows. --- */
+.provider-toolbar { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.provider-toolbar .provider-search { flex: 1; min-width: 12rem; }
+/* 0.3.28 ① (用户:模型详情卡片要固定宽度、默认占满容器): the master list
+   drops its proportional 1.15fr share for a FIXED-width track (rem-bounded,
+   content-independent — a picker needs enough for a card, no more), and the
+   detail column takes every remaining pixel (minmax(0,1fr)). The detail
+   card's width is now purely container width minus the fixed list — the
+   geometry the old fr/fr split never gave it. Card endpoints ellipsize
+   (full URL in the title attr), so a narrow master stays safe. */
+/* 0.3.38 (用户:供应商太多,拉到最下面点编辑,详情却渲染在页面最上方,要往回翻
+   —— 点开就该看到): the detail column is GONE; clicking a card opens the pvd
+   MODAL (.overlay + .modal-card, centered — in view wherever the list was
+   scrolled). The master list is the tab's only column, still a 30rem
+   internal scroll box (the page itself never grows). 0.3.28 ①'s fixed-track
+   two-column grid retired with the column. */
+.provider-master { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sp-3); align-items: start; }
+.provider-master .provider-cards { max-height: 30rem; overflow-y: auto; padding-right: var(--sp-1); }
+.provider-card[aria-current="true"] { border-color: var(--accent); }
+.provider-card button.card-name {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: var(--fw-strong);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.provider-card button.card-name:hover:not(:disabled) { color: var(--text-1); } /* 116 弧 A：hover 去品牌色 */
+.provider-card button.card-name:disabled { cursor: default; }
+.provider-card[data-invalid="true"] { opacity: .55; }
+.provider-card .card-id { font-family: var(--mono); }
+.invalid-reason { color: var(--danger); font-size: var(--fs-ui); overflow-wrap: anywhere; }
+/* --- provider add-as-blank-card (2026-08-24, trial iter5): 「＋ 添加供应商」
+       no longer pops an inline form (.provider-addform is gone with it) — a
+       dashed blank card LEADS the list (neutral dot, 未保存) while the detail
+       column wears the create form (.detail-field rows, the old form's add-*
+       classNames). --- */
+.provider-card[data-draft="true"] { border-style: dashed; border-color: var(--hair-2); }
+/* The ancestor bump beats the later .provider-card:not([data-invalid]) pointer. */
+.provider-cards .provider-card[data-draft="true"] { cursor: default; }
+.provider-card[data-draft="true"] .card-head .ctl { margin-left: auto; }
+.dot.draft { background: var(--text-3); }
+.provider-detail {
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-md); /* ui-sweep A: settings card radius */
+  background: var(--surface); /* ui-sweep A: card fill over the page bg */
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  position: sticky;
+  top: 0;
+}
+.provider-detail .detail-head { display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap; }
+.provider-detail .detail-head .meta { color: var(--text-2); font-size: var(--fs-ui); }
+.provider-detail .detail-field { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-ui); color: var(--text-2); }
+.provider-detail .detail-field .detail-field-label { white-space: nowrap; }
+.provider-detail .detail-field .ctl { flex: 1; min-width: 8rem; }
+.provider-detail .detail-field .card-endpoint { flex: 1; }
+.model-manager { display: flex; flex-direction: column; gap: var(--sp-1); }
+.model-manager-head { display: flex; align-items: baseline; gap: var(--sp-2); font-size: var(--fs-ui); color: var(--text-2); }
+/* ②: the LIVE session model wears 当前 — the live mark stays muted (text-2)
+   so the accent stays with the boot-default state mark. */
+.model-badge { color: var(--accent); font-size: var(--fs-ui); white-space: nowrap; text-align: center; }
+.model-badge.live { color: var(--text-2); }
+.detail-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.provider-detail .detail-del { color: var(--danger); }
+.provider-empty { color: var(--text-2); font-size: var(--fs-ui); padding: var(--sp-2); }
+/* --- 0.3.38 ①: the provider-detail MODAL (pvd) — .modal-card family mecha-
+       nics (the family's max-height + overflow:hidden own the viewport fit);
+       wide enough for the model table, its body the scroll region. The
+       hosted .provider-detail drops its card chrome — the modal IS the card
+       now (no border-in-border). --- */
+.modal-card.pvd { max-width: min(46rem, calc(100vw - var(--sp-8))); width: 100%; }
+.pvd-head { display: flex; align-items: center; gap: var(--sp-2); }
+.pvd-head h3 { margin: 0; flex: 1 1 auto; overflow-wrap: anywhere; }
+.pvd-body { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; }
+.pvd-body .provider-detail { border: 0; background: transparent; position: static; padding: 0; }
+/* 2026-08-31 用户反馈:persona 详情也用弹窗(沿用 pvd 的卡 + 头 + 体 + 关闭 +
+   scrim/Esc 套路) — the persona-form inside the modal body drops its own
+   card chrome too, mirroring .provider-detail. */
+.pvd-body .persona-form { border: 0; background: transparent; padding: 0; }
+/* statecover C5 — the provider tab's load-failure row: the error text rides
+   the shared .entry-error semantics; the inline 重试 sits beside it on the
+   page's refresh() seam. */
+.provider-load-error { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .provider-master { grid-template-columns: 1fr; }
+  .provider-master .provider-cards { max-height: none; }
+  .provider-detail { position: static; }
+}
+
+/* --- persona iteration 2 T2 (2026-08-23): the persona wire tab strip's
+       per-wire row-count badge — the auto-select's complement (the first
+       NON-zero wire opens the detail); a zero count dims so an empty wire
+       reads empty at a glance. The binding row's layer qualifier select is
+       width-capped so it sits beside the persona select, not under it. --- */
+.chip .wire-count { margin-left: var(--sp-1); font-size: var(--fs-caption); color: var(--text-1); } /* 116 弧 A：计数徽字去 accent（attach .n 同族） */
+.chip .wire-count.zero { color: var(--text-3); }
+.provider-detail .detail-field .detail-persona-layer { flex: 0 0 9.5rem; min-width: 9.5rem; }
+
+/* --- persona settings visual pass (iteration 2 T3, 2026-08-23): the Persona
+       tab speaks the settings page's OWN language instead of free-form
+       markup — the master rows borrow the provider card idioms (two-line
+       hierarchy: the bold display name over a mono id + dimmed layers with
+       the bordered source badge pushed right; hover and aria-current ride
+       the accent edge + inset bar), the wire strip borrows the tab-row
+       language turned horizontal (mono labels, .on = accent-weak + the
+       inset accent bar on the bottom edge), the prompt textarea finally
+       gets the .ctl box (it sat borderless beside boxed inputs), the
+       persona/layer selects get managed widths so they read as one control
+       pair everywhere, and the delete-confirm rides the --danger
+       "needs confirmation" tint (the token's enumerated site). ADDITIVE
+       selectors only — no rule above changes (the T2 width unification on
+       .detail-persona-layer excepted). --- */
+.persona-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-md); /* ui-sweep A: the settings master-card tier (was radius-sm) */
+  background: var(--surface);
+  color: var(--text-1);
+  font: inherit;
+  font-size: var(--fs-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.persona-row:hover { border-color: var(--hair-2); } /* 116 弧 A：hover 去品牌色（aria-current 的 accent 选中边保留） */
+.persona-row[aria-current="true"] { border-color: var(--accent); box-shadow: inset 2px 0 0 var(--accent); }
+.persona-row .persona-name { flex-basis: 100%; font-weight: var(--fw-strong); }
+.persona-row .meta { color: var(--text-2); }
+.persona-row .persona-id { font-family: var(--mono); } /* persona ids = code */
+.persona-row .persona-layers { color: var(--text-3); }
+.persona-row .persona-src {
+  margin-left: auto;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  padding:  0 var(--sp-1);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+/* The master list's ＋ 新建 lane — the provider add-form's dashed idiom. */
+.settings-section > button.ctl.persona-add { align-self: flex-start; border-style: dashed; color: var(--text-2); }
+.settings-section > button.ctl.persona-add:hover { border-color: var(--hair-2); color: var(--text-1); } /* 116 弧 A：hover 去品牌色 */
+/* The global-default pair: label + persona select + layer qualifier — the
+   two selects size as one unit instead of ragged auto-width dropdowns. */
+.prefrow.persona-default .pref-label { white-space: nowrap; }
+.prefrow.persona-default .persona-pick { min-width: 13rem; }
+.prefrow.persona-default .persona-pick-layer { flex: 0 0 9.5rem; }
+.persona-form { display: flex; flex-direction: column; gap: var(--sp-2); }
+.persona-form .prefrow { align-items: center; }
+.persona-form .prefrow .pref-label { min-width: 5.5rem; white-space: nowrap; }
+.persona-form textarea.persona-prompt {
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-body);
+  padding: var(--sp-1) var(--sp-2);
+  resize: vertical;
+}
+.persona-form textarea.persona-prompt:focus { border-color: var(--accent); }
+.persona-form textarea.persona-prompt:disabled { opacity: .5; cursor: default; }
+.persona-wire-tabs { display: flex; gap: calc(var(--sp-1) / 2); flex-wrap: wrap; padding: var(--sp-1); border-radius: var(--radius-md); background: var(--surface-2); width: max-content; } /* 120：wire 分页=分段选择器（凹槽轨道），与设置页 .segctl 同族 */
+.persona-wire-tabs .segctl-opt { font-family: var(--mono); } /* wire ids = code */
+.persona-layer { display: flex; flex-direction: column; gap: var(--sp-1); }
+.persona-layer > .pref-label {
+  font-family: var(--mono); /* headers(openai-chat) — wire ids = code */
+  font-size: var(--fs-ui);
+  color: var(--text-2);
+  border-bottom: 1px solid var(--hair-1);
+  padding-bottom: var(--sp-1);
+}
+/* The header/body rows: a three-track grid (key / value / remove) with the
+   row-scoped errors spanning full width under their row. */
+.persona-form .row.keyrow {
+  display: grid;
+  grid-template-columns: minmax(9rem, 14rem) minmax(0, 1fr) auto;
+  gap: var(--sp-2);
+  align-items: center;
+}
+.persona-form .row.keyrow .entry-error { grid-column: 1 / -1; font-size: var(--fs-ui); }
+.persona-form .row.keyrow.error > .ctl { border-color: var(--danger); }
+/* The ＋ 添加 rows ride the add-form's dashed idiom (a lane, not a command). */
+.persona-layer > button.ctl { align-self: flex-start; border-style: dashed; color: var(--text-2); }
+.persona-layer > button.ctl:hover:not(:disabled) { border-color: var(--hair-2); color: var(--text-1); } /* 116 弧 A：hover 去品牌色 */
+/* The form's commit edge: save = accent, delete = danger (the
+   button.wudao.primary/.danger + .detail-del idioms). */
+button.ctl.persona-save { border-color: var(--accent); color: var(--accent); }
+button.ctl.persona-del { border-color: var(--danger); color: var(--danger); }
+.persona-form > .entry-error {
+  border: 1px solid rgb(var(--danger-rgb) / .35);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--fs-ui);
+}
+/* The two-step delete's confirmation card — --danger is the "needs
+   confirmation" token, a weak tint so the inventory list stays readable. */
+.persona-delete-confirm {
+  border: 1px solid rgb(var(--danger-rgb) / .35);
+  background: rgb(var(--danger-rgb) / .06);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-ui);
+}
+.persona-delete-confirm ul { margin: var(--sp-1) 0; padding-left: var(--sp-5); color: var(--text-2); }
+.persona-delete-confirm li { margin: 1px 0; }
+.persona-delete-confirm .keyrow { margin-top: var(--sp-1); }
+
+/* --- settings dropdown flattening + binding-row overflow (2026-08-23
+       iter3 Task 1): macOS paints a closed native <select> with a glossy
+       gradient that ignores the page theme — appearance:none retires the
+       native chrome and a self-drawn chevron takes over. The rule rides the
+       .ctl base so EVERY settings select gets it (PersonaPanel's four,
+       ProviderDetail's binding pair, the provider add-form) at the existing
+       28px .ctl geometry; hover stays .ctl:hover, focus stays the sheet's
+       ONE global :focus-visible ring + the accent-border input idiom. The
+       chevron is a conic-gradient wedge on var(--text-2) — token-derived, so
+       the light theme re-resolves it with zero mirror rules (M64 §3 sweep:
+       no literal colors in this sheet; the glyph is decorative, the
+       .ft-row .caret text-2 tier). The binding row's two selects could not
+       shrink (the 8rem/9.5rem min-width floors in a no-wrap flex) and pushed
+       past the .provider-detail edge on narrow panes — the field wraps and
+       both selects clamp into the box at any width. --- */
+select.ctl {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: calc(var(--sp-2) + var(--sp-4)); /* text clears the chevron */
+  background-image: conic-gradient(from 135deg at 50% 30%, var(--text-2) 0 90deg, transparent 90deg);
+  background-repeat: no-repeat;
+  background-position: right var(--sp-2) center;
+  background-size: 10px 6px;
+  cursor: pointer;
+}
+select.ctl:disabled { cursor: default; }
+/* ω99-297 (I9): select 的 accent 边焦点态退役 —— picker 不是打字面，
+   键盘焦点走全局唯一环（表头 :focus-visible）；旧边+环双指示器不再。 */
+.provider-detail .detail-field { flex-wrap: wrap; }
+.provider-detail .detail-field .ctl { max-width: 100%; }
+.provider-detail .detail-field .detail-persona-layer { flex-shrink: 1; min-width: 0; max-width: 100%; }
+
+/* --- provider tab STRICT master-detail (2026-08-23 iter3 Task 2): the
+       master cards are read-only identity + ONE actuator — the whole card
+       body selects (cursor + the persona-row's inset accent bar on
+       aria-current), the key fact is a badge (已配/未配, the .persona-src
+       bordered-badge idiom; 已配 reads --ok, 未配 dashes like a lane, not a
+       state), and「应用」rides the accent commit edge (the persona-save
+       idiom) with stopPropagation. The keyrow + model chips now live in the
+       detail: the key-field's controls must NOT inherit the detail-field's
+       stretch (every .ctl under .detail-field grows — the keyrow's own
+       layout owns its children, the input shrinking to the panel width). --- */
+.provider-card:not([data-invalid="true"]) { cursor: pointer; }
+.provider-card[aria-current="true"] { box-shadow: inset 2px 0 0 var(--accent); }
+.provider-card .card-actions { display: flex; justify-content: flex-end; }
+button.ctl.card-apply { border-color: var(--accent); color: var(--accent); }
+.provider-card .key-badge {
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  padding:  0 var(--sp-1);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.provider-card .key-badge.on { color: var(--ok); border-color: rgb(var(--ok-rgb) / .35); }
+.provider-card .key-badge.off { color: var(--text-3); border-style: dashed; }
+.provider-detail .detail-field .keyrow { flex: 1; min-width: 12rem; flex-wrap: wrap; }
+.provider-detail .detail-field .keyrow .ctl { flex: none; min-width: 0; }
+.provider-detail .detail-field .keyrow .key-input { flex: 1 1 8rem; min-width: 0; max-width: 100%; }
+
+/* --- 0.3.12 provider-detail de-cramp (trial feedback): the panel read as
+       cramped and bloated — ragged inline labels (名称/baseUrl/Persona 绑定
+       each a different width, so no input shared an x), everything squeezed
+       edge to edge, and TWO save buttons. The fix: an ALIGNED label column
+       (grid) so every input starts at the same x, breathing padding, a
+       hairline under the head and above the commit edge, and the single
+       保存修改 as the accent commit (the keyrow's own save button is gone —
+       a pasted key saves WITH the config). Later-position overrides of the
+       flex rules above at equal specificity. --- */
+.provider-detail { padding: var(--sp-3); }
+.provider-detail .detail-head { padding-bottom: var(--sp-1); border-bottom: 1px solid var(--hair-1); }
+.provider-detail .detail-field {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  flex-wrap: nowrap; /* the 3188 wrap rule was the flex layout's escape; grid shrinks instead */
+}
+.provider-detail .detail-field.pair { grid-template-columns: 6.5rem minmax(0, 1fr) 9.5rem; }
+.provider-detail .detail-field .ctl { min-width: 0; }
+.provider-detail .detail-field .detail-persona-layer { min-width: 0; }
+.provider-detail .detail-field .keyrow { min-width: 0; }
+.model-manager { gap: var(--sp-2); }
+.provider-detail .detail-actions { padding-top: var(--sp-1); border-top: 1px solid var(--hair-1); }
+button.ctl.detail-save { border-color: var(--accent); color: var(--accent); }
+/* Very narrow panes stack the label above its input (the pair's layer select
+   drops to its own row) — no horizontal cram at any width. */
+@media (max-width: 720px) {
+  .provider-detail .detail-field,
+  .provider-detail .detail-field.pair { grid-template-columns: minmax(0, 1fr); }
+  .provider-detail .detail-field .detail-field-label { color: var(--text-3); }
+}
+
+/* --- ui-review-r2 I6 → inkline (2026-08-22 spec §1.4): the ONE
+       reduced-motion block — transitions AND animations both collapse to
+       .01ms and every animation runs a single iteration (the tree-spin
+       pulse stops pulsing; the fades land at once). Kept as a single
+       block at the sheet's end by the round's rule: no per-rule scatter.
+       The JS twin is App's prefersReducedMotion() (the one programmatic
+       smooth scroll). --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* --- 0.3.13 provider page redesign (216; user trial feedback: 供应商维护页
+       丑陋): the page adopts the persona-pass house idioms — the persona-row
+       two-line card hierarchy (identity line + ONE quiet caption line, badges
+       pushed right, hover + selected accent edge with the inset bar), grouped
+       detail sections with caption titles instead of a flat field column,
+       aligned field labels, a ghost 应用 actuator, and breathing room at the
+       --sp-3 tier. All selectors ADDITIVE or specific overrides on the
+       provider surface; the card/field classNames, aria seams, and the
+       .card-endpoint mono pin are untouched. --- */
+.provider-card { padding: var(--sp-3); gap: var(--sp-1); cursor: pointer; transition: border-color var(--dur-fast) var(--ease); }
+.provider-card:hover { border-color: var(--hair-2); }
+.provider-card[aria-current="true"] { border-color: var(--accent); box-shadow: inset 2px 0 0 var(--accent); }
+.provider-card .card-head { align-items: center; }
+.provider-card .card-name { font-size: var(--fs-ui); }
+.provider-card .meta.tag-default { color: var(--accent); font-weight: var(--fw-strong); }
+.provider-card .key-badge { margin-left: auto; }
+.provider-card .card-status { display: flex; align-items: baseline; gap: var(--sp-2); }
+.provider-card .card-endpoint { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.provider-card .card-actions { display: flex; justify-content: flex-end; }
+.provider-card button.card-apply { padding: 1px var(--sp-3); font-size: var(--fs-caption); color: var(--text-2); }
+.provider-card button.card-apply:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.provider-cards .provider-card[data-draft="true"],
+.provider-card[data-invalid="true"] { cursor: default; }
+
+.provider-detail { padding: var(--sp-3); gap: var(--sp-2); }
+.provider-detail .detail-head { padding-bottom: var(--sp-2); border-bottom: 1px solid var(--hair-1); align-items: center; }
+.provider-detail .detail-head strong { font-size: var(--fs-body); }
+.provider-detail .detail-group { display: flex; flex-direction: column; gap: var(--sp-2); padding-top: var(--sp-2); border-top: 1px solid var(--hair-1); }
+.provider-detail .detail-group .detail-group-title { font-size: var(--fs-caption); color: var(--text-3); letter-spacing: .08em; }
+.provider-detail .detail-group .detail-field-label { min-width: 4.5rem; color: var(--text-2); }
+.provider-detail .detail-field.pair .detail-field-label { min-width: 0; }
+
+/* Toolbar: the add button takes the persona-add dashed idiom (a create
+   affordance, not a committing action). */
+.provider-toolbar .ctl:last-child { border-style: dashed; color: var(--text-2); }
+.provider-toolbar .ctl:last-child:hover { border-color: var(--hair-2); color: var(--text-1); } /* 116 弧 A：hover 去品牌色 */
+
+/* --- 0.3.23 provider/model detail visual pass (user feedback round 3:
+       「供应商详情、模型详情,还是很难看,特别凌乱」): the four fragmented
+       groups become THREE meaningful sections (接入 absorbs the keyrow — a
+       key IS connection config; 行为 carries the two session bindings); the
+       model manager becomes an ALIGNED one-line table — a single column
+       header labels 模型/窗口/状态 ONCE, not once per row, and the grid's
+       FIXED 9.5rem window track can never squeeze (the ③ two-line
+       anti-truncation shape survives as the <720px stack); the head is one
+       identity line with the metas pushed right as quiet tags; the test
+       strip wears a tinted card instead of bare colored text. The
+       .model-row-main/.model-row-ctx rules above go dead with the old DOM
+       shape; everything here is additive or a later-position override. --- */
+.provider-detail .detail-head { justify-content: space-between; gap: var(--sp-2); }
+.provider-detail .detail-head-id { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.provider-detail .detail-head-id strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.provider-detail .detail-head-tags { display: flex; align-items: center; gap: var(--sp-1); flex: none; }
+.provider-detail .detail-head-tags .meta.mono-id { font-family: var(--mono); font-size: var(--fs-caption); color: var(--text-3); }
+.provider-detail .detail-head-tags .meta.tag { font-size: var(--fs-caption); color: var(--text-2); border: 1px solid var(--hair-2); border-radius: var(--radius-sm); padding: 0 var(--sp-1); }
+/* The read-row state lane (the name/ctx/state grid itself is restyled by the
+   round-6 layer below — this flex rule survived every DOM shape since). */
+.provider-detail .model-row-state { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-1); min-width: 0; }
+/* The connect/result strip: a tinted card with a state spine, readable in
+   both themes without new tokens. */
+.provider-detail .test-result { padding: var(--sp-1) var(--sp-2); border-radius: var(--radius-sm); background: var(--surface-2); border-left: 2px solid var(--text-3); }
+.provider-detail .test-result.ok { border-left-color: var(--ok); }
+.provider-detail .test-result.fail { border-left-color: var(--danger); }
+.provider-detail .test-result.fail.network, .provider-detail .test-result.fail.no-endpoint { border-left-color: var(--warn); }
+
+/* --- 0.3.24 provider/model detail round 4 (用户反馈「供应商和模型详情还是
+       不满意」, three rearrangement rounds later): the fix is STRUCTURAL.
+       The model chips row is gone (every model showed twice), so the TABLE is
+       the only per-model surface — and an always-boxed input table reads as a
+       spreadsheet, the「特别凌乱」的核心. The calm contract: an un-hovered row
+       is a READABLE LINE — borderless mono name, quiet window value, honest
+       badges — and the editing affordances (boxed inputs, 使用/设为默认/✕)
+       surface on hover/focus-within. The buttons STAY in the DOM (opacity,
+       never display:none — tests click them, keyboard focus reveals them via
+       :focus-visible, and the global reduced-motion block collapses the
+       fade). Everything here is a later-position additive override on the
+       provider surface; the round-3 aligned grid survives underneath. --- */
+/* Row actuators fade until the row is addressed. The disabled 使用 on the
+   CURRENT row stays invisible (it is a no-op; the 当前 badge says why). */
+.provider-detail .model-row .model-use {
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.provider-detail .model-row:hover .model-use,
+.provider-detail .model-row:focus-within .model-use,
+.provider-detail .model-row .model-use:focus-visible { opacity: 1; }
+.provider-detail .model-row .model-use { padding: 1px var(--sp-2); font-size: var(--fs-caption); color: var(--text-3); }
+.provider-detail .model-row .model-use:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+/* The commit edge's honesty mark (left of 保存修改; the buttons sit right). */
+.provider-detail .detail-unsaved { margin-right: auto; align-self: center; color: var(--warn); font-size: var(--fs-caption); }
+.provider-detail .detail-actions { justify-content: flex-end; }
+
+/* --- round 5 (2026-08-30 spec, 用户第五轮反馈:表单感太重 / 模型没有自己的
+       详情 / 布局密度 / 视觉): 读态优先 + 模型两级详情 + 全局条上移 + 主列
+       对齐。A: the panel's DEFAULT render is a read-only dossier — text rows,
+       key badge, NO boxed inputs (编辑 is the form's only door). B: read-mode
+       model rows are row-head buttons expanding inline detail cards. C: the
+       edit table's inputs are FIXED-width (22ch/10ch — they stop stretching
+       to fill their tracks; 用户:「输入框应该固定长度」). D: ★/☆ replace the
+       设为默认 text button; the live model reads as a SELECTED row. E: the
+       默认模型/推理档 strip sits under the toolbar. F: the master grid
+       STRETCHES — the cards column matches the detail column's height (no
+       more 30rem cap stranded under a tall detail), and each card carries
+       its model count. Additive/later-position overrides only. --- */
+/* F: the master column breathes with the detail column. */
+.provider-master { align-items: stretch; }
+.provider-master .provider-cards { max-height: none; overflow-y: visible; }
+.provider-card .card-model-count { color: var(--text-3); font-size: var(--fs-caption); }
+/* E: the boot-defaults strip is GONE (0.3.26 ① deleted its effort row,
+   0.3.31 ② its 默认模型 row — nothing left to render); ω99-302 retired the
+   leftover base rule too — the composer's EffortSelector rides .pop/.chip
+   and never used it. */
+/* A: read-mode text rows share the field grid; values are text, not boxes. */
+.provider-detail .detail-read-text { color: var(--text-1); overflow-wrap: anywhere; min-width: 0; }
+.provider-detail .detail-field .key-badge {
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  padding:  0 var(--sp-1);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.provider-detail .detail-field .key-badge.on { color: var(--ok); border-color: rgb(var(--ok-rgb) / .35); }
+.provider-detail .detail-field .key-badge.off { color: var(--text-3); border-style: dashed; }
+/* B (round 6 amended): the read-mode model list — ONE line per row, the row
+   itself the grid (the round-5 row-head + expansion card is deleted). */
+.provider-detail .model-row-name { font-family: var(--mono); color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.provider-detail .model-row-ctx { text-align: right; color: var(--text-2); font-variant-numeric: tabular-nums; font-size: var(--fs-ui); }
+/* D: the live model reads as a SELECTED row — an accent ridge + a quiet
+   tint, the selected card's exact idiom (the 当前 chip says why). */
+.provider-detail .model-read-row.live {
+  box-shadow: inset 2px 0 0 var(--accent);
+  background: rgb(var(--accent-rgb) / .06);
+  padding-left: var(--sp-2);
+}
+/* D: the star actuator — caption-tier until addressed, the 设为默认 text
+   button's exact ghost idiom. */
+.provider-detail .model-row .model-star { width: 1.9rem; padding-inline: 0; text-align: center; color: var(--text-3); }
+.provider-detail .model-row .model-star:hover:not(:disabled) { color: var(--accent); border-color: var(--accent); }
+.provider-detail .model-row .model-star { opacity: 0; transition: opacity var(--dur-fast) var(--ease); }
+.provider-detail .model-row:hover .model-star,
+.provider-detail .model-row:focus-within .model-star,
+.provider-detail .model-row .model-star:focus-visible,
+.provider-detail .model-row .model-star:disabled { opacity: 1; }
+/* The boot-default ★ on a READ row is STATE, not an actuator — it never
+   fades and carries the accent (the star is the row's 默认 mark, visible
+   at a glance). */
+.provider-detail .model-read-row .model-star:disabled { color: var(--accent); border: none; background: none; }
+

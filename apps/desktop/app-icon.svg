@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- wudao desktop glyph: the agent loop — a ring with a live node at its
+       center and an orbit arc. Pure geometry (no font dependency for the
+       resvg rasterizer tauri icon uses). -->
+  <rect x="32" y="32" width="960" height="960" rx="192" fill="#0f141a"/>
+  <circle cx="512" cy="512" r="252" fill="none" stroke="#e8ebf0" stroke-width="40"/>
+  <circle cx="512" cy="512" r="84" fill="#e8ebf0"/>
+  <path d="M 512 128 A 384 384 0 0 1 896 512" fill="none" stroke="#5b8def" stroke-width="40" stroke-linecap="round"/>
+  <circle cx="512" cy="128" r="34" fill="#5b8def"/>
+</svg>

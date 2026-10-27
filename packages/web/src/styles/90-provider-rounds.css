@@ -1,0 +1,463 @@
+/* --- round 6 (2026-08-30 spec, 用户第六轮反馈:五轮页面内重排都不是答案,行
+       业通用形态才是): ALL model editing moves into the ModelConfigModal —
+       the detail page keeps read rows + one 「配置模型」 button. Deleted with
+       the old surface: .model-cols header, the edit-table input ghosts, the
+       手工添加/pull furniture (.pull-*), .model-detail-card, the row-head
+       expansion. The row below is the CONSTANT shape — read and edit modes
+       render it identically (恒定形态). --- */
+.provider-detail .model-manager-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.provider-detail .model-config { font-size: var(--fs-ui); padding: var(--sp-1) var(--sp-3); }
+/* The read row: ONE aligned line — name 1fr / ctx 8rem / state max-content
+   (the round-3 aligned-grid lesson survives; there is no ✕ column — the
+   delete lives in the modal now). */
+.provider-detail .model-read-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 8rem max-content;
+  align-items: center;
+  column-gap: var(--sp-2);
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid var(--hair-1);
+}
+.provider-detail .model-empty { padding: var(--sp-2) 0; font-size: var(--fs-ui); color: var(--text-3); }
+@media (max-width: 720px) {
+  .provider-detail .model-read-row { grid-template-columns: minmax(0, 1fr) max-content; }
+  .provider-detail .model-read-row .model-row-ctx { grid-column: 2; }
+  .provider-detail .model-read-row .model-row-state { grid-column: 1 / -1; justify-content: flex-start; }
+}
+
+/* The ModelConfigModal itself — .modal-card carries the shell (surface,
+   radius, column flex, max-height); .mcm widens it (a model list needs
+   more room than the 480px confirm dialogs) and styles the dual-channel
+   add + the editable row list. */
+.modal-card.mcm { max-width: 620px; width: min(620px, calc(100vw - var(--sp-8))); gap: var(--sp-2); }
+/* ω99-301 (M16): the two wide panels join the family on the .mcm precedent —
+   620px cap + the family width formula (the 480px base card would cramp a
+   file list; wide content overrides, like mcm). */
+.modal-card.changes-panel, .modal-card.computer-panel { max-width: 620px; width: min(620px, calc(100vw - var(--sp-8))); }
+/* ω99-317: the schedules panel joins the wide-panel family on the same
+   precedent (the row list needs the 620px cap; like mcm/changes/computer). */
+.modal-card.schedules-panel { max-width: 620px; width: min(620px, calc(100vw - var(--sp-8))); }
+.mcm-head { display: flex; align-items: center; gap: var(--sp-2); }
+.mcm-head h3 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mcm-close { flex: none; color: var(--text-3); }
+.mcm-close:hover:not(:disabled) { color: var(--text-1); border-color: var(--hair-2); }
+/* The dual-channel add row: name (with the dropdown + refresh controls) /
+   ctx 8rem / 添加 — the same track widths as the modal's row list below,
+   so a picked model lands in an aligned column. */
+.mcm-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 8rem max-content;
+  align-items: center;
+  column-gap: var(--sp-2);
+}
+.mcm-add-name { position: relative; display: flex; align-items: center; gap: var(--sp-1); min-width: 0; }
+.mcm-add-name input.mcm-name { flex: 1; min-width: 0; }
+/* 0.3.28 ④: the dropdown toggle is a LABELED button (选择 ▾ / 收起 ▴), not
+   the old 1.9rem bare "▾" glyph — an icon that size read as decoration, and
+   with a failed auto-pull it was also DISABLED (dead button, "dropdown
+   broken"). It is now always actionable (a null pool re-pulls on click).
+   The ⟳ refresh keeps the icon-button shape. */
+.mcm-drop-toggle { flex: none; padding-inline: var(--sp-1); white-space: nowrap; color: var(--text-2); }
+.mcm-refresh { flex: none; width: 1.9rem; padding-inline: 0; text-align: center; color: var(--text-2); }
+.mcm-drop-toggle:disabled, .mcm-refresh:disabled { color: var(--text-3); }
+.mcm-drop-toggle:not(:disabled):hover, .mcm-refresh:not(:disabled):hover { color: var(--text-1); border-color: var(--hair-2); } /* 116 弧 A：hover 去品牌色 */
+/* The /models dropdown — capped and scrollable (OpenRouter-sized catalogs
+   must not blow the modal open), absolute inside the add row's name cell. */
+.mcm-drop {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: var(--z-float);
+  max-height: 12rem;
+  overflow-y: auto;
+  /* P2 §2.12 层内玻璃：glass-fill + 双前缀 blur（WKWebView macOS 12 走
+     -webkit-）；elev-2 描边入影保留。 */
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  /* 116 弧 A：浮层下拉 elevation 中档（描边入影），边框退役。
+     119：浮层圆角归 lg 12 档。 */
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-2);
+}
+.mcm-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  padding: var(--sp-1) var(--sp-2);
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  color: var(--text-1);
+}
+.mcm-opt:not(:disabled):hover { background: var(--surface-2); }
+.mcm-opt:disabled { color: var(--text-3); cursor: default; }
+.mcm-opt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--mono); }
+.mcm-opt-ctx { color: var(--text-2); font-variant-numeric: tabular-nums; font-size: var(--fs-caption); }
+.mcm-opt-tag { color: var(--text-3); font-size: var(--fs-caption); white-space: nowrap; }
+.mcm-drop-empty { padding: var(--sp-2); color: var(--text-3); font-size: var(--fs-ui); }
+.mcm-pulling { font-size: var(--fs-caption); }
+.mcm-pull-error { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); font-size: var(--fs-ui); }
+.mcm-list-head { font-size: var(--fs-caption); color: var(--text-3); letter-spacing: .04em; padding-bottom: var(--sp-1); border-bottom: 1px solid var(--hair-1); }
+/* The editable row list — the modal's scroll body (the shell caps the
+   height; long lists scroll HERE, add row and footer stay pinned). */
+.mcm-rows { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: var(--sp-1); padding: var(--sp-1) 0; }
+.mcm-row { display: grid; grid-template-columns: minmax(0, 1fr) 8rem 1.9rem; align-items: center; column-gap: var(--sp-2); }
+.mcm-row input.mcm-name { width: 100%; min-width: 0; font-family: var(--mono); }
+.mcm-row input.mcm-ctx, .mcm-add input.mcm-ctx { width: 100%; min-width: 0; text-align: right; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.mcm-del { width: 1.9rem; padding-inline: 0; text-align: center; color: var(--text-3); }
+.mcm-row .mcm-del:hover:not(:disabled) { color: var(--danger); border-color: var(--danger); }
+.mcm-empty { padding: var(--sp-3) 0; text-align: center; }
+.mcm-foot { justify-content: flex-end; }
+
+/* ω99-213: #3 — 回来摘要横幅卡：会话流顶部横幅（不弹窗不打断），随 .chat
+   流排版。表面卡 + accent 左缘线（accent 语义=「有东西等你」）；三段各占
+   一行，标签用 text-2 弱色前置；数字行 caption 级 mono 感弱化；关闭钮复用
+   .wudao.action 的既有形态。 */
+.recap-banner {
+  /* ω99-243 C1/C4/M3：边线从 var(--border)（从未定义的令牌名——计算值兜底
+     currentColor = 文字色亮边，两主题都错的真 bug）归档 --line；间距字面量
+     归档 sp 网格（.chg 与 .cap 两族同款）；入场 fade（toast-in 同语言
+     家族，reduced-motion 收编）。 */
+  margin: var(--sp-3) var(--sp-4) var(--sp-1);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--hair-1);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  animation: fade var(--dur-med) var(--ease);
+}
+.recap-title { font-size: var(--fs-body); font-weight: var(--fw-strong); }
+.recap-segment { font-size: var(--fs-body); line-height: var(--lh-body); }
+.recap-label { color: var(--text-2); margin-right: var(--sp-1); }
+.recap-stats { font-size: var(--fs-caption); color: var(--text-2); }
+.recap-close { align-self: flex-end; margin-top: var(--sp-1); }
+
+/* ω99-242: #11 — 被恢复会话的对账行（chat-top，recap-banner 之下的一行晨间
+   回执）。单行、无关闭钮（信息态非打扰态）：细框 + 圆角令牌 + surface 底，
+   accent 左缘同 recap 语义家族但更轻（一行不是一张卡）。 */
+.recovery-banner {
+  margin: var(--sp-1) var(--sp-4);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--hair-1);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.recovery-title { font-size: var(--fs-caption); color: var(--text-2); }
+
+/* ω99-216: #5 — 会话改动面板 + 顶栏「改动 N 文件」chip（托付闭环「亲验
+   改动」）。chip=📋 邻域的文字钮（icobtn 的文字版邻居：line 细框 + pill
+   圆帽 + caption 弱字，hover surface-2 同 icobtn 语言；仅 N>0 渲染——零
+   changes 历史零 DOM，顶栏字节不变）。面板走 .overlay+.modal 惯例：
+   .chg-runs 是滚动区（btnrow 常在外）；改动明细 .chg-detail=mono 等宽
+   内滚块（0.3.7 胶囊展开全文块 220px 内滚同语言），截断标记随 detail
+   原文如实。间距全 sp 令牌；圆角/字号/时长全走档位令牌；height 字面量
+   非间距门辖属性（.sb-unread 同注）。 */
+.tb-changes {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-app-region: no-drag; /* 拖拽条内的可点钮（icobtn 同注） */
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.tb-changes:hover { background: var(--surface); color: var(--text-1); } /* 119：画布律 hover=+1 档 */
+
+.changes-panel .chg-head { flex: none; font-size: var(--fs-ui); }
+.changes-panel .chg-runs {
+  /* 滚动区（.modal .body 同约：overflow 归零 flex 自动最小尺寸，btnrow
+     常在外常可达） */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.chg-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+}
+.chg-run-h { flex: none; color: var(--text-2); font-size: var(--fs-ui); font-weight: var(--fw-strong); }
+.chg-files { display: flex; flex-direction: column; gap: var(--sp-1); }
+.chg-file { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+/* ω99-314: 行 wrap——行本体（锚定 button / 降级 div）与恢复钮是兄弟交互件
+   （嵌套交互件非法 HTML）；wrap 承接行距，行本体吃满剩余宽。 */
+.chg-file-wrap { display: flex; align-items: center; gap: var(--sp-1); }
+.chg-file-wrap > .chg-file { flex: 1 1 auto; min-width: 0; }
+/* ω99-314: 「恢复到这里」小钮——中性弱底文字钮（不抢 diff 语义色：新建/
+   修改徽标已占 accent/danger 两色，恢复是动作不是状态，走 text-2 弱调，
+   hover 提到 text-1）。 */
+.chg-revert {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.chg-revert:hover { color: var(--text-1); background: var(--hover); } /* 116 弧 A：hover 去品牌色 → 中性洗色 */
+.chg-revert:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* ω99-314: 确认弹框的警示段（守卫 3 的 UI 面）——弱警示底，不进红：覆盖
+   可撤销（恢复前自动再留快照），是提醒不是危险操作。 */
+.revert-warn {
+  margin-top: var(--sp-2);
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-ui);
+  line-height: 1.6;
+}
+.chg-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: var(--fs-ui);
+  color: var(--text-1);
+}
+.chg-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+}
+/* 116 弧 A：新建 = diff-add 语义 → ok 通道弱染（与 .diff .add 同族），
+   修改保持中性 surface-2——同族两态，语义各自成色。 */
+.chg-badge[data-op="created"] { background: rgb(var(--ok-rgb) / .12); color: var(--text-1); } /* 116 弧 A：新建=diff-add 语义 → ok 弱染（.diff .add 同族） */
+/* ω99-319（命令级改动归因）——同命令足迹文件聚一段（组头=归因叙事「这条
+   命令改了 N 个文件」+ 组级撤销钮）；行级「命令改动」徽标走新建同款
+   accent-weak 通道（归因是状态不是动作，与 .chg-revert 的动作弱调分开）。
+   全走既有令牌，零新色槽（color-mix 禁用——WKWebView 兼容律）。 */
+.chg-cmdgroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+}
+.chg-cmdgroup .chg-file-wrap { padding: 0 var(--sp-1); }
+.chg-cmd-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+}
+.chg-cmd-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chg-cmd-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 var(--sp-1);
+  margin-left: var(--sp-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: rgb(var(--ok-rgb) / .12); /* 116 弧 A：命令改动归因=改动语义 → ok 弱染 */
+  color: var(--text-1);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+}
+.chg-cmd-undo {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 var(--sp-2);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.chg-cmd-undo:hover { color: var(--text-1); background: var(--hover); } /* 116 弧 A：hover 去品牌色 → 中性洗色 */
+.chg-cmd-undo:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.chg-cmd-undo[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.chg-cmd-undo[aria-disabled="true"]:hover { color: var(--text-2); background: var(--surface); }
+.chg-exp {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+  cursor: pointer;
+}
+.chg-exp:hover { color: var(--text-1); }
+.chg-detail {
+  margin: 0;
+  max-height: 220px; /* 0.3.7 展开全文块的内滚带（viewport-bounded 同语言） */
+  overflow-y: auto;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border-radius: var(--radius-md);
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--mono);
+  font-size: var(--fs-ui);
+  line-height: var(--lh-ui);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+/* ω99-288: #7 — diff 分色（DiffText，两消费面共用：改动面板明细 + 收据胶囊
+   展开块）。全走既有令牌零新色槽：加行 --ok / 删行 --danger（红色律的「diff
+   删除」正位，.diff .del/.add 同族通道透明度行底）；hunk 头 text-3 弱族；
+   文件头行加底带（Q1 裁定：不做 sticky）——surface 底 + 内距外负距保字形对
+   齐；context 行零样式（非 diff 文本经分色器天然降级=视觉与原文块等价）。
+   徽标计数 .chg-cnt 同令牌着色；文件行的 button 形（定位跳转）沿用 fv-chip
+   的 dotted hover 语言。 */
+.dtx-add {
+  color: var(--ok);
+  background: rgb(var(--ok-rgb) / .1);
+}
+.dtx-del {
+  color: var(--danger);
+  background: rgb(var(--danger-rgb) / .1);
+}
+.dtx-hunk { color: var(--text-3); }
+.dtx-file {
+  color: var(--text-2);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--sp-1);
+  margin: 0 calc(var(--sp-1) * -1);
+}
+.chg-cnt-plus { color: var(--ok); }
+.chg-cnt-minus { color: var(--danger); }
+button.chg-file {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+button.chg-file:hover .chg-path { text-decoration: underline dotted; }
+
+/* ω99-219: #4 — 电脑操作回望面板（216 面板机械的姊妹面）：chip 复用
+   .tb-changes 既有类（.tb-computer 只是测试身份类，零新样式）；面板走
+   .overlay+.modal 惯例，.cap-runs 是滚动区（btnrow 常在外）。动作行
+   .cap-act=短语+对象+×N 徽标+耗时（错误态走 data-err 的 danger 色）；
+   .cap-preview=老会话空 summary 兜底行的 resultPreview 单行（等宽内滚
+   同 .chg-detail 语言）。间距全 sp 令牌；圆角/字号全走档位令牌。 */
+.computer-panel .cap-head { flex: none; font-size: var(--fs-ui); }
+.computer-panel .cap-runs {
+  /* 滚动区（.modal .body 同约：overflow 归零 flex 自动最小尺寸） */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.cap-run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+}
+.cap-run-h { flex: none; color: var(--text-2); font-size: var(--fs-ui); font-weight: var(--fw-strong); }
+.cap-acts { display: flex; flex-direction: column; gap: var(--sp-1); }
+.cap-act {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  font-size: var(--fs-ui);
+  color: var(--text-1);
+}
+.cap-act[data-err="true"] { color: var(--danger); }
+.cap-verb { color: var(--text-2); }
+.cap-act[data-err="true"] .cap-verb { color: var(--danger); }
+.cap-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.cap-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm); /* 119：胶囊归 chip 档 */
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  white-space: nowrap;
+}
+.cap-dur { flex: none; color: var(--text-2); font-size: var(--fs-caption); }
+.cap-preview {
+  flex: 1 0 100%; /* 兜底行整行（动作行 flex-wrap 下独立成行） */
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+}
+

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check-test-eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm check
+      - run: pnpm test
+      # M73: Agent Notes format gate + frozen-archive seal proof (the pull_request
+      # merge checkout carries the PR's own manifest, so the append-only baseline
+      # comparison is vacuous here — disk-vs-seal matching is what CI enforces).
+      - run: pnpm run verify-agent-notes
+      - run: pnpm run verify-archived-agent-notes
+      # Deterministic evals are CI-safe by design (no key → live suites skip).
+      - run: pnpm eval
+
+  # M47 §3 (B8): best-effort validation that the PR body filled in the three
+  # cache-gate fields from .github/PULL_REQUEST_TEMPLATE.md. Advisory by
+  # construction: pull_request-only, continue-on-error, no checkout/install —
+  # it can never fail the build lane above.
+  pr-cache-gates:
+    if: github.event_name == 'pull_request'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate the cache-gate fields in the PR body
+        run: |
+          set -eu
+          body="$(curl -fsSL \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" \
+            | jq -r '.body // ""')"
+          failed=0
+          check_gate() {
+            name="$1"
+            # Checked box…                                   …or an N/A (+ reason) on the same line.
+            if printf '%s\n' "$body" | grep -Eq "^[[:space:]]*[-*][[:space:]]*\[[xX]\][[:space:]]*\**[[:space:]]*${name}"; then
+              echo "OK   ${name}: checked"
+            elif printf '%s\n' "$body" | grep -Eq "^[[:space:]]*[-*][[:space:]]*\[[[:space:]xX]\][[:space:]]*\**[[:space:]]*${name}.*N/A"; then
+              echo "OK   ${name}: N/A with reason"
+            else
+              echo "::warning::${name} was not addressed — tick its checkbox or write N/A with a one-line reason (see CONTRIBUTING.md)"
+              failed=1
+            fi
+          }
+          check_gate "Cache-impact"
+          check_gate "Cache-guard"
+          check_gate "System-prompt-review"
+          if [ "$failed" -ne 0 ]; then
+            echo "cache gates not filled in — the template's three checkboxes must each be checked or marked N/A"
+            exit 1
+          fi

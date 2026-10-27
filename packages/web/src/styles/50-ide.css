@@ -1,0 +1,494 @@
+/* --- M74-ide §3: the advanced-mode three-panel IDE grid (spec §1) ---
+   LEFT file tree · CENTER viewer · RIGHT the existing chat+composer column.
+   The side widths ride --tree-w/--chat-w (240px/400px spec defaults; 0px =
+   collapsed) — the App sets them inline, the boundary controls below
+   position off the SAME vars so one width drives the column, the toggle and
+   the handle together. max() keeps both controls on-screen when collapsed
+   (a 0px column must not push them out of the grid).
+   M75-ux2 §3: the CENTER column rides --mid-w (1fr = the flex share, 0px =
+   collapsed → the two side panels remain). With the 1fr track there is no
+   leftover grid space, so space-between never fires; once the center is 0px
+   it packs the freed space BETWEEN the two sides (tree pinned left, chat
+   pinned right — the two-panel layout) instead of trailing off the end. */
+.ide {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--tree-w, 220px) var(--mid-w, 1fr) var(--chat-w, 360px);
+  justify-content: space-between;
+  position: relative;
+  /* ui-review-r1 P9: the collapse rides the track list itself (the widths
+     are grid vars, not box widths) — browsers interpolate same-shape lists. */
+  transition: grid-template-columns var(--dur-med) var(--ease);
+}
+/* The three cells: columns of their own — the panels (height:100%) fill
+   them; overflow stays INSIDE each panel's scroller, never the cell. */
+.ide-cell {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ide-cell.ide-right { border-left: 1px solid var(--hair-1); }
+.ide-cell.ide-right > .chat { flex: 1; min-height: 0; }
+
+/* The 16px collapse toggles — straddling each panel's inner boundary
+   (±8px), vertically pinned near the top; ▸ collapsed / ◂ expanded. */
+.ide-toggle {
+  position: absolute;
+  top: 10px;
+  width: 16px;
+  height: 16px;
+  z-index: var(--z-toggle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--fs-caption);
+  line-height: 1;
+}
+/* M78-buddy §1: the Buddy sidebar's collapse toggle — same look, positioned
+   by .buddy-toggle off --buddy-w (it carries no data-side, so the --tree-w
+   rules below never touch it). */
+.ide-toggle:hover { background: var(--surface-2); color: var(--text-1); }
+.ide-toggle[data-side="left"] { left: max(calc(var(--tree-w, 240px) - 8px), 0px); }
+.ide-toggle[data-side="right"] { right: max(calc(var(--chat-w, 400px) - 8px), 0px); }
+/* M75-ux2 §3: the collapsed center's ▸ sits just right of the tree column
+   (clear of the left toggle by its own 12px offset). */
+.ide-toggle[data-side="center"] { left: max(calc(var(--tree-w, 240px) + 12px), 12px); }
+
+/* The 4px col-resize drag strips on the side panels' inner edges (spec §1:
+   180px~40% of the window; the App clamps — CSS only renders the gesture). */
+.ide-drag {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  z-index: var(--z-float);
+  cursor: col-resize;
+}
+.ide-drag[data-side="left"] { left: max(calc(var(--tree-w, 240px) - 2px), 0px); }
+.ide-drag[data-side="right"] { right: max(calc(var(--chat-w, 400px) - 2px), 0px); }
+/* 116 弧 A：拖拽条的 hover 提示去品牌色 → 中性 hover 洗色（alpha 白，
+     dsh 悬停令牌路线）。 */
+.ide-drag:hover { background: var(--hover); }
+
+/* --- M78-buddy §1/§5 (spec §1/§5): the Buddy 模式 two-panel shell — a
+   260px session sidebar beside the SAME conversation column the advanced
+   shell renders. No IDE panels, no drag handles (a one-line-row list has
+   no reflow to protect); the ◂ collapse toggle rides the grid like the
+   IDE's, positioning off --buddy-w instead of --tree-w. --- */
+.buddy {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--buddy-w, 260px) 1fr;
+  position: relative;
+  transition: grid-template-columns var(--dur-med) var(--ease); /* P9: the ide grid's twin */
+}
+.buddy-cell {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* The sidebar's border-right IS the panel seam — a 0px left column renders
+   no sidebar, so a collapsed shell keeps a clean window edge. */
+.buddy-cell.buddy-left > .sb { flex: 1 1 auto; min-height: 0; }
+.buddy-cell.buddy-main > .chat { flex: 1; min-height: 0; } /* the ide-right rule's twin */
+/* 用户报障（09-27）：buddy 会话流宽度和输入框不一致——根因：.chat 直接
+   填满 buddy-main，而 .composer 在 .inputarea 内（inputarea 有 16px 侧
+   padding）→ composer 可用宽=parent−32px < chat 宽。对齐：chat 的
+   max-width 公式与 composer 相同（都是 content-max+32px），但 chat 需
+   再减去 inputarea 的侧 padding 差值才能视觉对齐。 */
+/* 09-27 报障根治：inputarea 侧 padding 已撤，buddy 不再需要补偿公式 */
+/* ui-review-r2 P1: the chat cell is its own positioning context — the
+   .jump-bottom button (absolute, bottom:132px right:18px) otherwise
+   anchors to the BUDDY GRID, and a 6-row composer (~190px) overlaps the
+   button exactly like the ide-right twin this mirrors. */
+.buddy-cell.buddy-main { position: relative; }
+.buddy-toggle { left: max(calc(var(--buddy-w, 260px) - 8px), 0px); }
+
+/* The sidebar interior (T8 墨线 §3): 「新对话」 the first citizen (28px +
+   IconPlus + hairline), the 26px compact search row, the date-grouped 28px
+   session rows, the ⚙/mode-note footer carrying the model row. The panel
+   sits on --bg so its rows lift by the 墨线 color ladder (bg→surface→
+   surface-2) — hovers read as surface, selection as accent-weak. Colors
+   ride the tokens only. */
+.sb {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  border-right: 1px solid var(--hair-1);
+}
+.sb-new {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 28px;
+  margin: var(--sp-3) var(--sp-2) 0;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-ui);
+  cursor: pointer;
+}
+.sb-new:hover { border-color: var(--hair-2); color: var(--text-1); background: var(--surface-2); }
+/* The compact search row (26px): borderless quiet text + the magnifier;
+   hover surfaces it (surface + hairline) — 墨线 §3 「搜索降为紧凑行」.
+   calc 形态字号（ui−.5px）：介于 ui/caption 之间的安静行，令牌门 calc 豁免。 */
+.sb-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 26px;
+  margin: var(--sp-1) var(--sp-2) 0;
+  padding: 0 var(--sp-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  font-size: calc(var(--fs-ui) - .5px);
+  cursor: pointer;
+}
+.sb-search:hover { background: var(--surface); border-color: var(--hair-1); }
+.sb-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2);
+  gap: calc(var(--sp-1) / 2); /* // ω99-178: #11: 行距 2px（token 合成——4 倍数门不放行裸 2px） */
+}
+.sb-g {
+  font-size: var(--fs-caption);
+  font-family: var(--mono);
+  letter-spacing: .4px;
+  color: var(--text-3);
+  padding: var(--sp-3) var(--sp-2) var(--sp-1); /* // ω99-178: #12: 组头更强分隔（top 8→12px），不贴首行 */
+  flex-shrink: 0; /* // ω99-209: #2: 组头同禁缩——与 .sb-i 同因（矮窗压缩先偷组头，同走 .sb-list 滚动） */
+}
+
+/* // ω99-201: #5 — buddy 域常显滚动条（用户令 09-08「窗口很小，历史会话
+   不同的行展示不完全，加个滚动条」）：.sb-list/.chat 本就 overflow-y:auto，
+   但 macOS WKWebView 的 overlay 滚动条不可见——用户看到的是「截断且无滚动
+   条」。::-webkit-scrollbar 置外观即常显（非 overlay）；6px 细条 + line-2
+   thumb、radius-sm 圆帽（119 归档：6px 宽 thumb 上 6px 角=全圆帽，与旧 999px 渲染等价
+   圆端）。排布在本节尾部（原 .sb-list 规则之后）——ω99-178 的 CSS 钉按
+   文件内首Match 读 .sb-list 规则体，前置会偷走它的锚。只挂 .buddy 前缀
+   域——advanced/simple 的滚动条策略是别域设计取舍（simple 显式 none），
+   零改。 */
+.buddy .sb-list { scrollbar-width: thin; }
+.buddy .sb-list::-webkit-scrollbar { width: 6px; }
+.buddy .sb-list::-webkit-scrollbar-thumb { background: var(--hair-3); border-radius: var(--radius-sm); } /* 119：圆帽归档（6px 条上与 999px 渲染等价） */
+.buddy .sb-list::-webkit-scrollbar-track { background: transparent; }
+.buddy .chat { scrollbar-width: thin; }
+.buddy .chat::-webkit-scrollbar { width: 6px; }
+.buddy .chat::-webkit-scrollbar-thumb { background: var(--hair-3); border-radius: var(--radius-sm); } /* 119：同上 */
+.buddy .chat::-webkit-scrollbar-track { background: transparent; }
+.sb-i {
+  display: flex;
+  align-items: center;
+  height: 32px; /* // ω99-178: #10: 行高松绑 28→32px（height 非间距门辖属性） */
+  padding: 0 var(--sp-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: var(--fs-ui);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0; /* // ω99-209: #1: 行禁缩——overflow:hidden 使 flex 子项 automatic min 归零，矮窗 32px 行被压到线高以下、字形上下被裁（行内裁，滚动找不回）；禁缩后超出走 .sb-list 既有滚动（201 常显条即通路） */
+}
+.sb-i:hover { background: var(--surface); color: var(--text-1); }
+/* 左缘条 = inset 2px accent；选中态 = accent-weak 底。116 弧 A「inset 条按
+   语义重审」的裁决：侧栏会话选中条 = 选中态语义（且 0.3.28 品牌弧补丁时用户
+   明示保留侧栏竖条），accent 配额内保留——设置页 tabs 的同款竖条维持既有的
+   box-shadow:none 豁免（见 40-settings.css）。 */
+.sb-i.on { background: var(--accent-weak); color: var(--text-1); box-shadow: inset 2px 0 0 var(--accent); }
+.sb-i .sb-t {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-i .sb-when { flex: none; color: var(--text-3); font-size: var(--fs-caption); }
+/* ω99-297 (I4): 行本体 div 化后，标题/时间/徽标住进 .sb-main —— 键盘激活面
+   （div[role=button] + Enter/Space；全局焦点环直接生效），flex 三件套保住
+   .sb-t 的省略号链（min-width:0 地板）。 */
+.sb-i .sb-main {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ω99-150: 行内重命名 — hover ✎（quiet：text-3 淡显，:hover
+   或选中行常显——无 hover 的输入面也有入口）；编辑态 input 顶替标题位（同
+   sb-t 的字号/字体位），焦点走 accent 边（不另设焦点环——行内高度装不下
+   双环）。超限警示边由组件按 48 字前置以 inline borderColor: var(--warn)
+   给出（颜色只走令牌）。ω99-297 (I4): ✎ 升真按钮（行 div 化后嵌套合法，
+   键盘可达）——补 UA 重置三件，视觉与 span 时代零变化。 */
+.sb-i .sb-rename {
+  flex: none;
+  color: var(--text-3);
+  opacity: 0;
+  padding: 1px var(--sp-1);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+/* M1: 键盘聚焦同显影——at-btn/tclose 同款可达性硬要求（hover 不是唯一入口）。 */
+.sb-i:hover .sb-rename, .sb-i.on .sb-rename, .sb-i .sb-rename:focus-visible { opacity: 1; }
+.sb-i .sb-rename:hover { color: var(--text-1); }
+.sb-i input.sb-rename-in {
+  flex: 1;
+  min-width: 0;
+  height: 20px;
+  font-family: inherit;
+  font-size: var(--fs-ui);
+  color: var(--text-1);
+  background: var(--bg);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--sp-1);
+}
+.sb-i input.sb-rename-in:focus { outline: none; border-color: var(--accent); }
+
+/* ω99-214: #4 — 会话归档：①行内 hover「归档/恢复」动作（.sb-act，✎ 同款
+   quiet 语义——text-3 淡显，行 hover 常显）；②侧栏底部「已归档 N」折叠组
+   （组头走 .sb-g 的 caption+mono 词表；展开行同 sb-i 行语言、28px 略矮，
+   text-3 安静态、hover 回 text-1；列表 max-height 限高滚动不挤 footer）。
+   归档=视图层收起，会话数据原样在盘。间距全走 sp 令牌（4 倍数门）。
+   ω99-297 (I4): .sb-i 行内款升真按钮（键盘可达）——补 UA 重置三件；
+   .sb-arch-i 行整行即恢复钮（span 款不变，重置对 span 无副作用）。 */
+.sb-i .sb-act, .sb-arch-i .sb-act {
+  flex: none;
+  color: var(--text-3);
+  opacity: 0;
+  padding: 1px var(--sp-1);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+/* M1: 键盘聚焦同显影（两行族同名钮一并——sb-i 与 sb-arch-i）。 */
+.sb-i:hover .sb-act, .sb-arch-i:hover .sb-act,
+.sb-i .sb-act:focus-visible, .sb-arch-i .sb-act:focus-visible { opacity: 1; }
+.sb-i .sb-act:hover, .sb-arch-i .sb-act:hover { color: var(--text-1); background: var(--surface-2); }
+/* 小精灵会话弧 — 行内「追问」动作（.sb-follow）：.sb-act 的同款 quiet hover
+   语义，独立类名（214 归档弧把 .sb-act 钉成归档专属）。与归档共存（一行可
+   同时有 ✎/追问/归档）；活跃行也有（对自己岔一条线合法）。 */
+.sb-i .sb-follow {
+  flex: none;
+  color: var(--text-3);
+  opacity: 0;
+  padding: 1px var(--sp-1);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.sb-i:hover .sb-follow, .sb-i.on .sb-follow, .sb-i .sb-follow:focus-visible { opacity: 1; }
+.sb-i .sb-follow:hover { color: var(--text-1); background: var(--surface-2); }
+.sb-arch {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  margin: 0 var(--sp-2);
+  padding: 0 0 var(--sp-1);
+  border-top: 1px solid var(--hair-1);
+}
+.sb-arch-h {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 24px; /* height 非间距门辖属性（.sb-i 32px 同注） */
+  padding: 0 var(--sp-1);
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  letter-spacing: .4px;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+}
+.sb-arch-h:hover { color: var(--text-1); }
+.sb-arch-h .sb-arch-caret { flex: none; }
+.sb-arch-h .sb-arch-t { flex: none; }
+.sb-arch-h .sb-arch-hint { flex: 1; min-width: 0; text-align: right; }
+.sb-arch-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--sp-1) / 2); /* 行距 2px（token 合成——.sb-list 同款） */
+  padding: 0 var(--sp-1) var(--sp-1);
+  max-height: 160px; /* 限高滚动（height 族非间距门辖） */
+  overflow-y: auto;
+}
+.sb-arch-i {
+  display: flex;
+  align-items: center;
+  height: 28px; /* height 非间距门辖属性 */
+  padding: 0 var(--sp-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-family: inherit;
+  font-size: var(--fs-ui);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sb-arch-i:hover { background: var(--surface); color: var(--text-1); }
+.sb-arch-i .sb-t {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-arch-i .sb-when { flex: none; color: var(--text-3); font-size: var(--fs-caption); }
+
+/* ω99-215: #3 — 会话未读徽标（.sb-unread）：标题/时间右侧的「N 新」小圆
+   帽 chip——accent 实底 + accent-ink 文字（主按钮同款强信号对，对比度由
+   tokens 钉），一眼可见哪条托付有新进展。16px 高（height 非间距门辖属性，
+   .sb-i 32px 同注）、radius-sm chip 档角（119：胶囊帽退役，归 6/8/12 scale）；
+   间距全走 sp 令牌（4 倍数门）。仅非活跃行渲染；归档箱行永不渲染。 */
+.sb-i .sb-unread {
+  flex: none;
+  margin-left: var(--sp-1);
+  display: inline-flex;
+  align-items: center;
+  height: 16px; /* height 非间距门辖属性（.sb-i 32px 同注） */
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm); /* 119：徽标归 chip 档（胶囊帽退役） */
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-strong);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ω99-251 — 等待授权徽标（.sb-await）：与 .sb-unread 同一视觉语言
+   （215 家族同形：16px 圆帽 chip、accent 实底、caption 600——等待授权不是
+   新概念，是会话列表的一种状态），差异只在词（「等你授权」收益向短词）。
+   与未读互斥渲染（同一行恰一枚状态徽标——等待压过未读，组件层裁决）；
+   pet 行/归档箱行永不；证据落定即随下一轮行消失。 */
+.sb-i .sb-await {
+  flex: none;
+  margin-left: var(--sp-1);
+  display: inline-flex;
+  align-items: center;
+  height: 16px; /* height 非间距门辖属性（.sb-i 32px 同注） */
+  padding: 0 var(--sp-1);
+  border-radius: var(--radius-sm); /* 119：徽标归 chip 档（胶囊帽退役） */
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-strong);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ω99-313 — 定时标记（.sb-sched）：该会话被定时任务/提醒绑定时的 ⏰ 行
+   属性标记（schedulesList 的 sessionId join）。静信号对（text-2、caption
+   号、零底零帽）——它是「这个会话会自己醒」的属性提示，不是状态徽标
+   （等待授权/未读的恰一枚裁决不含它，可与二者共存）；pet 行/归档箱行
+   永不（sb-await 同边界）；能力缺席/读取失败整体隐藏（undefined 降级）。 */
+.sb-i .sb-sched {
+  flex: none;
+  margin-left: var(--sp-1);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  color: var(--text-2);
+}
+
+/* 多 driver 弧 C — 运行中标记（.sb-run）：该会话正被某车道跑着（主车道或
+   副车道的 busy 会话）时的 ◐ 旋转标记（IconSpinner+.spin——与主车道各
+   busy 面同一视觉语）。静信号对（text-2 同 sb-sched、零底零帽、flex none
+   防标题挤压）——行属性标记，可与等待授权/未读共存；pet 行/归档箱行永
+   不；老 server（无 lanes）prop 缺席 → 面整体隐藏，字节同形。间距走 sp
+   令牌。 */
+.sb-i .sb-run {
+  flex: none;
+  margin-left: var(--sp-1);
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  color: var(--text-2);
+}
+
+/* ω99-235: #9 — 小精灵行点击提示 toast（.sb-toast）——该行不可 resume（精灵会话在
+   精灵窗口活着），提示语即全部回应。静信号对（surface-2 底 + text-2 字，
+   caption 号），居中窄条；瞬态元素（无 pet 行的挂载永不渲染）。间距全走 sp
+   令牌，radius 走 --radius-md 令牌。 */
+.sb-toast {
+  flex: none;
+  margin: var(--sp-1) var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  text-align: center;
+}
+
+/* ω99-147: the footer's model row (.sb-model / the .pop ModelSelector) is
+   retired with the component branch — only [Buddy 模式 note][⚙ 设置] remain,
+   right-aligned so the 260px column carries no hole where the chip sat. */
+.sb-f {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  border-top: 1px solid var(--hair-1);
+  padding: var(--sp-1) var(--sp-2);
+  color: var(--text-3);
+}
+.sb-f .sb-note { flex: none; color: var(--text-3); font-size: var(--fs-caption); }
+.sb-f .settings-link {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  padding: 0;
+  cursor: pointer;
+}
+.sb-f .settings-link:hover { background: var(--surface); color: var(--text-1); }
+

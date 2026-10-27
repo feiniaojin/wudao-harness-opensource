@@ -1,0 +1,21 @@
+<!doctype html>
+<!-- The pre-handshake frame: the shell loads this while the sidecar boots,
+     then navigates to the sidecar's URL. Never shipped as content. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>wudao ui</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #111318; color: #c9cdd6; }
+  body { font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+         display: flex; align-items: center; justify-content: center; }
+  #status { max-width: 34rem; padding: 0 1.5rem; white-space: pre-wrap; }
+  .dot { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+</style>
+</head>
+<body>
+<p id="status"><span class="dot">●</span> starting wudao ui…</p>
+</body>
+</html>

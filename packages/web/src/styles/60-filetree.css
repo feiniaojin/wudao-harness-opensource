@@ -1,0 +1,412 @@
+/* --- M74-ide §2/§3: the IDE data panels (file tree + file viewer) ---
+   The PANEL INTERIORS only — the three-column grid, collapse and drag
+   handles are Task 3's. Data surfaces, so both pin var(--mono) explicitly
+   (the M64-visual §4 rule); colors ride the tokens only (zero new hex —
+   this sheet's standing rule). */
+.filetree {
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* 119 用户反馈修正（「背景和工作区域的颜色对比过于强烈」）：文件树域是
+     页面级大区，归 --bg 同色画布——区域分界只靠 hair-1 发丝线（右侧缘）。
+     旧 --surface 实底是 arc116 大区阶梯的遗留：3~5 HSL-L 步进在整页尺度
+     生硬（dsh 的步进是给浮起小卡的）。行 hover 仍是 surface（+1 档），
+     选中 accent-weak——.sb 侧栏同一律。 */
+  background: var(--bg);
+  border-right: 1px solid var(--hair-1);
+  font-family: var(--mono);
+  font-size: var(--fs-ui);
+  overflow: hidden;
+}
+.filetree .tree-top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-2);
+  border-bottom: 1px solid var(--hair-1);
+  /* M75-ux1 §2: the switcher's dropdown anchors to the tree-top. */
+  position: relative;
+}
+/* M75-ux1 §2: the workspace switcher — [📁 dirname ▾], full path in the
+   tooltip; the flex:1 the old plain label carried moves to the BUTTON so the
+   ellipsis chain (button → span) keeps working. */
+.filetree .ws-switcher {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  text-align: left;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+.filetree .ws-switcher:hover { background: var(--surface); color: var(--text-1); } /* 119：画布律 hover=+1 档 */
+.filetree .tree-root {
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The recents dropdown: a fixed transparent backdrop catches outside clicks;
+   the menu overlays the tree body below the tree-top (absolute inside the
+   panel, so the filetree's overflow:hidden cannot clip it). */
+/* 极简工作空间切换（spec §3.2）—— WorkspaceChip 复用同一菜单家族：把
+   .ws-backdrop/.ws-menu/.ws-item(.hover)/.ws-open-other/.ws-loading 从
+   .filetree 作用域提升为全局（树顶命中不变——放宽作用域不改原命中），
+   chip 菜单在 composer 里获得同一视觉。树顶专属的 .ws-switcher 不提升。 */
+.ws-backdrop { position: fixed; inset: 0; z-index: calc(var(--z-ws-menu) - 1); }
+.ws-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--z-ws-menu);
+  margin-top: var(--sp-1);
+  display: flex;
+  flex-direction: column;
+  max-height: 220px;
+  overflow-y: auto;
+  background: var(--surface);
+  /* 116 弧 A：浮层菜单 elevation 中档（描边入影），边框退役。
+     119：浮层圆角归 lg 12 档。 */
+  border: 0;
+  border-radius: var(--radius-lg);
+  padding: var(--sp-1);
+  box-shadow: var(--elev-2);
+  animation: pop var(--dur-fast) var(--ease);
+}
+.ws-item {
+  display: block;
+  width: 100%;
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  text-align: left;
+  padding: var(--sp-1) var(--sp-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.ws-item:hover { background: var(--surface-2); color: var(--text-1); }
+.ws-open-other { border-top: 1px solid var(--hair-1); border-radius: 0 0 var(--radius-lg) var(--radius-lg); color: var(--text-3); } /* 119：随 .ws-menu 归 lg */
+.ws-loading { flex: none; padding: var(--sp-1) var(--sp-2); color: var(--text-3); }
+/* 树顶菜单 left:0;right:0 撑满树顶行宽；chip 菜单锚定工具行左缘、不撑满。
+   .composer-tools 是定位语境（原无 position）。
+   0.3.4 反馈：composer 在视口底部，chip 菜单继承全局 .ws-menu 的 top:100%
+   向下开——整张菜单出屏。方向在此翻转（bottom:100% 向上开），树顶的向下
+   不动（它在视口顶部）。max-height:220px 自带内滚，短窗也不会顶出屏幕。 */
+.composer-tools { position: relative; }
+.composer-tools .ws-menu {
+  left: 0;
+  right: auto;
+  min-width: 220px;
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  margin-bottom: var(--sp-1);
+}
+/* M76-ux2 §6 — the right-click context menu (ContextMenu.tsx): the
+   self-drawn surface for the tree's file/dir rows and the chat messages'
+   复制文本. Fixed at the pointer's viewport coordinates over a transparent
+   click-away backdrop; above the ws-menu layer (26) and the modal (30),
+   under the Ctrl+P palette (40).
+   墨线 T14: the surface/rows re-shelled onto the .menu family (surface-2
+   pop, radius-md, 26px rows — the old .ctx-menu/.ctx-item rules retired
+   into it); the transparent click-away backdrop stays here — a context
+   menu must NOT dim the screen, so it never rides .scrim. */
+.ctx-backdrop { position: fixed; inset: 0; z-index: calc(var(--z-ctx-menu) - 1); }
+/* The ☰ hidden-toggle + ⟳ refresh — the icobtn idiom at tree scale. */
+.filetree .tree-toggle,
+.filetree .tree-refresh {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-ui);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+.filetree .tree-toggle:hover,
+.filetree .tree-refresh:hover { background: var(--surface); color: var(--text-1); } /* 119：画布律 hover=+1 档 */
+.filetree .tree-toggle[aria-pressed="true"] { color: var(--accent); }
+.filetree .tree-body { flex: 1; overflow-y: auto; padding: var(--sp-1) 0; }
+.filetree .tree-node { min-width: 0; }
+/* --- 墨线 T11: the tree ROW — a 24px .ft-row line: depth rides repeated
+       .ft-indent spans (one per level, --sp-3 wide — the old inline
+       paddingLeft arithmetic is gone), then caret / ico / name. Hover =
+       --surface chip on the panel's window bg; the ACTIVE row carries .on
+       (accent-weak fill + text-1 — the state moved off the .tree-node
+       wrapper, which keeps only the kind/modified marks + data-path). --- */
+.ft-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 24px;
+  font-size: var(--fs-ui);
+  color: var(--text-2);
+  border-radius: var(--radius-sm);
+  padding-right: var(--sp-2);
+  cursor: pointer;
+}
+.ft-row:hover { background: var(--surface); color: var(--text-1); }
+.ft-row.on { background: var(--accent-weak); color: var(--text-1); }
+.ft-row .ft-indent { width: var(--sp-3); flex: none; }
+.ft-row .caret { flex: none; width: 10px; color: var(--text-3); user-select: none; }
+.ft-row .ico { flex: none; font-size: var(--fs-caption); }
+.ft-row .name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.filetree .tree-node.file > .ft-row .name { font-weight: var(--fw-regular); }
+.filetree .tree-node.dir > .ft-row .name { font-weight: var(--fw-strong); }
+/* M76-ux2 §1 (spec #12): the agent-modified marker — a 2px bar on the row's
+   left edge (inset shadow: no layout shift) + the colored filename; cleared
+   by the manual ⟳ or a workspace switch. 116 弧 A：modified = 改动语义 →
+   --ok 语义族（与 .diff .add/.chg-cnt-plus 同语），不再是品牌绿。 */
+.filetree .tree-node.file.modified > .ft-row { box-shadow: inset 2px 0 0 var(--ok); }
+.filetree .tree-node.file.modified > .ft-row .name { color: var(--ok); }
+/* The hover-revealed @ mention button (12px hit target, visibility keeps
+   the row layout stable — no reflow on hover). */
+.filetree .at-btn {
+  flex: none;
+  visibility: hidden;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+.filetree .ft-row:hover .at-btn,
+.filetree .at-btn:focus-visible { visibility: visible; }
+.filetree .at-btn:hover { color: var(--accent); background: var(--surface-2); }
+.filetree .tree-loading,
+.filetree .tree-empty,
+.filetree .tree-err { color: var(--text-3); padding: 1px 8px; }
+/* ui-review-r1 I5/P7: the sidebar's 暂无会话/加载失败 empty state reuses the
+   tree-empty idiom, centered in the empty list column. */
+.sb .tree-empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+/* ω99-243 S1/S2: 侧栏首载骨架 + 失败重试行。骨架 = 3 行行几何占位
+   （32px 同 .sb-i 高、radius-sm、surface 底）配 tree-spin-pulse 透明度
+   脉冲（时长门既有 LOOP PERIOD 白名单同款名字锚定）——CSS 骨架非闪烁
+   文本；宽度阶梯 78%/56% 读作「列表」而非三根等宽条。失败行 =
+   .filetree .tree-err[role=button] 的侧栏镜像（FileTree 同款点击重试
+   词汇：fit-content + hover surface-2 行带）。 */
+.sb-skels { display: flex; flex-direction: column; gap: calc(var(--sp-1) / 2); padding: var(--sp-1) 0; }
+.sb-skeleton {
+  height: 32px; /* height 非间距门辖属性（.sb-i 32px 同注） */
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  animation: tree-spin-pulse 1s ease-in-out infinite;
+}
+.sb-skeleton:nth-child(2) { width: 78%; }
+.sb-skeleton:nth-child(3) { width: 56%; }
+.sb .tree-err { color: var(--text-3); padding: 1px 8px; }
+.sb .tree-err[role="button"] {
+  cursor: pointer;
+  width: fit-content;
+  border-radius: var(--radius-sm);
+}
+.sb .tree-err[role="button"]:hover { color: var(--text-1); background: var(--surface); } /* 119：画布律 */
+/* M75-ux2 §5: the CSS-animated loading dot (one token color, opacity pulse
+   — no spinner font, no new hex) + the clickable retry row. */
+.filetree .tree-spin {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: var(--sp-2);
+  border-radius: 50%;
+  background: var(--text-3);
+  vertical-align: middle;
+  animation: tree-spin-pulse 1s ease-in-out infinite;
+}
+@keyframes tree-spin-pulse {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.filetree .tree-err[role="button"] {
+  cursor: pointer;
+  width: fit-content;
+  border-radius: var(--radius-sm);
+}
+.filetree .tree-err[role="button"]:hover { color: var(--text-1); background: var(--surface); } /* 119：画布律 */
+
+/* --- M75-ux2 §3: the center panel's tab strip (32px, spec) ---
+   filename + hover-revealed × per tab, the accent underline on the active
+   tab, the [+] placeholder when empty, the ◂ collapse button at the right
+   end. Data surface → mono pinned; tokens only. */
+.tabbar {
+  flex: none;
+  height: 32px;
+  display: flex;
+  align-items: stretch;
+  /* 119：页面级条带归 --bg 画布（topbar「去实底」同律）——分隔只靠
+     hair-1 底缘；标签态由 accent 下划线 + 文字色承担。 */
+  background: var(--bg);
+  border-bottom: 1px solid var(--hair-1);
+  font-family: var(--mono);
+  font-size: var(--fs-ui);
+  overflow: hidden;
+}
+.tabbar .tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  max-width: 200px;
+  padding:  0 var(--sp-2) 0 var(--sp-3);
+  border-right: 1px solid var(--hair-1);
+  color: var(--text-2);
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+.tabbar .tab:hover { background: var(--surface); color: var(--text-1); } /* 119：画布律 hover=+1 档 */
+.tabbar .tab .tname { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* The active tab: full-strength text on the viewer's bg + the 2px accent
+   underline (spec: 当前标签 accent 下划线). ui-review-r1 P9: every tab
+   carries the (invisible) underline so activation FADES it in/out. */
+.tabbar .tab.active { color: var(--text-1); background: var(--bg); }
+.tabbar .tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.tabbar .tab.active::after { opacity: 1; }
+/* The × close button — the @-btn idiom: hover-revealed, layout-stable. */
+.tabbar .tab .tclose {
+  flex: none;
+  visibility: hidden;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-ui);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+.tabbar .tab:hover .tclose,
+.tabbar .tab .tclose:focus-visible { visibility: visible; }
+.tabbar .tab .tclose:hover { color: var(--text-1); background: var(--surface-2); }
+.tabbar .tab-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+}
+.tabbar .tabbar-collapse {
+  flex: none;
+  margin-left: auto;
+  width: 26px;
+  border: 0;
+  border-left: 1px solid var(--hair-1);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+.tabbar .tabbar-collapse:hover { background: var(--surface); color: var(--text-1); } /* 119：画布律 */
+
+/* --- M75-ux2 §8: the viewer's breadcrumb strip (24px, spec) ---
+   path segments separated by /; every DIR prefix is a click target (the
+   App opens it as a tab), the current segment rides the accent. The §11
+   「源码/预览」toggle hangs off the strip's right end (md files only). */
+.fileviewer .breadcrumb {
+  flex: none;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-3);
+  border-bottom: 1px solid var(--hair-1);
+  background: var(--bg); /* 119：页面级条带归画布（.tabbar 同律） */
+  color: var(--text-2);
+  font-family: var(--mono);
+  font-size: var(--fs-ui);
+  overflow: hidden;
+}
+.fileviewer .crumb-sep { color: var(--text-3); user-select: none; }
+.fileviewer .crumb { white-space: nowrap; color: var(--text-2); }
+.fileviewer .crumb[role="button"] {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding:  0 var(--sp-1);
+}
+.fileviewer .crumb[role="button"]:hover { color: var(--text-1); background: var(--surface); } /* 119：画布律 */
+.fileviewer .crumb.current { color: var(--accent); }
+/* §11: the 源码/预览 segmented toggle — the chip idiom at breadcrumb scale. */
+.fileviewer .md-toggle {
+  margin-left: auto;
+  display: flex;
+  gap: var(--sp-1);
+}
+.fileviewer .mdmode {
+  border: 1px solid var(--hair-2);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  padding: var(--sp-1) var(--sp-2);
+  cursor: pointer;
+}
+.fileviewer .mdmode:hover { color: var(--text-1); background: var(--surface); } /* 119：画布律（pressed 态仍是 surface-2 选中档） */
+/* 116 弧 A：源码/预览的活动档去品牌色（芯片底中性化的同族裁决——分段控
+   件的活动态是「档位」不是「选中行」），中性三信号：text-1 + hair-2 边 +
+   surface-2 底。 */
+.fileviewer .mdmode[aria-pressed="true"] {
+  color: var(--text-1);
+  border-color: var(--hair-2);
+  background: var(--surface-2);
+}
+/* §11: the preview scroll area — the prose stack (the .md blocks inherit
+   the chat renderer's classes; the viewer's own mono pin stops here). */
+.fileviewer .viewer-md {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--sp-2) var(--sp-4);
+  font-family: var(--font);
+  font-size: 14px;
+}
+

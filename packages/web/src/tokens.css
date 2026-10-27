@@ -1,0 +1,186 @@
+/* packages/web/src/tokens.css — M64-visual §1. 暗色默认;light 覆写。
+   红色律:--danger 只用于错误卡/diff 删除/需确认徽标/拒绝。 */
+:root, [data-theme="dark"] {
+  /* —— 116 弧 A「材质升级」：背景阶梯从暖灰迁到蓝调冷灰（B−R≈5），层间
+     HSL 亮度步进收到 3~5（8.82→11.96→15.49%，dsh 配方；算值与全套对比度
+     门见 scripts/arc116-ladder.mjs）。暖黑 #171716 与青蓝主题打架的诊断
+     （116 报告 §3.a 差距 3）由此收口。 */
+  --bg: #141519; --surface: #1C1D21; --surface-2: #25262A;
+  /* ui-review-r1 I2: text-3 must clear 4.5:1 on bg/surface/surface-2 in BOTH
+     themes (tokens-contrast.test.ts gates it) — #70706A was 2.89~3.60. */
+  --text-1: #EAEAE6; --text-2: #A6A6A0; --text-3: #94948E;
+  /* —— 116 弧 A：发丝线三档（黑白 alpha 叠层，非实色）。同一条边在任何
+     表面上自动协调（alpha 随底面重算），这是 dsh 边框律的通道形式——
+     rgba 自 Safari 3 起支持，WKWebView macOS 12 安全。档位：hair-1 静态
+     分隔/卡片描边；hair-2 悬停/强调边与输入框描边；hair-3 滚动条
+     thumb/最强调分隔。退役的实色线令牌（--line/--line-2）已全量迁此。 */
+  --hair-1: rgba(255,255,255,.07); --hair-2: rgba(255,255,255,.13); --hair-3: rgba(255,255,255,.22);
+  /* hover 洗色（116 §3.a 改造建议 3）：alpha 洗，不是实色表面切换——
+     供「rest 已是 surface-2、hover 需再亮半档」的位点消费。 */
+  --hover: rgba(255,255,255,.08);
+  /* I2: the 14px user-bubble text on the green accent — white was 3.39:1;
+     the near-black ink (the black-accent dark variant's own idiom) is 5.30.
+     ω99-303: the green itself lifted #0E9F6E→#12A874 — as TEXT on surface-2
+     (hovered chips, sig-glyph) the old value sat at 4.25:1; the lift clears
+     4.71 on the worst surface and the ink pair only improves (5.88). */
+  --accent: #12A874; --accent-ink: #141519; --accent-weak: #12A8741A;
+  /* 116 弧 A「accent 收权」：用户气泡去品牌色 → 中性灰（dsh：气泡从不用
+     品牌色）。暗色 = 白 alpha 叠层（对 --bg 合成 ≈ rgb(41,42,46)，墨
+     #EAEAE6 合成对比 11.9:1）。三 accent 的气泡自此同值——气泡不再是
+     accent 的消费角色（逐 accent 覆写块随之退役）。 */
+  --bubble-user-bg: rgba(255,255,255,.09); --bubble-user-ink: #EAEAE6;
+  --ok: #4ADE80; --warn: #FBBF24; --danger: #F87171;
+  /* 桌面 WebKit 兼容层：styles.css 全面退役 color-mix（旧 WKWebView 在
+     计算值时刻判其无效，边框色会静默回落 currentColor＝近黑描边）。
+     透明度改用 rgb(var(--X-rgb) / α) 消费这些数字通道令牌 — 引擎支持
+     自 Safari 12.1 起，远低于 color-mix 的 16.2 门槛。通道值与上面
+     各 hex 令牌一一对应，改色必须两处同步。 */
+  --accent-rgb: 18 168 116; --ok-rgb: 74 222 128;
+  --warn-rgb: 251 191 36; --danger-rgb: 248 113 113; --bg-rgb: 20 21 25;
+  /* 120 弧「选择语言」：主色 swatch 的身份色通道——外观页三选的色点展示
+     「黑/蓝/绿」的固定身份（不随当前 accent 漂移——swatch 表达选项本身，
+     像 claude.ai 的主题预览块）。与 data-accent 块的运行时值语义不同：
+     那些是「现在的颜色」，这些是「可选的颜色」。名字避开 CSS 裸色名
+     （ink/royal/jade）——flow-visual 的关键词门扫声明值，black/blue/green
+     会误中（--swatch-black-rgb 的连字符是词边界）。 */
+  --swatch-ink-rgb: 17 17 17; --swatch-royal-rgb: 47 84 235; --swatch-jade-rgb: 18 168 116;
+  /* —— 116 弧 B「骨架升级」：内容宽从 720px 死宽改自适应（dsh 配方
+     --dsh-chat-content-width）。clamp 的 % 在消费者的 max-width/width 语境
+     里对包含块解析（.chat/.composer 列宽、.set-body 表单列），大屏舒展到
+     920、窄窗回落 680——「窄死宽」是 116 报告廉价感来源 #5 的主项。clamp()
+     自 Safari 13.1 起，WKWebView macOS 12 安全。composer/inline 卡族沿
+     +32px 派生（dsh：composer = 内容宽 +32）。 */
+  --content-max: clamp(680px, 64%, 920px);
+  /* I6: the mix-to-black operand (wizard scrim) as a token — no bare color
+     keywords in styles.css; black mixes identically in both themes. */
+  --shade: #000000;
+  /* M64-visual §4: the proportional prose stack (mockup --font). Code/tool
+     surfaces pin --mono explicitly (styles.css mono audit) — the body font is
+     NO longer mono, so nothing mono may rely on inheritance. */
+  --font: -apple-system, "PingFang SC", "SF Pro Text", sans-serif;
+  /* M65-space §1: the traffic-light color tokens are GONE — the desktop
+     shell's lights are the NATIVE macOS ones (tauri.conf titleBarStyle
+     Overlay + trafficLightPosition), never web-drawn dots. */
+  /* M64-visual §3: the syntax-highlight palette (per-theme — the old sheet
+     baked the dark-only One Dark literals); --overlay is the modal scrim. */
+  /* ω99-303: --tok-com #7d8894→#848e9a — 4.52:1 on surface had zero margin
+     (the gate rounds at 4.5); the nudge buys 4.90 with no visible shift. */
+  --tok-key: #c678dd; --tok-str: #98c379; --tok-com: #848e9a;
+  --tok-num: #d19a66; --tok-fn: #61afef;
+  /* —— 墨线工艺层（2026-08-22 spec §1）—— 字号五档/行高 */
+  --fs-caption:12px; --fs-ui:13px; --fs-body:14px; --fs-title:16px; --fs-head:20px;
+  --lh-caption:1.4; --lh-ui:1.4; --lh-body:1.55; --lh-title:1.4; --lh-head:1.3;
+  /* DESIGN-SYSTEM P1：字重三令牌（此前 600/700 散落 ~50 处无管理） */
+  --fw-regular:400; --fw-medium:500; --fw-strong:600;
+  /* DESIGN-SYSTEM P2 预置：浮层玻璃令牌（先定义，Phase 2 消费） */
+  --glass-fill:rgba(28,29,33,.78); --glass-blur:18px;
+  /* 间距网格 4px 基数；组件内 2-3 档、组件间 3-4 档、区块间 6-8 档 */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
+  /* 动效三档 + 统一缓动（快出慢停）；prefers-reduced-motion 见 styles.css */
+  --dur-fast:120ms; --dur-med:180ms; --dur-slow:240ms; --ease:cubic-bezier(.2,.8,.2,1);
+  /* —— 119 用户反馈修正（0.4.2「会话区直角/会话框圆角不统一」）：圆角
+     收敛为单一 scale，全站按族消费——sm 6（chip/小件/徽标）、md 8（卡片/
+     工具卡/输入条/气泡——气泡与卡片同族）、lg 12（浮层：菜单/弹窗/toast/
+     命令面板）、bubble 8（气泡语义档，与 md 同值、单独成名为对话流的
+     气泡族留位）。--radius-pill(22px) 与 999px 胶囊帽全量退役——16px 复合
+     气泡角与胶囊帽是「不统一」感的两个主源；直角(0)仅保留给全出血容器
+     （页面/侧栏/主列边界，与大区同色后自然无边角感）。 */
+  --radius-sm:6px; --radius-md:8px; --radius-lg:12px;
+  /* 119：气泡改 8px 均匀角（旧值 16px 16px 4px 16px 的复合角与整体 6/8
+     语言不搭——用户点名「不统一」的主源）。语义档保留：对话流气泡族
+     （.msg-user .bub）专用名，值与 --radius-md 同族同值。 */
+  --radius-bubble: 8px;
+  /* ω99-243: #1 — z-index 层级表（九档）：styles.css 的 18 处 z-index 从散落
+     字面量（4~61）收编到此——同层 click-away backdrop = calc(主层 - 1)。
+     层级语义：jump=会话列跳底钮 / float=局部浮起（pop 菜单、mcm 下拉、
+     settings-toasts、ide 拖条）/ toggle=骑面板边的折叠钮 / legend=ctx 图例 /
+     ws-menu=工作空间菜单 / modal=弹层 scrim-overlay 家族 / ctx-menu=右键菜单
+     与选区 chip / palette=Ctrl+P 文件搜索 / wizard=首跑向导（其 Esc 确认
+     = calc(+1)）。新浮层必须入档，不许裸数字。 */
+  --z-jump: 4; --z-float: 5; --z-toggle: 6; --z-legend: 20; --z-ws-menu: 26;
+  --z-modal: 30; --z-ctx-menu: 36; --z-palette: 40; --z-wizard: 60;
+  /* —— 116 弧 A：elevation 三件套（dsh gradient-shadow-text 配方）。
+     「浮起」= 0.5px 发丝描边画进 box-shadow（不占布局）+ 两层极淡柔光
+     （alpha .02~.05）。暗色下柔光几乎不可见、由描边承担分离——重投影
+     （单档 0 6px 20px rgba(0,0,0,.45)）已退役，那是 Web 2.0 廉价感的
+     最大单一来源（116 报告 §0-2）。
+     ★ 边框与投影不同用（dsh 成文律）：凡消费 --elev-* 的表面一律
+     border:0——描边已在影里，再画边框就是双重轮廓。低=小浮件（选中
+     chip/图例）；中=菜单/composer/浮卡；高=模态/向导/命令面板。
+     --elev-2-soft 是中档去描形态：composer 的 focus/dragover 态用它 +
+     accent 环，替代已退役的「1px 边 + 投影」叠加位点。 */
+  --elev-1: 0 0 0 .5px rgba(255,255,255,.09), 0 2px 6px 0 rgba(0,0,0,.05), 0 0 12px 0 rgba(0,0,0,.02);
+  --elev-2: 0 0 0 .5px rgba(255,255,255,.11), 0 4px 16px 0 rgba(0,0,0,.05), 0 0 24px 0 rgba(0,0,0,.03);
+  --elev-2-soft: 0 4px 16px 0 rgba(0,0,0,.05), 0 0 24px 0 rgba(0,0,0,.03);
+  --elev-3: 0 0 0 .5px rgba(255,255,255,.13), 0 8px 24px 0 rgba(0,0,0,.05), 0 0 40px 0 rgba(0,0,0,.04);
+  /* ω99-295: mono 单一事实源 —— 更全栈（ui-monospace 打头）从 styles.css 的
+     覆写行收编至此（该覆写本就是级联赢家，渲染字节零变化）；styles.css 不再
+     重定义任何令牌（conformance 门钉死）。 */
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --overlay: rgba(4, 6, 9, .72);
+}
+[data-theme="light"] {
+  /* 116 弧 A：浅色侧同迁冷灰（bg B−R=3、surface-2 B−R=5）；纯白 surface
+     是色相中性的卡面锚点。阶梯/对比算值同 scripts/arc116-ladder.mjs。 */
+  --bg: #F5F6F8; --surface: #FFFFFF; --surface-2: #EEF0F3;
+  --text-1: #1A1A18; --text-2: #52524E; --text-3: #6B6B65;
+  /* 发丝线浅色对偶：黑 alpha 三档（116 弧 A）。 */
+  --hair-1: rgba(0,0,0,.08); --hair-2: rgba(0,0,0,.14); --hair-3: rgba(0,0,0,.22);
+  --hover: rgba(0,0,0,.05);
+  /* ω99-303: light ok/danger darkened one step — on surface-2 (hovered
+     toolcard/act-row status marks) the red-600/green-700 stock sat
+     4.27/4.43:1; the whole light row now clears 4.5 on every surface,
+     diff +/- tint included (measured 4.89/5.60). */
+  --ok: #146C38; --warn: #92600A; --danger: #C81E1E;
+  /* 通道令牌（浅色侧覆写；accent-rgb 沿用上方暗色缺省，浅色不改 accent） */
+  --ok-rgb: 20 108 56; --warn-rgb: 146 96 10; --danger-rgb: 200 30 30; --bg-rgb: 245 246 248;
+  /* 116 弧 A：浅色用户气泡同去品牌色 → 中性冷灰对（墨 #1B1C22 对底
+     #E9EAEF ≈14.1:1）。三 accent 同值——accent 块不再覆写气泡。 */
+  --bubble-user-bg: #E9EAEF; --bubble-user-ink: #1B1C22;
+  /* elevation 三件套（浅色侧）：描边翻黑，柔光配方与暗色同（黑影在浅底
+     上可读，承担更多分离；档位语义同上方暗色注释）。 */
+  --elev-1: 0 0 0 .5px rgba(0,0,0,.09), 0 2px 6px 0 rgba(0,0,0,.04), 0 0 12px 0 rgba(0,0,0,.02);
+  --elev-2: 0 0 0 .5px rgba(0,0,0,.11), 0 4px 16px 0 rgba(0,0,0,.05), 0 0 24px 0 rgba(0,0,0,.03);
+  --elev-2-soft: 0 4px 16px 0 rgba(0,0,0,.05), 0 0 24px 0 rgba(0,0,0,.03);
+  --elev-3: 0 0 0 .5px rgba(0,0,0,.13), 0 8px 24px 0 rgba(0,0,0,.05), 0 0 40px 0 rgba(0,0,0,.04);
+  /* One Light counterparts — same roles, readable on the light bg. ω99-303: the
+     stock palette's str/com/fn sat 3.21/2.58/4.05 on the .pre surface — the
+     three darkened to 4.79/4.94/5.49 (comments stay the quietest role AND
+     italic; text-2 #52524E is still a full tier darker, so the hierarchy
+     reads). Same hue families, just honest about white. */
+  --tok-key: #a626a4; --tok-str: #41803E; --tok-com: #6f7076;
+  --tok-num: #986801; --tok-fn: #325FDE;
+  --overlay: rgba(23, 23, 22, .5);
+  /* DESIGN-SYSTEM P2 §2.12 消费侧补全：:root 的 --glass-fill 是暗色 surface
+     (28,29,33) 的 .78 实底——浅色主题若无对应值，层内浮层会整个画成深色。
+     同律给浅色侧配 surface(#FFFFFF) @ 同 .78（暗色值 P1 已定，此处零触碰；
+     --glass-blur 18px 亮暗共用）。 */
+  --glass-fill: rgba(255, 255, 255, .78);
+}
+[data-accent="black"][data-theme="dark"]  { --accent: #E8E8E4; --accent-ink: #141519; --accent-weak: #E8E8E41A; --accent-rgb: 232 232 228; }
+/* 116 弧 A：black/blue 的浅色气泡覆写退役——气泡已中性化（浅色缺省对
+   在 light 块，三 accent 同值），accent 块不再定义气泡 token（级联落
+   light 块）。放线序在纯 blue 块之后：tokens-contrast 的 ruleBlock 首匹
+   配仍取到纯 blue 块的 --accent，不误读这块。 */
+[data-accent="black"][data-theme="light"] { --accent: #111111; --accent-ink: #FFFFFF; --accent-weak: #11111114; --accent-rgb: 17 17 17; }
+[data-accent="blue"]  { --accent: #2F54EB; --accent-ink: #FFFFFF; --accent-weak: #2F54EB1A; --accent-rgb: 47 84 235; }
+[data-accent="green"] { --accent: #12A874; --accent-ink: #141519; --accent-weak: #12A8741A; --accent-rgb: 18 168 116; }
+/* ω99-303: the two theme-splits the factory triads lacked — both close
+   accent-as-TEXT gaps the ink-on-accent gate never saw.
+   green/light: the factory green (#12A874 in :root) is a 3.0-3.4:1 TEXT on
+   light surfaces — links/selected rows were quietly illegible. Light gets
+   its own deeper green + WHITE ink (black ink on #0B7A55 is 3.36; white is
+   5.34 — the light idiom, like blue's). The user bubble is NEUTRAL since
+   116 弧 A — it lives in the theme blocks; this block never touches it.
+   blue/dark: the light-theme indigo #2F54EB as text on dark surfaces is
+   2.46-3.07:1 — the worst pair in the app. Dark gets the lifted #6C8CFA
+   with NEAR-BLACK ink (the black-accent dark idiom, 5.78). :not(light)
+   rather than [data-theme="dark"] so the no-attribute boot default (the
+   :root convention) resolves dark too. Both blocks sit AFTER their plain
+   blocks so tokens-contrast's ruleBlock first-match keeps reading the
+   plain (light/default) triad. */
+[data-accent="green"][data-theme="light"] { --accent: #0B7A55; --accent-ink: #FFFFFF; --accent-weak: #0B7A551A; --accent-rgb: 11 122 85; }
+[data-accent="blue"]:not([data-theme="light"]) { --accent: #6C8CFA; --accent-ink: #141519; --accent-weak: #6C8CFA1A; --accent-rgb: 108 140 250; }
+
+/* DESIGN-SYSTEM P1：数字宽度稳定（计数/时长/token 计量处用） */
+.num { font-variant-numeric: tabular-nums; }

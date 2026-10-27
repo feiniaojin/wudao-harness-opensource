@@ -1,0 +1,13 @@
+# ω99-110 (P1) — the selection guide card's ONE command: open System
+# Settings → Privacy & Security → Accessibility (the only permission the
+# AX selection read needs). Without this entry the command is dead: the pet
+# webview runs on the sidecar's http://127.0.0.1 origin, which tauri's ACL
+# treats as REMOTE — remote content can never reach an app command without
+# an explicit capability (the read-dropped-file/get-pet-skin rule).
+#
+# Referenced by capabilities/pet.json (the pet window's selection card is
+# the only invoker; the main window never calls it).
+[[permission]]
+identifier = "allow-open-accessibility-settings"
+description = "Allows opening System Settings at the Privacy & Accessibility pane (the pet's selection-assistant permission guide)."
+commands.allow = ["open_accessibility_settings"]

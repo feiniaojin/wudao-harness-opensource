@@ -1,0 +1,15 @@
+{
+  "identifier": "drag",
+  "description": "Allow the webview to start window dragging (the topbar's data-tauri-drag-region needs this on some platforms) — remote: the shell navigates the window to the sidecar's http://127.0.0.1:<port> origin, so these permissions extend to that remote page",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:window:allow-start-dragging"
+  ],
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:*"
+    ]
+  }
+}

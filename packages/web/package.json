@@ -1,0 +1,33 @@
+{
+  "name": "@wudao/web",
+  "version": "0.4.14",
+  "private": true,
+  "type": "module",
+  "description": "wudao ui — the web frontend (M43-B): a pure WS-protocol consumer (PROTOCOL.md) with TUI-full-parity surface, served statically by @wudao/server.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "icons:vendor": "node scripts/vendor-icons.mjs",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "lucide-static": "^1.48.0",
+    "typescript": "5.6.3",
+    "vite": "5.0.0",
+    "vitest": "2.1.8"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

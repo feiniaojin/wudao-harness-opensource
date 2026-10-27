@@ -1,0 +1,13 @@
+# ω99-104 (P1 首弧) — the ONE app command the shell exposes: an
+# allowlist-gated read for files the user physically dropped on the pet
+# window. Without this entry the command is dead: both webviews run on the
+# sidecar's http://127.0.0.1 origin, which tauri's ACL treats as REMOTE —
+# remote content can never reach an app command without an explicit
+# capability (verified against tauri-2.11.5 webview/mod.rs invoke path).
+#
+# Referenced by capabilities/main.json (the main window's listener drives
+# the read → fileSave → submit pipeline; the pet window never invokes it).
+[[permission]]
+identifier = "allow-read-dropped-file"
+description = "Allows reading a file the user dropped on the pet window (30s TTL allowlist, 20MiB per-file gate)."
+commands.allow = ["read_dropped_file"]

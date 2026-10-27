@@ -1,0 +1,24 @@
+{
+  "name": "@wudao/evals",
+  "version": "0.3.26",
+  "private": true,
+  "type": "module",
+  "description": "Eval suites for wudao-harness: deterministic regression (scripted model, zero cost) + live (real model, temp workspace).",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "eval": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@wudao/core": "workspace:*",
+    "@wudao/providers": "workspace:*",
+    "@wudao/slack": "workspace:*",
+    "wudao-harness": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "vitest": "2.1.8"
+  },
+  "license": "MIT"
+}

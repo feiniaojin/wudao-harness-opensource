@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- ω99-97: the pet window's page. Served by the sidecar at /pet.html; the
+     shell navigates the pet window here with
+     /pet.html?shell=desktop&view=pet#<token>. html/body stay transparent so
+     the transparent always-on-top window shows only the sprite (no black
+     frame). This is NOT the main shell — no #root, no App. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>wudao pet</title>
+  <style>
+    html, body { height: 100%; margin: 0; background: transparent; overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div id="pet-root"></div>
+  <script type="module" src="/src/pet/main.tsx"></script>
+</body>
+</html>

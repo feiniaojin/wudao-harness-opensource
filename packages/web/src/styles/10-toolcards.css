@@ -1,0 +1,583 @@
+/* --- tool cards --- */
+/* M64-visual §4: a tool surface — pinned mono (the body went proportional).
+   ui-parity B: the advanced card rides the mockup `.act` paradigm — the
+   bordered card (hairline edge, --surface fill, --radius-md), the 32px
+   clickable head row (status-colored mark + name + mono text-3 params + a
+   right-edge chevron), and a body that is the mono result region capped at
+   the mockup's 132px with INTERNAL scroll. The err variant takes the .act
+   danger border + head text (a failure reads without expanding). */
+/* (borders kept in LONGHANDS — the .act precedent: the CSSOM pins read
+   border-color off this rule; cssstyle drops var()-bearing shorthands.) */
+.toolcard {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--mono);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--hair-1);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.toolcard .head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--fs-ui);
+  font-family: var(--mono);
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+.toolcard .head:hover { background: var(--surface-2); color: var(--text-1); }
+.toolcard .mark { color: var(--text-1); flex: none; }
+.toolcard[data-status="ok"] .mark { color: var(--ok); }
+.toolcard[data-status="run"] .mark { color: var(--accent); }
+.toolcard[data-status="err"] .mark { color: var(--danger); }
+.toolcard .name { font-weight: var(--fw-strong); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolcard .args { flex: 1; color: var(--text-3); font-size: var(--fs-caption); overflow-wrap: anywhere; }
+.toolcard .chev { margin-left: auto; color: var(--text-3); flex: none; }
+.toolcard .result {
+  color: var(--text-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--hair-1);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  line-height: 1.6;
+  max-height: 132px;
+  overflow-y: auto;
+  /* UI-5 顺手项 A (C5 家族补全): the advanced toolcard's body MOUNTS on
+     expand (the open ternary renders ToolResult conditionally), so the fade
+     mount keyframe is its enter animation — the .act-body's exact recipe
+     (the ONE fade keyframes, fast tier; collapse stays instant, exit out of
+     scope). No layout value touched: the 132px cap above is the
+     jsdom-asserted ceiling; reduced-motion's global block collapses it. */
+  animation: fade var(--dur-fast) var(--ease);
+}
+.toolcard .result.err { color: var(--danger); }
+/* Red discipline (the .act.err twin): the errored card's border + head text. */
+.toolcard.err { border-color: rgb(var(--danger-rgb) / .4); }
+.toolcard.err .head { color: var(--danger); }
+
+/* --- M72 §3: collapsed observation-tool runs (advanced tool stream) ---
+   墨线 T5 (spec §2): the collapsed group header rides the SAME .act-row
+   chrome the activity card wears (32px flex row, --fs-ui, hover band) —
+   两模式同构, the row geometry lives in .act-row once. Only the
+   group-specific tone stays here: the ✓ mark (fix round 1: the mockup-v2
+   glyph — a collapsed run reads completed), bold name, dim count/exp
+   (the count wears .act-tail for the right-edge layout, the chevron
+   .act-chev). Expansion is CONDITIONAL RENDER in ToolGroup (cards mount
+   on open); the data-open attribute is a state marker for tests/debugging
+   — no rule here consumes it (F5).
+   ui-parity B: the group wears the SAME card chrome the toolcard does —
+   one bordered surface whose head is the group row; the expanded members
+   render as the panel-list idiom (borderless, hairline-separated) inside
+   it, not as a nest of cards. */
+/* (borders in LONGHANDS — the .act/.toolcard precedent.) */
+.toolgroup {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--mono);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--hair-1);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.toolgroup > .grp-head { color: var(--text-1); }
+.toolgroup .mark { color: var(--ok); }
+/* fix-r1: the 32px band is single-line — the name clips like .act-file does
+   (nowrap + hidden + ellipsis; overflow:hidden also zeroes the flex
+   automatic minimum, so the item CAN shrink and the ellipsis engages). */
+.toolgroup .name { font-weight: var(--fw-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.toolgroup .count, .toolgroup .exp { color: var(--text-2); }
+/* ui-parity B: the expanded members ride the panel-list idiom INSIDE the
+   group card — the member's own card chrome yields to the list seams
+   (borderless, hairline-separated), the .panel-list > .act precedent. */
+.toolgroup .toolcard { border-width: 0; border-radius: 0; border-top: 1px solid var(--hair-1); }
+
+/* --- r7 I3: folded repeated notices (hook-warn spam) ---
+   The same expand/collapse contract the toolgroup runs render. 0.3.6 反馈：
+   折叠头与单条通知同族——居中 .notice-bub 形胶囊；P2 §6.4 变体制后语气
+   同样由变体承担（前缀剥离 + warn/ok 语义色，见 .notice-bub 同款）；
+   count/expander 保持 text-2 弱化。 */
+.noticegroup { display: flex; flex-direction: column; gap: 0; align-items: center; }
+.noticegroup > .grp-head {
+  display: inline-flex; align-items: center; gap: var(--sp-1); width: fit-content;
+  padding: var(--sp-1) var(--sp-3); border: 0;
+  background: var(--surface-2); color: var(--text-2); cursor: pointer;
+  font-size: var(--fs-caption); line-height: var(--lh-caption);
+  border-radius: var(--radius-md); max-width: 78%; /* 119：胶囊归气泡族 8px */
+  white-space: pre-wrap; overflow-wrap: anywhere; text-align: center;
+}
+.noticegroup > .grp-head[data-variant="warn"] .text { color: var(--warn); }
+.noticegroup > .grp-head[data-variant="ok"] .text { color: var(--ok); }
+
+/* --- diff --- */
+.diff { display: flex; flex-direction: column; font-family: var(--mono); }
+/* 116 弧 A：diff 头行去 accent（路径是数据不是链接；可点的落点是下方
+   .fv-chip 的链接角色）——粗体 text-1 承担层级。 */
+.diff .path { color: var(--text-1); font-weight: var(--fw-strong); margin-bottom: var(--sp-1); }
+/* M64-visual §3: the row tints are alpha forms on the SEMANTIC tokens — the
+   same --danger/--ok that color the text, so both themes read by
+   construction (the old rgba literals were dark-theme-only). */
+.diff .del { color: var(--danger); background: rgb(var(--danger-rgb) / .1); white-space: pre-wrap; }
+.diff .add { color: var(--ok); background: rgb(var(--ok-rgb) / .1); white-space: pre-wrap; }
+.diff .ctx { color: var(--text-2); white-space: pre-wrap; }
+/* M63 §D: word-level intra-line highlight — the changed words carry a
+   stronger background than their row (1-del+1-add hunks only). */
+.diff .del .wchg { background: rgb(var(--danger-rgb) / .3); border-radius: var(--radius-sm); }
+.diff .add .wchg { background: rgb(var(--ok-rgb) / .3); border-radius: var(--radius-sm); }
+/* 高亮 spec §2 落点 4: the click-to-open path chip (edit heads + write_file
+   cards; absent callback degrades to plain text — no button rendered). */
+.fv-chip {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+.fv-chip:hover { color: var(--text-1); }
+
+/* --- 高亮/编辑 spec §4: the overlay editor chrome — .fv-btn (mirrors
+     .mdmode's metrics), the .fv-edit toolbar, the conflict strip, and the
+     .editor-wrap stack (gutter + pre + transparent textarea). --- */
+.fv-btn {
+  border: 1px solid var(--hair-2);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  line-height: 1;
+  padding: var(--sp-1) var(--sp-2);
+  cursor: pointer;
+}
+.fv-btn:hover:not(:disabled) { color: var(--text-1); background: var(--surface-2); }
+.fv-btn:disabled { opacity: 0.5; cursor: default; }
+.fv-btn.primary { color: var(--accent); border-color: var(--accent); }
+.fv-btn.primary:hover:not(:disabled) { color: var(--accent); }
+.editor-root { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.fv-edit {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border-bottom: 1px solid var(--hair-1);
+}
+.fv-edit .grow { flex: 1; }
+.fv-edit-path { color: var(--text-3); font-size: var(--fs-caption); }
+.fv-conflict {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  color: var(--warn);
+  background: rgb(var(--warn-rgb) / .08);
+  border-bottom: 1px solid var(--hair-1);
+}
+.fileviewer .fv-saved {
+  flex: none;
+  padding: var(--sp-1) var(--sp-3);
+  color: var(--ok);
+  border-bottom: 1px solid var(--hair-1);
+}
+.editor-wrap { flex: 1; min-height: 0; display: flex; overflow: hidden; }
+.editor-gutter {
+  flex: none;
+  overflow: hidden;
+  min-width: 3ch;
+  text-align: right;
+  color: var(--text-3);
+  /* 行号与代码层逐像素对齐——metrics 必须与上面 .editor-hl/.editor-ta
+     共享规则一致（mono 锁），顶 padding 同 var(--sp-1)。 */
+  font-family: var(--mono);
+  font-size: calc(var(--fs-body) - 2px);
+  line-height: 1.6;
+  padding: var(--sp-1) var(--sp-2) 0 var(--sp-3);
+  user-select: none;
+}
+.editor-stack { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+/* 两层必须像素级同 metrics —— 一条规则同时设两层；高亮层禁止事件。 */
+.editor-hl, .editor-ta {
+  font-family: var(--mono);
+  font-size: calc(var(--fs-body) - 2px);
+  line-height: 1.6;
+  tab-size: 2;
+  margin: 0;
+  padding: var(--sp-1) var(--sp-2) var(--sp-2) 0;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+.editor-hl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--text-1);
+  pointer-events: none;
+}
+.editor-ta {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  resize: none;
+  border: none;
+  outline: none; /* ω99-304: deliberate — the code editor is a full-pane typing
+     surface, the CARET is the indicator (the VS Code idiom); a ring would
+     double-indicate what the caret already says. */
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-1);
+}
+
+/* --- todo board --- */
+.board { display: flex; flex-direction: column; }
+.board .head { color: var(--text-2); margin-bottom: var(--sp-1); }
+.board .done { color: var(--ok); }
+.board .wip { color: var(--warn); }
+.board .todo { color: var(--text-2); }
+/* --- 墨线 T11 (spec §2 任务板): the task board's ink-line shell — .todo >
+       .todo-bar (a 2px ok-semantic progress line; the inline width is
+       done/total, the width transition rides --dur-med) + .todo-item rows
+       (.todo-box 16px square checkbox — radius-sm, the tokfinish radius
+       archival's tier (was the ruled 4px optical; the sheet-wide radius
+       gate retires bare px) — + a label
+       span; .done = ok 语义弱染底 + ok 通道描边 + the
+       IconCheck glyph). SECTION ORDER IS LOAD-BEARING: this sits AFTER the
+       .board block above, and the .todo-* names substring-contain ".todo",
+       so pins must target the prefixed names — a bare decl(".todo", …)
+       query would read `.board .todo`'s color first (the T10 decl()
+       first-match seam). --- */
+.todo { display: flex; flex-direction: column; gap: var(--sp-1); }
+/* 116 弧 A「进度条按语义重审」：完成度进度 = --ok 语义色（与 .board .done/
+   .diff .add 同一「完成/新增」语义族），不再是品牌绿——accent 配额收权。 */
+.todo-bar { height: 2px; background: var(--ok); transition: width var(--dur-med) var(--ease); }
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  font-size: var(--fs-ui);
+  color: var(--text-2);
+}
+.todo-item > span:last-child {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* (border in LONGHANDS — the .act precedent: cssstyle drops var()-bearing
+   border shorthands, so the pins read the longhands.) */
+.todo-box {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-sm);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--hair-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ok);
+  background: none;
+}
+/* 116 弧 A：done 态 = ok 语义族的弱染（同 .diff .add 的通道形式），
+   不再品牌绿。 */
+.todo-box.done { background: rgb(var(--ok-rgb) / .12); border-color: rgb(var(--ok-rgb) / .3); }
+
+/* --- 墨线 T10 收编: the statusline — a 28px bottom-edge
+       row, mono caption, text-3; cache% and the board checks read on --ok.
+       墨线下它就是面板的底缘行: the surface band is GONE (the row sits on
+       the window bg, hairline top edge only). --- */
+.statusline {
+  height: 28px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding:  0 var(--sp-4);
+  border-top: 1px solid var(--hair-1);
+  font-size: var(--fs-caption);
+  font-family: var(--mono);
+  color: var(--text-3);
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.statusline .warn { color: var(--warn); }
+.statusline .board { color: var(--ok); }
+.statusline .cache { color: var(--ok); }
+/* M57 §2's clickable model segment went away with the statusline model/mode
+   segments (ω99-298 M14) — nothing renders a statusline button anymore;
+   ω99-302 swept the leftover button rules. */
+/* ω99-253: #7 — the branch chip: a property of the workspace anchor (224's
+   trust-anchor family), not a new status item. Quiet hairline chip, mono
+   inherited, no own color; the name renders verbatim ("HEAD" = a detached
+   checkout, honest); null/absent never renders the chip at all (the
+   zero-noise gate — no placeholder, no dangling separator). */
+.statusline .seg-branch {
+  flex: none;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--sp-1);
+  color: var(--text-3);
+}
+/* ω99-296 (I3): goal 段此前是裸 span —— 条带 nowrap+hidden 只能把它硬切
+   在右缘。三件套归位：其余段停在各自 min-content 自然宽（auto 地板），
+   goal 是唯一可缩段，优雅让位出省略号；title 本就携带全文目标与账目。 */
+.statusline .seg-goal { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* UI-3 C3 (mockup P4): the right-edge busy segment — `▌思考中 · 12s`. The
+   auto margin pins it to the strip's right edge (it rides OUTSIDE the sep
+   chain — a separator dragged away from its neighbor would dangle mid-gap);
+   mono inherited from the strip, accent reads as "active". */
+.statusline .seg-busy { margin-left: auto; color: var(--accent); flex: none; }
+/* statecover A2 — while disconnected the strip renders the PRE-DROP snapshot
+   (the protocol client keeps the last status; the panels refetch per r4 I3);
+   the marker weakens the whole row until a reconnect's replay restores it.
+   Sibling-state note (UI-1 lesson): the strip has no other state classes on
+   the container itself (.warn/.board/.cache are segment-internal) — the
+   attribute selector cannot collide with them. */
+.statusline[data-stale] { opacity: .55; }
+
+/* --- banners / modals --- */
+.banner {
+  padding: var(--sp-1) var(--sp-4);
+  /* M64-visual §3: the old amber rgba literal, now mixed from --warn. */
+  background: rgb(var(--warn-rgb) / .12);
+  color: var(--warn);
+  border-bottom: 1px solid var(--hair-1);
+  font-size: var(--fs-ui);
+}
+.banner .action { margin-left: var(--sp-2); }
+/* ui-parity B: the TRANSIENT reconnect notice is demoted to a secondary
+   strip — no amber band (that alarm reads as an action state; a
+   self-healing reconnect is a status), caption-tier mono on the window bg
+   with the hairline edge only. The gave-up banner keeps the base .banner
+   (it carries the manual 重连 action). */
+.banner.quiet {
+  /* ω99-295: 1px 白名单字面量归队 sp-1 —— 基线 .banner 的垂直档就是它 */
+  padding: var(--sp-1) var(--sp-3);
+  background: none;
+  color: var(--text-3);
+  font-size: var(--fs-caption);
+  font-family: var(--mono);
+}
+/* ω99-243: #2 — UI 精修批：z-index 全量入档 tokens 的 --z-* 层级表、缓动
+   统一 var(--ease)、recap 卡令牌归档（--line 边线 + sp 网格 + fade 入场）、
+   弹层家族入场过渡（ω99-301 起唯一 .scrim/.modal-card 家族）、悬停显影钮
+   focus-visible 显影、主操作钮 active 压暗、侧栏首载骨架与失败重试行。
+   全局 reduced-motion 块收编一切新动效（表尾单块，inkline-global 钉）。
+   ω99-301 (M16): the legacy .overlay/.modal rule pair is RETIRED — every
+   rider re-shelled onto the one family (.scrim > .modal-card.pop-in), so
+   the sheet has ONE modal vocabulary and ONE width discipline (480px card
+   cap; wide cards override on the .mcm precedent). */
+.btnrow { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+button.wudao {
+  font: inherit;
+  background: var(--surface);
+  color: var(--text-1);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm); /* ui-sweep A: the .ctl control radius */
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+}
+/* 116 弧 A：普通钮 hover 去品牌色（hair-2 边 + text-1）——accent 只留在
+   .primary 的 CTA 上。120 弧「选择语言」升级：主 CTA 从描边恢复 accent
+   实底（116 全描边化矫枉过正——权限卡 .btnrow 的 primary 一直是实底，
+   全局描边反而分裂了 CTA 语言；dsh/claude.ai 的主操作钮都是品牌实底）。
+   accent 的角色规范（120 定稿）：状态与承诺（CTA/on 态）用色，装饰不用。 */
+button.wudao:hover { border-color: var(--hair-2); color: var(--text-1); }
+button.wudao.primary { border-color: transparent; background: var(--accent); color: var(--accent-ink); }
+button.wudao.primary:hover:not(:disabled) { filter: brightness(1.08); }
+button.wudao.primary:disabled { background: var(--accent); color: var(--accent-ink); }
+button.wudao.danger { border-color: var(--danger); color: var(--danger); }
+button.wudao:disabled { opacity: .45; cursor: default; }
+/* ui-parity A: the ask-user option list is the modal-card's scroll region —
+   the capped card keeps its h3 and the dismiss .btnrow on screen while a
+   long option wall scrolls inside (overflow zeroes the flex min, so the
+   column shrinks under the cap). */
+.optioncards { display: flex; flex-direction: column; gap: var(--sp-2); overflow-y: auto; }
+.optioncard {
+  text-align: left;
+  font: inherit;
+  background: var(--surface);
+  color: var(--text-1);
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm); /* ui-sweep A: row-chip radius token */
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+}
+.optioncard:hover { border-color: var(--hair-2); } /* 116 弧 A：hover 去品牌色 */
+.optioncard .desc { color: var(--text-2); display: block; }
+
+/* --- picker lists (/resume, /rewind) --- */
+.picker { display: flex; flex-direction: column; gap: var(--sp-1); max-height: 50vh; overflow-y: auto; }
+.pickrow {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  text-align: left;
+  font-family: var(--mono); /* M64-visual §4: session rows = data rows */
+  color: var(--text-1);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm); /* ui-sweep A: row-chip radius token */
+  padding: var(--sp-1) var(--sp-2);
+  cursor: pointer;
+}
+.pickrow:hover { background: var(--surface); } /* 116 弧 A：hover 去品牌色（底带即 affordance） */
+/* R6 quickwin: the keyboard highlight (↑↓ in the pickers) — accent 选中态
+ * 描边（116 弧 A：指针 hover 与键盘选中自此分级——选中才配 brand 色）。 */
+.pickrow.cur { border-color: var(--accent); background: var(--surface); }
+.pickrow .rank { color: var(--text-2); } /* 116 弧 A：序号去品牌色（数据不是状态） */
+.pickrow .meta { color: var(--text-2); }
+.pickrow:disabled { cursor: not-allowed; opacity: .55; }
+
+/* --- 墨线 T14 (spec §2 弹层家族): the overlay family, one shell for every
+       popup — .scrim (fullscreen dim + fade entry) > .modal-card (surface +
+       hairline + radius-lg, entering through the shared .pop-in), and the
+       menu pair .menu (surface-2 pop + radius-md + 26px .menu-item rows) /
+       .menu-kbd (right-aligned mono caption). The pop keyframe PROMOTES
+       here: T13 inlined it on .wiz, this task lifts the usage into .pop-in
+       (the wizard card adds the class; the @keyframes pop rule itself is
+       untouched — existing keyframes are never edited). @keyframes fade is
+       NEW — the live keyframes were enumerated first (spin /
+       tree-spin-pulse / msg-ai-fade / pop) and none collides, so the
+       un-namespaced name stands. Re-shelled onto the family:
+       ResumePicker / AskUserCards (scrim +
+       modal-card pop-in) and ContextMenu (menu ctx + menu-item/menu-kbd).
+       (PermissionModal rode this family until settings-trial r7 moved the
+       ask into an inline conversation card — .permission-card below.)
+       ω99-301 (M16): ClearConfirm / App's 新对话 confirm / ChangesPanel /
+       ComputerActionsPanel / PersonaPanel / ModelConfigModal 全部 re-shell
+       完成——legacy .overlay/.modal 规则对整体退役删除（零死选择器），
+       弹层只剩一个家族一套词汇。
+       SECTION ORDER IS LOAD-BEARING (the T10-T13 decl() seam: the walk
+       returns the FIRST rule whose selector substring-matches AND declares
+       the property): this section sits AFTER the banners/modals +
+       picker-lists base blocks. ω99-301 后 decl(".modal", …) 前缀子串解析
+       到本节 .modal-card 规则——基座已删，顺序赛只涉本节内部；同理
+       ".menu" meets the family .menu rule first; the later .filetree
+       .ws-menu does not contain the ".menu" substring at all ("ws-menu"
+       hyphen-anchors it), and ".scrim" is not a substring of .search-scrim
+       (the dot anchors it). ".pop-in" contains ".pop" but the only .pop
+       decl() query (".pop .mi") is longer, so no shadow either way. The
+       adjacent rules after the verbatim family block carry what the
+       family contract does NOT: the card interior (the old .modal's
+       flex/gap/padding + h3/warn/muted), the scrim's z-ladder slot (the
+       old .overlay's z-30 — a z-auto fixed scrim would paint UNDER the
+       jump pill's z-5), and the context menu's pointer anchoring + button
+       resets. --- */
+.pop-in { animation: pop var(--dur-med) var(--ease); }
+/* ui-parity A: the family's viewport fit — the scrim breathes (--sp-4 inset)
+   so a capped card never kisses the window edge, and EVERY card in the
+   family carries a max-height inside the remaining track
+   (calc(100dvh - var(--sp-8)) = the two scrim insets). */
+.scrim { position: fixed; inset: 0; background: var(--overlay); display: flex; align-items: center; justify-content: center; padding: var(--sp-4); animation: fade var(--dur-med) var(--ease); }
+@keyframes fade { from { opacity: 0; } }
+/* 116 弧 A：modal-card 走 elevation 高档（描边入影），边框退役。 */
+.modal-card { background: var(--surface); border: 0; box-shadow: var(--elev-3); border-radius: var(--radius-lg); max-width: 480px; width: calc(100% - var(--sp-8)); overflow: hidden; }
+/* .menu 家族 = 浮层（ctx 菜单 / .pop 下拉的基座）——elevation 中档承分离，
+   边框退役（「边框与投影不同用」律；116 弧 A）。
+   119 用户反馈修正：浮层底归 --surface（旧 surface-2 是浮层借用高档底，
+   与「surface=浮层专用」的新归口不符），圆角归浮层档 lg 12；行 hover =
+   surface-2（卡内嵌面 +1 档，与全站 hover 律一致——旧「surface 底上
+   surface-2 hover」的双倒置退役）。 */
+.menu {
+  /* P2 §2.12 层内玻璃：glass-fill（.78 实底即降级）+ 双前缀 blur
+     （WKWebView macOS 12 走 -webkit-）；elev-2 描边入影保留。 */
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 0;
+  box-shadow: var(--elev-2);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-1);
+  min-width: 180px;
+}
+.menu-item { display: flex; align-items: center; height: 26px; padding: 0 var(--sp-2); border-radius: var(--radius-sm); font-size: var(--fs-ui); color: var(--text-2); }
+.menu-item:hover { background: var(--surface-2); color: var(--text-1); }
+.menu-kbd { margin-left: auto; font-family: var(--mono); font-size: var(--fs-caption); color: var(--text-3); }
+/* T15 gate note: ShieldSelector's legacy `.pop .menu` (below) outranks this family rule on every contested property (0,2,0 > 0,1,0) — additions to the family `.menu` silently miss the shield popover. */
+/* T14 adjacent — the family's per-use seams (kept OUT of the verbatim block
+   above so the family classes stay exactly the spec's contract):
+   the scrim's stacking (the old .overlay's z-30: above the ctx meter 20,
+   the ws-menu 26; below the ctx menu 35/36, the palette 40, the wizard 60),
+   the card interior (the old .modal's column flex + gap + padding, and the
+   h3/warn/muted scoping the re-shelled cards lost with .modal), and the
+   context menu's pointer anchoring (fixed at the event's viewport coords —
+   the old .ctx-menu seam) plus the <button> resets the bare .menu-item
+   does not carry. */
+.scrim { z-index: var(--z-modal); }
+.modal-card { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); max-height: calc(100dvh - var(--sp-8)); }
+.modal-card h3 { margin: 0; font-size: var(--fs-title); } /* tokfinish: 1rem→16px 等值入档 */
+.modal-card .warn { color: var(--warn); }
+.modal-card .muted { color: var(--text-2); }
+/* fix round 2 (review M2): the pointer anchor arrives as --ctx-x/--ctx-y
+   custom props (ContextMenu no longer pins left/top inline); each axis is
+   CLAMPED so the menu's far edge stays inside the viewport — the menu's own
+   height cap (--ctx-cap) is the same constant the top clamp subtracts, so
+   a menu at the clamped top can never overshoot the bottom edge. No flip
+   logic; a bottom-edge click opens the menu shifted up instead.
+   ui-sweep N3 (UI-1 defer): the LEFT axis no longer borrows the height cap
+   as a width proxy — the width is now PINNED (min-width = max-width =
+   --ctx-w, the mockup-v2 pop-menu's 224px) and the left clamp subtracts the
+   SAME var, so the loop is closed by construction: right edge = left + 224
+   ≤ 100vw - 16 at the clamped left, whatever the labels grow to (overlong
+   rows ellipsize — button.menu-item is nowrap + hidden + ellipsis). */
+.menu.ctx {
+  --ctx-cap: 180px;
+  --ctx-w: 224px;
+  position: fixed;
+  z-index: var(--z-ctx-menu);
+  display: flex;
+  flex-direction: column;
+  min-width: var(--ctx-w);
+  max-width: var(--ctx-w);
+  left: min(var(--ctx-x, 0px), calc(100vw - var(--ctx-w) - var(--sp-4)));
+  top: min(var(--ctx-y, 0px), calc(100dvh - var(--ctx-cap) - var(--sp-4)));
+  max-height: var(--ctx-cap);
+  overflow-y: auto;
+  /* UI-5 顺手项 A (C6 家族补全): the context menu MOUNTS on open, so the
+     pop mount keyframe IS its enter animation — the same .pop .menu rides
+     (one gesture, one motion family; the mouse-hover dropdown never
+     class-flips, no exit under mount/unmount). reduced-motion's global
+     block collapses it. */
+  animation: pop var(--dur-fast) var(--ease);
+}
+button.menu-item {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-ui);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  width: 100%;
+  flex: none;
+}
+
+/* --- plan review --- */
+/* 116 弧 A：reviewable 计划卡的 accent 描边降半档（通道 .35 弱形）——
+   语义仍在（计划待审 = 行动面），满饱和实边是旧配额的挥霍。 */
+.planboard { border: 1px solid rgb(var(--accent-rgb) / .35); border-radius: var(--radius-md); padding: var(--sp-2) var(--sp-3); }
+.planboard .label { color: var(--accent); font-weight: var(--fw-strong); }
+.planboard .body { white-space: pre-wrap; margin: var(--sp-1) 0 var(--sp-2); }
+
