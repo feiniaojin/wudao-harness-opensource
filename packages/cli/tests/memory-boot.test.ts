@@ -126,6 +126,24 @@ describe("M-Memory boot 注入 — 字节稳定性", () => {
     expect(store.list()).toHaveLength(1); // 仅 boot 前的种子，无沉淀
   });
 
+  it("记忆两库收敛：capture 产出 pending——boot 注入不见，确认（转 confirmed）后进块", async () => {
+    const rt = await createLongtermMemoryRuntime({ workspaceRoot: ws });
+    await rt.captureAtSessionEnd({ sessionId: "s1", messages: [user("别再忘了跑测试再提交")] });
+    // 人审门：pending 不参与回忆——种子命中也不注入
+    const state = stateWith([user("跑测试再提交")]);
+    rt.injectAtFirstRun(state);
+    expect(rt.block()).toBe("");
+    // 确认路径（memoryDecide ok 的同底层）：append 同 id 的 confirmed 行
+    const pending = rt.store.listPending();
+    expect(pending).toHaveLength(1);
+    await rt.store.save({ kind: "lesson", text: pending[0]!.text, tags: [...pending[0]!.tags], confidence: "confirmed" });
+    expect(rt.store.listPending()).toHaveLength(0);
+    const rt2 = await createLongtermMemoryRuntime({ workspaceRoot: ws });
+    const state2 = stateWith([user("跑测试再提交")]);
+    rt2.injectAtFirstRun(state2);
+    expect(rt2.block()).toContain("跑测试再提交");
+  });
+
   it("withFirstRunMemoryInjection：driver hooks 包裹后 onRunStart 触发注入；原 onRunStart 仍执行", async () => {
     const store = openLongtermMemoryStore(ws);
     await store.save({ kind: "fact", text: "hooks 注入事实" });

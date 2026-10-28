@@ -1240,7 +1240,13 @@ export function createSettingsOps(deps: SettingsOpsDeps): SettingsOps {
 
     longtermMemoryList: async () => {
       const entries = await readMemoryFile(join(deps.workspaceRoot, ".wudao", "memory", "memory.jsonl"));
-      return { entries: entries.map((e) => ({ id: e.id, kind: e.kind, text: e.text, tags: [...e.tags], createdAt: e.createdAt, useCount: e.useCount })) };
+      // 记忆两库收敛：confirmed 简表——pending（人审队列）不上面（审核在
+      // 「管理记忆」面；两段并存职责分明）。
+      return {
+        entries: entries
+          .filter((e) => e.confidence !== "pending")
+          .map((e) => ({ id: e.id, kind: e.kind, text: e.text, tags: [...e.tags], createdAt: e.createdAt, useCount: e.useCount })),
+      };
     },
 
     longtermMemoryForget: async (id) => {

@@ -695,8 +695,9 @@ export function buildToolSet(opts: {
     : [];
   // M-Memory 弧第二半：长期记忆三件套（顶层全量；池里同载——task tool 的
   // 子集按名抽取时找得到）。挂载位=M49 槽位之后（append-only 尾纪律）。
+  // 记忆两库收敛：workspaceRoot 透传给块档门（memory_save 拦截台账的锚）。
   const longtermMemoryTools = opts.longtermMemory !== undefined
-    ? createLongtermMemoryTools({ store: opts.longtermMemory.store })
+    ? createLongtermMemoryTools({ store: opts.longtermMemory.store, workspaceRoot: opts.workspaceRoot })
     : [];
   const toolPool = [...codingTools, ...memoryTools, ...longtermMemoryTools];
   // M50 §1: run_script (PTC) — the model batches its tool calls as one JS

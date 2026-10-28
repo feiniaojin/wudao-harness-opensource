@@ -22,6 +22,8 @@ import type { ModelClient } from "@wudao/core";
 import type { AgentRegistry } from "../agents/index.js";
 import { memoryDirectory, openSessionMemoryStore, isHeldOutEntry, type MemoryEntry } from "./store.js";
 import { createMemoryWriteTool, createMemorySearchTool } from "./tools.js";
+// 记忆两库收敛：dream 自动调度停用门（WUDAO_M49_LEGACY=1 回滚态原样可跑）。
+import { legacyMemorySchedulingEnabled } from "./migrate.js";
 // 永续 v6 弧 A（reef C3）：学习输入的 nonce 围栏（见 buildDreamPrompt）。
 import { fenceUntrusted } from "./guard.js";
 
@@ -438,8 +440,12 @@ async function startDream(opts: DreamOptions, manual: boolean): Promise<DreamSpa
 
 /** Spawn the dream through the session registry (fire-and-forget; the caller
  *  may await `done`). Due-gated (enabled + backlog + interval + single-flight);
- *  returns undefined when not due or disabled — never throws. */
+ *  returns undefined when not due or disabled — never throws.
+ *  记忆两库收敛：dream 的自动调度停用（产物写进冻结的旧库=不可见的模型调用
+ *  开销；新库的沉淀走 memory_save + 会话终了保守沉淀 + 人审确认）。
+ *  WUDAO_M49_LEGACY=1 回滚态原样可跑。 */
 export async function spawnDreamRun(opts: DreamOptions): Promise<DreamSpawn | undefined> {
+  if (!legacyMemorySchedulingEnabled()) return undefined;
   return startDream(opts, false);
 }
 

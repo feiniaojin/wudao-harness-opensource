@@ -82,6 +82,34 @@ describe("/memory 动词解析与行为", () => {
     expect(out).toContain("旧系统事实条目");
   });
 
+  it("save 的 guard 接线：凭据值/指令注入形状 → 已拦回执、零入库、台账留痕", async () => {
+    const r = await runLongtermMemoryVerb({ workspaceRoot: ws, verbArgs: "save fact the api key is sk-abcdef12345678", env: env() });
+    expect(r).toContain("已拦下");
+    expect(openLongtermMemoryStore(ws).list({ includePending: true })).toHaveLength(0);
+    const ledger = await readFile(join(ws, ".wudao", "memory-blocked.jsonl"), "utf8");
+    expect(ledger).toContain("\"source\":\"memory_write\"");
+  });
+
+  it("list 的迁移门：marker 落定后不再展示旧库段落（冻结历史）；pending 行带 ⏳ 与确认提示", async () => {
+    const lts = openLongtermMemoryStore(ws);
+    await lts.save({ kind: "fact", text: "合并后的确认事实" });
+    await lts.save({ kind: "lesson", text: "合并后的待审教训", confidence: "pending" });
+    const m49 = openM49Store(ws);
+    await m49.write({ kind: "fact", content: "旧系统事实条目", scope: "project" });
+    // 过渡期（marker 未落）：双列
+    const before = await runLongtermMemoryVerb({ workspaceRoot: ws, verbArgs: "list", env: env() });
+    expect(before).toContain("旧记忆系统（M49");
+    expect(before).toContain("旧系统事实条目");
+    // 迁移落定：旧库段落退场；pending 标记与确认指引在场
+    const { migrateLegacyMemory } = await import("../src/memory/migrate.js");
+    await migrateLegacyMemory(ws);
+    const after = await runLongtermMemoryVerb({ workspaceRoot: ws, verbArgs: "list", env: env() });
+    expect(after).not.toContain("旧记忆系统（M49");
+    expect(after).toContain("⏳");
+    expect(after).toContain("待你确认");
+    expect(after).toContain("合并后的待审教训");
+  });
+
   it("旧动词（del/ok/edit/dream）与裸 /memory → undefined（回落 M49 面）；未知词 → 合并用法行", async () => {
     for (const legacy of ["del abc", "ok abc", "edit", "dream", ""]) {
       const r = await runLongtermMemoryVerb({ workspaceRoot: ws, verbArgs: legacy, env: env() });
@@ -152,7 +180,7 @@ describe("会话终了沉淀 — 保守提炼规则（精确行为钉）", () =>
     expect(LTS_MEMORY_CAPTURE_MAX_PER_SESSION).toBe(2);
   });
 
-  it("captureAtSessionEnd：静默 save（kind=lesson、sourceSession、tags 含 auto）；批内只取前 2", async () => {
+  it("captureAtSessionEnd：静默 save pending（kind=lesson、sourceSession、tags 含 auto；确认前不参与回忆）；批内只取前 2", async () => {
     const rt = await createLongtermMemoryRuntime({ workspaceRoot: ws });
     await rt.captureAtSessionEnd({
       sessionId: "sess-cap-1",
@@ -164,14 +192,33 @@ describe("会话终了沉淀 — 保守提炼规则（精确行为钉）", () =>
         { role: "user", content: "普通消息不构成教训" },
       ],
     });
-    const list = rt.store.list();
-    expect(list).toHaveLength(2);
-    for (const e of list) {
+    // 记忆两库收敛：保守沉淀先入人审队列（M49 pending 路径合流）——confirmed
+    // 面为空，pending 队列承载全部产出。
+    expect(rt.store.list()).toHaveLength(0);
+    const pending = rt.store.listPending();
+    expect(pending).toHaveLength(2);
+    for (const e of pending) {
       expect(e.kind).toBe("lesson");
       expect(e.sourceSession).toBe("sess-cap-1");
       expect(e.tags).toContain("auto");
+      expect(e.confidence).toBe("pending");
     }
-    expect(list.map((e) => e.text)).toEqual(["跳过 lint", "提交前跑聚焦测试"]);
+    // 顺序注：listPending 按 createdAt+id 排——同毫秒写入时 id（内容哈希）
+    // 破平，断言按集合比对（提炼次序另有 extractLessonCandidates 的专门钉）。
+    expect([...pending.map((e) => e.text).sort()]).toEqual(["提交前跑聚焦测试", "跳过 lint"].sort());
+  });
+
+  it("captureAtSessionEnd 的 guard 接线：凭据值形状的教训被拦——不入库、落拦截台账", async () => {
+    const rt = await createLongtermMemoryRuntime({ workspaceRoot: ws });
+    await rt.captureAtSessionEnd({
+      sessionId: "sess-guard",
+      messages: [{ role: "user", content: "别再把 sk-abcdef12345678 直接写进配置" }],
+    });
+    expect(rt.store.list({ includePending: true })).toHaveLength(0); // 未入库
+    const ledger = await readFile(join(ws, ".wudao", "memory-blocked.jsonl"), "utf8");
+    expect(ledger).toContain("blocked_learning");
+    expect(ledger).toContain("\"source\":\"capture\"");
+    expect(ledger).not.toContain("sk-abcdef12345678"); // 台账预览先脱敏
   });
 
   it("enabled=false 的 capture：零写入、resolve 正常（沉淀绝不冒泡纪律）", async () => {

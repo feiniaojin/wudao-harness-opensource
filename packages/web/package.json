@@ -1,6 +1,6 @@
 {
   "name": "@wudao/web",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "private": true,
   "type": "module",
   "description": "wudao ui — the web frontend (M43-B): a pure WS-protocol consumer (PROTOCOL.md) with TUI-full-parity surface, served statically by @wudao/server.",

@@ -1,6 +1,6 @@
 {
   "name": "wudao-harness",
-  "version": "0.4.14",
+  "version": "0.4.15",
   "type": "module",
   "bin": {
     "wudao": "./dist/index.js"

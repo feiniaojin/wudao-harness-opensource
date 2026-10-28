@@ -85,7 +85,6 @@ import { runMemoryCommand } from "../memory/commands.js";
 // stays usable even when recall is off; openSessionMemoryStore is NOT used
 // here by ruling: memoryEnabled 关闭≠面板锁死).
 import { openMemoryStore } from "../memory/store.js";
-import type { MemoryEntry } from "../memory/store.js";
 import { runRefineCommand } from "../memory/refine.js";
 import { refineAutoRuntimeFor, observeAutoRefineOnHooks } from "../memory/auto-refine.js";
 import { spawnBackgroundReview, REVIEW_MIN_TOOL_CALLS, neuterWriteTools } from "../memory/review.js";
@@ -330,11 +329,25 @@ export interface BranchLeaf {
 }
 
 /** ω99-260: #4 — 面一（memoryList/memoryDecide driver 方法）。one memory
- *  ledger row — the web memory faces' data (PROTOCOL "memoryList"). The
- *  store's own MemoryEntry VERBATIM (id/kind/content/scope/tags/created/
- *  hits/status/surfaced?/seq?/version? — the full field table; the WEB side
- *  keeps its own local mirror, the 258 BranchLeaf discipline). */
-export type MemoryEntryMirror = MemoryEntry;
+ *  ledger row — the web memory faces' data (PROTOCOL "memoryList")；web 侧自
+ *  持镜像（protocol-core.ts MemoryEntry，kind/scope 为 string——258 纪律）。
+ *  记忆两库收敛：mirror 钉新库——kind∈fact|preference|lesson|skill（web
+ *  label 表未知 token 原样透传）、scope 恒 project、status=confidence 映射、
+ *  hits=useCount 可见面；构造器 = longterm-memory.ts longtermMemoryAuditRow。 */
+export interface MemoryEntryMirror {
+  readonly id: string;
+  readonly kind: string;
+  readonly content: string;
+  readonly scope: string;
+  readonly tags: readonly string[];
+  readonly created: string;
+  readonly hits: number;
+  /** active = 生效 (confirmed——参与回忆); pending = 待审 (人审队列)。 */
+  readonly status: "active" | "pending";
+  readonly surfaced?: boolean;
+  readonly seq?: number;
+  readonly version?: number;
+}
 
 /** M76-ux2 §8 — the ctxInfo reply (PROTOCOL "ctxInfo"): the serialized
  *  prompt's per-section token estimates plus the free remainder against the

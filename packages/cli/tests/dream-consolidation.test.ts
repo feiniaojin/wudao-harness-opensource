@@ -40,11 +40,15 @@ let dir: string;
 
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "wudao-dream-"));
+  // 记忆两库收敛：dream 自动调度默认停用（migrate.ts 的门）——本文件钉的是
+  // 旧机制本体（冻结回滚线），经 WUDAO_M49_LEGACY=1 原样可跑。
+  process.env.WUDAO_M49_LEGACY = "1";
 });
 afterEach(async () => {
   await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   delete process.env.WUDAO_DREAM;
   delete process.env.WUDAO_NO_DREAM_FORK;
+  delete process.env.WUDAO_M49_LEGACY;
 });
 
 // ---------------------------------------------------------------------------

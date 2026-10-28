@@ -84,15 +84,23 @@ import type { SessionRow } from "../session-list.js";
 import type { AgentRegistry } from "../agents/index.js";
 import { runMemoryCommand } from "../memory/commands.js";
 // M-Memory 弧第二半 — /memory 新动词面（长期记忆；旧动词回落上方 M49 面）。
-import { longtermMemoryRuntimeFor, runLongtermMemoryVerb } from "../longterm-memory.js";
-// ω99-260: 面一 — the memory faces' data seam: the PHYSICAL store handle (the
-// memory_write tool's own anchor, session-engine :1210's store — management
-// stays usable even when recall is off; openSessionMemoryStore is NOT used
-// here by ruling: memoryEnabled 关闭≠面板锁死).
-import { openMemoryStore } from "../memory/store.js";
+// 记忆两库收敛：memoryList/Decide/Edit 三 op retarget 到新库——audit 行构造
+// 器、surfaced 簿记与新库句柄都从本模块取。
+import {
+  longtermMemoryRuntimeFor,
+  runLongtermMemoryVerb,
+  openLongtermMemoryStore,
+  longtermMemoryAuditRow,
+  readLongtermMemorySurfaced,
+  markLongtermMemorySurfaced,
+} from "../longterm-memory.js";
+// ω99-260: 面一 — the memory faces' data seam（记忆两库收敛：retarget 到新
+// 库后，M49 的 openMemoryStore 句柄只余拦截台账的路径锚 memoryStorePath）。
+import { memoryStorePath } from "../memory/store.js";
 import { createMemorySignatureTracker } from "./memory-signature.js";
-import type { MemoryEntry } from "../memory/store.js";
 import { blockedLearningCountAt } from "../memory/guard.js"; // 永续 v6 弧 A：被拦学习输入计数（memoryList.blocked）
+// 永续 v6 弧 A（记忆两库收敛续）：改写缝的块档门与拦截台账（与新库 save 路径同一道门）。
+import { screenLearningInput, appendBlockedLearningAt, buildBlockedRecord } from "../memory/guard.js";
 import { runRefineCommand } from "../memory/refine.js";
 import { refineAutoRuntimeFor, observeAutoRefineOnHooks } from "../memory/auto-refine.js";
 import { spawnBackgroundReview, REVIEW_MIN_TOOL_CALLS, neuterWriteTools } from "../memory/review.js";
@@ -666,10 +674,17 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // discipline, extracted to memory-signature.ts (the 借鉴弧 α2 rider: the
   // file-size ratchet pushes toward extraction). The tracker owns the seq +
   // the store read; the VALUE rides DriverStatus through memorySig.current().
+  // 记忆两库收敛：签名源改钉新库（memoryList 的同库同面——pending 计入，
+  // 迁移/确认/沉淀/遗忘都会移动签名）。
   const memorySig = createMemorySignatureTracker({
     workspaceRoot: opts.workspaceRoot,
     emit: () => emit(), // late-bound — emit is declared below (TDZ-safe through the arrow); opts (not the mutable o) — the root never swaps
-    openStore: openMemoryStore,
+    openStore: (root) => ({
+      load: async () => {
+        const store = longtermMemoryRuntimeFor()?.store ?? openLongtermMemoryStore(root);
+        return store.list({ includePending: true }).map((e) => longtermMemoryAuditRow(e));
+      },
+    }),
   });
 
 
@@ -4155,14 +4170,30 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     return true;
   };
 
-  // ω99-260: 面一 — the memory faces' data/decide closures. The PHYSICAL
-  // store at o.workspaceRoot (the session anchor — the same root /memory and
-  // memory_write use; NOT the switchable agentWorkspaceRoot, which moves the
-  // tools' boundary but never any .wudao anchor). No workspace → the honest
-  // empties: the panel's 空态, the card's hide, ok:false verdicts. Structured only — runMemoryCommand (TUI) never rides this path. 永续 v6 弧 A: blocked = 物理工作区拦截台账计数。
+  // ω99-260: 面一 — the memory faces' data/decide closures. 记忆两库收敛：
+  // 三个 op retarget 到新库（.wudao/memory/——pending 人审队列与 confirmed
+  // 面都在这里；M49 旧库冻结为只读历史）。句柄优先走会话 runtime 单例
+  // （core store 是 per-handle 索引——命令道/工具道/审核道共一个索引，本
+  // 进程写即时互见）。无工作区 → the honest empties: the panel's 空态, the
+  // card's hide, ok:false verdicts. Structured only — runMemoryCommand (TUI)
+  // never rides this path. 永续 v6 弧 A: blocked = 物理工作区拦截台账计数
+  // （台账锚保持 .wudao/memory-blocked.jsonl——web 文案的既定契约）。
+  const memoryAuditStore = () =>
+    longtermMemoryRuntimeFor()?.store ?? (o.workspaceRoot !== undefined ? openLongtermMemoryStore(o.workspaceRoot) : undefined);
   const memoryListFn = async (): Promise<{ readonly entries: readonly MemoryEntryMirror[]; readonly blocked: number }> => {
     if (o.workspaceRoot === undefined) return { entries: [], blocked: 0 };
-    return { entries: await openMemoryStore(o.workspaceRoot).load(), blocked: await blockedLearningCountAt(o.workspaceRoot).catch(() => 0) };
+    const store = memoryAuditStore();
+    if (store === undefined) return { entries: [], blocked: 0 };
+    // 全量面（confirmed + pending）：pending 按记忆两库收敛语义在首次 list
+    // 后标记 surfaced（一次性提醒的 M49 语义保留——决定仍开着，surfaced 只
+    // 说明提醒消费过）。
+    const all = store.list({ includePending: true });
+    const surfaced = await readLongtermMemorySurfaced(o.workspaceRoot).catch(() => new Set<string>());
+    const pendingIds = all.filter((e) => e.confidence === "pending").map((e) => e.id);
+    if (pendingIds.length > 0) await markLongtermMemorySurfaced(o.workspaceRoot, pendingIds).catch(() => {});
+    const entries = all.map((e) => longtermMemoryAuditRow(e, surfaced));
+    const blocked = await blockedLearningCountAt(o.workspaceRoot).catch(() => 0);
+    return { entries, blocked };
   };
   const memoryDecideFn = async (
     id: string,
@@ -4170,41 +4201,59 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   ): Promise<{ readonly ok: boolean; readonly message: string }> => {
     const MISS = "没有这条待审记忆（可能已处理过）";
     if (o.workspaceRoot === undefined) return { ok: false, message: MISS };
-    const store = openMemoryStore(o.workspaceRoot);
-    if (action === "ok") {
-      return (await store.confirm(id)) ? { ok: true, message: "已确认一条记忆" } : { ok: false, message: MISS };
+    const store = memoryAuditStore();
+    if (store === undefined) return { ok: false, message: MISS };
+    const all = store.list({ includePending: true });
+    const target = all.find((e) => e.id === id);
+    if (target === undefined) return { ok: false, message: MISS };
+    if (action === "del") {
+      // del = 新库 tombstone forget（对两种 confidence 通用——丢弃已生效的
+      // 条目与丢弃待审同门）。
+      await store.forget(id);
+      return { ok: true, message: "已删除一条记忆" };
     }
-    return (await store.remove(id)) ? { ok: true, message: "已删除一条记忆" } : { ok: false, message: MISS };
+    if (target.confidence !== "pending") return { ok: false, message: MISS };
+    // ok = pending → confirmed：append 同 id 的 confirmed 行（后行胜，useCount
+    // 不动——审阅决定不是使用）。
+    await store.save({ kind: target.kind, text: target.text, tags: [...target.tags], confidence: "confirmed" });
+    return { ok: true, message: "已确认一条记忆" };
   };
-  // ω99-264: the panel's 改写 closure — update + a CONDITIONAL confirm (the single-source stitch, zero new store verbs). Short-circuit FIRST: a
-  // byte-equal content with the id present answers ok with ZERO writes (a bare update is NOT idempotent — v+1 per call — so the vault's mid-flap
-  // replay must never reach the store; trim differences are REAL changes, no
-  // fuzzy matching). update always lands pending (ω99-3a's law), so an ACTIVE
-  // original gets confirm right back — the user's own key press is the human
-  // gate's end, the entry never re-walks the LLM review door; a PENDING
-  // original stays pending (the edit never decides for the user). tags are
-  // NOT passed (update's absent-tags input preserves the original); hits
-  // ride update verbatim. The store's own truth: update/confirm rewriteAll
-  // the line in place — the JSONL line count never moves. 永续 v6 弧 A: a blocked rewrite (credential/injection-shaped) changes NOTHING.
+  // ω99-264: the panel's 改写 closure — 合流语义：内容哈希 id 的库上，改写
+  // 改变内容 = 改变 id——旧 id tombstone + 新内容 save（confidence 沿原态：
+  // confirmed 原态改后仍 confirmed〔用户点「改写」= 自己的授权链终点，不重
+  // 走人审门〕、pending 原态改后仍 pending〔改写不替用户审〕）。A byte-equal
+  // content with the id present answers ok with ZERO writes (the vault's
+  // mid-flap replay must never reach the store; trim differences are REAL
+  // changes, no fuzzy matching). 先存新后忘旧（forget 失败=短暂重复，save 失
+  // 胜=条目丢失——重复可自愈，丢失不可）。永续 v6 弧 A: a blocked rewrite
+  // (credential/injection-shaped) changes NOTHING（拦截台账留痕可见）。
   const memoryEditFn = async (
     id: string,
     content: string,
   ): Promise<{ readonly ok: boolean; readonly message: string }> => {
     const MISS = "没有这条记忆（可能已处理过）";
     if (o.workspaceRoot === undefined) return { ok: false, message: MISS };
-    const store = openMemoryStore(o.workspaceRoot);
-    const target = (await store.load()).find((e) => e.id === id);
+    const store = memoryAuditStore();
+    if (store === undefined) return { ok: false, message: MISS };
+    const target = store.list({ includePending: true }).find((e) => e.id === id);
     if (target === undefined) return { ok: false, message: MISS };
-    const wasActive = target.status === "active";
-    if (target.content === content) {
+    const wasActive = target.confidence === "confirmed";
+    if (target.text === content) {
       // The vault-replay short-circuit: converged, zero writes.
       return { ok: true, message: wasActive ? "已改写一条记忆" : "已改写一条记忆（仍待你确认）" };
     }
-    const updated = await store.update(id, { content });
-    // 永续 v6 弧 A：被拦改写（凭据值/指令注入形状）——原条未动，与 MISS 分开说清。
-    if (updated === "blocked") return { ok: false, message: "这条改写被拦下：内容含密钥值或指令注入形状，未入库（拦截清单可见）" };
-    if (updated === undefined) return { ok: false, message: MISS }; // the line vanished mid-edit (removed elsewhere)
-    if (wasActive) await store.confirm(id); // active → active（用户自己的授权链终点）
+    const screen = screenLearningInput(content);
+    if (screen.blocked) {
+      await appendBlockedLearningAt(memoryStorePath(o.workspaceRoot), buildBlockedRecord({
+        at: new Date().toISOString(),
+        source: "edit",
+        reasons: screen.reasons,
+        content,
+      })).catch(() => {});
+      return { ok: false, message: "这条改写被拦下：内容含密钥值或指令注入形状，未入库（拦截清单可见）" };
+    }
+    await store.save({ kind: target.kind, text: content, tags: [...target.tags], confidence: target.confidence });
+    await store.forget(id); // the old id's tombstone（编辑产生新 id——旧 id 必须退场）
     return { ok: true, message: wasActive ? "已改写一条记忆" : "已改写一条记忆（仍待你确认）" };
   };
 

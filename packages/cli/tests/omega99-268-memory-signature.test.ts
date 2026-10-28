@@ -1,5 +1,5 @@
 // ω99-268: #8 — 记忆面板实时订阅 R 件（driver 面）：DriverStatus.memorySignature
-// ——记忆 store 的内容签名（`count:pending:maxVersion`，store 单调量的投影）。
+// ——记忆 store 的内容签名（`count:pending:ids`，store 单调量的投影）。
 // 签名不是展示源（列表数据走 memoryList op 不变）——它是变化信号：跨帧比对变
 // 化 → web 管理面板/待审卡重取。刷新点 = boot + run settle + 三个 memory 闭包
 // 落定后（本进程写的立即反映，不等 settle）；255 的 seq 守卫 + 值不变零帧纪律
@@ -7,6 +7,11 @@
 // （scripted model + gitBranchReader 注入 null——零真模型零网络零 spawn）；夹具
 // 只写 mkdtemp(os.tmpdir()) 只写不删（零删除原语——memory.jsonl 是用户数据，
 // 测试绝不触 ~/.wudao 或真实工作区 store）。
+// 记忆两库收敛（retarget 随源演进）：签名源改钉新库（.wudao/memory/）——R0 的
+// 旧库投影实测保留（冻结 store 的投影档案），R1/R2 的种子与期望值改走新库；
+// 第三项从 maxVersion（旧库内容链轨道，随冻结退役）换为排序 id 的 sha256 摘
+// 要——新库改写=新 id 换旧 id（count/pending 可双净零），id 集把「内容链变
+// 了」带回签名面。
 import { describe, it, expect, vi } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -16,6 +21,8 @@ import type { AgentDriver, AgentDriverOptions, DriverStatus } from "../src/drive
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { openMemoryStore } from "../src/memory/store.js";
 import type { MemoryEntry } from "../src/memory/store.js";
+import { openLongtermMemoryStore, longtermMemoryAuditRow } from "../src/longterm-memory.js";
+import { createMemorySignatureTracker } from "../src/driver/memory-signature.js";
 import { summarizeToolCall } from "../src/log.js";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
@@ -43,70 +50,61 @@ function makeDriver(opts: Partial<AgentDriverOptions>): AgentDriver {
 
 const tmpWs = (): Promise<string> => mkdtemp(join(tmpdir(), "o268-ws-"));
 
-/** Seed: one ACTIVE project fact (auto-allow) + one PENDING user preference
- *  (user scope never auto-allows) — signature "2:1:1". */
+/** Seed（合流后）：一条 confirmed 事实 + 一条 pending 偏好（人审队列）。 */
 async function seedStore(dir: string): Promise<{ activeId: string; pendingId: string }> {
-  const store = openMemoryStore(dir);
-  const a = await store.write({ kind: "fact", content: "构建命令是 pnpm build", scope: "project", tags: ["build"] });
-  const p = await store.write({ kind: "preference", content: "称呼我用「老板」", scope: "user" });
-  return { activeId: a.entry.id, pendingId: p.entry.id };
+  const store = openLongtermMemoryStore(dir);
+  const a = await store.save({ kind: "fact", text: "构建命令是 pnpm build", tags: ["build"] });
+  const p = await store.save({ kind: "preference", text: "称呼我用「老板」", confidence: "pending" });
+  return { activeId: a.id, pendingId: p.id };
 }
 
-/** The signature projection under test — the store's own read API (load() 一次
- *  取全量，与 memoryListFn 同一读)。count=条目数，pending=待审数，maxVersion=
- *  最大 version。 */
-const sigOf = (entries: readonly MemoryEntry[]): string => {
-  let pending = 0;
-  let maxVersion = 0;
-  for (const e of entries) {
-    if (e.status === "pending") pending += 1;
-    const v = e.version ?? 1;
-    if (v > maxVersion) maxVersion = v;
-  }
-  return `${entries.length}:${pending}:${maxVersion}`;
-};
+/** The signature projection under test — the tracker's OWN compute (single
+ *  source; the seed rows go through the same audit-row mapping the driver
+ *  uses, never a hand-copied formula). */
+const sigTracker = createMemorySignatureTracker({ workspaceRoot: undefined, emit: () => {}, openStore: () => { throw new Error("unused"); } });
+const sigOf = (entries: readonly import("@wudao/core").MemoryEntry[]): string =>
+  sigTracker.compute(entries.map((e) => longtermMemoryAuditRow(e)));
+/** 新库当前全量（confirmed + pending——memoryList 的同面）。 */
+const allOf = (dir: string) => openLongtermMemoryStore(dir).list({ includePending: true });
 
-describe("ω99-268 R0 — store 投影实测（执行者核档：控制器两款项漏 decide-ok）", () => {
+describe("ω99-268 R0 — 旧库（M49）投影实测（冻结档案：执行者核档的原始证据链保留）", () => {
   it("合法写路径逐个过账：write/update/remove/confirm 必动其一；bumpHits/markSurfaced 刻意盲区", async () => {
     const dir = await tmpWs();
     const store = openMemoryStore(dir);
-    expect(sigOf(await store.load())).toBe("0:0:0"); // 无文件读空表——确定性起点
-    // write（auto-allow）：count 0→1
+    const sig49 = async (): Promise<string> => {
+      const entries = await store.load();
+      let pending = 0;
+      for (const e of entries) if (e.status === "pending") pending += 1;
+      let maxVersion = 0;
+      for (const e of entries) { const v = e.version ?? 1; if (v > maxVersion) maxVersion = v; }
+      return `${entries.length}:${pending}:${maxVersion}`;
+    };
+    expect(await sig49()).toBe("0:0:0"); // 无文件读空表——确定性起点
     await store.write({ kind: "fact", content: "事实甲", scope: "project" });
-    expect(sigOf(await store.load())).toBe("1:0:1");
-    // write（user scope 必 pending）：count+1 且 pending+1
+    expect(await sig49()).toBe("1:0:1");
     await store.write({ kind: "preference", content: "称呼我用「老板」", scope: "user" });
-    expect(sigOf(await store.load())).toBe("2:1:1");
-    // ★执行者核档：confirm（decide-ok 的底层）只翻 status——count 与 maxVersion
-    // 双双不动！控制器的两款项 `${count}:${maxVersion}` 在 decide-ok 后不变
-    // （2:1），签名漏掉一次真实写。本弧因此加第三项 pending（最小投影修正：
-    // 任何 store 写动词必动三项之一，读遥测 hits/surfaced 仍刻意不动）。
+    expect(await sig49()).toBe("2:1:1");
     const entries0 = await store.load();
     const pendingId = entries0.find((e) => e.status === "pending")?.id as string;
     expect(await store.confirm(pendingId)).toBe(true);
-    const afterConfirm = await store.load();
-    expect(afterConfirm.length).toBe(2); // count 不动（rewriteAll 原地改行）
-    expect(Math.max(...afterConfirm.map((e) => e.version ?? 1))).toBe(1); // maxVersion 不动
-    expect(sigOf(afterConfirm)).toBe("2:0:1"); // pending 项接住 decide-ok
-    // update：version+1（内容改写必可见——同数同 version 的内容改写不可达）
-    const activeId = afterConfirm[0]?.id as string;
+    expect(await sig49()).toBe("2:0:1"); // pending 项接住 decide-ok
+    const activeId = entries0.find((e) => e.status === "active")?.id as string;
     await store.update(activeId, { content: "事实甲（改）" });
-    expect(sigOf(await store.load())).toBe("2:1:2"); // v2 + 转 pending（update 必回待审）
-    // remove：count-1
+    expect(await sig49()).toBe("2:1:2"); // v2 + 转 pending（update 必回待审）
     await store.remove(pendingId);
-    expect(sigOf(await store.load())).toBe("1:1:2");
-    // bumpHits / markSurfaced：读遥测/簿记——刻意盲区（召回透明弧的地盘）
+    expect(await sig49()).toBe("1:1:2");
     await store.bumpHits([activeId]);
-    expect(sigOf(await store.load())).toBe("1:1:2");
     await store.markSurfaced([activeId]);
-    expect(sigOf(await store.load())).toBe("1:1:2");
+    expect(await sig49()).toBe("1:1:2"); // 读遥测/簿记——刻意盲区
   });
 });
 
 describe("ω99-268 R1 — boot 帧带签名 + 别窗写 → settle 后可见（值不变零帧）", () => {
-  it("boot 读落定：getStatus().memorySignature === '2:1:1'（零 run 零提交）", async () => {
+  it("boot 读落定：getStatus().memorySignature === 种子签名（零 run 零提交）", async () => {
     const dir = await tmpWs();
     await seedStore(dir);
+    const expected = sigOf(allOf(dir));
+    expect(expected).toMatch(/^2:1:[0-9a-f]{8}$/); // 合流投影形：count:pending:ids8
     const driver = makeDriver({
       model: createScriptedModel([{ role: "assistant", content: "ok" }]),
       tools: [],
@@ -114,7 +112,7 @@ describe("ω99-268 R1 — boot 帧带签名 + 别窗写 → settle 后可见（�
       workspaceRoot: dir,
       sessionId: "o268-boot",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
+    await until(() => driver.getStatus().memorySignature === expected, "boot signature lands");
     driver.dispose();
   });
 
@@ -133,6 +131,7 @@ describe("ω99-268 R1 — boot 帧带签名 + 别窗写 → settle 后可见（�
   it("别窗写一条：settle 前不可见（无轮询的诚实窗口）→ 本 driver run settle 后签名变", async () => {
     const dir = await tmpWs();
     await seedStore(dir);
+    const before = sigOf(allOf(dir));
     const driver = makeDriver({
       model: createScriptedModel([{ role: "assistant", content: "A1" }, { role: "assistant", content: "A2" }]),
       tools: [],
@@ -140,21 +139,24 @@ describe("ω99-268 R1 — boot 帧带签名 + 别窗写 → settle 后可见（�
       workspaceRoot: dir,
       sessionId: "o268-settle",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
-    // 别窗写（同 store 路径的物理写——另一窗的 memory 工具/Dream 落条目同形）
-    await openMemoryStore(dir).write({ kind: "fact", content: "别窗落的新事实", scope: "project" });
+    await until(() => driver.getStatus().memorySignature === before, "boot signature lands");
+    // 别窗写（新库物理写——另一窗的 memory 工具/会话终了沉淀同形）
+    await openLongtermMemoryStore(dir).save({ kind: "fact", text: "别窗落的新事实" });
+    const after = sigOf(allOf(dir));
+    expect(after).toMatch(/^3:1:/);
     await wait(80);
-    expect(driver.getStatus().memorySignature).toBe("2:1:1"); // settle 前：快照语义，零轮询
+    expect(driver.getStatus().memorySignature).toBe(before); // settle 前：快照语义，零轮询
     // 本 driver 的 run 收束（轮界结算处刷新）
     driver.submit("跑一轮");
     await until(() => driver.getStatus().busy === false, "run settles");
-    await until(() => driver.getStatus().memorySignature === "3:1:1", "settle re-read lands the other-window write");
+    await until(() => driver.getStatus().memorySignature === after, "settle re-read lands the other-window write");
     driver.dispose();
   });
 
   it("值不变零帧：无别窗写的第二 run settle——静默窗内零帧、签名值稳、快照引用稳定", async () => {
     const dir = await tmpWs();
     await seedStore(dir);
+    const expected = sigOf(allOf(dir));
     const driver = makeDriver({
       model: createScriptedModel([{ role: "assistant", content: "A1" }, { role: "assistant", content: "A2" }]),
       tools: [],
@@ -162,7 +164,7 @@ describe("ω99-268 R1 — boot 帧带签名 + 别窗写 → settle 后可见（�
       workspaceRoot: dir,
       sessionId: "o268-quiet",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
+    await until(() => driver.getStatus().memorySignature === expected, "boot signature lands");
     driver.submit("第一轮");
     await until(() => driver.getStatus().busy === false, "first run settles");
     await until(() => driver.getStatus().queued.length === 0 && !driver.getStatus().busy, "quiet");
@@ -175,16 +177,17 @@ describe("ω99-268 R1 — boot 帧带签名 + 别窗写 → settle 后可见（�
     const before = driver.getStatus();
     await wait(150);
     expect(frames).toBe(0); // 值不变零帧（255 纪律：缓存变量不是重读源）
-    expect(driver.getStatus().memorySignature).toBe("2:1:1");
+    expect(driver.getStatus().memorySignature).toBe(expected);
     expect(driver.getStatus()).toBe(before); // 引用稳定（零帧 ⇒ 零重建）
     driver.dispose();
   });
 });
 
 describe("ω99-268 R2 — 三闭包落定即新签名（不等 settle；miss 零动）", () => {
-  it("decide-ok（confirm）→ pending 项动：'2:1:1' → '2:0:1'（op 返回即上新值）", async () => {
+  it("decide-ok（confirm）→ pending 项动：'2:1:x' → '2:0:x'（同 id 换行——ids 不动，op 返回即上新值）", async () => {
     const dir = await tmpWs();
-    const { pendingId } = await seedStore(dir);
+    await seedStore(dir);
+    const expected = sigOf(allOf(dir));
     const driver = makeDriver({
       model: createScriptedModel([{ role: "assistant", content: "ok" }]),
       tools: [],
@@ -192,18 +195,20 @@ describe("ω99-268 R2 — 三闭包落定即新签名（不等 settle；miss 零
       workspaceRoot: dir,
       sessionId: "o268-decide",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
+    await until(() => driver.getStatus().memorySignature === expected, "boot signature lands");
     let frames = 0;
     driver.subscribe(() => { frames += 1; });
+    const pendingId = allOf(dir).find((e) => e.confidence === "pending")!.id;
     const r = await driver.memoryDecide(pendingId, "ok");
     expect(r.ok).toBe(true);
-    // op 落定即上新签名（无需 run、无需 until——闭包后 awaited 刷新）
-    expect(driver.getStatus().memorySignature).toBe("2:0:1");
+    const afterConfirm = sigOf(allOf(dir));
+    expect(afterConfirm).toBe(expected.replace(/^2:1:/, "2:0:")); // pending-1，ids 不动
+    expect(driver.getStatus().memorySignature).toBe(afterConfirm);
     expect(frames).toBeGreaterThan(0); // 帧即时
     driver.dispose();
   });
 
-  it("decide-del（remove）→ count 动；edit（update）→ maxVersion 动", async () => {
+  it("decide-del（forget）→ count 动；edit（新 id 换旧 id）→ ids 摘要动（合流轨道）", async () => {
     const dir = await tmpWs();
     const { activeId, pendingId } = await seedStore(dir);
     const driver = makeDriver({
@@ -213,11 +218,16 @@ describe("ω99-268 R2 — 三闭包落定即新签名（不等 settle；miss 零
       workspaceRoot: dir,
       sessionId: "o268-write",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
+    await until(() => driver.getStatus().memorySignature === sigOf(allOf(dir)), "boot signature lands");
     await driver.memoryDecide(pendingId, "del");
-    expect(driver.getStatus().memorySignature).toBe("1:0:1"); // count 2→1
+    const afterDel = sigOf(allOf(dir));
+    expect(afterDel).toMatch(/^1:0:/); // count 2→1（tombstone）
+    expect(driver.getStatus().memorySignature).toBe(afterDel);
     await driver.memoryEdit(activeId, "构建命令是 pnpm -r build");
-    expect(driver.getStatus().memorySignature).toBe("1:0:2"); // active 改写：v+1 且终态仍 active
+    const afterEdit = sigOf(allOf(dir));
+    expect(afterEdit).toMatch(/^1:0:/); // count/pending 双净零（改写=新 id 换旧 id）
+    expect(afterEdit).not.toBe(afterDel); // ids 摘要接住「内容链变了」
+    expect(driver.getStatus().memorySignature).toBe(afterEdit);
     driver.dispose();
   });
 
@@ -231,14 +241,15 @@ describe("ω99-268 R2 — 三闭包落定即新签名（不等 settle；miss 零
       workspaceRoot: dir,
       sessionId: "o268-list",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
-    await driver.memoryEdit(activeId, "构建命令是 pnpm -r build"); // active 改写 → v2 仍 active
-    expect(driver.getStatus().memorySignature).toBe("2:1:2");
+    await until(() => driver.getStatus().memorySignature === sigOf(allOf(dir)), "boot signature lands");
+    await driver.memoryEdit(activeId, "构建命令是 pnpm -r build"); // 改写 → 新 id
+    const afterEdit = sigOf(allOf(dir));
+    expect(driver.getStatus().memorySignature).toBe(afterEdit);
     // 别窗写（本 driver 不做任何 run/决定）
-    await openMemoryStore(dir).write({ kind: "fact", content: "别窗补一条", scope: "project" });
-    expect(driver.getStatus().memorySignature).toBe("2:1:2"); // 仍旧（零轮询）
+    await openLongtermMemoryStore(dir).save({ kind: "fact", text: "别窗补一条" });
+    expect(driver.getStatus().memorySignature).toBe(afterEdit); // 仍旧（零轮询）
     await driver.memoryList(); // 面板 fetch-on-open——其 load 顺带刷新签名
-    expect(driver.getStatus().memorySignature).toBe("3:1:2");
+    expect(driver.getStatus().memorySignature).toBe(sigOf(allOf(dir)));
     driver.dispose();
   });
 
@@ -252,10 +263,11 @@ describe("ω99-268 R2 — 三闭包落定即新签名（不等 settle；miss 零
       workspaceRoot: dir,
       sessionId: "o268-miss",
     });
-    await until(() => driver.getStatus().memorySignature === "2:1:1", "boot signature lands");
-    await driver.memoryDecide("m-nope", "del");
-    await driver.memoryEdit("m-nope", "任何内容");
-    expect(driver.getStatus().memorySignature).toBe("2:1:1");
+    const expected = sigOf(allOf(dir));
+    await until(() => driver.getStatus().memorySignature === expected, "boot signature lands");
+    await driver.memoryDecide("nope", "del");
+    await driver.memoryEdit("nope", "任何内容");
+    expect(driver.getStatus().memorySignature).toBe(expected);
     driver.dispose();
   });
 });

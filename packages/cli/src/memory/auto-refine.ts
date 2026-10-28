@@ -30,6 +30,8 @@ import { openMemoryStore, openSessionMemoryStore } from "./store.js";
 import type { MemoryStore } from "./store.js";
 import { loadRefineAutoSettings, resolveRefineAutoSettings } from "../refine-auto-config.js";
 import type { RefineAutoSettings, RefineAutoWarn } from "../refine-auto-config.js";
+// 记忆两库收敛：auto-refine 调度停用门（WUDAO_M49_LEGACY=1 回滚态原样可跑）。
+import { legacyMemorySchedulingEnabled } from "./migrate.js";
 
 /** The two trigger sources: the assistant-turn counter and compaction. */
 export type AutoRefineTriggerReason = "turns" | "compact";
@@ -373,6 +375,10 @@ export function refineAutoRuntimeFor(
   workspaceRoot: string,
   opts: { readonly warn?: RefineAutoWarn; readonly env?: NodeJS.ProcessEnv; readonly onNotice?: (text: string) => void } = {},
 ): Promise<AutoRefineRuntime | undefined> {
+  // 记忆两库收敛：auto-refine 调度停用（refine 写冻结的旧库；用户设置里的
+  // refine.auto.enabled 从此失效——收敛后新库是唯一记忆管线）。WUDAO_M49_
+  // LEGACY=1 回滚态原样可跑。门在缓存之前——回滚开关即时生效。
+  if (!legacyMemorySchedulingEnabled(opts.env ?? process.env)) return Promise.resolve(undefined);
   if (refineAutoRuntimeCache === undefined) {
     refineAutoRuntimeCache = loadRefineAutoSettings(workspaceRoot, opts.warn ?? (() => {}), opts.env ?? process.env)
       .then((settings) => {

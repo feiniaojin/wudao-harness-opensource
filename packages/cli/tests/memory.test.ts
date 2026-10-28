@@ -23,6 +23,7 @@ import {
   applyRefinement,
 } from "../src/memory/index.js";
 import type { MemoryEntry, MemoryWriteInput, RefineProposal } from "../src/memory/index.js";
+import { openLongtermMemoryStore } from "../src/longterm-memory.js";
 import { recallCutoff } from "../src/memory/recall.js";
 
 let dir: string;
@@ -491,21 +492,23 @@ describe("memory tools + /memory command", () => {
   });
 
   it("/memory list | del | ok round-trip; surfacePendingReview fires once", async () => {
-    const store = await openMemoryStore(dir);
-    const a = await store.write(write("run pnpm eval before merging"));
-    const p = await store.write(write("user prefers dark theme", { scope: "user" }));
+    // 记忆两库收敛：命令面（list/ok/del）与 boot 待审提醒 retarget 到新库
+    // （.wudao/memory/）——种子直接落新库（一条 confirmed + 一条 pending）。
+    const store = openLongtermMemoryStore(dir);
+    const a = await store.save({ kind: "fact", text: "run pnpm eval before merging" });
+    const p = await store.save({ kind: "preference", text: "user prefers dark theme", confidence: "pending" });
 
     const list = await runMemoryCommand(dir, "list");
-    expect(list).toContain(a.entry.id);
+    expect(list).toContain(a.id);
     expect(list).toContain("⏳");
 
     const surfaced = await surfacePendingReview(dir);
     expect(surfaced).toBeDefined();
-    expect(surfaced).toContain(p.entry.id);
+    expect(surfaced).toContain(p.id);
     expect(await surfacePendingReview(dir)).toBeUndefined(); // one-time
 
-    expect(await runMemoryCommand(dir, `ok ${p.entry.id}`)).toContain("confirmed");
-    expect(await runMemoryCommand(dir, `del ${a.entry.id}`)).toContain("deleted");
+    expect(await runMemoryCommand(dir, `ok ${p.id}`)).toContain("confirmed");
+    expect(await runMemoryCommand(dir, `del ${a.id}`)).toContain("deleted");
     expect(await runMemoryCommand(dir, "del m-nope")).toContain("no memory entry");
     expect(await runMemoryCommand(dir, "bogus")).toContain("用法："); // ω99-166d-i: 泛 usage 钉演进（#15）
     expect(formatPendingReview([])).toBeUndefined();

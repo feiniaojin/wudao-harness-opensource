@@ -166,8 +166,11 @@ export function recallMemories(input: RecallInput): RecallResult {
 }
 
 /** The next-session pending-review notice (§1 待审): lists every unsurfaced
- *  pending entry once, with the confirm/drop verbs. */
-export function formatPendingReview(entries: readonly MemoryEntry[]): string | undefined {
+ *  pending entry once, with the confirm/drop verbs.
+ *  记忆两库收敛：行形放宽为结构形（id/kind/scope/content 的最小面）——新库
+ *  的 audit 行（longterm-memory.ts longtermMemoryAuditRow）与本 M49 行同构
+ *  透传（kind 是 string，渲染原样插值）。 */
+export function formatPendingReview(entries: readonly { readonly id: string; readonly kind: string; readonly scope: string; readonly content: string }[]): string | undefined {
   if (entries.length === 0) return undefined;
   // 夜移 025: id and content are untrusted stored bytes (parseEntry only
   // checks typeof string) — escaped so a hostile entry can't forge the

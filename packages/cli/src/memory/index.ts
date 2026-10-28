@@ -44,6 +44,9 @@ export { createMemoryWriteTool, createMemorySearchTool, createMemoryTools } from
 export { runMemoryCommand, surfacePendingReview, formatMemoryList, createMemoryRuntime } from "./commands.js";
 export { spawnBackgroundReview, backgroundReviewEnabled, REVIEW_PROMPT, REVIEW_MAX_TURNS, REVIEW_MIN_TOOL_CALLS, REVIEW_ROLE_ID } from "./review.js";
 export type { BackgroundReviewSpawn, BackgroundReviewOptions } from "./review.js";
+// 记忆两库收敛（docs/specs/memory-system.md 实施裁决的后续弧）：M49 存量
+// 一次性迁移 + dream/refine 调度停用门（WUDAO_M49_LEGACY=1 回滚态）。
+export { migrateLegacyMemory, legacyMemoryMigrated, legacyMemoryMigrationMarker, legacyMemorySchedulingEnabled } from "./migrate.js";
 // ω-4f (design 84): Dream memory consolidation — stage 2 (ledger→curated
 // ledger) of the two-stage composition over the review fork's stage 1.
 export { memoryDirectory } from "./store.js";

@@ -1,13 +1,15 @@
 // 借鉴弧 α2 顺带拆分（文件行数棘轮「把压力推向拆分」）：记忆库内容签名三件
 // 套从 agent-driver 闭包外提为自有小状态机——253/255 缓存读纪律逐字保留
 //（VALUE 骑 DriverStatus；emit 只经注入的回调）。签名是一次 load() 上的
-// 单调量 `count:pending:maxVersion`：每个写动词至少动一项——write（count+1）、
-// update（maxVersion+1，内容链）、remove（count-1）、confirm（pending-1——
-// 控制器两项速写漏的项：纯状态翻转既不动 count 也不动 maxVersion，没有
-// pending 项的话 decide-ok 对发起它的面板不可见）；读侧遥测（bumpHits）与
-// 一次性提醒簿记（markSurfaced）设计上什么都不动。知识落点：boot 读、run
+// 单调量 `count:pending:maxVersion:ids`：每个写动词至少动一项——write（count+1）、
+// remove（count-1）、confirm（pending-1——纯状态翻转既不动 count 也不动别的，
+// 没有 pending 项的话 decide-ok 对发起它的面板不可见）、改写（ids——记忆两库
+// 收敛后改写=新 id 换旧 id：count 与 pending 都可能净零，M49 的 maxVersion
+// 轨道随旧库冻结退役，id 集摘要接管「内容链变了」信号）；读侧遥测（useCount）
+// 与一次性提醒簿记（surfaced）设计上什么都不动。知识落点：boot 读、run
 // 结算边界（其他窗口的写在彼处可见——中间不轮询）、各记忆 op 闭包的着陆
 //（本进程的写即时反映）。单调 seq 保最后知识站立；值不变不重发。
+import { createHash } from "node:crypto";
 import type { MemoryEntryMirror } from "./types.js";
 
 /** The tracker's live face over one driver closure. */
@@ -34,13 +36,13 @@ export function createMemorySignatureTracker(opts: {
   let seq = 0;
   const compute = (entries: readonly MemoryEntryMirror[]): string => {
     let pending = 0;
-    let maxVersion = 0;
     for (const e of entries) {
       if (e.status === "pending") pending += 1;
-      const v = e.version ?? 1;
-      if (v > maxVersion) maxVersion = v;
     }
-    return `${entries.length}:${pending}:${maxVersion}`;
+    // ids 摘要（记忆两库收敛）：改写在新库=新 id 换旧 id（count/pending 可
+    // 双净零）——排序 id 的 sha256 前 8 位把「内容链变了」带回签名面。
+    const ids = createHash("sha256").update([...entries].map((e) => e.id).sort().join("\n")).digest("hex").slice(0, 8);
+    return `${entries.length}:${pending}:${ids}`;
   };
   const self: MemorySignatureTracker = {
     current: () => signature,

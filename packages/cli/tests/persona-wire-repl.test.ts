@@ -138,7 +138,7 @@ describe("final-review C1 — REPL runtime slots (runRepl integration)", () => {
     // slot value — pre-fix this threw inside resolveTemplate on EVERY call.
     expect(call.headers["x-a reference harness-session-id"]).toBe("wire-sess-1");
     // The literal template layer: the pinned attribution header rides too.
-    expect(call.headers["user-agent"]).toBe("wudao-harness/0.4.14 (+https://github.com/feiniaojin/wudao-harness-opensource)");
+    expect(call.headers["user-agent"]).toBe("wudao-harness/0.4.15 (+https://github.com/feiniaojin/wudao-harness-opensource)");
     // No templated value ever reaches the wire unresolved.
     expect(Object.values(call.headers).some((v) => v.includes("{{"))).toBe(false);
     // The adapter's own headers stay intact (persona spreads after, adds only).

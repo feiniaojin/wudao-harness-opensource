@@ -78,6 +78,23 @@ describe("M-Memory 工具面 — memory_save", () => {
     expect(tags).not.toContain("3");
     expect(tags.length).toBeLessThanOrEqual(8);
   });
+
+  it("记忆两库收敛 — guard 接线：凭据值形状硬拦（isError 回执、零落库、台账留痕且脱敏）；正常路径缺省 confirmed", async () => {
+    const store = openLongtermMemoryStore(ws);
+    const tool = createLongtermMemorySaveTool(store, ws);
+    const blocked = await tool.execute({ kind: "fact", text: "the api key is sk-abcdef12345678" });
+    expect(blocked.isError).toBe(true);
+    expect(String(blocked.content)).toContain("blocked");
+    expect(store.list({ includePending: true })).toHaveLength(0); // 未入库
+    const { readFile } = await import("node:fs/promises");
+    const ledger = await readFile(join(ws, ".wudao", "memory-blocked.jsonl"), "utf8");
+    expect(ledger).toContain("\"source\":\"memory_write\"");
+    expect(ledger).not.toContain("sk-abcdef12345678"); // 台账预览先脱敏
+    // 正常路径缺省 confirmed（模型工具直写 = confirmed）
+    const fine = await tool.execute({ kind: "fact", text: "repo uses vitest" });
+    expect(fine.isError).toBeFalsy();
+    expect(store.list()[0]!.confidence).toBe("confirmed");
+  });
 });
 
 describe("M-Memory 工具面 — memory_search / memory_forget", () => {

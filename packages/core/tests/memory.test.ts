@@ -159,3 +159,68 @@ describe("memory: write-chain ordering", () => {
     expect(texts).toEqual(Array.from({ length: 10 }, (_, i) => `ordered ${i}`));
   });
 });
+
+describe("memory: confidence（M49 人审门合流路径）", () => {
+  it("save 缺省 confirmed；pending 不进 list 缺省面/search/renderInjection", async () => {
+    const s = openMemoryStore(root);
+    await s.save({ kind: "fact", text: "confirmed fact: workspace uses pnpm" });
+    await s.save({ kind: "lesson", text: "pending lesson: run focused tests first", confidence: "pending" });
+    // 缺省面 = confirmed only
+    expect(s.list()).toHaveLength(1);
+    expect(s.list()[0]!.confidence).toBe("confirmed");
+    expect(s.listPending()).toHaveLength(1);
+    expect(s.listPending()[0]!.text).toBe("pending lesson: run focused tests first");
+    expect(s.list({ includePending: true })).toHaveLength(2);
+    // 检索只取 confirmed（lexical 命中的 pending 也不可见；词面不相交防串扰）
+    expect(s.search("run focused tests")).toHaveLength(0);
+    expect(s.search("pnpm")[0]!.text).toBe("confirmed fact: workspace uses pnpm");
+    // 注入块绝不携带 pending
+    expect(s.renderInjection()).not.toContain("pending lesson");
+    expect(s.renderInjection()).toContain("confirmed fact");
+    expect(s.renderInjection(s.list({ includePending: true }))).not.toContain("pending lesson");
+  });
+  it("pending → confirmed 单向门：append 同 id 的 confirmed 行（后行胜），useCount 不动", async () => {
+    const s = openMemoryStore(root);
+    await s.save({ kind: "preference", text: "回复用中文", confidence: "pending" });
+    const confirmed = await s.save({ kind: "preference", text: "回复用中文", confidence: "confirmed" });
+    expect(confirmed.confidence).toBe("confirmed");
+    expect(confirmed.useCount).toBe(1); // 审阅决定不是使用——强度不注水
+    expect(s.listPending()).toHaveLength(0);
+    expect(s.list()).toHaveLength(1);
+    // 重载直证后行胜：同 id 一行 confirmed（append 台账保留两行）
+    const reloaded = openMemoryStore(root);
+    expect(reloaded.list()).toHaveLength(1);
+    expect(reloaded.list()[0]!.confidence).toBe("confirmed");
+    const raw = (await readFile(s.file, "utf8")).trim().split("\n");
+    expect(raw).toHaveLength(2);
+    expect((JSON.parse(raw[1]!) as { confidence: string }).confidence).toBe("confirmed");
+  });
+  it("已 confirmed 的内容再以 pending 存：只 bump 强度，绝不回审", async () => {
+    const s = openMemoryStore(root);
+    await s.save({ kind: "fact", text: "vetted fact" });
+    const again = await s.save({ kind: "fact", text: "vetted fact", confidence: "pending" });
+    expect(again.confidence).toBe("confirmed");
+    expect(again.useCount).toBe(2);
+    expect(s.listPending()).toHaveLength(0);
+  });
+  it("tombstone 对 pending 通用；重载后 confirmed 面与 pending 队列各归其位", async () => {
+    const a = openMemoryStore(root);
+    const now = new Date("2026-10-24T00:00:00Z");
+    const c = await a.save({ kind: "fact", text: "kept fact", now });
+    const p = await a.save({ kind: "fact", text: "kept pending", now, confidence: "pending" });
+    await a.save({ kind: "fact", text: "dropped pending", now, confidence: "pending" });
+    await a.forget(p.id);
+    await a.forget((await a.listPending()).find((e) => e.text === "dropped pending")!.id);
+    expect(c.id).toBeTruthy();
+    const b = openMemoryStore(root);
+    expect(b.list({ includePending: true })).toHaveLength(1);
+    expect(b.list()[0]!.text).toBe("kept fact");
+  });
+  it("pre-confidence 存量行读回 confirmed（缺省语义归一）", async () => {
+    await writeFile(join(root, "memory.jsonl"), [
+      JSON.stringify({ id: "legacy1", kind: "fact", text: "old line no confidence", tags: [], createdAt: new Date().toISOString(), useCount: 3 }),
+    ].join("\n"), "utf8");
+    const s = openMemoryStore(root);
+    expect(s.list()[0]).toMatchObject({ id: "legacy1", confidence: "confirmed", useCount: 3 });
+  });
+});

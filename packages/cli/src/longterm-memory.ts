@@ -24,6 +24,12 @@
 //     的 buildToolSet 对 memory:+longtermMemory: 同传 fail-closed 拒绝）。驱
 //     动装配统一换轨到本模块三件套；M49 的 dream/refine/pending-review 走
 //     store 直连，不受影响。
+//   * 记忆两库收敛（后续收敛弧，docs/specs/memory-system.md 实施裁决）——
+//     M49 人审门合流为新库的 confidence 路径：保守沉淀入 pending（本模块
+//     captureAtSessionEnd），审核面（driver memoryList/Decide/Edit、TUI
+//     /memory ok|del、boot 待审提醒）读写新库，M49 存量一次性迁移（./memory/
+//     migrate.ts，装配点触发），M49 dream/refine 调度停用（回滚
+//     WUDAO_M49_LEGACY=1）。旧库文件与 M49 模块保留为回滚线。
 import {
   buildTool,
   openMemoryStore,
@@ -37,12 +43,20 @@ import type {
   AgentState,
   MemoryEntry,
   MemoryKind,
+  MemorySaveInput,
   MemoryStore,
   Tool,
 } from "@wudao/core";
 import { join } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { loadLayeredSettings, readGlobalSettingsSync, saveGlobalSettings } from "./settings-layer.js";
 import { runMemoryCommand } from "./memory/index.js";
+// 记忆两库收敛：M49 人审门合流为 confidence 路径——guard 的块档门（凭据值/
+// 指令覆盖形状）接到新库 save 路径；一次性迁移在 runtime 装配点触发。
+import { appendBlockedLearningAt, buildBlockedRecord, screenLearningInput } from "./memory/guard.js";
+import type { LearningSource } from "./memory/guard.js";
+import { memoryStorePath } from "./memory/store.js";
+import { migrateLegacyMemory, legacyMemoryMigrated } from "./memory/migrate.js";
 
 /** boot 召回预算（spec 管线 ③：top-k 注入，k=8）。 */
 export const LTS_MEMORY_BOOT_K = 8;
@@ -95,6 +109,96 @@ export async function longtermMemoryEnabledFor(workspaceRoot: string): Promise<b
 }
 
 // ---------------------------------------------------------------------------
+// 合流审核面缝（M49 人审门 → 新库 confidence 路径）
+// ---------------------------------------------------------------------------
+
+/** 待审一次性提醒的 surfaced 簿记（M49 surfaced 语义在新库侧的落点）：
+ * `<ws>/.wudao/memory/review-surfaced.json`，id 集合，整文件重写（bookkeeping
+ * 簿记，非台账——M49 rewriteAll 的同款纪律；写坏不致命，退化为提醒再现）。 */
+export function longtermMemorySurfacedPath(workspaceRoot: string): string {
+  return join(longtermMemoryDir(workspaceRoot), "review-surfaced.json");
+}
+
+/** 已 surfaced 的 pending id 集（读失败=空集——一次性提醒退化为准入即提醒）。 */
+export async function readLongtermMemorySurfaced(workspaceRoot: string): Promise<ReadonlySet<string>> {
+  try {
+    const raw = JSON.parse(await readFile(longtermMemorySurfacedPath(workspaceRoot), "utf8")) as unknown;
+    return new Set(Array.isArray(raw) ? raw.filter((v): v is string => typeof v === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+/** 标记 surfaced（best-effort——失败只意味着提醒可能再现一次，无害）。 */
+export async function markLongtermMemorySurfaced(workspaceRoot: string, ids: readonly string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const prev = await readLongtermMemorySurfaced(workspaceRoot);
+  const next = [...new Set([...prev, ...ids])].sort();
+  await mkdir(longtermMemoryDir(workspaceRoot), { recursive: true });
+  await writeFile(longtermMemorySurfacedPath(workspaceRoot), `${JSON.stringify(next)}\n`, "utf8");
+}
+
+/** 合流审核面（driver memoryList op / TUI 待审提醒）的行形——M49 镜像 wire
+ * 形（web protocol-core.ts MemoryEntry 的同构零改动契约），kind/scope 放宽
+ * string：新库 kind 是 fact|preference|lesson|skill，web 的 label 表未知
+ * token 原样透传（不编造）；scope 恒 project（新库 per-workspace）。 */
+export interface LongtermMemoryAuditRow {
+  readonly id: string;
+  readonly kind: string;
+  readonly content: string;
+  readonly scope: "project";
+  readonly tags: readonly string[];
+  readonly created: string;
+  readonly hits: number;
+  readonly status: "active" | "pending";
+  readonly surfaced?: true;
+}
+
+/** 新库 entry → M49 镜像行（status=confidence 映射；hits=useCount 的可见面；
+ *  surfaced 只在 pending 行携带——审核面据此区分「提醒过没有」）。 */
+export function longtermMemoryAuditRow(entry: MemoryEntry, surfaced?: ReadonlySet<string>): LongtermMemoryAuditRow {
+  const status = entry.confidence === "pending" ? "pending" : "active";
+  return {
+    id: entry.id,
+    kind: entry.kind,
+    content: entry.text,
+    scope: "project",
+    tags: [...entry.tags],
+    created: entry.createdAt,
+    hits: entry.useCount,
+    status,
+    ...(status === "pending" && surfaced?.has(entry.id) ? { surfaced: true as const } : {}),
+  };
+}
+
+/** 新库 save 路径的块档门（guard 接线）：凭据值/指令覆盖形状硬拦——不落库
+ *  （pending 会把密钥明文持久化），改落拦截台账。台账锚在旧库路径
+ *  （.wudao/memory-blocked.jsonl）——台账位置是 web 文案的既定契约，不随库
+ *  搬家；无工作区的句柄（测试直造）只拦不记账。返回 blocked 回执（M49
+ *  store.write 的同款三态面）。 */
+export async function saveLongtermMemoryGuarded(
+  workspaceRoot: string | undefined,
+  store: MemoryStore,
+  input: MemorySaveInput,
+  source: LearningSource,
+): Promise<{ readonly ok: true; readonly entry: MemoryEntry & { isNew: boolean } } | { readonly ok: false; readonly blocked: true; readonly reasons: readonly string[] }> {
+  const screen = screenLearningInput(input.text);
+  if (screen.blocked) {
+    if (workspaceRoot !== undefined) {
+      // 台账落盘失败不掩盖拦截决定（决定已成立，日志尽力而为）。
+      await appendBlockedLearningAt(memoryStorePath(workspaceRoot), buildBlockedRecord({
+        at: new Date().toISOString(),
+        source,
+        reasons: screen.reasons,
+        content: input.text,
+      })).catch(() => {});
+    }
+    return { ok: false, blocked: true, reasons: screen.reasons };
+  }
+  return { ok: true, entry: await store.save(input) };
+}
+
+// ---------------------------------------------------------------------------
 // ① 工具面（buildTool fail-closed）
 // ---------------------------------------------------------------------------
 
@@ -103,8 +207,9 @@ function sanitizeTags(raw: unknown): string[] {
   return [...new Set(raw.filter((t): t is string => typeof t === "string" && t.trim() !== "").map((t) => t.trim().toLowerCase()))].slice(0, 8);
 }
 
-/** memory_save — 模型侧自进化入口。非只读（权限管线全量过）。 */
-export function createLongtermMemorySaveTool(store: MemoryStore): Tool {
+/** memory_save — 模型侧自进化入口。非只读（权限管线全量过）。合流后：
+ * guard 块档门（凭据值/指令覆盖形状硬拦，落拦截台账）→ save confirmed。 */
+export function createLongtermMemorySaveTool(store: MemoryStore, workspaceRoot?: string): Tool {
   return buildTool({
     name: "memory_save",
     description:
@@ -127,7 +232,11 @@ export function createLongtermMemorySaveTool(store: MemoryStore): Tool {
       const text = typeof args.text === "string" ? args.text.trim() : "";
       if (text === "") return { content: "memory_save failed: text must be a non-empty string", isError: true };
       try {
-        const entry = await store.save({ kind, text, tags: sanitizeTags(args.tags) });
+        const r = await saveLongtermMemoryGuarded(workspaceRoot, store, { kind, text, tags: sanitizeTags(args.tags) }, "memory_write");
+        if (!r.ok) {
+          return { content: `memory_save blocked: 内容含密钥或指令注入形状，未入库（拦截清单可见）—— ${r.reasons.join("; ")}`, isError: true };
+        }
+        const entry = r.entry;
         return entry.isNew
           ? { content: `memory saved: ${entry.id} [${entry.kind}]` }
           : { content: `memory strengthened: ${entry.id} (useCount ${entry.useCount} — identical content already known)` };
@@ -139,7 +248,10 @@ export function createLongtermMemorySaveTool(store: MemoryStore): Tool {
 }
 
 function formatMemoryRows(entries: readonly MemoryEntry[]): string {
-  return entries.map((e) => `${e.id} [${e.kind}] ${truncateSafe(e.text, 200)}${e.tags.length > 0 ? ` (tags: ${e.tags.join(", ")})` : ""} [used ${e.useCount}]`).join("\n");
+  // 合流后 ⏳ = pending（待你确认——确认后参与回忆；/memory ok <id>）。
+  return entries
+    .map((e) => `${e.confidence === "pending" ? "⏳ " : ""}${e.id} [${e.kind}] ${truncateSafe(e.text, 200)}${e.tags.length > 0 ? ` (tags: ${e.tags.join(", ")})` : ""} [used ${e.useCount}]`)
+    .join("\n");
 }
 
 /** memory_search — 只读检索（也是子 agent 集里唯一的记忆工具）。 */
@@ -200,13 +312,19 @@ export interface LongtermMemoryToolsOptions {
   readonly store: MemoryStore;
   /** true → 只读子集（仅 memory_search——子 agent 永不写记忆，M49 同界）。 */
   readonly readOnly?: boolean;
+  /** 工作区根（块档门的拦截台账锚；缺省=只拦不记账）。 */
+  readonly workspaceRoot?: string;
 }
 
 /** 工具三件套（readOnly = 子 agent 只读拼法）。 */
 export function createLongtermMemoryTools(opts: LongtermMemoryToolsOptions): Tool[] {
   return opts.readOnly === true
     ? [createLongtermMemorySearchTool(opts.store)]
-    : [createLongtermMemorySaveTool(opts.store), createLongtermMemorySearchTool(opts.store), createLongtermMemoryForgetTool(opts.store)];
+    : [
+        createLongtermMemorySaveTool(opts.store, opts.workspaceRoot),
+        createLongtermMemorySearchTool(opts.store),
+        createLongtermMemoryForgetTool(opts.store),
+      ];
 }
 
 // ---------------------------------------------------------------------------
@@ -242,7 +360,8 @@ export interface LongtermMemoryRuntime {
   /** /memory refresh：重算冻结块；state 在场且尾缀匹配 → 轮界换尾（显式
    *  命令 = 已声明的缓存代价；前缀字节不变断言同 inject）。 */
   refresh(state: AgentState | undefined): string;
-  /** 会话终了确定性沉淀（管线 ②：保守规则 + 静默 save；失败静默）。 */
+  /** 会话终了确定性沉淀（管线 ②：保守规则 + 静默 save pending——人审队列，
+   *  确认后才参与回忆；失败静默）。 */
   captureAtSessionEnd(input: { readonly sessionId: string; readonly messages: readonly AgentMessage[] }): Promise<void>;
 }
 
@@ -252,6 +371,10 @@ export async function createLongtermMemoryRuntime(args: {
   readonly enabled?: boolean;
 }): Promise<LongtermMemoryRuntime> {
   const enabled = args.enabled ?? (await longtermMemoryEnabledFor(args.workspaceRoot));
+  // 记忆两库收敛：装配点触发一次性迁移（marker 幂等——每会话一次廉价的
+  // 文件存在检查）。失能时尊重开关零动作（下次开启时迁移）；失败绝不
+  // 阻断会话（marker 未落 → 下次重试，dedup 吸收半程写入）。
+  if (enabled) await migrateLegacyMemory(args.workspaceRoot).catch(() => {});
   const store = openLongtermMemoryStore(args.workspaceRoot);
   // 冻结三态：undefined = 未冻结（下轮可再试）；"" = 冻结为空（无命中，永不注
   // 入）；非空 = 冻结块（整个会话字节稳定）。
@@ -309,7 +432,16 @@ export async function createLongtermMemoryRuntime(args: {
       }
       for (const lesson of extractLessonCandidates(texts)) {
         try {
-          await store.save({ kind: "lesson", text: lesson, tags: ["auto"], sourceSession: input.sessionId });
+          // 合流核心语义：保守沉淀先入人审队列（M49 的「pending 在下次会话
+          // 开始时浮出、用户一次性确认」路径），确认转 confirmed 才参与回忆。
+          // guard 块档门随行（凭据值/指令覆盖形状拦下落台账，不入库）。
+          await saveLongtermMemoryGuarded(args.workspaceRoot, store, {
+            kind: "lesson",
+            text: lesson,
+            tags: ["auto"],
+            sourceSession: input.sessionId,
+            confidence: "pending",
+          }, "capture");
         } catch {
           /* 静默——沉淀失败绝不影响会话收尾 */
         }
@@ -437,8 +569,12 @@ export async function runLongtermMemoryVerb(args: {
   // 索引，两个句柄互相看不见对方的行；命令道与工具道必须共一个索引）。
   const store = args.runtime?.store ?? openLongtermMemoryStore(args.workspaceRoot);
   if (verb === "list") {
-    const rows = formatMemoryRows(store.list().slice(0, LTS_MEMORY_LIST_MAX));
-    const mine = rows === "" ? "（长期记忆为空——memory_save 或会话终了沉淀会写入 .wudao/memory/memory.jsonl）" : rows;
+    // 合流后全量面（confirmed + pending⏳）住新库；旧库段落只在迁移 marker
+    // 落定前展示（过渡期的诚实双列；迁移后旧库=冻结历史，展示即重复）。
+    const rows = formatMemoryRows(store.list({ includePending: true }).slice(0, LTS_MEMORY_LIST_MAX));
+    const mine = rows === "" ? "（长期记忆为空——memory_save 或会话终了沉淀会写入 .wudao/memory/memory.jsonl）" : `${rows}\n（⏳ = 待你确认——确认后参与回忆：/memory ok <id>）`;
+    const migrated = await legacyMemoryMigrated(args.workspaceRoot).catch(() => true);
+    if (migrated) return [`长期记忆（M-Memory — .wudao/memory/memory.jsonl）：`, mine].join("\n");
     const legacy = await runMemoryCommand(args.workspaceRoot, "list").catch(() => "(旧记忆系统读取失败)");
     return [`长期记忆（M-Memory — .wudao/memory/memory.jsonl）：`, mine, "", "—— 旧记忆系统（M49 — .wudao/memory.jsonl）——", legacy].join("\n");
   }
@@ -454,7 +590,9 @@ export async function runLongtermMemoryVerb(args: {
       return `用法：/memory save <kind> <text>——kind ∈ ${MEMORY_KINDS.join("|")}`;
     }
     try {
-      const entry = await store.save({ kind: kind as MemoryKind, text });
+      const r = await saveLongtermMemoryGuarded(args.workspaceRoot, store, { kind: kind as MemoryKind, text }, "memory_write");
+      if (!r.ok) return `⚠️ 已拦下：内容含密钥或指令注入形状，未入库（拦截清单 .wudao/memory-blocked.jsonl 可查）`;
+      const entry = r.entry;
       return entry.isNew
         ? `已存入长期记忆：${entry.id} [${entry.kind}]`
         : `已强化既有记忆：${entry.id}（useCount ${entry.useCount}——同内容已知）`;

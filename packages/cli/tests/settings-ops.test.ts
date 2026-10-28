@@ -26,6 +26,7 @@ import { createProviderRegistryOps } from "../src/driver/provider-registry-ops.j
 import { buildTool, createScriptedModel } from "@wudao/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
+import { openLongtermMemoryStore } from "../src/longterm-memory.js";
 
 let home: string;
 let root: string;
@@ -1077,5 +1078,25 @@ describe("withSettingsOps settingsSaveProvider — the config-save hot-refresh",
     await port.settingsSaveProvider("kimi-code", { baseUrl: RELAY, models: [{ name: "k3-256k" }] });
     await new Promise((r) => setTimeout(r, 60));
     expect(builds).toEqual(["kimi-code/https://relay.example/v1"]);
+  });
+});
+
+// 记忆两库收敛 — longtermMemoryList 是 confirmed 简表：pending（人审队列，
+// 审核在「管理记忆」面）不上长期记忆面。两段并存职责分明。
+describe("longtermMemoryList — the confirmed-only face (记忆两库收敛)", () => {
+  it("confirmed 条目上面；pending 排除（审核走管理记忆面）", async () => {
+    const ops = createSettingsOps({ env: env(), workspaceRoot: root });
+    const store = openLongtermMemoryStore(root);
+    await store.save({ kind: "fact", text: "已确认的事实", tags: ["build"] });
+    await store.save({ kind: "lesson", text: "待审的教训", confidence: "pending" });
+    const { entries } = await ops.longtermMemoryList();
+    expect(entries).toHaveLength(1);
+    expect(entries[0]).toMatchObject({ kind: "fact", text: "已确认的事实", useCount: 1 });
+    expect(JSON.stringify(entries)).not.toContain("待审的教训");
+  });
+  it("空库 → 空表（诚实空态，不抛）", async () => {
+    const ops = createSettingsOps({ env: env(), workspaceRoot: root });
+    const { entries } = await ops.longtermMemoryList();
+    expect(entries).toEqual([]);
   });
 });

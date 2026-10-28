@@ -132,8 +132,10 @@ export function redactSecretShaped(text: string): string {
 /** Which learning entry attempted the write (the receipt/audit dimension).
  *  永续 v6 wave2（reef C1）：+improve——改进提案器生成的规则文本过同一道
  *  准入筛查（screenLearningInput 的「任何未来 learned-behavior 文本」条款
- *  的第一个新调用方）。 */
-export type LearningSource = "memory_write" | "refine" | "review" | "dream" | "edit" | "btw" | "improve";
+ *  的第一个新调用方）。
+ *  记忆两库收敛：+capture（新库 captureAtSessionEnd 的保守沉淀）与
+ *  +migrate（M49 存量迁移）——两条新学习入口共用同一道块档门。 */
+export type LearningSource = "memory_write" | "refine" | "review" | "dream" | "edit" | "btw" | "improve" | "capture" | "migrate";
 
 /** One blocked-learning ledger line. */
 export interface BlockedLearningRecord {
