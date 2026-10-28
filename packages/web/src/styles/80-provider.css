@@ -326,6 +326,9 @@ button.ctl.detail-save { border-color: var(--accent); color: var(--accent); }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+  /* DESIGN-SYSTEM P3：呼吸语言的灭灯——shimmer 回实色文字，sweep 光带消失 */
+  .shimmer { animation: none; color: var(--text-2); background: none; }
+  .sweep-line::after { content: none; }
 }
 
 /* --- 0.3.13 provider page redesign (216; user trial feedback: 供应商维护页

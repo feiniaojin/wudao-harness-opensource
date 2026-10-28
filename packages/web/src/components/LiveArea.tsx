@@ -54,7 +54,7 @@ export function ReasoningBlock({ text, streaming = false, defaultOpen = false }:
   }, [text]);
   return (
     <details className="reasoning" data-streaming={streaming} ref={detailsRef}>
-      <summary onClick={() => setUserToggled(true)}>
+      <summary onClick={() => setUserToggled(true)} className={streaming ? "sweep-line" : undefined}>
         {/* 0.3.81 精修: 流式摘要去掉 ▌ 伪光标——真光标只属于正在打字的回答
             （.live-answer .caret，会闪）；思考阶段的动效信号已由状态行/状态栏
             承担，这里再放一个不闪的 ▌ 是第二根"假指针"。 */}

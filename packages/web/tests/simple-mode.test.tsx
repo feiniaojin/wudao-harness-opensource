@@ -632,11 +632,11 @@ describe("M63 §D slice 3 — SimpleTurnStatus", () => {
     // thinking/working: nothing else moves, so the label carries its own glyph.
     for (const l of [live({ reasoning: "想" }), live({})]) {
       const c = mount(<SimpleTurnStatus busy={true} live={l} />);
-      const spin = c.querySelector(".turnstatus svg.spin");
-      expect(spin).not.toBeNull();
-      // …and it rides the ONE head line (spinner + label in a row,
-      // not the old stacked-lines noise).
-      expect(spin?.closest(".ts-head")).not.toBeNull();
+      // DESIGN-SYSTEM P3：文字等待态的 ONE motion signal = label shimmer
+      // （spinner 退役于文字行首；shimmer 的 label 就在唯一头行上）
+      const label = c.querySelector(".turnstatus .ts-head .label");
+      expect(label?.className).toContain("shimmer");
+      expect(label?.closest(".ts-head")).not.toBeNull();
     }
     // tools: BusyToolRow's .act-st spins; answering: the caret ▌ types —
     // the label must not stack a SECOND spinner on top of either (0.3.81

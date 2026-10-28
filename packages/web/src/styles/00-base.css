@@ -522,3 +522,31 @@ button.inject-head { cursor: pointer; }
 .tok-num { color: var(--tok-num); }
 .tok-fn  { color: var(--tok-fn); }
 
+/* —— DESIGN-SYSTEM P3（加载语言的呼吸感）—— shimmer（文字渐变扫过）与
+   sweep（reasoning 行横扫）。spinner 保留于非文本位（图标位/侧栏行），文本
+   等待态一律 shimmer —— LLM 产品的「呼吸」语言替代 2010 年代转圈。 */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.shimmer {
+  background: linear-gradient(100deg, var(--text-3) 40%, var(--text-1) 50%, var(--text-3) 60%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer var(--dur-shimmer) var(--ease) infinite;
+}
+/* reasoning 行的扫光（ReasoningBlock streaming 态的 summary 行之光） */
+.sweep-line { position: relative; overflow: hidden; }
+.sweep-line::after {
+  content: "";
+  position: absolute; inset: 0;
+  width: 33%;
+  background: linear-gradient(90deg, transparent, transparent 0%, var(--hair-1) 50%, transparent 100%);
+  animation: sweep var(--dur-sweep) var(--ease) infinite;
+}

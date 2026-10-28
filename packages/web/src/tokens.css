@@ -78,6 +78,8 @@
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px; --sp-8:32px;
   /* 动效三档 + 统一缓动（快出慢停）；prefers-reduced-motion 见 styles.css */
   --dur-fast:120ms; --dur-med:180ms; --dur-slow:240ms; --ease:cubic-bezier(.2,.8,.2,1);
+  /* DESIGN-SYSTEM P3：加载呼吸语言的两个循环节拍（shimmer 1.5s / sweep 2.6s） */
+  --dur-shimmer:1.5s; --dur-sweep:2.6s;
   /* —— 119 用户反馈修正（0.4.2「会话区直角/会话框圆角不统一」）：圆角
      收敛为单一 scale，全站按族消费——sm 6（chip/小件/徽标）、md 8（卡片/
      工具卡/输入条/气泡——气泡与卡片同族）、lg 12（浮层：菜单/弹窗/toast/

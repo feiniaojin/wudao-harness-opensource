@@ -15,7 +15,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { LiveState } from "../protocol.js";
 import { firstLine, truncate } from "../log.js";
-import { Spinner } from "./LiveArea.js";
 import { Icon } from "./Icon.js";
 
 export type TurnPhase = "thinking" | "tools" | "answering" | "working";
@@ -110,8 +109,9 @@ export function SimpleTurnStatus({ busy, live, queued = [], onRecall }: {
           stop affordance; the head keeps only the WHAT, not the how-to-stop
           echo. */}
       <div className="ts-head">
-        {showsSpinner ? <Spinner /> : null}
-        <span className="label">{PHASE_LABEL[phase]}</span>
+        {/* DESIGN-SYSTEM P3：文本等待态走 shimmer（呼吸文字）——spinner 退役于
+            文字行首（#451 的「ONE moving glyph」由文字本身承担），保留于图标位。 */}
+        <span className={showsSpinner ? "label shimmer" : "label"}>{PHASE_LABEL[phase]}</span>
         {elapsed !== null ? <span className="clock">{formatElapsed(elapsed)}</span> : null}
       </div>
       {queued.map((t, i) => (
