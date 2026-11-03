@@ -39,16 +39,13 @@ jobs:
       - run: pnpm build
 
       - run: pnpm test
-        continue-on-error: ${{ matrix.os == 'windows-latest' }}  # Windows tests may have platform differences
 
       # Upload CLI package artifact (from ubuntu — same for all platforms)
       - if: matrix.os == 'ubuntu-latest'
         name: Pack CLI npm package
         run: |
           cd packages/cli
-          npm pack
-          mkdir -p ../../dist
-          cp wudao-harness-*.tgz ../../dist/
+          pnpm pack --pack-destination ../../dist
 
       - uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-latest'
@@ -194,10 +191,14 @@ jobs:
           path: apps/desktop/src-tauri/target/release/bundle/nsis/*.exe
 
   # ── Publish to npm ────────────────────────────────────────────
+  # 六包已正式上 npm（@wudao-org/* + wudao-harness）。CI 发布=同一仪式的自动
+  # 化：版本已在（手工先发过）时 409/403 冲突由 continue-on-error 吸收——
+  # 绝不让 npm 段挡住安装包上 release 页。
   publish-npm:
     runs-on: ubuntu-latest
     needs: build
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
@@ -212,47 +213,15 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-
-      # The workspace deps (@wudao/*) are not on npm — the publishable form is
-      # the verified single-file bundle: esbuild inlines the workspace graph,
-      # keeps the native/ESM-external deps (ink/react/node-pty/…) as declared
-      # dependencies, and the createRequire banner lets the CJS deps (ws etc.)
-      # require node builtins inside the ESM bundle (the exact recipe verified
-      # by a local `npm install -g` round-trip on 0.4.14).
-      - name: Bundle CLI (single-file, workspace deps inlined)
-        run: |
-          mkdir -p bundle-out
-          node node_modules/.pnpm/esbuild@*/node_modules/esbuild/bin/esbuild packages/cli/dist/index.js \
-            --bundle --platform=node --format=esm \
-            --external:ink --external:react --external:node-pty --external:cli-highlight \
-            --external:grok-mermaid --external:better-sqlite3 --external:sharp \
-            --external:fsevents --external:chromium-bidi --external:playwright \
-            '--banner:js=import { createRequire as __cr } from "node:module"; const require = __cr(import.meta.url);' \
-            --outfile=bundle-out/index.js
-          node -e '
-            const fs = require("node:fs");
-            const m = JSON.parse(fs.readFileSync("packages/cli/package.json", "utf8"));
-            const out = {
-              name: m.name, version: m.version, description: m.description, license: m.license,
-              type: "module", bin: { wudao: "./index.js" },
-              dependencies: Object.fromEntries(Object.entries(m.dependencies).filter(([k]) => !k.startsWith("@wudao/"))),
-              engines: m.engines,
-            };
-            fs.writeFileSync("bundle-out/package.json", JSON.stringify(out, null, 2));
-          '
-          chmod +x bundle-out/index.js
-      - name: Publish CLI to npm
-        run: |
-          cd bundle-out
-          npm publish --access public
+      - name: Publish all six packages
+        run: pnpm -r --filter './packages/*' publish --access public --registry=https://registry.npmjs.org/ --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        continue-on-error: true  # Don't fail the release if npm publish fails
 
   # ── Create GitHub Release with all artifacts ──────────────────
   release:
     runs-on: ubuntu-latest
-    needs: [build, desktop-macos, desktop-linux]
+    needs: [build, desktop-macos, desktop-linux, desktop-windows]
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     # Even if desktop builds fail, still create a release
     continue-on-error: true
@@ -274,7 +243,7 @@ jobs:
           find artifacts -name "*.tgz" -exec cp {} release/ \;
           find artifacts -name "*.dmg" -exec cp {} release/ \;
           find artifacts -name "*.AppImage" -exec cp {} release/ \;
-          find artifacts -name "*.deb" -exec cp {} release/ \
+          find artifacts -name "*.deb" -exec cp {} release/ \;
           find artifacts -name "*.exe" -exec cp {} release/ \;
           ls -la release/
 
