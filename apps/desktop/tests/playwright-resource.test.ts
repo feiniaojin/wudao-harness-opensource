@@ -32,13 +32,13 @@ importers:
         specifier: 1.63.0
         version: 1.63.0
     devDependencies:
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
 
   packages/cli:
     dependencies:
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
 

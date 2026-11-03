@@ -9,9 +9,9 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, readdirSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel } from "@wudao/core";
-import type { AgentMessage, ModelClient, ModelInput } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createScriptedModel } from "@wudao-org/core";
+import type { AgentMessage, ModelClient, ModelInput } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createDriverSession } from "../src/driver/session-engine.js";
 import type { DriverSession } from "../src/driver/session-engine.js";
 

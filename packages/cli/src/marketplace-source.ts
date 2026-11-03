@@ -1,7 +1,7 @@
 // ω99 拆分运动 弧 B：marketplace 源解析层外提（类型/typed 错误/路径推导/
 // 名字安全/源语法解析/marketplace.json 读取校验 + 错误文本小工具族——原
 // marketplace.ts 模块级段逐字保留；marketplace.ts re-export 门面保公共面）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";

@@ -23,7 +23,7 @@
 // (streamable HTTP; http:// plaintext only as explicitly written — never
 // rewritten/upgraded). The discriminator is structural ("url" in server):
 // no injected kind field, so the stdio shape stays exactly as M17 parsed it.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { resolveGlobalHome } from "../settings-layer.js";

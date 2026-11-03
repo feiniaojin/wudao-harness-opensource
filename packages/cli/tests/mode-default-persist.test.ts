@@ -16,7 +16,7 @@
 // WUDAO_GLOBAL_HOME tempdir 沙箱（每个 cli 测试进程都过这道 setup），绝不
 // 触碰用户真实 ~/.wudao/。
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput } from "@wudao/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
 import { createAgentDriver, type AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 import {

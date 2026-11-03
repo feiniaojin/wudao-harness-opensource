@@ -3,8 +3,8 @@
 // 判据）+ op 半（失败降级 stats-only、querySource 记账区分主对话、零触发
 // 零调用、只读旁路不写 history/state.messages）。
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput } from "@wudao/core";
-import { createScriptedModel } from "@wudao/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
+import { createScriptedModel } from "@wudao-org/core";
 import {
   RECAP_QUERY_SOURCE,
   RECAP_MIN_AWAY_MS,

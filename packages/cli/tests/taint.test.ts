@@ -4,8 +4,8 @@
 // carries the [untrusted] note exactly when the gated args embed tracked
 // content.
 import { describe, it, expect } from "vitest";
-import { buildTool, runAgentLoop, createReadFileTool } from "@wudao/core";
-import type { AssistantMessage, LoopEvent, ModelClient, ModelInput, Terminal, Tool, ToolResultMessage } from "@wudao/core";
+import { buildTool, runAgentLoop, createReadFileTool } from "@wudao-org/core";
+import type { AssistantMessage, LoopEvent, ModelClient, ModelInput, Terminal, Tool, ToolResultMessage } from "@wudao-org/core";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

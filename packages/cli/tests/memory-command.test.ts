@@ -3,7 +3,7 @@
 // 沉淀的保守提炼规则（宁缺勿滥——错误记忆比无记忆更糟）。
 // 夹具只写 mkdtemp(os.tmpdir())；全局设置写 WUDAO_GLOBAL_HOME 指向的 tmpdir。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, readFile } from "node:fs/promises";
+import { mkdtemp, rm, readFile, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openMemoryStore as openM49Store } from "../src/memory/store.js";
@@ -11,6 +11,7 @@ import {
   runLongtermMemoryVerb,
   extractLessonCandidates,
   longtermMemoryEnabledFromNode,
+  longtermMemoryEnabledFor,
   openLongtermMemoryStore,
   createLongtermMemoryRuntime,
   LTS_MEMORY_CAPTURE_MAX_PER_SESSION,
@@ -35,6 +36,41 @@ afterEach(async () => {
 });
 
 const env = (): NodeJS.ProcessEnv => ({ ...process.env, WUDAO_GLOBAL_HOME: globalHome });
+
+describe("记忆开关 — 遗留扁平键 memoryEnabled 也是「关记忆」（M62 裁决回守）", () => {
+  // 记忆两库收敛弧把工具面换轨到新库（受 memory.enabled 门控），遗留扁平键
+  // memoryEnabled 一度变成死键——用户明明关了记忆，模型仍拿到 memory_save/
+  // memory_search（隐私意外）。fail-closed：任一显式 false 即整个记忆面归零。
+  const writeProject = async (record: unknown): Promise<void> => {
+    await mkdir(join(ws, ".wudao"), { recursive: true });
+    await writeFile(join(ws, ".wudao", "settings.json"), JSON.stringify(record), "utf8");
+  };
+
+  it("遗留键 memoryEnabled:false → 关（新节点缺省 on 也不打开）", async () => {
+    await writeProject({ memoryEnabled: false });
+    expect(await longtermMemoryEnabledFor(ws)).toBe(false);
+  });
+  it("遗留键与新节点并存：任一显式 false 即关（fail-closed）", async () => {
+    await writeProject({ memoryEnabled: false, memory: { enabled: true } });
+    expect(await longtermMemoryEnabledFor(ws)).toBe(false);
+  });
+  it("新节点 memory.enabled:false → 关（不受遗留键影响）", async () => {
+    await writeProject({ memory: { enabled: false } });
+    expect(await longtermMemoryEnabledFor(ws)).toBe(false);
+  });
+  it("无设置 → 开；遗留键 true + 无节点 → 开", async () => {
+    expect(await longtermMemoryEnabledFor(ws)).toBe(true);
+    await writeProject({ memoryEnabled: true });
+    expect(await longtermMemoryEnabledFor(ws)).toBe(true);
+  });
+  it("runtime 读同一门：关时 runtime.enabled=false 且不落目录（零记忆面）", async () => {
+    await writeProject({ memoryEnabled: false });
+    const rt = await createLongtermMemoryRuntime({ workspaceRoot: ws });
+    expect(rt.enabled).toBe(false);
+    await rt.captureAtSessionEnd({ sessionId: "s1", messages: [{ role: "user", content: "记住：构建用 pnpm" }] });
+    expect(rt.block()).toBe("");
+  });
+});
 
 describe("/memory 动词解析与行为", () => {
   it("save <kind> <text>：合法保存；非法 kind / 缺 text → 用法行", async () => {

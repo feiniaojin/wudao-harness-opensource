@@ -17,7 +17,7 @@ import {
   type DiagnosticsLayer,
   type WriteVerifyConfig,
   type WriteVerifyOutcome,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 /** Per-file baseline freshness window. */
 export const BASELINE_TTL_MS = 5_000;

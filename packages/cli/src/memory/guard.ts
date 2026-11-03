@@ -34,7 +34,7 @@
 //   M24：零缓存代价——围栏只进 dream/refine **子代理**提示词（fresh child
 //   自有前缀，父会话字节不动，与既有 M24 声明同款）；拦截回执是当轮工具
 //   结果后缀。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";

@@ -3,8 +3,8 @@
 // 局部名，props 整体随依赖传入）。
 import { maxTurns, VERSION } from "../version.js";
 import { modelLabel, summarizeToolCall } from "../log.js";
-import type { AgentHooks, AgentMessage, AgentState, IdentifiedOutputDelta } from "@wudao/core";
-import type { KeyPool } from "@wudao/providers";
+import type { AgentHooks, AgentMessage, AgentState, IdentifiedOutputDelta } from "@wudao-org/core";
+import type { KeyPool } from "@wudao-org/providers";
 import type { MutableProviderConfig } from "../commands/model.js";
 import type { Mode } from "../permission.js";
 import type { CostRegistry } from "../commands/cost.js";

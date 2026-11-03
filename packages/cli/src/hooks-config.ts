@@ -42,7 +42,7 @@ import type {
   StopFailureKind,
   StopHookDecision,
   TaskHookDecision,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { loadLayeredSettings } from "./settings-layer.js";
 import { CANONICAL_HOOK_EVENTS } from "./hooks-config-types.js";
 import type { CanonicalHookEvent, HookCommandConfig, HooksSettings, HookWarn } from "./hooks-config-types.js";
@@ -156,7 +156,7 @@ export async function loadHooksSettings(workspaceRoot: string, warn: HookWarn = 
   // "longTask" is a sibling config node owned by long-task-config.ts (M23);
   // "permissions" by permission.ts (M33 §1); "writeVerify"/"longOutput" by
   // output-config.ts (M46); "sidecar" by sidecar.ts (M45); "web" by
-  // web-config.ts (M59); "slack" by @wudao/slack's settings loader (M60);
+  // web-config.ts (M59); "slack" by @wudao-org/slack's settings loader (M60);
   // "env" is RESERVED by the settings-layer trust gate (global-tier env
   // injection, M57) — none belong to the hooks loader, but all are legit
   // top-level keys, not warnings. Fix-round M57: the check runs PER TIER
@@ -579,7 +579,7 @@ export function buildConfiguredHooks(
     hooks.onPreToolUse = async (
       toolName: string,
       input: Record<string, unknown>,
-    ): Promise<import("@wudao/core").PreToolUseDecision> => {
+    ): Promise<import("@wudao-org/core").PreToolUseDecision> => {
       const base = { event: "preToolUse", tool: toolName, input };
       for (const cmd of applicableHooks(compiled, toolName)) {
         const run = await fire(cmd, base);
@@ -795,7 +795,7 @@ export function buildConfiguredHooks(
   // error → allow the stop.
   if (subStopHooks.length > 0) {
     const compiled = compileHookList(subStopHooks, warn, "subStopHooks");
-    hooks.onSubagentStop = async (agentType: string): Promise<import("@wudao/core").SubagentStopDecision> => {
+    hooks.onSubagentStop = async (agentType: string): Promise<import("@wudao-org/core").SubagentStopDecision> => {
       const base = { event: "subagentStop", agentType };
       for (const cmd of applicableHooks(compiled, agentType)) {
         const run = await fire(cmd, base);
@@ -813,7 +813,7 @@ export function buildConfiguredHooks(
   // feedback; anything else → the teammate stays idle.
   if (teammateIdleHooks.length > 0) {
     const compiled = compileHookList(teammateIdleHooks, warn, "teammateIdleHooks");
-    hooks.onTeammateIdle = async (agent: string, infoIn: { readonly error?: string } = {}): Promise<import("@wudao/core").TeammateIdleDecision> => {
+    hooks.onTeammateIdle = async (agent: string, infoIn: { readonly error?: string } = {}): Promise<import("@wudao-org/core").TeammateIdleDecision> => {
       const base = { event: "teammateIdle", agent, ...(infoIn.error !== undefined ? { error: infoIn.error } : {}) };
       for (const cmd of applicableHooks(compiled, agent)) {
         const run = await fire(cmd, base);
@@ -849,7 +849,7 @@ export function buildConfiguredHooks(
   // allow (infra failure must not brick the hot reload).
   if (configChangeHooks.length > 0) {
     const compiled = compileHookList(configChangeHooks, warn, "configChangeHooks");
-    hooks.onConfigChange = async (position: ConfigChangePosition, info: { readonly path?: string }): Promise<import("@wudao/core").ConfigChangeDecision> => {
+    hooks.onConfigChange = async (position: ConfigChangePosition, info: { readonly path?: string }): Promise<import("@wudao-org/core").ConfigChangeDecision> => {
       const base = { event: "configChange", position, ...(info.path !== undefined ? { path: info.path } : {}) };
       for (const cmd of applicableHooks(compiled, position)) {
         const run = await fire(cmd, base);

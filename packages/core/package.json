@@ -1,6 +1,6 @@
 {
-  "name": "@wudao/core",
-  "version": "0.4.15",
+  "name": "@wudao-org/core",
+  "version": "0.4.21",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,6 +8,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./trace": {
+      "types": "./dist/trace/index.d.ts",
+      "import": "./dist/trace/index.js"
     }
   },
   "files": [
@@ -17,7 +21,8 @@
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "demo": "tsc -p tsconfig.json && node examples/read-file-demo.mjs"
+    "demo": "tsc -p tsconfig.json && node examples/read-file-demo.mjs",
+    "prepublishOnly": "node ../../scripts/publish-assets.mjs"
   },
   "devDependencies": {
     "@types/turndown": "^5.0.6",

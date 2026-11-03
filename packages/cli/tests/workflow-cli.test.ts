@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import { parseWorkflowArgs, workflowMain, workflowPermissionGate } from "../src/workflow/cli.js";
 import { journalFilePath } from "../src/workflow/journal.js";
 import { resetProviderRegistryCacheForTests } from "../src/provider-registry.js";

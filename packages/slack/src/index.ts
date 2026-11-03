@@ -1,4 +1,4 @@
-// @wudao/slack — the Slack interface for wudao-harness (M60). Public surface.
+// @wudao-org/slack — the Slack interface for wudao-harness (M60). Public surface.
 export {
   DEFAULT_SLACK_SETTINGS,
   parseSlackSettings,

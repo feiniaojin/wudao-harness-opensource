@@ -7,8 +7,8 @@
 //
 // Connected clients live in a module-level registry so any frontend can shut
 // them all down via closeMcpTools() at exit.
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import { buildTool, capOutputLines, type Tool, type ToolParameter, type ToolParameterSchema } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import { buildTool, capOutputLines, type Tool, type ToolParameter, type ToolParameterSchema } from "@wudao-org/core";
 import type { McpConfig, McpServerConfig } from "./config.js";
 import { isHttpMcpServer } from "./config.js";
 import { JsonRpcClient } from "./json-rpc.js";

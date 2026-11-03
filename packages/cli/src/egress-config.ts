@@ -15,7 +15,7 @@
 // layer; these two keys OVERRIDE/pin on top. Credentials in proxy URLs are
 // supported (userId/password ride to the proxy auth) but discouraged —
 // settings files are the wrong place for secrets.
-import type { EgressSettingsInput } from "@wudao/core";
+import type { EgressSettingsInput } from "@wudao-org/core";
 
 export type EgressWarn = (message: string) => void;
 

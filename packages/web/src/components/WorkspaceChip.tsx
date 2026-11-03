@@ -12,12 +12,15 @@ import { useRecentWorkspaces } from "../use-recent-workspaces.js";
 import { rootBasename } from "./AgentRootCard.js";
 import { IconChevronDown, IconFolder } from "./icons.js";
 
-export function WorkspaceChip({ client, root, connected, onPick, onOpenOther }: {
+export function WorkspaceChip({ client, root, connected, bootRoot, onPick, onOpenOther }: {
   readonly client: FileOpsClient;
   /** 当前面板根（App 的 panelRoot；连接前即「工作区」占位）。 */
   readonly root: string;
   /** 断连 → disabled（📎 同规则）。 */
   readonly connected: boolean;
+  /** 138 续（2026-11-03 用户令）：boot 根（会话锚）——「默认空间」钉项的
+   * 落点，切走后一键回默认。可选：老 server 缺席/未解析 → 钉项不渲染。 */
+  readonly bootRoot?: string;
   /** 任一 recents 目录选定 → App 的 switchPanelRoot（B1+B3）。 */
   readonly onPick: (path: string) => void;
   /** 打开其他目录…（tauri 对话框与浏览器降级在 App 层 onOpenOtherWorkspace）。 */
@@ -43,6 +46,22 @@ export function WorkspaceChip({ client, root, connected, onPick, onOpenOther }: 
           {/* 树顶同款 click-away idiom：透明 fixed 层 */}
           <div className="ws-backdrop" onClick={() => setMenu(false)} />
           <div className="ws-menu" role="menu">
+            {/* 138 续：默认空间钉在 recents 之上——每个用户都有回默认的一键
+                （同一条 switchPanelRoot 缝：面板与 agent 根一起回）。 */}
+            {bootRoot !== undefined && bootRoot !== "" ? (
+              <button
+                type="button"
+                className="ws-item ws-default"
+                role="menuitem"
+                title={bootRoot}
+                onClick={() => {
+                  setMenu(false);
+                  onPick(bootRoot);
+                }}
+              >
+                默认空间 · {rootBasename(bootRoot)}
+              </button>
+            ) : null}
             {(recents ?? []).map((w) => (
               <button
                 key={w.path}

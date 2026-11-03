@@ -8,8 +8,8 @@ import { render } from "ink-testing-library";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createFileHistory, createReadStateTable, createWriteFileTool, createScriptedModel } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool, createFileHistory, createReadStateTable, createWriteFileTool, createScriptedModel } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp } from "../src/tui/app.js";
 import { DOUBLE_ESC_WINDOW_MS } from "../src/tui/keybindings.js";
 

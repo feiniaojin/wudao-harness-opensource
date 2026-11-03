@@ -47,11 +47,11 @@ import {
   type DiagnosticsLayer,
   type CronTask,
   type MonitorRegistry,
-} from "@wudao/core";
+} from "@wudao-org/core";
 // ω99-112: the browser sextet (static import is deliberate — this module is
 // tiny; the heavy playwright-core driver sits behind the runtime's dynamic
 // import and never enters this graph).
-import { browserToolsFor } from "@wudao/browser";
+import { browserToolsFor } from "@wudao-org/browser";
 import { createAgentsTaskTool, createRegistryTools, createSessionRegistry, firstHandWorkProbe } from "./agents/index.js";
 import type { AgentRegistry, ModelResolution, ModelOverrides } from "./agents/index.js";
 // ω99-57: the parent-side child-mail lane (task tool sink + driver drain).
@@ -105,7 +105,7 @@ import type { ScheduleToolFace } from "./schedules.js";
 import { createPersistentShellTools } from "./persistent-shell-tools.js";
 // 127 项 1: the cross-session chain handoff tool (continue_task) over the
 // same daemon face + the live session id seam.
-import { createContinueTaskTool } from "@wudao/core";
+import { createContinueTaskTool } from "@wudao-org/core";
 // ω99-249: #8 — the goal query tool (late-bound GoalState runtime box).
 import { createGoalTools } from "./goal-runtime.js";
 import type { GoalRuntime } from "./goal-runtime.js";
@@ -113,9 +113,9 @@ import { createContextDoctorTool } from "./context-doctor.js";
 import type { ContextDoctorBox } from "./context-doctor.js";
 import { createReadSessionTool } from "./read-session.js";
 import type { SessionReadBox } from "./read-session.js";
-import { createCriticReviewTool } from "@wudao/core";
+import { createCriticReviewTool } from "@wudao-org/core";
 import { isFeatureAblated } from "./args.js";
-import { serializePrompt } from "@wudao/providers";
+import { serializePrompt } from "@wudao-org/providers";
 
 /** M30 orchestration wiring (optional — omitted keeps a self-sufficient set). */
 export interface AgentsTooling {
@@ -137,7 +137,7 @@ export interface AgentsTooling {
   readonly pluginAgents?: readonly import("./agents/core-bind.js").RosterPluginAgent[];
   /** M63-B: the session's hook object — the task tool derives its
    *  SubagentStart/Stop faces from it (children stay otherwise hookless). */
-  readonly hooks?: import("@wudao/core").AgentHooks;
+  readonly hooks?: import("@wudao-org/core").AgentHooks;
   /** M63-C R1: the fire-runtime view — the subagent-position compile is
    *  contract-complete (common fields incl. the live prompt_id, `if` mode
    *  gating, mcp_tool entries, asyncRewake). The view references the
@@ -278,7 +278,7 @@ export function buildToolSet(opts: {
    *  Observational seam on the task tool (both spawn paths); recorder
    *  failures are isolated, never affect the child. Absent → the task tool's
    *  event lane is untouched (bytes identical). */
-  readonly onSubagentUsage?: (info: { readonly childId?: string; readonly model: string; readonly usage: import("@wudao/core").ModelUsage }) => void;
+  readonly onSubagentUsage?: (info: { readonly childId?: string; readonly model: string; readonly usage: import("@wudao-org/core").ModelUsage }) => void;
   /** Sandbox shell (M21). Applied to shell ONLY — file tools stay host-side (v1 boundary). */
   readonly sandbox?: { readonly image?: string; readonly dockerPath?: string };
   /** ω99-57: the parent-side child-mail lane. Present → the task tool's
@@ -336,7 +336,7 @@ export function buildToolSet(opts: {
    *  driver as AgentDriverOptions.stopTreeBox, which arms its slots). The
    *  task tool's foreground spawn sites register/settle through it; absent →
    *  no bookkeeping, every dispatch byte-identical. */
-  readonly stopTree?: import("@wudao/core").StopTreeDispatchPort;
+  readonly stopTree?: import("@wudao-org/core").StopTreeDispatchPort;
   /** M24: per-session spill directory for shell outputs truncated past
    *  the inline cap (<root>/.wudao/spill/<sessionId>). */
   readonly spillDir?: string;
@@ -398,7 +398,7 @@ export function buildToolSet(opts: {
    *  memory_forget 进顶层集，只读子集（worktree children）带 memory_search
    *  （子 agent 永不写长期记忆，M49 同界）。缺席 → 零长期记忆面。新槽位 =
    *  一次性冷前缀点（M24 声明：工具列表前缀稳定，新增工具天然断一次）。 */
-  readonly longtermMemory?: { readonly store: import("@wudao/core").MemoryStore };
+  readonly longtermMemory?: { readonly store: import("@wudao-org/core").MemoryStore };
   /** M59 §3: web runtime — fetch caps (maxChars/allowedPorts; the tool itself
    *  is zero-config ALWAYS registered) and the optional search provider
    *  config (present → web_search registered; absent → search stays out of
@@ -413,7 +413,7 @@ export function buildToolSet(opts: {
    *  only inside its default port's launch() (a dynamic import — the heavy
    *  driver never rides this module's static graph). Subagents never see
    *  them (top-level only, v1). */
-  readonly browser?: import("@wudao/browser").BrowserRuntime;
+  readonly browser?: import("@wudao-org/browser").BrowserRuntime;
   /** ω99-138: the browser_see vision materials — present → the screenshot
    *  sink is injected into browserToolsFor (PNG bytes → the workspace
    *  AttachmentStore → a durable ImageBlock on the tool result, the SAME
@@ -424,7 +424,7 @@ export function buildToolSet(opts: {
    *  poison every later request with a typed image refusal (the arc's #1 UX
    *  trap). Absent → no sink (browser_see's no-channel degradation). */
   readonly browserVision?: {
-    readonly store: import("@wudao/core").AttachmentStore;
+    readonly store: import("@wudao-org/core").AttachmentStore;
     readonly modelAcceptsImages: () => boolean;
   };
   /** ω99-212: the computer sextet's vision materials — screen_capture 的图片
@@ -433,7 +433,7 @@ export function buildToolSet(opts: {
    *  给后续请求喂图像拒绝）。缺席 → screen_capture typed 拒（其余五工具
    *  不受影响），REPL 等未接线前端同 browser_see 的无 sink 降级。 */
   readonly computerVision?: {
-    readonly store: import("@wudao/core").AttachmentStore;
+    readonly store: import("@wudao-org/core").AttachmentStore;
     readonly modelAcceptsImages: () => boolean;
   };
   /** M61 §1: the session's scheduler runtime — present → the cron_create /
@@ -498,7 +498,7 @@ export function buildToolSet(opts: {
    *  prefix stays byte-stable all session). Built by the frontends with
    *  {store, sessionId}. Absent → no recovery surface (tests pin that
    *  boundary). Subagents never see it — sidechains are not searched. */
-  readonly sessionResult?: { readonly load: import("@wudao/core").SessionResultLoader };
+  readonly sessionResult?: { readonly load: import("@wudao-org/core").SessionResultLoader };
   /** 121 挖掘 TOP5 #1: the session's conversation-ledger corpus loader —
    *  present → the read-only `search_history` tool joins the TOP-LEVEL set
    *  right after session_result (append-only tail, M24: every earlier tool
@@ -510,7 +510,7 @@ export function buildToolSet(opts: {
    *  never see it: a child searching the parent's ledger would cross the
    *  sidechain isolation line, and side-*.jsonl transcripts are separate
    *  ledgers this loader never touches. */
-  readonly historySearch?: { readonly load: import("@wudao/core").HistorySearchLoader };
+  readonly historySearch?: { readonly load: import("@wudao-org/core").HistorySearchLoader };
   /** 121 §1 续章: the session's persistent-notes face — present → the
    *  note_write / note_read pair joins the TOP-LEVEL set right after
    *  search_history (append-only tail, M24: every earlier tool keeps its
@@ -533,7 +533,7 @@ export function buildToolSet(opts: {
    *  fail-closed. Registered ONLY where compaction is on (a rotation IS a
    *  tier-2 boundary); subagents never see it (child sets draw from the pool,
    *  rotation is a parent-session capability — v1 boundary). */
-  readonly newContext?: { readonly portBox: import("@wudao/core").NewContextPortBox };
+  readonly newContext?: { readonly portBox: import("@wudao-org/core").NewContextPortBox };
   /** 夜移 029: the session's loaded skills — present AND enough model-visible
    *  ones (skillSearchEligible: >= SKILL_SEARCH_MIN_SKILLS manifest lines) →
    *  the read-only `discover_skills` search tool joins the TOP-LEVEL set at a

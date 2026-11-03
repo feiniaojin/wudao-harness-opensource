@@ -25,8 +25,8 @@ import { mkdtemp, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
-import type { AgentRegistry, AgentSpawnSpec } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AgentRegistry, AgentSpawnSpec } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { runRepl } from "../src/repl.js";
 import { buildToolSet } from "../src/tools.js";
 

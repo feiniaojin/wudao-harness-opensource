@@ -7,8 +7,8 @@
 // can write anywhere, so without an exemption it is refused with a pointer
 // at worktree-isolated roles.
 import { relative, resolve } from "node:path";
-import type { Tool, WriteScopeDeclaration } from "@wudao/core";
-import { formatWriteScope, pathInWriteScope } from "@wudao/core";
+import type { Tool, WriteScopeDeclaration } from "@wudao-org/core";
+import { formatWriteScope, pathInWriteScope } from "@wudao-org/core";
 
 /** Tools with write semantics the guard knows how to police. */
 const WRITE_GUARDED_TOOLS = new Set(["write_file", "edit", "shell"]);

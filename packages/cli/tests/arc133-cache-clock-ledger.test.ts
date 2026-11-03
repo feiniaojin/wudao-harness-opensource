@@ -1,7 +1,7 @@
 // 133 top1 — 台账面收据：entries→缓存身份（最后一条胜）、决策组装、
 // 文案（身份变化/冷+估价/冷+无价/暖沉默/无记录沉默）。
 import { describe, expect, it } from "vitest";
-import type { SessionEntry } from "@wudao/core";
+import type { SessionEntry } from "@wudao-org/core";
 import {
   ledgerCacheIdentity,
   coldCacheResumeDecision,

@@ -1,7 +1,6 @@
 {
-  "name": "@wudao/server",
-  "version": "0.4.15",
-  "private": true,
+  "name": "@wudao-org/server",
+  "version": "0.4.21",
   "type": "module",
   "description": "Localhost WS server for the wudao agent driver — first-frame auth, two-channel state protocol (see PROTOCOL.md).",
   "main": "./dist/index.js",
@@ -15,8 +14,12 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "node ../../scripts/publish-assets.mjs"
   },
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "ws": "^8.18.0"
   },
@@ -27,5 +30,18 @@
   },
   "engines": {
     "node": ">=22"
-  }
+  },
+  "license": "MIT",
+  "author": "feiniaojin",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feiniaojin/wudao-harness.git"
+  },
+  "keywords": [
+    "agent",
+    "harness",
+    "websocket",
+    "protocol",
+    "llm"
+  ]
 }

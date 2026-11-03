@@ -1,8 +1,8 @@
 // 拆分运动 C：从 openai-compatible.ts 原样外提的 wire 格式域
 //（ω99-42 mandatory-reasoning 修复运行时、响应 wire 类型与 usage 映射、
 // 请求体装配 toOpenAIRequest/assembleOpenAIBody/buildOpenAIRequestBody）。
-import type { ModelInput, ModelUsage } from "@wudao/core";
-import { offloadRequestFiles } from "@wudao/core";
+import type { ModelInput, ModelUsage } from "@wudao-org/core";
+import { offloadRequestFiles } from "@wudao-org/core";
 import type { ProviderConfig, ReasoningEffort, ReasoningReplay } from "./config.js";
 import { mandatoryRepairReasoningBody, reasoningFormatBody, resolveReasoningContext } from "./config.js";
 import { isCappedReasoning, toOpenAIMessage } from "./openai-messages.js";

@@ -14,11 +14,11 @@
 // (global), 25KB truncated, edits effective next round. Skills as prompts:
 // only model-invocable skills expand; disable-model-invocation ones arrive as
 // plain text (M58-B #4).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { findSkill, buildSubstitutedSkillMessage } from "../skills.js";
 import type { LoadedSkill } from "../skills.js";
 import { resolveGlobalHome } from "../settings-layer.js";

@@ -14,7 +14,7 @@
 // - 通知（无 id）不入响应等待，直接丢弃。
 // - didOpen 惰性缓存（每文档一次）；文本变化走 didChange 全量同步
 //   （textDocumentSync:1），保证会话内编辑后定义/悬浮不陈旧。
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { spawn, type ChildProcess } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { encodeLspFrame, LspFrameDecoder } from "./frame.js";

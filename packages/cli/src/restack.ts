@@ -19,11 +19,11 @@
 //
 // M24：零——会话内只读会话文件 + git 子进程，不进 state.messages、不进
 // system prompt、不动任何模型请求字节。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { relative } from "node:path";
-import type { SessionEntry } from "@wudao/core";
+import type { SessionEntry } from "@wudao-org/core";
 import type { SlashCommandInfo } from "./slash-commands.js";
 import { hardenedGitArgs } from "./git-hardened.js";
 

@@ -8,7 +8,7 @@ import {
   type ImageAttachmentRef,
   type ImageBlock,
   type ModelInput,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import type { ProviderConfig } from "./config.js";
 import { resolveInputModalities, type InputModality } from "./models.js";
 import { restoreToolCallId } from "./tool-call-ids.js";

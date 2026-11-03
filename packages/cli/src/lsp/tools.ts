@@ -20,7 +20,7 @@ import { realpath } from "node:fs/promises";
 import { readFile } from "node:fs/promises";
 import { delimiter, extname, isAbsolute, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildTool, capOutputLines, resolveWorkspacePath, type Tool } from "@wudao/core";
+import { buildTool, capOutputLines, resolveWorkspacePath, type Tool } from "@wudao-org/core";
 import { LspManager, type LspProviderLaunchSpec } from "./manager.js";
 
 /** Same hit discipline as grep: 100 locations, then an honest cap marker. */

@@ -12,7 +12,7 @@
  *  renders verbatim. Applied BEFORE conversion so the converter's OWN
  *  `<url|text>` output is never double-escaped. Exported: the ask blocks
  *  escape their model-controlled summary through the same rule. */
-import { truncateSafe } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core";
 
 export function escapeMrkdownEntities(line: string): string {
   return line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

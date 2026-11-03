@@ -10,16 +10,16 @@ import { describe, it, expect, vi } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { AgentMessage, ModelClient, ModelInput, SessionStore } from "@wudao/core";
-import { QuotaParkError } from "@wudao/providers";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { AgentMessage, ModelClient, ModelInput, SessionStore } from "@wudao-org/core";
+import { QuotaParkError } from "@wudao-org/providers";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions } from "../src/driver/agent-driver.js";
 import { createCronRuntime } from "../src/cron.js";
 import { QUOTA_PARK_REARM_CAP, QUOTA_PARK_REARM_MS, QUOTA_PARK_WAKE_MARGIN_MS, countQuotaParkEntries, quotaParkEntry, quotaWakeOf, quotaWakePrompt } from "../src/driver/quota-park.js";
-import { formatScheduledInjection } from "@wudao/core";
-import type { CronTask } from "@wudao/core";
+import { formatScheduledInjection } from "@wudao-org/core";
+import type { CronTask } from "@wudao-org/core";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 

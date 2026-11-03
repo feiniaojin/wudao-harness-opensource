@@ -3,8 +3,8 @@
 // model-state entries, filtered out of the model-visible history on load).
 // This module is the thin, typed front door the frontends (and future
 // extensions) use: build the entry, persist it, count it back on resume.
-import { truncateSafe, parseWorldStateData, type WorldState } from "@wudao/core"; // 113-A4
-import { ACTIVE_BRANCH_ENTRY_TYPE, type ActiveBranchData, type GenericSessionEntry, type ModelUsage, type SessionEntry, type SessionStore } from "@wudao/core";
+import { truncateSafe, parseWorldStateData, type WorldState } from "@wudao-org/core"; // 113-A4
+import { ACTIVE_BRANCH_ENTRY_TYPE, type ActiveBranchData, type GenericSessionEntry, type ModelUsage, type SessionEntry, type SessionStore } from "@wudao-org/core";
 
 /** M61 §3 — /goal session entries: the goal's durable record. goal_set marks
  *  an active goal; goal_outcome closes it (achieved | failed | cleared, ω99-13

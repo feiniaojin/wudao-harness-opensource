@@ -58,7 +58,7 @@ const DEEPSEEK_DEF: PersonaDefinition = {
   id: "deepseek-native",
   displayName: "DeepSeek Native",
   source: { kind: "workspace-source", provenance: "doc90 §3 (openai-chat reference)", pinnedVersion: "b150a551" },
-  headers: { "openai-chat": { "user-agent": "wudao-harness/0.4.15" } },
+  headers: { "openai-chat": { "user-agent": "wudao-harness/0.4.20" } },
   prompt: { system: { mode: "prefix", text: "You are an AI agent powered by DeepSeek Harness." } },
 };
 

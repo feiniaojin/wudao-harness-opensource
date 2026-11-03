@@ -16,8 +16,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
-import type { AgentHooks } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AgentHooks } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const WINDOW_MS = 20; // injected seam value — window waits use ≥30× (600ms)
 const LONG_WINDOW_MS = 10_000; // immediacy/EOF proofs: only the trigger under test can deliver in the test's lifetime

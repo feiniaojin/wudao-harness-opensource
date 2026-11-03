@@ -3,7 +3,7 @@
 // scratchpad's whole value is survival: notes live under .wudao/notebooks/
 // as plain files, so they outlive resume AND context compaction while
 // staying outside the user's tree. This suite pins the contract through
-// the PUBLIC export (`@wudao/core`): the disk round trip, the fail-closed
+// the PUBLIC export (`@wudao-org/core`): the disk round trip, the fail-closed
 // name charset (names become paths — the threat model Strands' in-memory
 // map never had), the per-notebook cap, literal replace semantics, the
 // risk annotations, and the deliberate surface (no insertLine — recorded
@@ -12,7 +12,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { EvalDefinition } from "../runner.js";
-import { createNotebookTool, NOTEBOOK_MAX_CHARS } from "@wudao/core";
+import { createNotebookTool, NOTEBOOK_MAX_CHARS } from "@wudao-org/core";
 
 // (No teardown hook on EvalDefinition — cleanup runs at the end of run();
 // an assertion-path throw leaks one tmpdir, which the OS reaps.)

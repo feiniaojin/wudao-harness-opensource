@@ -4,8 +4,8 @@
 // re-rendered), and marker/system messages the loop injected for itself drop
 // out. Pure: same messages + session id → same entries, so the persisted
 // history fully determines the restored view.
-import { parseTodoBoard } from "@wudao/core";
-import type { AgentMessage, SessionEntry, ToolCall, ToolResultMessage } from "@wudao/core";
+import { parseTodoBoard } from "@wudao-org/core";
+import type { AgentMessage, SessionEntry, ToolCall, ToolResultMessage } from "@wudao-org/core";
 import { truncate } from "../log.js";
 import type { HistoryEntry } from "../driver/agent-driver.js";
 

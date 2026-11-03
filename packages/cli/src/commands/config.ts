@@ -14,7 +14,7 @@
 // until now that path had no product trigger). The view stays read-only;
 // the local tier follows PROJECT TRUST, so escalation keys are refused at
 // the writer exactly as the loader's gate refuses them on read.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readFile } from "node:fs/promises";
 import { loadLayeredSettings, globalSettingsPath, projectSettingsPath, localSettingsPath, saveLocalSettings, isProjectForbiddenKey } from "../settings-layer.js";
 import { parseSessionFlags, parseSandboxFlags, parsePlanFlag, parseProviderFlags } from "../args.js";

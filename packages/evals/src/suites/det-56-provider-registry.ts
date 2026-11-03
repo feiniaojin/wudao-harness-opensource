@@ -34,7 +34,7 @@
 //      the widened guard's message (the ops matrix carries the same test).
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createReadFileTool, createScriptedModel } from "@wudao/core";
+import { createReadFileTool, createScriptedModel } from "@wudao-org/core";
 import {
   PROVIDER_PROFILES,
   effectiveProfiles,
@@ -42,8 +42,8 @@ import {
   readProviderRegistrySync,
   resolveContextWindowTokens,
   resolveProviderConfigResult,
-} from "@wudao/providers";
-import type { EffectiveProfile, ProviderModelEntry } from "@wudao/providers";
+} from "@wudao-org/providers";
+import type { EffectiveProfile, ProviderModelEntry } from "@wudao-org/providers";
 import { AUTO_COMPACT_WINDOW_MAX, AUTO_COMPACT_WINDOW_MIN, resolveAutoCompactSettings } from "wudao-harness/misc-config";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { withSettingsOps } from "wudao-harness/driver/settings-ops";

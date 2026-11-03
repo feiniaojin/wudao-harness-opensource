@@ -6,7 +6,7 @@
 // formatCachePercent 输出（90.0%）、模型 id、/cost·/goal 命令词、
 // WUDAO_PRICE_<MODEL>=in,out,cacheRead,cacheWrite、` · ` 分隔、≠、tokens 单位词。
 import { describe, it, expect } from "vitest";
-import type { ModelUsage } from "@wudao/core";
+import type { ModelUsage } from "@wudao-org/core";
 import {
   formatCostReport,
   recordUsage,

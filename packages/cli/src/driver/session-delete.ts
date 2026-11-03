@@ -12,7 +12,7 @@
 // （回收站列表，行构建复用 session-list 的同形状）。
 import { mkdir, readFile, rename, link, unlink, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { SESSION_ID_RE } from "@wudao/core";
+import { SESSION_ID_RE } from "@wudao-org/core";
 import { collectSessionRows, type SessionRow } from "../session-list.js";
 
 /** ω99-279（续，标记见上）— 删除结果：deleted=true 唯一成功形；false 三因（invalid-id

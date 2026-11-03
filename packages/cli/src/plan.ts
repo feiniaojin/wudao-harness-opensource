@@ -4,8 +4,8 @@
 // land as a todo_write board, and the review flow (ok / 改 <意见>) is parsed
 // here so the REPL and the TUI share one state machine.
 import { randomUUID } from "node:crypto";
-import { parseTodoBoard, nodeKey, createProjectionDriver, todoProjection } from "@wudao/core";
-import type { AgentMessage, PermissionDecision } from "@wudao/core";
+import { parseTodoBoard, nodeKey, createProjectionDriver, todoProjection } from "@wudao-org/core";
+import type { AgentMessage, PermissionDecision } from "@wudao-org/core";
 
 /** Tools a plan run may use: the read-only lane (read/glob/grep/agent_status)
  *  plus todo_write (the plan IS the board — todo_write writes only the

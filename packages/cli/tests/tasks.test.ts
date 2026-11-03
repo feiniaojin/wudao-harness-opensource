@@ -1,7 +1,7 @@
 // M55 §C3 — /tasks tests.
 import { describe, it, expect } from "vitest";
 import { buildTaskRows, formatTasksReport } from "../src/commands/tasks.js";
-import type { AgentStatusInfo } from "@wudao/core";
+import type { AgentStatusInfo } from "@wudao-org/core";
 
 describe("/tasks", () => {
   it("builds task rows from status snapshot", () => {

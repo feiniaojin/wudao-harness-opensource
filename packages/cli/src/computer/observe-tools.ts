@@ -1,9 +1,9 @@
 // ω99 拆分运动 弧 B：computer 的观察/等待面外提（screen_observe + computer_wait
 // + 回执构造——原 createComputerTools 闭包内连续段逐字保留；可变观察/黑名单态
 // 留在工具集闭包的单一 observeState holder，本文件经引用线程读写）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import { buildTool } from "@wudao/core";
-import type { Tool, ToolResult } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import { buildTool } from "@wudao-org/core";
+import type { Tool, ToolResult } from "@wudao-org/core";
 import {
   ACCESSIBILITY_GUIDE,
   OBSERVE_BLACKLIST_N,

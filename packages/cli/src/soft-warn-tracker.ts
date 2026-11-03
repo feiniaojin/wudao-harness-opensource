@@ -20,7 +20,7 @@
 // 不进请求体序列化（适配器的 body 构建只挑显式字段）、不进
 // state.messages / system prompt。测试双证钉在 320 的 cli 测试里
 // （构造缝 A/B 请求字节同一 + 软警告路径 store 零调用）。
-import type { StreamIdleWarningInfo } from "@wudao/providers";
+import type { StreamIdleWarningInfo } from "@wudao-org/providers";
 
 /** The per-session soft-warn slot: the stable callback handed to every
  *  createProvider site (spread as `onStreamIdleWarning`), plus the mutable

@@ -10,8 +10,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao/core";
-import { toModelToolDefinition } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao-org/core";
+import { toModelToolDefinition } from "@wudao-org/core";
 import {
   CONSTITUTION_CLAUSE_MAX_CHARS,
   CONSTITUTION_PENDING_CAP,

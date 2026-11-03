@@ -5,7 +5,7 @@
 // chain. The stub factory is the SAME one the core egress suites use
 // (tests/helpers/egress-stub.ts there — the shared §1.6 base).
 import { afterEach, describe, expect, it } from "vitest";
-import { installEgressProxy, findProxyEgressCause, ProxyEgressError, resolveEgressPolicy } from "@wudao/core";
+import { installEgressProxy, findProxyEgressCause, ProxyEgressError, resolveEgressPolicy } from "@wudao-org/core";
 import { createOpenAICompatibleProvider, isRetryableProviderError } from "../src/openai-compatible.js";
 import { startHttpProxyStub } from "../../core/tests/helpers/egress-stub.js";
 

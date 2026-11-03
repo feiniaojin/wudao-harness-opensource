@@ -3,8 +3,8 @@
 // provider reported); the REPL adapts the cache-tracking model's CacheStats
 // via usageTotalsFromStats. Pure accumulation + formatting; the wall clock is
 // injected so tests stay deterministic.
-import type { CachePricing, ModelUsage } from "@wudao/core";
-import { catalogPricesFor, deriveCachePricing, type ModelPrices } from "@wudao/providers";
+import type { CachePricing, ModelUsage } from "@wudao-org/core";
+import { catalogPricesFor, deriveCachePricing, type ModelPrices } from "@wudao-org/providers";
 import { formatCachePercent } from "../cache.js";
 import type { CacheStats } from "../cache.js";
 import { appendCostLedgerRow } from "./wallet.js";

@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, Tool } from "@wudao/core";
+import type { ModelClient, Tool } from "@wudao-org/core";
 import { createMissionTools, type MissionController } from "../src/mission.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";

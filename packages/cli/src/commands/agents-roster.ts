@@ -7,8 +7,8 @@
 // workspace and every displacement is REPORTED, never silent.
 import { readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { loadRoleProfiles, BUILTIN_ROLES } from "@wudao/core";
-import type { AgentRoleProfile, LoadedRoster, RosterPluginAgent } from "@wudao/core";
+import { loadRoleProfiles, BUILTIN_ROLES } from "@wudao-org/core";
+import type { AgentRoleProfile, LoadedRoster, RosterPluginAgent } from "@wudao-org/core";
 import { resolveGlobalHome } from "../settings-layer.js";
 
 export type RosterSource = "builtin" | "plugin" | "global" | "workspace";

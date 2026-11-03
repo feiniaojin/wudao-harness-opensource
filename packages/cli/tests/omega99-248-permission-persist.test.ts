@@ -15,9 +15,9 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createScriptedModel, createJsonlSessionStore } from "@wudao/core";
-import type { SessionEntry, SessionStore, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool, createScriptedModel, createJsonlSessionStore } from "@wudao-org/core";
+import type { SessionEntry, SessionStore, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";
@@ -46,7 +46,7 @@ async function until(cond: () => boolean | Promise<boolean>, what: string, timeo
 // m58 式规则门（简化形）：一切工具调用落 ask → 停进 driver 的
 // pendingPermission（server/web 车道里「规则门回 ask → driver.ask 停挂」的真
 // 路径；闭包经 box 晚绑定 driver 句柄）。
-function parkingGate(box: { current?: AgentDriver }): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao/core").PermissionDecision> {
+function parkingGate(box: { current?: AgentDriver }): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao-org/core").PermissionDecision> {
   return async (toolName, input) => box.current?.ask(toolName, input) ?? { behavior: "allow" };
 }
 

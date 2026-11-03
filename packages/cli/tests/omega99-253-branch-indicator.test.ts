@@ -8,7 +8,7 @@
 // 面三 TUI 同源钉：StatuslineSnapshot 携带 gitBranch、单行形式挂段、缺场
 // 省略（statusline.ts 是 TUI 底栏的唯一数据源——同一条 DriverStatus 数据）。
 import { describe, it, expect } from "vitest";
-import { createScriptedModel } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { readGitBranch } from "../src/git-branch.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";

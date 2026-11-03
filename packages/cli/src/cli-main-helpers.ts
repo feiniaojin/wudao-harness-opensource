@@ -8,18 +8,18 @@ import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline";
 import { join, dirname, relative } from "node:path";
-import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, classifyTurnRetryError, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao/core";
-import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao/providers";
-import { createFileAttachmentStore, type ImageBlock } from "@wudao/core";
+import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, classifyTurnRetryError, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao-org/core";
+import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao-org/providers";
+import { createFileAttachmentStore, type ImageBlock } from "@wudao-org/core";
 // 夜移 035 (codex turn_timing): the one-shot run's phase recorder (debug tier).
-import { createTurnProfileRecorder } from "@wudao/core";
+import { createTurnProfileRecorder } from "@wudao-org/core";
 // 夜移 032 stage-2 (codex turn_diff_tracker): the one-shot run's net-change
 // tracker — one instance for the whole command, shared by the tool set and
 // both passes (reset per pass), rendered once at settle.
-import { createTurnDiffTracker } from "@wudao/core";
+import { createTurnDiffTracker } from "@wudao-org/core";
 // ω99-46: the process egress policy — installed once at boot so every
 // default-fetch outbound path (providers, web_fetch) routes through it.
-import { resolveEgressPolicy, installEgressProxy } from "@wudao/core";
+import { resolveEgressPolicy, installEgressProxy } from "@wudao-org/core";
 import { readEgressSettings } from "./egress-config.js";
 import { renderTurnDiff } from "./turn-diff-render.js";
 import { buildRunPlan, buildUiBootPlan, formatOneShotResumeLine, lastModelState, recordModelState, type LastModelState } from "./run.js";
@@ -43,7 +43,7 @@ import { formatRunStats } from "./driver/agent-driver.js";
 import { createCronRuntime } from "./cron.js";
 // ω99-112: the controlled-browser runtime (six browser_* tools; zero-IO at
 // construction, playwright-core loads only at first launch).
-import { createBrowserRuntime } from "@wudao/browser";
+import { createBrowserRuntime } from "@wudao-org/browser";
 // ω-4a: the monitor runtime (monitor tools + steering-lane event delivery).
 import { createMonitorRuntime } from "./monitor.js";
 import { createGoalController, buildEvaluatorModel, goalEvaluatorAvailable, parseGoalCommand, routeHeadlessGoalCommand, type GoalController } from "./goal.js";
@@ -62,7 +62,7 @@ import { runRepl, appendPlanExecutionWrapper, createSubagentCostSink } from "./r
 import { selectMessagesToPersist } from "./persist.js";
 import { buildToolSet, resolveDeferMode } from "./tools.js";
 import { maybeLoginShellEnv } from "./shell-snapshot.js";
-import type { LongOutputConfig, WriteVerifyConfig } from "@wudao/core";
+import type { LongOutputConfig, WriteVerifyConfig } from "@wudao-org/core";
 import { createExternalChangeProber } from "./file-changes.js";
 import { createGitStatusProber } from "./git-status-note.js";
 import { getCompactInstructionsRider } from "./project-context.js";

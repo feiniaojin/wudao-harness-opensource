@@ -21,20 +21,23 @@ const SKIP_DIRS = new Set(["node_modules", "dist", "target", "bundle", "coverage
 /** 白名单：路径（仓相对）→ 行数帽（=收录时实测）。按行数降序。 */
 const WHITELIST: Readonly<Record<string, number>> = {
   "packages/evals/src/suites/deterministic.ts": 7922, // 名册数据表——注册表性质，独立拆分运动项。7902→7922=0.4.3 gate 随源演进（det-25 第八期 python_kernel 钉注 + det-41 model_change 轮询读——套件源自身的钉演进，非产品面增行）
-  "packages/cli/src/driver/agent-driver.ts": 7145, // 7103→7145=0.4.8 批（133 top1 缓存时钟 resume 挂载：mtime 时钟+registry 价+offer 协同预热跳过——纯决策层薄挂载）。 ω99-326a 已外提类型/纯函数；闭包体分解=后续子弧（326b+）。6765→7055=0.4.3 gate 随源演进（0.4.2 后长程弧批 +290）；拆分压力仍指向 326b+ 闭包体分解
-  "packages/web/src/components/App.tsx": 3305, // ω99-327a：app-consts/app-panels 外提 1242 行；组件闭包分解=后续子弧
-  "packages/cli/src/repl.ts": 2994, // ω99 拆分运动 batch2：repl-commands.ts 外提 474 行。2971→2994=0.4.3 gate 随源演进（125 轮转接线补缝 + 长程弧零星中文警语行）
-  "packages/core/src/loop.ts": 3739, // core 心脏——拆分=独立大弧，须跨切面 gate。3715→3739=0.4.8/0.4.9 批（133 #5 content_filter 分支+事件联合；133 #6 denied 旗两结算点+abort 旁支+三个中止点带终因）。3278→3715=0.4.3 gate 随源演进（0.4.2 后长程弧批 +437：124b 流抢占（settlePreemptedStream/归类面/MetaNote）、125 窗口身份链+WorldState 差分+new_context 即时轮转边界+预留感知触发、压缩摘要 rider 织入——各弧实现体外提在 compaction*/window-chain 等模块，loop 留缝与编排；拆分=独立大弧待立）
+  "packages/cli/src/driver/agent-driver.ts": 7450, // 7145→7450=0.4.20 gate 显式改帽（136-140 弧：流式思考落历史 / agent_root 落盘+恢复继承 / 探针 sessionId 接线 +78；此前 0.4.8 后的存量漂移未显式改帽，本次一并补帽—— 7103→7145=0.4.8 批（133 top1 缓存时钟 resume 挂载：mtime 时钟+registry 价+offer 协同预热跳过——纯决策层薄挂载）。 ω99-326a 已外提类型/纯函数；闭包体分解=后续子弧（326b+）。6765→7055=0.4.3 gate 随源演进（0.4.2 后长程弧批 +290）；拆分压力仍指向 326b+ 闭包体分解
+  "packages/web/src/components/App.tsx": 3374, // 3305→3374=0.4.20 gate 显式改帽（139/140 仪表盘入口 + 会话解剖接线 +28； ω99-327a：app-consts/app-panels 外提 1242 行；组件闭包分解=后续子弧
+  "packages/cli/src/repl.ts": 3023, // 2994→3023=0.4.20 gate 显式改帽（0.4.5 之后的存量漂移补帽； ω99 拆分运动 batch2：repl-commands.ts 外提 474 行。2971→2994=0.4.3 gate 随源演进（125 轮转接线补缝 + 长程弧零星中文警语行）
+  "packages/core/src/loop.ts": 3878, // 3739→3878=0.4.20 gate 显式改帽（139/140 探针 sessionId 透传 +8； core 心脏——拆分=独立大弧，须跨切面 gate。3715→3739=0.4.8/0.4.9 批（133 #5 content_filter 分支+事件联合；133 #6 denied 旗两结算点+abort 旁支+三个中止点带终因）。3278→3715=0.4.3 gate 随源演进（0.4.2 后长程弧批 +437：124b 流抢占（settlePreemptedStream/归类面/MetaNote）、125 窗口身份链+WorldState 差分+new_context 即时轮转边界+预留感知触发、压缩摘要 rider 织入——各弧实现体外提在 compaction*/window-chain 等模块，loop 留缝与编排；拆分=独立大弧待立）
   "packages/cli/src/schedules.ts": 1373, // 1315→1373=131 弧 defer 闲时车道（idle 触发族+空闲资格 tick 分支+lastActivityAt seam+[闲时任务] 前缀+add 门归一化——排程域第五触发族） // 定时任务域（121/127 弧后入帽）：DurableTask 引擎+LaunchAgent 唤起+事件源+回执面；下一步拆分候选=引擎/事件/回执三件
-  "packages/cli/src/driver/session-engine.ts": 1138, // 1118→1138=123-2 read_session 台账读取缝。 会话引擎（多 driver 弧后入帽）：boot 记账/恢复重放/deferred bookkeeping；拆分候选=记账与重放两件
-  "packages/cli/src/index.ts": 2316, // 拆分 batch2 外提。2211→2311=0.4.3 gate 随源演进（125 new_context one-shot 接线（portBox/contextRotation 双达）+ 127 continue_task 注册 + 长程弧警语行——纯接线面）
-  "packages/cli/src/tools.ts": 1047, // 1018→1047=本批（123-3 critic 挂载+130-C1 稳定 ID 双形换算）。 131 弧入帽：defer 轮工具不可见律（WUDAO_DEFER_RUN 门控排程/交棒面挂载）；拆分候选=工具挂载分段
+  "packages/cli/src/driver/session-engine.ts": 1177, // 1138→1177=0.4.20 gate 显式改帽（0.4.5 之后的存量漂移补帽； 1118→1138=123-2 read_session 台账读取缝。 会话引擎（多 driver 弧后入帽）：boot 记账/恢复重放/deferred bookkeeping；拆分候选=记账与重放两件
+  "packages/cli/src/index.ts": 2350, // 2316→2350=0.4.20 gate 显式改帽（0.4.5 之后的存量漂移补帽； 拆分 batch2 外提。2211→2311=0.4.3 gate 随源演进（125 new_context one-shot 接线（portBox/contextRotation 双达）+ 127 continue_task 注册 + 长程弧警语行——纯接线面）
+  "packages/cli/src/tools.ts": 1096, // 1047→1096=0.4.20 gate 显式改帽（0.4.5 之后的存量漂移补帽； 1018→1047=本批（123-3 critic 挂载+130-C1 稳定 ID 双形换算）。 131 弧入帽：defer 轮工具不可见律（WUDAO_DEFER_RUN 门控排程/交棒面挂载）；拆分候选=工具挂载分段
   "packages/cli/src/tui/app.tsx": 1011, // TUI 主面（长程弧后入帽，刚好过线）；拆分候选=渲染分层
-  "packages/web/src/protocol-core.ts": 1008, // web 协议核心（多 driver 弧后入帽，刚好过线）；拆分候选=消息/状态两域
-  "apps/desktop/src-tauri/src/main.rs": 2385, // 冻结区——触界需独立提交+用户肉眼验收。2343→2385=0.4.3 gate 随源演进（LaunchAgent 定时唤起 --schedule-wake 面 +42；仍属冻结区，下批审计）
-  "packages/server/src/index.ts": 1881, // 拆分运动 batch2：ports.ts 外提；1857→1859=UiDriverPort 等五名 re-export 门面 +2（cli 跨包 dist 类型链必需）。1859→1881=永续 v6 wave2 旗舰弧（reef C1 门控自改进）显式改帽：improvementFace 分发 case+形状门（+22）——纯分发面无纯函数可外提
-  "packages/cli/src/driver/settings-ops.ts": 1631, // 1606→1631=0.4.3 gate 随源演进（122 LaunchAgent 弧：schedules.launchAgent 偏好开关面 +25——偏好页收益语行，纯接线）
+  "packages/web/src/protocol-core.ts": 1036, // 1008→1036=0.4.20 gate 显式改帽（139/140 协议面 probe/sessionAnatomy 方法 +12； web 协议核心（多 driver 弧后入帽，刚好过线）；拆分候选=消息/状态两域
+  "apps/desktop/src-tauri/src/main.rs": 2417, // 2385→2417=0.4.20 gate 显式改帽（139 弧 boot_workspace_env + 探针常开 +32； 冻结区——触界需独立提交+用户肉眼验收。2343→2385=0.4.3 gate 随源演进（LaunchAgent 定时唤起 --schedule-wake 面 +42；仍属冻结区，下批审计）
+  "packages/server/src/index.ts": 1963, // 1881→1963=0.4.20 gate 显式改帽（139/140 协议面 probeEnable/sessionAnatomy 分发 +17； 拆分运动 batch2：ports.ts 外提；1857→1859=UiDriverPort 等五名 re-export 门面 +2（cli 跨包 dist 类型链必需）。1859→1881=永续 v6 wave2 旗舰弧（reef C1 门控自改进）显式改帽：improvementFace 分发 case+形状门（+22）——纯分发面无纯函数可外提
+  "packages/cli/src/driver/settings-ops.ts": 1696, // 1631→1696=0.4.20 gate 显式改帽（0.4.5 之后的存量漂移补帽； 1606→1631=0.4.3 gate 随源演进（122 LaunchAgent 弧：schedules.launchAgent 偏好开关面 +25——偏好页收益语行，纯接线）
   "packages/evals/src/suites/det-46-m62-config-economy.ts": 1070, // 名册套件族（同 deterministic 注记）
+  "packages/cli/src/marketplace.ts": 1083, // 0.4.20 gate 入白名单（存量债：0.4.5 时 902 行，越线发生在 CCB 家族插件兼容层弧——插件安装/目录索引/清单三域同文件）。拆分弧候选=安装执行面与目录索引两件；本次发版不拆（拆分会动插件安装主路径，发布前风险高于收益），显式入册留债。
+  "packages/web/src/protocol.ts": 1082, // 0.4.20 gate 入白名单（存量债：0.4.5 时 1000 行，恰在线上，越线发生在协议面加方法批次；139/140 探针+会话解剖方法再 +54）。拆分弧候选=探针/解剖两块方法面外提到 protocol-observability.ts。
+  "packages/cli/src/driver/types.ts": 1034, // 0.4.20 gate 入白名单（存量债：0.4.5 时 998 行，越线发生在 driver 类型面加字段批次；138/140 的 bootRoot+SessionAnatomyResult 再 +13）。拆分弧候选=工作区根与监控两块类型外提。
 };
 
 function walkSrc(dir: string, out: string[] = []): string[] {

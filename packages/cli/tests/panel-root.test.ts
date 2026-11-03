@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions } from "../src/driver/agent-driver.js";
@@ -86,9 +86,9 @@ describe("workspace-ux B1 — driver panelRoot + panelRootSet/agentRootStatus", 
   });
 
   it("agentRootStatus: aligned at start; a set diverges the two roots without moving the agent's", async () => {
-    expect(await driver.agentRootStatus()).toEqual({ panelRoot: rootA, agentRoot: rootA, aligned: true });
+    expect(await driver.agentRootStatus()).toEqual({ panelRoot: rootA, agentRoot: rootA, bootRoot: rootA, aligned: true }); // 138b：bootRoot=会话锚
     await driver.panelRootSet(rootB);
-    expect(await driver.agentRootStatus()).toEqual({ panelRoot: rootB, agentRoot: rootA, aligned: false });
+    expect(await driver.agentRootStatus()).toEqual({ panelRoot: rootB, agentRoot: rootA, bootRoot: rootA, aligned: false });
   });
 
   it("the pick lands in the recents file — the same store recentWorkspaces reads", async () => {
@@ -130,7 +130,7 @@ describe("workspace-ux B1 — driver panelRoot + panelRootSet/agentRootStatus", 
     // Mid-run: the switch neither refuses nor interrupts — the panel re-roots
     // while the run keeps its (agent-root) footing.
     await expect(busyDriver.panelRootSet(rootB)).resolves.toEqual({ root: rootB });
-    expect(await busyDriver.agentRootStatus()).toEqual({ panelRoot: rootB, agentRoot: rootA, aligned: false });
+    expect(await busyDriver.agentRootStatus()).toEqual({ panelRoot: rootB, agentRoot: rootA, bootRoot: rootA, aligned: false });
     release?.();
     await until(() => busyDriver.getStatus().busy === false, "run to finish");
     busyDriver.dispose();
@@ -138,7 +138,7 @@ describe("workspace-ux B1 — driver panelRoot + panelRootSet/agentRootStatus", 
 
   it("no workspaceRoot: panelRoot falls back to cwd (still aligned; escapes reject from there)", async () => {
     const bare = makeDriver();
-    expect(await bare.agentRootStatus()).toEqual({ panelRoot: process.cwd(), agentRoot: process.cwd(), aligned: true });
+    expect(await bare.agentRootStatus()).toEqual({ panelRoot: process.cwd(), agentRoot: process.cwd(), bootRoot: process.cwd(), aligned: true });
     await expect(bare.fileRead("../escape")).rejects.toThrow(/path escapes workspace/);
     bare.dispose();
   });

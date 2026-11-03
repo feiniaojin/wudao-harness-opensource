@@ -11,8 +11,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ForkContext, ImageBlock, ModelClient, ModelInput, Tool, UserMessage } from "@wudao/core";
-import { buildTool } from "@wudao/core";
+import type { AssistantMessage, ForkContext, ImageBlock, ModelClient, ModelInput, Tool, UserMessage } from "@wudao-org/core";
+import { buildTool } from "@wudao-org/core";
 import {
   createAgentsTaskTool,
   createProviderModelResolver,

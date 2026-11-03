@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, mkdir, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { createSessionSearchIndex, searchIndexPath, runSessionSearch, formatSearchHits } from "../src/session-search.js";
 
 let dir: string;

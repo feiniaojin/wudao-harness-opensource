@@ -9,7 +9,7 @@
 // whole-file-torn and trailing-blank edges, and the two deliberate
 // non-verdicts (mid-file corruption, healthy file).
 import type { EvalDefinition } from "../runner.js";
-import { analyzeTornTail } from "@wudao/core";
+import { analyzeTornTail } from "@wudao-org/core";
 
 export interface NightPorting19Evidence {
   // ① a torn FINAL line heals to the byte prefix before it

@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile, readdir, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { deleteSessionFile, type SessionDeleteResult } from "../src/driver/session-delete.js";
 
 let dir: string;

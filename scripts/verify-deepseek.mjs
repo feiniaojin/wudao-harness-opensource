@@ -1,4 +1,4 @@
-// Live probe: verify @wudao/providers works against a real OpenAI-compatible endpoint.
+// Live probe: verify @wudao-org/providers works against a real OpenAI-compatible endpoint.
 // Reads config from process.env (WUDAO_* / OPENAI_*). Run with the env sourced from a
 // gitignored .env, e.g.:  set -a; . ./.env; set +a; node scripts/verify-deepseek.mjs
 import { createOpenAICompatibleProvider, resolveProviderConfig } from "../packages/providers/dist/index.js";

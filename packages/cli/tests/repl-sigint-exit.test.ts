@@ -17,8 +17,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PassThrough } from "node:stream";
-import type { ProviderConfig } from "@wudao/providers";
-import type { AgentHooks } from "@wudao/core";
+import type { ProviderConfig } from "@wudao-org/providers";
+import type { AgentHooks } from "@wudao-org/core";
 import { runRepl } from "../src/repl.js";
 
 const replSrc = (): string =>

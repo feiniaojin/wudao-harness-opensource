@@ -4,7 +4,7 @@
 // recall scoring prefers lexical overlap + recency + strength, and the
 // injection block renders byte-stable.
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, readFile, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openMemoryStore, readMemoryFile, memoryId } from "../src/memory.js";
@@ -145,6 +145,40 @@ describe("memory: injection block (byte-stable prompt tail)", () => {
     for (let i = 0; i < 20; i++) await s.save({ kind: "fact", text: `fact number ${i}`, now });
     const block = s.renderInjection();
     expect(block.split("\n").filter((l) => l.startsWith("- [")).length).toBe(12);
+  });
+});
+
+describe("memory: the read path never touches the filesystem", () => {
+  // 用户报障的根因弧（.wudao 污染）：fileTree 之类的只读入口会打开记忆库；
+  // 打开/列举/检索/渲染注入都不得 mkdir——目录只能由第一次写入落地。
+  const exists = async (p: string): Promise<boolean> => {
+    try { await stat(p); return true; } catch { return false; }
+  };
+  it("open + list + listPending + search + renderInjection 不建目录（零状态）", async () => {
+    const nested = join(root, "ws", ".wudao", "memory");
+    const s = openMemoryStore(nested);
+    expect(s.list()).toEqual([]);
+    expect(s.listPending()).toEqual([]);
+    expect(s.search("anything")).toEqual([]);
+    expect(s.renderInjection()).toBe("");
+    await new Promise((r) => setTimeout(r, 20)); // mkdir 若曾 fire-and-forget，此处必已落地
+    expect(await exists(nested)).toBe(false);
+  });
+  it("第一次 save 才落地目录，且 append 仍按 issue order 串行", async () => {
+    const nested = join(root, "ws", ".wudao", "memory");
+    const s = openMemoryStore(nested);
+    await s.save({ kind: "fact", text: "first write materializes" });
+    expect(await exists(nested)).toBe(true);
+    await Promise.all([s.save({ kind: "fact", text: "b" }), s.save({ kind: "fact", text: "c" })]);
+    const texts = (await readFile(s.file, "utf8")).trim().split("\n").map((l) => (JSON.parse(l) as { text: string }).text);
+    expect(texts).toEqual(["first write materializes", "b", "c"]);
+  });
+  it("forget 在空库上也走同一条懒 mkdir 链（不抛）", async () => {
+    const nested = join(root, "ws", ".wudao", "memory");
+    const s = openMemoryStore(nested);
+    const e = await s.save({ kind: "fact", text: "tombstone target" });
+    await s.forget(e.id);
+    expect(s.list()).toEqual([]);
   });
 });
 

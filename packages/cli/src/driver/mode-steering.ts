@@ -9,9 +9,9 @@
 import { open, readFile, readdir, realpath, rename, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput } from "@wudao/core"
-import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection } from "@wudao/core";
-import { isValidImageBlock, isValidFileBlock } from "@wudao/core";
+import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput } from "@wudao-org/core"
+import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection } from "@wudao-org/core";
+import { isValidImageBlock, isValidFileBlock } from "@wudao-org/core";
 import { renderTurnDiff } from "../turn-diff-render.js";
 import { truncate, formatCompactedLine, modelLabel, RESULT_PREVIEW_CHARS } from "../log.js";
 // ω99-41: streaming deltas accumulate in chunk buffers (linear) and fold into
@@ -115,7 +115,7 @@ import type { ModelChoice, ModelSelection } from "../commands/model.js";
 // M63 §A: the /provider command's shared machinery (pure halves; the client
 // rebuild reaches the frontend through the onProviderSwitch seam below).
 import { validateProviderName, providerRows, formatProviderList, recordProviderChange, envOnlyProviderResolver, borrowedKeyPoolNote, PROVIDER_SWITCH_CACHE_NOTE } from "../commands/provider.js";
-import type { BuiltinProviderName, ProviderName } from "@wudao/providers";
+import type { BuiltinProviderName, ProviderName } from "@wudao-org/providers";
 // SDD 2026-08-23 persona: the /persona command's pure layer (parse → resolve
 // → apply → record) — the driver's handler is a thin shell over it, exactly
 // like the REPL's (repl.ts ~1668), with appendHistory notices for output.
@@ -124,9 +124,9 @@ import {
   personaSwitchBreaksCache, recordPersonaChange, formatPersonaList, PERSONA_SWITCH_CACHE_NOTE,
 } from "../commands/persona.js";
 import type { PersonaChainSources } from "../commands/persona.js";
-import { applyWirePersona, resolveContextWindowTokens } from "@wudao/providers";
+import { applyWirePersona, resolveContextWindowTokens } from "@wudao-org/providers";
 import { loadEffectiveProfiles } from "../provider-registry.js";
-import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao/providers";
+import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao-org/providers";
 // ω99-320: the session's soft-warn slot (run-scoped accounting + live notice).
 import type { SoftWarnSlot } from "../soft-warn-tracker.js";
 import { runPermissionsCommand } from "../commands/permissions.js";
@@ -157,7 +157,7 @@ import { runAgentsCommand } from "../commands/agents-roster.js";
 import { validateAddDirPath, buildAddedDirEntry, formatAddDirNotice, ADDED_DIR_TYPE } from "../commands/add-dir.js";
 import { formatDoctorReport, type DoctorInput } from "../commands/doctor.js";
 import { buildTaskRows, formatTasksReport } from "../commands/tasks.js";
-import type { RosterPluginAgent } from "@wudao/core";
+import type { RosterPluginAgent } from "@wudao-org/core";
 import { VERSION } from "../version.js";
 import { getCompactInstructionsRider } from "../project-context.js";
 // workspace-ux B1: the recents write behind panelRootSet (settings-ops owns

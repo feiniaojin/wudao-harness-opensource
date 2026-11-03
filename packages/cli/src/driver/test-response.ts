@@ -2,7 +2,7 @@
 // settings-ops.ts 的纯失败分类器外提（逐字节搬家，行为零变化；
 // settings-ops re-export 维持既有公共面）。类型留在 settings-ops（其公共
 // 面不动）；type-only 往返在运行时零环（provider-registry-ops 同律）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import type { TestConnectionState } from "./settings-ops.js";
 
 /** Pure failure classifier: HTTP status + sniffed body → one of the human

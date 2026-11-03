@@ -24,9 +24,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { stdin } from "node:process";
-import { createScriptedModel } from "@wudao/core";
-import type { ModelClient } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createScriptedModel } from "@wudao-org/core";
+import type { ModelClient } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp } from "../src/tui/app.js";
 import { createDriverSession } from "../src/driver/session-engine.js";
 import type { DriverSession } from "../src/driver/session-engine.js";
@@ -69,8 +69,8 @@ vi.mock("../src/repl.js", async (importOriginal) => {
 // createProvider(config, ...). Wrap it with a scripted model so runReal
 // completes one clean turn with zero network. (The driver/TUI tests pass
 // modelOverride, so they never reach this wrapper.)
-vi.mock("@wudao/providers", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@wudao/providers")>();
+vi.mock("@wudao-org/providers", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@wudao-org/providers")>();
   return {
     ...actual,
     createProvider: (_config: ProviderConfig, _options?: unknown): ModelClient =>

@@ -18,3 +18,7 @@ __pycache__/
 # SDD per-plan workspaces (briefs/reports/review diffs are scratch; the
 # ledger + committed specs/plans are the durable record)
 docs/superpowers/sdd/
+
+# 发布产物：publish-assets.mjs 在发版前搬进子包的 LICENSE/README（不是源码）
+packages/*/LICENSE
+packages/cli/README.md

@@ -1,4 +1,4 @@
-// @wudao/web — the WS protocol client (M43-B). This file is the web package's
+// @wudao-org/web — the WS protocol client (M43-B). This file is the web package's
 // ONLY knowledge of the server: every type below hand-mirrors a frame or op
 // shape documented in packages/server/PROTOCOL.md (WS protocol v1), and
 // WudaoClient is a pure consumer of that contract —

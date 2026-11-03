@@ -1,12 +1,12 @@
 // M30 — CLI-side orchestration contracts.
 //
 // The roster shapes, the registry surface, and the worktree results live in
-// `@wudao/core` (re-exported through `core-bind.js`). What stays here is the
+// `@wudao-org/core` (re-exported through `core-bind.js`). What stays here is the
 // CLI's OWN tool-surface vocabulary: the wire-form session parameter, the
 // model-override seam, the orchestration tool names every child is denied,
 // and the two pure roster helpers the task tool applies on top of core
 // (default tool set + the no-nested-orchestration filter).
-import type { AgentRoleProfile, LoadedRoster } from "@wudao/core";
+import type { AgentRoleProfile, LoadedRoster } from "@wudao-org/core";
 import { KERNEL_POLICY } from "../kernel-policy.js";
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ export interface ModelOverrides {
 }
 
 export type ModelResolution =
-  | { readonly ok: true; readonly model: import("@wudao/core").ModelClient; readonly effectiveEffort: string }
+  | { readonly ok: true; readonly model: import("@wudao-org/core").ModelClient; readonly effectiveEffort: string }
   | { readonly ok: false; readonly error: string };
 
 export function hasOverrides(o: ModelOverrides | undefined): boolean {

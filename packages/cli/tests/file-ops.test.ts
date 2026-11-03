@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, mkdir, rm, writeFile, readFile, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";

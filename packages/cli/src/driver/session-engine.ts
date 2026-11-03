@@ -2,7 +2,7 @@
 // (model + key pool + cost registry, agent registry, read-state, file history,
 // permission gate stack, tool set, persistence seams, git-status prober) over
 // the AgentDriver. `wudao ui` (ui.ts) adds the WS server on top; the Slack
-// interface (@wudao/slack) adds the Bolt Socket Mode relay on top. Extracted
+// interface (@wudao-org/slack) adds the Bolt Socket Mode relay on top. Extracted
 // verbatim from ui.ts's startUiSession — the wiring comments live there; this
 // file owns the two seams the frontends differ on:
 //   • askRelay — the frontend-owned permission ask (the Slack Block Kit relay).
@@ -17,14 +17,14 @@ import { join } from "node:path";
 // guard lane (EAGAIN-retry + serialization) — same discipline as the one-shot
 // dispatch region; an injected startupNotice sink (TUI/web) still wins.
 import { stdoutGuard } from "../output-guard.js";
-import { createFileAttachmentStore, createFileHistory, createJsonlSessionStore, createReadStateTable, createTurnDiffTracker, sessionLeaseBoxFor, resolveOutputReserveTokens, buildContextRotationEntry } from "@wudao/core";
+import { createFileAttachmentStore, createFileHistory, createJsonlSessionStore, createReadStateTable, createTurnDiffTracker, sessionLeaseBoxFor, resolveOutputReserveTokens, buildContextRotationEntry } from "@wudao-org/core";
 // ω99-314: 文件级时光机——快照仓纯层。
 import { createSnapshotStore } from "../snapshots.js";
-import type { AgentMessage, FileHistory, IdentifiedOutputDelta, Tool } from "@wudao/core";
+import type { AgentMessage, FileHistory, IdentifiedOutputDelta, Tool } from "@wudao-org/core";
 // 125 项 1: the model-side rotation port box (new_context 工具 ↔ loop 的共享单槽).
-import type { NewContextPortBox } from "@wudao/core";
-import { createProvider, createLiveKeyPool, modelAcceptsImages, withPersona } from "@wudao/providers";
-import type { ProviderConfig } from "@wudao/providers";
+import type { NewContextPortBox } from "@wudao-org/core";
+import { createProvider, createLiveKeyPool, modelAcceptsImages, withPersona } from "@wudao-org/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 // SDD 2026-08-23 persona: the per-session persona runtime sunk into this
 // engine's construction seams (registry three-tier load + bootstrap chain +
 // withPersona wrap; the provider-switch build follows the chain).
@@ -75,7 +75,7 @@ import { preflightRoleReasoning, formatReasoningHealthLine, effortProbeEnabled, 
 import { createCronRuntime, type CronRuntime } from "../cron.js";
 // ω99-112: the controlled-browser runtime (six browser_* tools; playwright-core
 // loads only at first launch, inside the runtime's dynamic import).
-import { createBrowserRuntime } from "@wudao/browser";
+import { createBrowserRuntime } from "@wudao-org/browser";
 // ω-4a: the monitor runtime (monitor tools + steering-lane event delivery).
 import { createMonitorRuntime, type MonitorRuntime } from "../monitor.js";
 import { maybeLoginShellEnv } from "../shell-snapshot.js";
@@ -320,7 +320,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // side calls — title/btw/summarizer ride other prefixes). The model key is
   // the ANSWERING model's (usage.model) — /model switches and failover rows
   // both move it; kill-switch gated (--no-cache-waste-notice).
-  const noteCacheWaste = (u: import("@wudao/core").ModelUsage): void => {
+  const noteCacheWaste = (u: import("@wudao-org/core").ModelUsage): void => {
     if (isFeatureAblated("cache-waste-notice")) return;
     const report = cacheWasteMonitor.noteUsage({
       promptTokens: u.promptTokens,
@@ -520,7 +520,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // only). No explicit tools prop → the standard builtin set, which includes
   // the octet.
   const hasComputerTools = props.tools ? props.tools.some((t) => t.name === "computer_click") : true;
-  const stateHandle: { state?: import("@wudao/core").AgentState } = {};
+  const stateHandle: { state?: import("@wudao-org/core").AgentState } = {};
   // ω99-79: the session's subagent-delta box (the stateHandle shape — an
   // empty single-slot object shared by both sides): the DRIVER arms
   // box.sink at run start and clears it at the run's finally seam
@@ -553,7 +553,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // 实例两头到（buildToolSet opts.stopTree → 任务工具的派生点；driver 的
   // stopTreeBox → 协调器武装）。空盒是工具面的安全缺省（派生零登记）；
   // driver 构造时武装后，Esc 的停止路径才能把前台子树一并计划进停止。
-  const stopTreeBox: import("@wudao/core").StopTreeDispatchPort = {};
+  const stopTreeBox: import("@wudao-org/core").StopTreeDispatchPort = {};
   // M-Memory 弧第二半 — 长期记忆 runtime（boot 召回注入 + 会话终了沉淀）。
   // store：<ws>/.wudao/memory/memory.jsonl（与 M49 的 .wudao/memory.jsonl 物理
   // 分离，见 longterm-memory.ts 头注）；enabled 读分层设置 memory.enabled。
@@ -673,7 +673,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       // continueSession 采纳新会话后自动跟随；盒空回落 boot id，fail-closed）。
       sessionResult: {
         load: async (toolCallId) =>
-          (await store.load(engineLiveSidBox.current ?? sessionId)).filter((m): m is import("@wudao/core").ToolResultMessage => m.role === "tool" && m.toolCallId === toolCallId),
+          (await store.load(engineLiveSidBox.current ?? sessionId)).filter((m): m is import("@wudao-org/core").ToolResultMessage => m.role === "tool" && m.toolCallId === toolCallId),
       },
       // 121 挖掘 TOP5 #1: the conversation-history search over THIS session's
       // JSONL (beside session_result — same family, same pure bypass read;
@@ -738,7 +738,7 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   const compactionOptions:
     | {
         contextWindowTokens: number;
-        windowMode?: import("@wudao/providers").WindowMode;
+        windowMode?: import("@wudao-org/providers").WindowMode;
         thresholdRatio?: number;
         headroomTokens?: number;
         outputReserveTokens?: number;

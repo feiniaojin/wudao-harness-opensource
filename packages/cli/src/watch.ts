@@ -10,9 +10,9 @@
 //   不复制 cron 语义；
 // - 注册门=「cron runtime 在 且 浏览器工具面在」双门，无浏览器 fail-closed
 //   不注册（同 cron posture；tools.ts 顶级集，subagent 永不可见）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import { buildTool, nextFire, CronStoreRefusedError } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import { buildTool, nextFire, CronStoreRefusedError } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import type { CronRuntime } from "./cron.js";
 
 /** watch prompt 的固定前缀——list/delete 的判据（模板前缀识别）。 */

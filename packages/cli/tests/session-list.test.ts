@@ -7,7 +7,7 @@ import { describe, it, expect, vi } from "vitest";
 import { mkdtemp, mkdir, rm, writeFile, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore, newSessionId, type SessionEntry } from "@wudao/core";
+import { createJsonlSessionStore, newSessionId, type SessionEntry } from "@wudao-org/core";
 import {
   deriveSessionName,
   firstUserMessage,

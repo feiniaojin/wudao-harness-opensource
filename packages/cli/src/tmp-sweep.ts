@@ -9,7 +9,7 @@
 import { readdir, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { PYTHON_KERNEL_TMP_PREFIX } from "@wudao/core";
+import { PYTHON_KERNEL_TMP_PREFIX } from "@wudao-org/core";
 
 export const RPC_TMP_PREFIX = "wudao-ptc-";
 /** Grace window: an in-flight run_script child owns its dir for up to its

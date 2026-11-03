@@ -114,6 +114,31 @@ describe("workspace switcher — FileTree (M75-ux1 §2)", () => {
     expect(other?.textContent).toContain("打开其他目录");
   });
 
+  it("138：bootRoot 在场 → 「默认空间」钉项居首（basename 标签、全路径 tooltip、点击走同一条切换缝）；缺席 → 零渲染", async () => {
+    const h = switcherHarness([{ path: "/w/proj-a", lastUsed: "t" }]);
+    const onSwitchWorkspace = vi.fn();
+    const base = { client: h.client, workspaceRoot: ROOT, selectedPath: null, onSelect: vi.fn(), onAtMention: vi.fn(), refreshKey: 0, onSwitchWorkspace };
+    // 缺席：菜单第一项是 recent，不是钉项。
+    const c1 = mount(<FileTree {...base} />);
+    await flush();
+    click(c1.querySelector(".ws-switcher"));
+    await flush();
+    expect(c1.querySelector(".ws-item.ws-default")).toBeNull();
+    // 在场：钉项居首。
+    const c2 = mount(<FileTree {...base} bootRoot="/w/desk-home" />);
+    await flush();
+    click(c2.querySelector(".ws-switcher"));
+    await flush();
+    const pin = c2.querySelector(".ws-item.ws-default") as HTMLButtonElement;
+    expect(pin).not.toBeNull();
+    expect(pin.textContent).toContain("默认空间");
+    expect(pin.textContent).toContain("desk-home");
+    expect(pin.getAttribute("title")).toBe("/w/desk-home");
+    click(pin);
+    expect(onSwitchWorkspace).toHaveBeenCalledWith("/w/desk-home");
+    expect(c2.querySelector(".ws-menu")).toBeNull();
+  });
+
   it("clicking a recent fires onSwitchWorkspace(path) and closes the menu", async () => {
     const h = switcherHarness([{ path: "/w/proj-a", lastUsed: "t" }]);
     const onSwitchWorkspace = vi.fn();
@@ -251,7 +276,7 @@ describe("App wiring (M75-ux1 §1/§2)", () => {
     // ◐/⚙ — and M76-ux2 §3 adds the 📋 session picker — and 0.3.3 adds the
     // 审查专注 toggle — every topbar button opts out of the drag region.
     const buttons = [...(topbar?.querySelectorAll("button.icobtn") ?? [])];
-    expect(buttons).toHaveLength(5);
+    expect(buttons).toHaveLength(6); // 139：+监控（探针仪表盘入口）
     for (const b of buttons) expect(b.hasAttribute("data-tauri-drag-region")).toBe(false);
   });
 
@@ -359,7 +384,18 @@ describe("App wiring (M75-ux1 §1/§2)", () => {
     expect(opFrames(h).some((f) => f.op.op === "panelRootSet" && f.op.path === "/w/proj-b")).toBe(true);
     expect(opFrames(h).some((f) => f.op.op === "recentWorkspaces" && f.op.add !== undefined)).toBe(false);
     expect(opFrames(h).some((f) => f.op.op === "switchWorkspace")).toBe(false);
-    expect(h.container.querySelector(".chat")?.textContent).toContain("文件面板根 → /w/proj-b");
+    // 137：agent 根跟随出线——只应答 agentRootSwitch（fileTree 重取留给本测
+    // 自定义的 proj-b 目录应答，不能被 drain 的空 entries 吃掉）。
+    for (let i = 0; i < 4; i += 1) {
+      await act(async () => {
+        for (const f of opFrames(h)) {
+          if (h.answered.has(f.id) || f.op.op !== "agentRootSwitch") continue;
+          h.answered.add(f.id);
+          h.server.socket.serverSend({ t: "result", id: f.id, ok: { applied: true, queued: false } });
+        }
+      });
+    }
+    expect(h.container.querySelector(".chat")?.textContent).toContain("工作区已切换（agent 工作目录已跟随）→ /w/proj-b");
     // The switcher follows the receipt: basename label, full-path tooltip.
     expect(h.container.querySelector(".ws-switcher .tree-root")?.textContent).toContain("proj-b");
     expect(h.container.querySelector(".ws-switcher")?.getAttribute("title")).toBe("/w/proj-b");
@@ -502,7 +538,7 @@ describe("WorkspaceChip + controlsLead（极简工作空间切换）", () => {
 describe("simple-mode workspace switch（App wiring）", () => {
   const RECENTS = [{ path: "/w/proj-b", lastUsed: "2026-08-26T00:00:00Z" }];
 
-  it("极简模式：chip 在 .composer-tools 内 📎 之前，标签=当前根 basename；选 recents → panelRootSet 上线 + 确认卡出现在作曲家上方", async () => {
+  it("极简模式：chip 在 .composer-tools 内 📎 之前，标签=当前根 basename；选 recents → 两根一起切（137：无确认卡）", async () => {
     const h = await connectedSimpleApp(RECENTS);
     const chip = h.container.querySelector(".composer-tools button.chip.work") as HTMLButtonElement;
     expect(chip).not.toBeNull();
@@ -512,23 +548,13 @@ describe("simple-mode workspace switch（App wiring）", () => {
     click(chip);
     await drain(h, RECENTS, "simple"); // 菜单打开 → recentWorkspaces 应答
     click(h.container.querySelector(".ws-menu .ws-item"));
-    await drain(h, [], "simple"); // panelRootSet 应答 → arm 确认卡
+    // 137 两跳链：panelRootSet 回执后 agentRootSwitch 才出线——逐轮排空。
+    for (let i = 0; i < 4 && opFrames(h).some((f) => !h.answered.has(f.id)); i += 1) {
+      await drain(h, [], "simple");
+    }
     expect(opFrames(h).some((f) => f.op.op === "panelRootSet" && f.op.path === "/w/proj-b")).toBe(true);
-    const card = h.container.querySelector(".approval.agent-root") as HTMLElement;
-    expect(card).not.toBeNull();
-    // 卡在作曲家上方（composer 在卡之后）
-    const composer = h.container.querySelector(".composer-tools") as HTMLElement;
-    expect(card.compareDocumentPosition(composer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it("确认卡按钮路由：切换 agent 目录 → agentRootSwitch op 上线", async () => {
-    const h = await connectedSimpleApp(RECENTS);
-    click(h.container.querySelector(".composer-tools button.chip.work"));
-    await drain(h, RECENTS, "simple");
-    click(h.container.querySelector(".ws-menu .ws-item"));
-    await drain(h, [], "simple");
-    click(h.container.querySelector(".approval.agent-root .allow"));
-    await drain(h, [], "simple");
-    expect(opFrames(h).some((f) => f.op.op === "agentRootSwitch")).toBe(true);
+    expect(opFrames(h).some((f) => f.op.op === "agentRootSwitch" && f.op.path === "/w/proj-b")).toBe(true);
+    // 确认卡退役：不再升起。
+    expect(h.container.querySelector(".approval.agent-root")).toBeNull();
   });
 });

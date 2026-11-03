@@ -11,8 +11,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { BUILTIN_ROLES } from "@wudao/core";
-import type { AgentRoleProfile, RosterPluginAgent } from "@wudao/core";
+import { BUILTIN_ROLES } from "@wudao-org/core";
+import type { AgentRoleProfile, RosterPluginAgent } from "@wudao-org/core";
 import { roleSummary, runAgentsCommand } from "../src/commands/agents-roster.js";
 
 let ws: string;

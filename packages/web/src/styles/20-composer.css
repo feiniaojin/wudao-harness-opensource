@@ -517,13 +517,25 @@ textarea.wudao-input:focus { border-color: var(--accent); }
 
 /* M65-space §1: the 简洁/高级 pill (.mode-toggle) is GONE with the topbar
    redesign — the settings page's 偏好 section owns the ui.defaultMode pick. */
-.simple { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-.simple .chat { flex: 1; }
+/* 10-29 用户反馈（简洁模式拥挤）：侧 padding 由 .chat 的 sp-4 收窄处
+   覆写回宽沟（sp-6），上下也补呼吸——简洁模式是全窗口单列，贴边=压迫。 */
+.simple { display: flex; flex-direction: column; flex: 1; min-height: 0; padding: var(--sp-3) var(--sp-8) var(--sp-4); } /* 10-29 二次修正：sp-6 不够醒目→sp-8=32px 沟 */
+.simple .chat { flex: 1; padding-inline: 0; /* 10-29 二次修正：容器 sp-8 沟是唯一留空来源——chat 内不再叠沟，与输入框严格对齐 */ }
 /* 119c 用户修正（09-27）：会话流宽度=输入框宽度（.composer 的
    max-width:100%−左右 sp-4 留白），两侧有呼吸空间，不再贴到窗口边；
    会话流区域也跟输入框一样有圆角边。 */
-.simple .chat { max-width: none; margin: 0; }
-.simple .composer { max-width: none; margin: 0; }
+/* 10-29 宽度对齐（根治·两侧同一套规则）：.chat 与 .composer 都是 .simple
+   容器的全宽子级——两条都写 max-width:none + margin:0 + width:100%，
+   沟（32px）只由 .simple 容器的 padding 提供（唯一留空来源）。
+   之前两侧规则不同（chat 漏了 max-width:none → 回落到基座的
+   content-max 限宽居中，composer 是全宽）→ 必然不等宽。
+   级联正常：.simple .chat (0,2,0) > .chat (0,1,0)。 */
+.simple .chat { max-width: none; margin: 0; width: 100%; }
+.simple .simple-composer { width: 100%; }
+.simple .inputarea { width: 100%; padding-inline: 0; }
+.simple .composer { max-width: none; margin: 0; width: 100%; margin-top: var(--sp-3); }
+/* 10-29 宽度对齐：.inputarea 不加侧 padding——composer 与 .chat 同为 .simple
+   的全宽子级，两者宽度严格相等（容器 32px 沟是唯一留空来源）。 */
 /* 会话流视觉容器与输入框同形：等宽（.chat 内容区的宽度=100%−sp-4×2=
    .composer 的 width 100% 在同 padding wrap 内的同宽）、圆角 md、
    上下边 hair-1 分界（119 画布律：分界只靠发丝线不靠色块）。 */

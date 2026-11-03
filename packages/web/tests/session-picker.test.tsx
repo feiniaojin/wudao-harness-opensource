@@ -171,7 +171,7 @@ describe("session picker (M76-ux2 §3)", () => {
     // §3 placement: between the + new-chat and the ◐/⚙ pair (P3: named by
     // aria-label — the glyphs are SVG now).
     const topbar = [...h.container.querySelectorAll(".topbar > *")];
-    expect(topbar.map((t) => t.getAttribute("aria-label") ?? "")).toEqual(["", "新对话", "会话列表", "审查专注", "切换主题", "设置"]);
+    expect(topbar.map((t) => t.getAttribute("aria-label") ?? "")).toEqual(["", "新对话", "会话列表", "审查专注", "切换主题", "监控", "设置"]); // 139：+监控
 
     click(btn);
     await drain(h, {});

@@ -8,10 +8,11 @@ import { describe, it, expect, vi } from "vitest";
 import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createReadFileTool, createScriptedModel, createJsonlSessionStore, estimateTokens, estimateImageTokens, toModelToolDefinition, nodeKey } from "@wudao/core";
-import type { AgentMessage, AssistantMessage, ImageBlock, ModelClient, ModelInput, Tool } from "@wudao/core";
+import { buildTool, createReadFileTool, createScriptedModel, createJsonlSessionStore, estimateTokens, estimateImageTokens, toModelToolDefinition, nodeKey } from "@wudao-org/core";
+import type { AgentMessage, AssistantMessage, ImageBlock, ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { openMemoryStore, createMemoryTools } from "../src/memory/index.js";
+import { openLongtermMemoryStore } from "../src/longterm-memory.js";
 import { createAgentDriver, notePreview } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions, DriverStatus, HistoryEntry } from "../src/driver/agent-driver.js";
 import { createSessionRegistry } from "../src/agents/index.js";
@@ -2301,7 +2302,7 @@ describe("AgentDriver — mode / bg / cache status (M42 + M30 + M24)", () => {
 // ---------------------------------------------------------------------------
 
 import { mkdtempSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { createFileHistory, createReadStateTable, createWriteFileTool, createTodoTool } from "@wudao/core";
+import { createFileHistory, createReadStateTable, createWriteFileTool, createTodoTool } from "@wudao-org/core";
 import { loadSkills } from "../src/skills.js";
 import { parseReplCommand } from "../src/repl.js";
 import { buildPlanRevisionPrompt } from "../src/plan.js";
@@ -2796,21 +2797,25 @@ describe("AgentDriver — memory recall + /memory (M49 §1)", () => {
   it("/memory list | del | ok execute driver-level against the workspace store", async () => {
     const root = await mkdtemp(join(tmpdir(), "wudao-drv-memcmd-"));
     try {
-      const store = openMemoryStore(root);
-      const a = await store.write({ kind: "fact", content: "run pnpm eval before merging" });
-      const p = await store.write({ kind: "preference", content: "user prefers dark theme", scope: "user" });
-      expect(p.decision).toBe("pending");
+      // 722df55e 两库收敛后 /memory 的审核动词面读写新库（.wudao/memory/，
+      // openLongtermMemoryStore）；旧库（openMemoryStore(root)）冻结为历史。
+      // 本测随弧改写新库（意图不变：driver 级 list/del/ok 对工作区库执行）。
+      // 新库面：save({kind,text,confidence})——保守自动沉淀走 pending。
+      const store = openLongtermMemoryStore(root);
+      const a = await store.save({ kind: "fact", text: "run pnpm eval before merging" });
+      const p = await store.save({ kind: "preference", text: "user prefers dark theme", confidence: "pending" });
+      expect(p.confidence).toBe("pending");
 
       const driver = makeDriver({ model: createScriptedModel([]), tools: [], workspaceRoot: root });
       expect(driver.submit("/memory")).toBe("notice");
-      await until(() => driver.getHistory().some((e) => e.kind === "notice" && e.text.includes(a.entry.id)), "list rendered");
+      await until(() => driver.getHistory().some((e) => e.kind === "notice" && e.text.includes(a.id)), "list rendered");
       expect(driver.getHistory().some((e) => e.kind === "notice" && e.text.includes("⏳"))).toBe(true);
 
-      driver.submit(`/memory ok ${p.entry.id}`);
+      driver.submit(`/memory ok ${p.id}`);
       await until(() => driver.getHistory().some((e) => e.kind === "notice" && e.text.includes("confirmed")), "confirm rendered");
-      driver.submit(`/memory del ${a.entry.id}`);
+      driver.submit(`/memory del ${a.id}`);
       await until(() => driver.getHistory().some((e) => e.kind === "notice" && e.text.includes("deleted")), "del rendered");
-      expect((await openMemoryStore(root).load()).map((e) => e.id)).toEqual([p.entry.id]);
+      expect(openLongtermMemoryStore(root).list({ includePending: true }).map((e) => e.id)).toEqual([p.id]);
       driver.dispose();
     } finally {
       await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
@@ -3571,7 +3576,7 @@ describe("AgentDriver — M53 §4 skill context:fork", () => {
 // M53 review fixes — branch-aware resume (the active_branch session entry)
 // and /switch's load-time projection (markers swallowed, orphans repaired).
 // ---------------------------------------------------------------------------
-import { SUMMARY_MARKER } from "@wudao/core";
+import { SUMMARY_MARKER } from "@wudao-org/core";
 
 describe("AgentDriver — M53 review: branch-aware resume", () => {
   it("resume after a restart walks the RECORDED branch, not the flattened file", async () => {

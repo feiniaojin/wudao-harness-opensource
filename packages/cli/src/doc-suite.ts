@@ -54,7 +54,7 @@
 //
 // ★红线（09-09 用户令，逐字）：「注意，开发、测试过程禁止删除用户文件/
 // 文件夹。」——本模块零文件副作用，纯构造与名册。
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // —— 名册构造的十七 import（236 的十二自 tools.ts 迁入，注释链随迁；
 // ω99-238 两枚 + ω99-256 两枚 + ω99-263 一枚部件面 import 附后）——
 // ω99-123: make_xlsx — the zero-dependency real-file face (stored-zip xlsx).

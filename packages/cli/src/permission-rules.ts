@@ -3,8 +3,8 @@
 // answer family, session-rule derivation, the bypass-immune protected/credential
 // detections, path normalization, rule matching, and the in-memory session
 // allowlist. Pure functions + const rosters; no IO.
-import type { PermissionDecision } from "@wudao/core";
-import { globToRegex } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
+import { globToRegex } from "@wudao-org/core";
 import { commandArityRule, commandHeadTokens } from "./permission-arity.js";
 import { FILE_EDIT_TOOLS, FILENAME_KEY_TOOLS } from "./permission-modes.js";
 

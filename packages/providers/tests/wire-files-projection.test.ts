@@ -6,8 +6,8 @@
 // builder; anthropic/responses project at the same request-build point —
 // unlike images there is nothing to refuse, text rides every wire).
 import { describe, it, expect } from "vitest";
-import type { ModelInput, FileBlock } from "@wudao/core";
-import { offloadRequestFiles, fileVisibleRelPath } from "@wudao/core";
+import type { ModelInput, FileBlock } from "@wudao-org/core";
+import { offloadRequestFiles, fileVisibleRelPath } from "@wudao-org/core";
 import { createOpenAICompatibleProvider, serializePrompt } from "../src/index.js";
 import { createAnthropicProvider } from "../src/anthropic.js";
 import { createResponsesProvider } from "../src/responses.js";

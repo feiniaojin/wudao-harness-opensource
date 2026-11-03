@@ -7,7 +7,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { toModelToolDefinition, type ModelClient, type PermissionDecision, type Tool } from "@wudao/core";
+import { toModelToolDefinition, type ModelClient, type PermissionDecision, type Tool } from "@wudao-org/core";
 import { resolveTerminalEnabled } from "../src/misc-config.js";
 import {
   terminalToolsFor, closeTerminalTools, setTerminalRuntimeEnabled, terminalRuntimeEnabled,

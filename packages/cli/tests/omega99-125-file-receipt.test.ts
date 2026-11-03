@@ -5,8 +5,8 @@
 // lands it on the tool history entry as `file` (errors never carry it;
 // absent fields keep old history byte-identical on the wire).
 import { describe, expect, it, vi } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions } from "../src/driver/agent-driver.js";

@@ -9,9 +9,9 @@ import { join } from "node:path";
 import { buildToolSet } from "../src/tools.js";
 import { createScheduleDaemon, createScheduleTools } from "../src/schedules.js";
 import { decidePermission } from "../src/permission.js";
-import { serializePrompt } from "@wudao/providers";
-import { toModelToolDefinition } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { serializePrompt } from "@wudao-org/providers";
+import { toModelToolDefinition } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 
 let ws: string;
 beforeEach(async () => {

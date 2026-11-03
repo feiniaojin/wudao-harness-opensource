@@ -5,8 +5,8 @@
 // loadHistory swap is immediately visible. This is the data face of the web
 // StatusBar's ctx hover; it never rides the permission pipeline (a data op).
 import { describe, it, expect, vi } from "vitest";
-import { buildTool, createScriptedModel, toModelToolDefinition } from "@wudao/core";
-import type { AgentMessage } from "@wudao/core";
+import { buildTool, createScriptedModel, toModelToolDefinition } from "@wudao-org/core";
+import type { AgentMessage } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";

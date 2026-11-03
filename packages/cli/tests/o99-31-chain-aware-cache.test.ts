@@ -12,7 +12,7 @@
 // tag = side. Side rows now record usage + forward onUsage (the cost
 // ledger's channel — the ω99-8b red line) and touch NO chain state.
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
 import { createCacheTrackingModel, type ContextWindowInfo } from "../src/cache.js";
 
 function fakeModel(usages: readonly ModelUsage[]): { model: ModelClient; inputs: ModelInput[] } {

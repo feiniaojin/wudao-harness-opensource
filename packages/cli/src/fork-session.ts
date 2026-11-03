@@ -19,7 +19,7 @@
 import { copyFile, mkdir, readFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { newSessionId } from "@wudao/core";
+import { newSessionId } from "@wudao-org/core";
 
 /** Fresh fork id — the core UUIDv7 factory, same seam as every other
  *  session id (ω99-54; there was never a `fork-` prefix convention — the

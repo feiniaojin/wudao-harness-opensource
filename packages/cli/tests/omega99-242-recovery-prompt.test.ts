@@ -8,9 +8,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readFileSync as readSrc } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { AgentMessage, SessionEntry, Tool } from "@wudao/core";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AgentMessage, SessionEntry, Tool } from "@wudao-org/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import {
   buildRecoveryPrompt,
   recoveryCompletedList,

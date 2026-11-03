@@ -26,9 +26,9 @@
 // 与上方声明同款）；②提案 create/update 过 store 的块档门（凭据值/指令
 // 覆盖形状未入库即拦，回执行诚实标注 × blocked——整案拒绝纪律不变：单条
 // 被拦只丢那一条的落地，其余 edits 照常执行并各自留痕）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { randomBytes } from "node:crypto";
-import type { AgentMessage, ModelClient } from "@wudao/core";
+import type { AgentMessage, ModelClient } from "@wudao-org/core";
 import { openMemoryStore, openSessionMemoryStore, MEMORY_MAX_CONTENT_CHARS, isHeldOutEntry } from "./store.js";
 import type { MemoryKind, MemoryStore, MemoryEntry } from "./store.js";
 import { appendRefinementAuditAt } from "./refinements.js";

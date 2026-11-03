@@ -4,8 +4,8 @@
 // and the driver's startRun notice (exactly one per session, kill-switch
 // gated). Pure + scripted — no network, no real model.
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput, ModelUsage } from "@wudao/core";
-import { createScriptedModel } from "@wudao/core";
+import type { ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
+import { createScriptedModel } from "@wudao-org/core";
 import { createCacheTrackingModel } from "../src/cache.js";
 import {
   COLD_CACHE_POLICIES,

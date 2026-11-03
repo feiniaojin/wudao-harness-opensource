@@ -10,9 +10,9 @@ import { render } from "ink-testing-library";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp, HistoryItem } from "../src/tui/app.js";
 import { FileCard, fileIconOf, formatKb } from "../src/tui/file-card.js";
 

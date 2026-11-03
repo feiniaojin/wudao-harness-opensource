@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, readdir, readFile, realpath, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 import { crc32 } from "../src/doc-zip.js";
 import { extractFileReceipt } from "../src/driver/file-receipt.js";
 import {

@@ -28,8 +28,8 @@ import { smartZip, unzipEntriesWithMeta } from "./doc-zip.js";
 import type { SmartZipEntry, ZipEntry } from "./doc-zip.js";
 import { validateDocDeck, slideXml } from "./doc-pptx.js";
 import type { DocSlide } from "./doc-pptx.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 

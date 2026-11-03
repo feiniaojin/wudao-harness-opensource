@@ -10,9 +10,9 @@
 // money never enters a float here.
 import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fetchProviderBalance } from "@wudao/providers";
-import type { ProviderBalance } from "@wudao/providers";
-import { parseApiKeyPool } from "@wudao/providers";
+import { fetchProviderBalance } from "@wudao-org/providers";
+import type { ProviderBalance } from "@wudao-org/providers";
+import { parseApiKeyPool } from "@wudao-org/providers";
 import { loadEffectiveProfiles } from "../provider-registry.js";
 import { readCredentialsFileSync } from "../credentials.js";
 

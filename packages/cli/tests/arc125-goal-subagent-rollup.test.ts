@@ -6,7 +6,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { GenericSessionEntry } from "@wudao/core";
+import type { GenericSessionEntry } from "@wudao-org/core";
 import { createGoalRuntime } from "../src/goal-runtime.js";
 import { subagentEventWithUsage } from "../src/agents/task-tool-support.js";
 import type { GoalRuntime } from "../src/goal-runtime.js";

@@ -2,19 +2,19 @@
 // system prompt + FULL tool array + message snapshot and appends one
 // `[subagent task]` brief, so its first request is a byte-level EXTENSION of
 // the parent's last request. All byte-prefix assertions go through the one
-// canonical serializer exported by @wudao/providers (core test-only
+// canonical serializer exported by @wudao-org/providers (core test-only
 // devDependency). The default (isolated) subagent semantics are unchanged.
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { serializePrompt } from "../src/index.js";
-import { runAgentLoop } from "@wudao/core";
-import { createReadFileTool } from "@wudao/core";
-import { createTaskTool } from "@wudao/core";
-import { BUILTIN_SUBAGENT_TYPES, runSubagent } from "@wudao/core";
-import { createScriptedModel } from "@wudao/core";
-import type { LoopEvent, Terminal } from "@wudao/core";
-import type { ModelClient, ModelInput } from "@wudao/core";
+import { runAgentLoop } from "@wudao-org/core";
+import { createReadFileTool } from "@wudao-org/core";
+import { createTaskTool } from "@wudao-org/core";
+import { BUILTIN_SUBAGENT_TYPES, runSubagent } from "@wudao-org/core";
+import { createScriptedModel } from "@wudao-org/core";
+import type { LoopEvent, Terminal } from "@wudao-org/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
 import type { AgentMessage, AgentState } from "../src/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));

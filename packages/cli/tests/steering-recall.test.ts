@@ -6,7 +6,7 @@
 // 对垒在位者：mid-run take()/结算 drain 只消费不回退；简单面的 parked chips
 // 放弃钮只管客户端本地离线队列（App state），从未覆盖服务端 steering 队列。
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput } from "@wudao/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
 import { createAgentDriver, type AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 import { parseRecallCommand, recallTargetOf } from "../src/tui/recall-core.js";

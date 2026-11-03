@@ -7,9 +7,9 @@ import { render } from "ink-testing-library";
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp, LiveArea } from "../src/tui/app.js";
 import { TEAMMATE_PREAMBLE } from "../src/teams/runtime.js";
 import { loadSkills, buildSkillInvocationMessage } from "../src/skills.js";
@@ -321,7 +321,7 @@ describe("WudaoApp", () => {
     // onUsage channel; the TUI tracks it on the wrapped model.
     let call = 0;
     const model = {
-      async generate(input: import("@wudao/core").ModelInput) {
+      async generate(input: import("@wudao-org/core").ModelInput) {
         call += 1;
         input.onUsage?.(
           call === 1

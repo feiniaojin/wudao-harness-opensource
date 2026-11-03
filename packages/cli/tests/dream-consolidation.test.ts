@@ -8,8 +8,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, AssistantMessage } from "@wudao/core";
-import { toModelToolDefinition } from "@wudao/core";
+import type { ModelClient, ModelInput, AssistantMessage } from "@wudao-org/core";
+import { toModelToolDefinition } from "@wudao-org/core";
 import { createSessionRegistry } from "../src/agents/index.js";
 import { openMemoryStore } from "../src/memory/index.js";
 import type { MemoryEntry } from "../src/memory/store.js";
@@ -33,8 +33,8 @@ import {
 import { createMemoryWriteTool, createMemorySearchTool } from "../src/memory/tools.js";
 import { runMemoryCommand, type MemoryDreamContext } from "../src/memory/commands.js";
 import { setSessionMemorySettings } from "../src/memory/store.js";
-import { runAgentLoop, type AgentState } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { runAgentLoop, type AgentState } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 
 let dir: string;
 

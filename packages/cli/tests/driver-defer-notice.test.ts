@@ -6,8 +6,8 @@
 // nothing crossed the wire. Deterministic: scripted model calls load_tools
 // once, a shouldDefer stub tool rides the defer controller, no workspace.
 import { describe, it, expect } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 

@@ -4,7 +4,7 @@
 // trust class as the user typing in a terminal (CC's `!` semantics). The
 // captured output is echoed (capped) and the command+output prefix the NEXT
 // submitted user message as context, so the model sees what the user saw.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { spawn } from "node:child_process";
 
 /** Captured-output cap (spec: stdout 截 16k). */

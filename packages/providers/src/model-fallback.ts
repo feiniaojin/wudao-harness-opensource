@@ -13,7 +13,7 @@
 //     loop 的 usage-anchor 守卫看到模型切换即弃锚。
 // 红线：fallback 只在失败路径生效，请求序列化零触碰（前缀缓存字节稳定）——
 // 换模型只换 leg 配置，绝不改写请求字节。
-import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao-org/core";
 import type { ProviderConfig } from "./config.js";
 // r1b A1: 判定从 openai-compatible 下沉到 model-failure —— 消除
 // openai-compatible ↔ model-fallback 的 import 环（语义零变，同一函数体）。

@@ -118,11 +118,11 @@ async function seaHealthy() {
 
 async function buildPackages() {
   log("[sea] building workspace packages (core → providers → browser → server → cli → web)");
-  // @wudao/browser (ω99-117): the cli package imports it, so its dist must
+  // @wudao-org/browser (ω99-117): the cli package imports it, so its dist must
   // exist before the cli's tsc runs. The root `pnpm build` order already had
   // browser before cli; this list had silently relied on a stale browser/dist
   // (fresh checkouts failed TS2307 until this entry — same order as root).
-  for (const pkg of ["@wudao/core", "@wudao/providers", "@wudao/browser", "@wudao/server", "wudao-harness", "@wudao/web"]) {
+  for (const pkg of ["@wudao-org/core", "@wudao-org/providers", "@wudao-org/browser", "@wudao-org/server", "wudao-harness", "@wudao-org/web"]) {
     run("pnpm", ["--filter", pkg, "run", "build"], { cwd: REPO_ROOT });
   }
 }

@@ -18,8 +18,8 @@
 //
 // Constraints (照抄 CC): one team per session, no team nesting, no
 // background subagents under teammates, resume does not restore teammates.
-import { runSubagent, toSubagentType, intersectToolNames, buildTool, createJsonlSessionStore, newSessionId } from "@wudao/core";
-import type { AgentHooks, ChildSessionOptions, LoopOptions, ModelClient, Tool } from "@wudao/core";
+import { runSubagent, toSubagentType, intersectToolNames, buildTool, createJsonlSessionStore, newSessionId } from "@wudao-org/core";
+import type { AgentHooks, ChildSessionOptions, LoopOptions, ModelClient, Tool } from "@wudao-org/core";
 import { resolveRole, roleToolNames, ORCHESTRATION_TOOL_NAMES, type ModelOverrides } from "../agents/contract.js";
 import { KERNEL_POLICY } from "../kernel-policy.js";
 import { planModeDenied, buildPlanPrompt, buildPlanRevisionPrompt, buildPlanExecutionPrompt } from "../plan.js";

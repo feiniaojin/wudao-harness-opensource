@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runAgentLoop, STOP_BLOCK_CAP, createJsonlSessionStore, type AgentState, type AssistantMessage, type LoopOptions, type ModelClient, type Terminal } from "@wudao/core";
+import { runAgentLoop, STOP_BLOCK_CAP, createJsonlSessionStore, type AgentState, type AssistantMessage, type LoopOptions, type ModelClient, type Terminal } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";

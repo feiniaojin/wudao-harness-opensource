@@ -3,7 +3,7 @@
 // （engine.ts 的选定序：WebKit 优先，缓存 Chromium 兜底）。每测试独立
 // server + 浏览器上下文（隔离）；浏览器进程每 worker 共享一次发射。
 //
-// server 的解析纪律与 playwright 相同：@wudao/server 不在 web 的依赖里
+// server 的解析纪律与 playwright 相同：@wudao-org/server 不在 web 的依赖里
 // （PB-3 零新依赖），createRequire 挂到 server 包目录直取其 dist。
 import { createRequire } from "node:module";
 import { existsSync } from "node:fs";
@@ -16,7 +16,7 @@ import { launchEngine, type PwBrowser, type PwContext, type PwPage } from "./eng
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB_ROOT = join(HERE, "..", "..");
 
-/** @wudao/server 的最小结构面（createUiServer 的返回 + 构造项）。 */
+/** @wudao-org/server 的最小结构面（createUiServer 的返回 + 构造项）。 */
 interface UiServer {
   readonly port: number;
   readonly token: string;

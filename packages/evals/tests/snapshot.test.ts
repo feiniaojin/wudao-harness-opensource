@@ -7,13 +7,13 @@
 // prompt-assembly regression net.
 //
 // Record (refresh the fixtures; needs the dev key):
-//   WUDAO_SNAPSHOT=record pnpm --filter @wudao/evals test -- snapshot
+//   WUDAO_SNAPSHOT=record pnpm --filter @wudao-org/evals test -- snapshot
 // Records against the REAL provider, writes
 // packages/evals/snapshots/<name>/{requests.json,transcript.jsonl}, then
 // immediately replays the fresh fixture in-memory — a recording that cannot
 // replay clean keylessly fails the record run.
 import { describe, it, expect } from "vitest";
-import { resolveProviderConfigResult } from "@wudao/providers";
+import { resolveProviderConfigResult } from "@wudao-org/providers";
 import { loadEnvFrom } from "../src/env.js";
 import {
   runSnapshotScenario,
@@ -98,7 +98,7 @@ for (const scenario of snapshotScenarios) {
           // regression (snap-01/02 replay clean). Until a win32-recorded
           // fixture exists, the byte-exact replay of THIS scenario is a
           // posix-recorded-fixture contract; refresh on windows with:
-          //   WUDAO_SNAPSHOT=record pnpm --filter @wudao/evals test -- snapshot
+          //   WUDAO_SNAPSHOT=record pnpm --filter @wudao-org/evals test -- snapshot
           if (scenario.name === "snap-03-compaction" && process.platform !== "darwin") return;
           const fixture = await loadSnapshotFixture(scenario.name);
           // M71 §2, fixture side: the committed bytes themselves stay clean.

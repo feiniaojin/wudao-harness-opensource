@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { buildRunPlan, buildUiBootPlan, formatOneShotResumeLine, lastModelState, modelStateDivergence, recordModelState } from "../src/run.js";
 import { WIZARD_PLACEHOLDER_KEY } from "../src/credentials.js";
 

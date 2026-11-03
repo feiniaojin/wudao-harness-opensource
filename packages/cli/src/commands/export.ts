@@ -10,7 +10,7 @@
 // alone (`html` or any *.html path) — the callers stay format-blind.
 import { mkdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { AgentMessage } from "@wudao/core";
+import type { AgentMessage } from "@wudao-org/core";
 
 /** The exportable subset of the history channel (structural — both the
  *  driver's HistoryEntry and the REPL's mapped messages fit). */

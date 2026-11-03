@@ -19,7 +19,7 @@ import { consultTaskHook, lastBoardItems, parseTodoItems, todoTransitionDelta, t
 export type { TaskHookDecision, TaskTransitionItems } from "./todo-transition.js";
 import { createDeferController } from "./defer.js";
 // PB-1 探针基础设施：loop 两挂载点（transition 转发 + 工具装饰）；关=原样透传。
-import { probeAgentLoop, probeTools } from "./probe.js";
+import { probeAgentLoop, probeTools, type ProbeMountOpts } from "./probe.js";
 // 借鉴弧 δ（penguin 367ab084 思想）— 运行中工具调用转后台的端口族。
 import { BACKGROUNDED_TOOL_RESULT, type DetachedCall, type ToolDetachPort } from "./detach.js";
 // 拆分运动（借鉴弧 δ 顺带件）：纯合成层/赛跑机器外提至 loop-synthetics.ts
@@ -636,6 +636,11 @@ export interface LoopOptions {
   // the seam the external-change prober rides (it may push into metaNotes).
   // Observer-only: failures are isolated and can never break the run.
   readonly beforeModelCall?: (turn: number) => void | Promise<void>;
+  // 137（2026-11-02 监督者模式三件）：本 run 的会话身份——探针挂载点
+  //（agent.turn/retry/steer 与 tool.start/finish）据此给 ProbeEvent 盖
+  // sessionId 章，多会话/多车道并发时监督者可归并。缺省缺省（单会话进程
+  // 与既有调用方零变化）；仅影响探针事件的元数据，不影响任何运行行为。
+  readonly sessionId?: string;
   // M32 §3 — MetaNote channel (steering's sibling seam): system-class notes
   // (file_changed diffs, gate-style notices) drained after steering, just
   // before the model input is built. Each drained text is appended into the
@@ -901,11 +906,14 @@ export function runAgentLoop(
   state: AgentState, model: ModelClient, options: LoopOptions = {},
 ): AsyncGenerator<LoopEvent, Terminal> {
   // PB-1 探针缝：transition 经 probeAgentLoop 转发为 agent.*（关=原样透传）。
-  return probeAgentLoop(runAgentLoopBody(state, model, options));
+  // 137：sessionId 在此下发（agent.* 与 loop 内 tool.* 两处挂载同章）。
+  const probeOpts: ProbeMountOpts | undefined = options.sessionId !== undefined ? { sessionId: options.sessionId } : undefined;
+  return probeAgentLoop(runAgentLoopBody(state, model, options, probeOpts), probeOpts);
 }
 
 async function* runAgentLoopBody(
   state: AgentState, model: ModelClient, options: LoopOptions = {},
+  probeOpts?: ProbeMountOpts,
 ): AsyncGenerator<LoopEvent, Terminal> {
   const maxTurns = options.maxTurns ?? DEFAULT_MAX_TURNS;
 
@@ -931,7 +939,7 @@ async function* runAgentLoopBody(
   // controller is a passthrough when no tool defers.
   const defer = createDeferController(state.tools);
   // PB-1 探针缝（工具面）：executeToolCall 查找表装饰（关=原数组原引用）。
-  const execTools = probeTools(defer.effectiveTools());
+  const execTools = probeTools(defer.effectiveTools(), probeOpts);
 
   // ω-1b — the run's two tool-result guards, one seam around executeToolCall
   // shared by BOTH execution paths (fan-out and sequential):

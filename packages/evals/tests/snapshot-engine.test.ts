@@ -7,7 +7,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { createReadFileTool, type Tool } from "@wudao/core";
+import { createReadFileTool, type Tool } from "@wudao-org/core";
 import {
   runSnapshotScenario,
   writeSnapshotFixture,

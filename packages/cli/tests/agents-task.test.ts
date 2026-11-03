@@ -9,8 +9,8 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
-import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
-import { buildTool, createReadFileTool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { buildTool, createReadFileTool } from "@wudao-org/core";
 import { createAgentsTaskTool, createRegistryTools, createSessionRegistry, parseSessionParam, parseReportSchema } from "../src/agents/index.js";
 import { createFinalOutputTool, FINAL_OUTPUT_TOOL_NAME, FINAL_OUTPUT_OK } from "../src/agents/report-schema.js";
 import { canonicalJson } from "../src/workflow/structured-output.js";
@@ -276,7 +276,7 @@ describe("task tool — roles and roster", () => {
     const forkContext = {
       systemPrompt: "PARENT-SYS",
       tools: ALL_TOOLS,
-      messages: [{ role: "user", content: "parent prompt" }] as import("@wudao/core").AgentMessage[],
+      messages: [{ role: "user", content: "parent prompt" }] as import("@wudao-org/core").AgentMessage[],
     };
     const registry = createSessionRegistry();
     const task = createAgentsTaskTool({
@@ -491,7 +491,7 @@ describe("buildToolSet integration (tools.ts wiring)", () => {
       { role: "assistant", content: "child answer" },
       { role: "assistant", content: "main answer" },
     ]);
-    const seen: import("@wudao/core").AgentMessage[] = [];
+    const seen: import("@wudao-org/core").AgentMessage[] = [];
     const tools = buildToolSet({
       workspaceRoot: root,
       model,

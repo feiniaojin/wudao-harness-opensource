@@ -15,9 +15,9 @@
 // classifier consumes the counted-prompt GROWTH (promptTokens deltas the
 // wrapper already observes) — no second serializer, no wire change.
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
 import { createCacheTrackingModel, detectCacheBreak } from "../src/cache.js";
-import { serializePrompt } from "@wudao/providers";
+import { serializePrompt } from "@wudao-org/providers";
 
 function fakeModel(usages: readonly ModelUsage[]): ModelClient {
   let i = 0;

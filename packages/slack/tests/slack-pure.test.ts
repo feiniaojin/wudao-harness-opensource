@@ -9,7 +9,7 @@ import { normalizeSlackEvent, stripMentions, isMentioned, formatThreadReplies, t
 import { disableInteractiveTools, createSlackRefusalAskUserTool, SLACK_ASK_USER_REFUSAL, INTERACTIVE_TOOL_NAMES } from "../src/tools.js";
 import { runSlackDoctor, formatSlackDoctorReport, tokenClass } from "../src/doctor.js";
 import { DEFAULT_SLACK_SETTINGS } from "../src/settings.js";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 
 describe("normalizeSlackEvent", () => {
   it("keeps human text messages, stripping mention tokens", () => {

@@ -9,7 +9,7 @@ import { mkdtemp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // 写面原语（deck 夹具）。
 import { buildPptx } from "../src/doc-pptx.js";
 import type { DocDeck } from "../src/doc-pptx.js";

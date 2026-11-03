@@ -1,4 +1,4 @@
-// @wudao/web — the WS protocol client (M43-B). This file is the web package's
+// @wudao-org/web — the WS protocol client (M43-B). This file is the web package's
 // ONLY knowledge of the server: every type below hand-mirrors a frame or op
 // shape documented in packages/server/PROTOCOL.md (WS protocol v1), and
 // WudaoClient is a pure consumer of that contract —
@@ -16,6 +16,7 @@
 // The class doubles as the UI store (subscribe/getSnapshot for
 // useSyncExternalStore); snapshots are referentially stable until a change.
 import type { SlashCommandInfo } from "./slash.js";
+import type { SessionAnatomyResult } from "./protocol-core.js";
 
 // ---------------------------------------------------------------------------
 // Mirrored contract types (PROTOCOL.md)
@@ -227,6 +228,10 @@ export class WudaoClient {
     readonly setTimeout: (fn: () => void, ms: number) => unknown;
     readonly clearTimeout: (handle: unknown) => void;
   };
+  // 139：探针帧直通订阅（高频通道，独立于快照 notify）。
+  private probeListeners = new Set<(event: unknown) => void>();
+  // 140：LoopEvent 帧直通订阅（同上，独立于快照 notify）。
+  private loopListeners = new Set<(event: unknown, at: number) => void>();
   private ws: WebSocketLike | null = null;
   private nextId = 1;
   /** ω-3a: retryable mutations keep their op payload here, so a drop can
@@ -460,7 +465,19 @@ export class WudaoClient {
       this.notify();
       return;
     }
-    if (f.t === "event") return; // the raw LoopEvent debug channel (v1: unused)
+    if (f.t === "event") {
+      // 140：原始 LoopEvent 直通（监控面板的实时时间线——思考流/工具入参
+      // 出参/轮界）。不进快照（高频），onLoopEvent 订阅者自取。
+      const ef = f as { event?: unknown; at?: number };
+      if (ef.event !== undefined) for (const cb of [...this.loopListeners]) cb(ef.event, typeof ef.at === "number" ? ef.at : Date.now());
+      return;
+    }
+    if (f.t === "probe") {
+      // 139：高频直通——不建快照、不触发 notify（仪表盘自订阅）。
+      const ev = (f as { event?: unknown }).event;
+      if (ev !== undefined) for (const cb of [...this.probeListeners]) cb(ev);
+      return;
+    }
     if (f.t === "result") {
       const r = f as { id: number; ok?: unknown; err?: string };
       const p = this.pendingOps.get(r.id);
@@ -863,6 +880,43 @@ export class WudaoClient {
   /** workspace-ux B1: the dual-root snapshot (panel vs agent root). */
   agentRootStatus(): Promise<AgentRootStatusResult> {
     return this.sendOp<AgentRootStatusResult>({ op: "agentRootStatus" });
+  }
+
+  // ── 139 探针仪表盘面（PROTOCOL "probeStream"/"probeRecent"/"probeStats"/
+  //    "probeEnable"）。事件本体走 {t:"probe"} 帧 → onProbe 订阅（不进快照，
+  //    高频通道不给 React 快照面加抖动）。老 server 拒答 → 调用方降级。
+  /** 订阅探针流（cat 缺省=全部五类；"off"=退订——关页停流）。 */
+  probeStream(cat?: string): Promise<boolean> {
+    return this.sendOp<boolean>({ op: "probeStream", ...(cat !== undefined ? { cat } : {}) });
+  }
+  /** 环形缓冲尾拉（backfill；limit 1..1000）。 */
+  probeRecent(cat?: string, limit?: number): Promise<readonly unknown[]> {
+    return this.sendOp<readonly unknown[]>({ op: "probeRecent", ...(cat !== undefined ? { cat } : {}), ...(limit !== undefined ? { limit } : {}) });
+  }
+  /** 统计面（各类目累计计数 + 最近时间戳）。 */
+  probeStats(): Promise<Record<string, unknown>> {
+    return this.sendOp<Record<string, unknown>>({ op: "probeStats" });
+  }
+  /** 139：运行时翻转探针总闸（agent.* 与 tool.* 下一 run 起；model.call 需
+   *  带 WUDAO_PROBE=on 启动——回执字段照实说明）。 */
+  probeEnable(on: boolean): Promise<{ enabled: boolean; modelCallNeedsRestart: boolean }> {
+    return this.sendOp<{ enabled: boolean; modelCallNeedsRestart: boolean }>({ op: "probeEnable", on });
+  }
+  /** {t:"probe"} 帧的直通订阅（高频：不进快照）。返回退订。 */
+  onProbe(cb: (event: unknown) => void): () => void {
+    this.probeListeners.add(cb);
+    return () => this.probeListeners.delete(cb);
+  }
+  /** 140 — 会话解剖（系统提示词 + 消息链全量）。老 server 拒答 → 调用方
+   *  降级为「暂无数据」。 */
+  sessionAnatomy(): Promise<SessionAnatomyResult> {
+    return this.sendOp<SessionAnatomyResult>({ op: "sessionAnatomy" });
+  }
+  /** 140 — {t:"event"} 原始 LoopEvent 帧的直通订阅（思考流/工具入参出参/
+   *  轮界，137 起带 at）。高频：不进快照。返回退订。 */
+  onLoopEvent(cb: (event: unknown, at: number) => void): () => void {
+    this.loopListeners.add(cb);
+    return () => this.loopListeners.delete(cb);
   }
 
   /** workspace-ux B2: switch the agent's workspace root — idle applies now

@@ -6,8 +6,8 @@
 //      CI 已装时命中）。这是 PB-3 的首选引擎；本仓 pin 的 1.63 在 macOS 12
 //      无 webkit 构建（registry 表里 mac12 = void），这类机器落到 ③。
 //   ③ 机器的 playwright 缓存里最新的 chromium-*（Chrome-for-Testing）——
-//      与 @wudao/browser 包为产品准备的内核同族。
-// 依赖纪律：playwright-core 只在 @wudao/browser 的依赖树里（PB-3 不新增
+//      与 @wudao-org/browser 包为产品准备的内核同族。
+// 依赖纪律：playwright-core 只在 @wudao-org/browser 的依赖树里（PB-3 不新增
 // 依赖）。pnpm 隔离下本包解析不到它 —— createRequire 挂到 browser 包目录
 // 解析（node 的语义解析会走 packages/browser/node_modules）。
 import { createRequire } from "node:module";
@@ -51,7 +51,7 @@ type PlaywrightModule = {
   chromium: { launch(opts?: Record<string, unknown>): Promise<PwBrowser> };
 };
 
-/** playwright-core 经 @wudao/browser 的依赖树解析（无新依赖的纪律面）。 */
+/** playwright-core 经 @wudao-org/browser 的依赖树解析（无新依赖的纪律面）。 */
 export function loadPlaywright(): PlaywrightModule {
   const req = createRequire(join(BROWSER_PACKAGE_ROOT, "package.json"));
   return req("playwright-core") as PlaywrightModule;

@@ -12,9 +12,9 @@ import { join } from "node:path";
 import { buildSystemPrompt } from "../src/prompt.js";
 import { livePermissionRequestHook } from "../src/permission.js";
 import type { PermissionRequestHookFn, StaticRuleDecide } from "../src/permission.js";
-import { createScriptedModel } from "@wudao/core";
-import type { AssistantMessage, AgentHooks, Tool } from "@wudao/core";
-import { buildTool } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
+import type { AssistantMessage, AgentHooks, Tool } from "@wudao-org/core";
+import { buildTool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import {

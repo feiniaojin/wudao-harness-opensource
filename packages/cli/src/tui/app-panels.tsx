@@ -1,12 +1,12 @@
 // 拆分运动 C：从 app.tsx 原样外提的展示组件 + 纯助手族
 //（ClearConfirm、HistoryItem、LiveArea、reasoning/answer 渲染帽、会话 id 派生）。
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { useRef } from "react";
 import type * as React from "react";
 import { randomUUID } from "node:crypto";
 import { Box, Text, useInput } from "ink";
-import { TODO_LINE_MARKS } from "@wudao/core";
-import type { AskUserOption } from "@wudao/core";
+import { TODO_LINE_MARKS } from "@wudao-org/core";
+import type { AskUserOption } from "@wudao-org/core";
 import type { AskAnswer } from "../permission.js";
 import { formatMs } from "../driver/agent-driver.js";
 import { FileCard } from "./file-card.js";
@@ -52,7 +52,7 @@ export interface PendingAsk {
   askReview?: string;
   /** ω99-318: the visual-spoof inspection payload (codepoint badges + URL
    *  true-targets) — reveal-not-block decoration above the question. */
-  spoof?: import("@wudao/core").SpoofInspection;
+  spoof?: import("@wudao-org/core").SpoofInspection;
   resolve: (answer: AskAnswer) => void;
 }
 
@@ -147,6 +147,12 @@ export function HistoryItem({ entry }: { entry: HistoryEntry }): React.JSX.Eleme
     case "assistant":
       return (
         <Box flexDirection="column">
+          {/* 136：分段思考进转录后终端面同样要看得见 —— 多行折叠成末行（与
+              直播面 collapseReasoning 同一契约，OOM 帽同源）；空 reasoning
+              零渲染，老历史字节不变。 */}
+          {entry.reasoning !== undefined && entry.reasoning !== "" ? (
+            <Text dimColor>{collapseReasoning(entry.reasoning)}</Text>
+          ) : null}
           <Markdown source={entry.text} />
           {/* 0.3.15（用户需求：LLM 回复耗时展示）：最终回复的自身生成耗时
               （最后一次 answering 调用的 durationMs），dim 一行；provider 不

@@ -17,8 +17,8 @@ import {
   planConfirmApproves,
 } from "../src/plan.js";
 import { parseReplCommand } from "../src/repl.js";
-import { classifyAuthzMessage, buildAuthzExcerpt, renderAskDigest, AUTHZ_SYNTHETIC_MARKERS, nodeKey } from "@wudao/core";
-import type { AgentMessage } from "@wudao/core";
+import { classifyAuthzMessage, buildAuthzExcerpt, renderAskDigest, AUTHZ_SYNTHETIC_MARKERS, nodeKey } from "@wudao-org/core";
+import type { AgentMessage } from "@wudao-org/core";
 
 describe("PLAN_MODE_TOOLS (M37 §1 whitelist)", () => {
   it("contains exactly the read-only lane + the plan board itself", () => {

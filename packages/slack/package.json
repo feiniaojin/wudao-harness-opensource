@@ -1,5 +1,5 @@
 {
-  "name": "@wudao/slack",
+  "name": "@wudao-org/slack",
   "version": "0.3.26",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@slack/bolt": "^4.4.0",
-    "@wudao/core": "workspace:*",
-    "@wudao/providers": "workspace:*",
+    "@wudao-org/core": "workspace:*",
+    "@wudao-org/providers": "workspace:*",
     "wudao-harness": "workspace:*"
   },
   "devDependencies": {

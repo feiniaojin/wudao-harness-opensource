@@ -39,7 +39,7 @@ import {
   type ModelInput,
   type Terminal,
   type Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { summarizeToolCall } from "wudao-harness/log";
 import type { EvalDefinition } from "../runner.js";

@@ -12,7 +12,7 @@
 // rejected_proposals）、被忽略不再烦人、已激活/已撤销的留档不重复。
 // kill switch 沿用 Dream 的 env 形（WUDAO_IMPROVE=off / WUDAO_NO_IMPROVE=1）。
 // fail-open：台账/提案仓不可读 → 静默跳过，绝不影响它所搭的收束路径。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { failureFingerprintPath, readFailureEvents, foldFailureManifest, type FailureRecord } from "../failure-fingerprints.js";
 import { hasRecordForFingerprint, listImprovements, nextImprovementId, writeImprovement, type ImprovementRecord } from "./store.js";
 

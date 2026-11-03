@@ -21,7 +21,7 @@ import {
   PERSISTENT_SHELL_ORPHAN_GRACE_MS,
   type PersistentShellRecord,
   type Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 

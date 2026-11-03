@@ -47,8 +47,8 @@ import {
   type ModelInput,
   type Terminal,
   type Tool,
-} from "@wudao/core";
-import { createOpenAICompatibleProvider, serializePrompt } from "@wudao/providers";
+} from "@wudao-org/core";
+import { createOpenAICompatibleProvider, serializePrompt } from "@wudao-org/providers";
 import {
   loadContextRules,
   createContextRuleMatcher,

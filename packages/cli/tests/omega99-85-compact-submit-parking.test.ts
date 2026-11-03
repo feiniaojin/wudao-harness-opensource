@@ -16,7 +16,7 @@
 //   case4  steering ablated (--no-steering) — the park is refused with the
 //          same notice the busy arm uses; queue untouched, no run.
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions } from "../src/driver/agent-driver.js";

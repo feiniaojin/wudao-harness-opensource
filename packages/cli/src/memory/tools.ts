@@ -3,7 +3,7 @@
 // the gate, so §2's background review inherits it for free); `memory_search`
 // is the read-only lookup (the ONLY memory tool a child set carries). Both are
 // fail-closed buildTool tools; memory_write is deliberately NOT read-only.
-import { buildTool, type Tool } from "@wudao/core";
+import { buildTool, type Tool } from "@wudao-org/core";
 import type { MemoryStore, MemoryKind, MemoryScope } from "./store.js";
 import { tokenSet } from "../tokenize.js";
 

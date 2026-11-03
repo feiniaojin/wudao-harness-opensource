@@ -5,7 +5,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
 import { join } from "node:path";
-import { isProviderName } from "@wudao/providers";
+import { isProviderName } from "@wudao-org/providers";
 import { loadEffectiveProfiles } from "./provider-registry.js";
 import { loadSkillsUnderDir, parseSkillFrontmatter } from "./skills.js";
 import type { LoadedSkill } from "./skills.js";

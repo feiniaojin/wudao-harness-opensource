@@ -16,8 +16,8 @@
 // ARGUMENTS embed recorded tainted content (e.g. the model copying file-borne
 // "instructions" into a shell), the sidecar layer tags the classifier
 // input [untrusted] (sidecar.ts) so embedded instructions read as data.
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
-import type { ToolResultMessage } from "@wudao/core";
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
+import type { ToolResultMessage } from "@wudao-org/core";
 
 /** Excerpts shorter than this never match (trivial substrings are noise). */
 const EXCERPT_MIN_CHARS = 24;

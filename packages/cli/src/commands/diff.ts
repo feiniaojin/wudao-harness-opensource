@@ -7,7 +7,7 @@
 // first-class state, not an error. The git seam is injectable for tests.
 import { execFile } from "node:child_process";
 import { relative } from "node:path";
-import type { FileHistory, FileHistoryEntry } from "@wudao/core";
+import type { FileHistory, FileHistoryEntry } from "@wudao-org/core";
 
 /** One git invocation: resolves with stdout, rejects on a non-zero exit. */
 export type GitFn = (args: readonly string[]) => Promise<string>;

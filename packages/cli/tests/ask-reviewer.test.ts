@@ -4,8 +4,8 @@
 // breaker, prefix independence, and the funnel-4 relay rule. Deterministic:
 // scripted models, injected env, no network, no TTY, no live provider.
 import { describe, it, expect, beforeEach } from "vitest";
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, PermissionDecision } from "@wudao/core";
-import { buildAuthzExcerpt, renderAuthzExcerpt } from "@wudao/core";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, PermissionDecision } from "@wudao-org/core";
+import { buildAuthzExcerpt, renderAuthzExcerpt } from "@wudao-org/core";
 import { decorateChildGate } from "../src/ask-evidence.js";
 import type { AskContext } from "../src/ask-evidence.js";
 import {

@@ -152,8 +152,8 @@ describe("PB-2 probeStream（WS 帧转发）", () => {
     op(c.ws, 6, { op: "probeStream", cat: 42 });
     await until(() => [4, 5, 6].every((id) => result(c.frames, id) !== undefined), "three results");
     expect(result(c.frames, 4)?.ok).toBe(true);
-    expect(result(c.frames, 5)?.err).toBe("probeStream cat must be one of model|tool|ui|system|agent|* when present");
-    expect(result(c.frames, 6)?.err).toBe("probeStream cat must be one of model|tool|ui|system|agent|* when present");
+    expect(result(c.frames, 5)?.err).toBe("probeStream cat must be one of model|tool|ui|system|agent|*|off when present");
+    expect(result(c.frames, 6)?.err).toBe("probeStream cat must be one of model|tool|ui|system|agent|*|off when present");
     // 坏 cat 不动既有槽：先前 "*" 订阅仍全类别转发。
     bus.emit(ev("system", "sys.tick", 666));
     await until(() => probeFrames(c.frames).length === 1, "system frame through the * slot");
@@ -232,5 +232,55 @@ describe("PB-2 缺省零变化", () => {
     expect(probeFrames(c.frames)).toEqual([]);
     expect((result(c.frames, 34)?.ok as ProbeEventWire[]).length).toBe(2);
     c.ws.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 139 — probeStream off（关页停流）+ probeEnable（运行时总闸）。复用本文件
+// 既有夹具（busStub/authed/op/result/probeFrames/ev）。
+// ---------------------------------------------------------------------------
+describe("139 probeStream off / probeEnable", () => {
+  it('probeStream {cat:"off"} 退订：其后 emit 零 probe 帧；重订阅恢复', async () => {
+    const bus = busStub();
+    const { c } = await authed(bus);
+    op(c.ws, 1, { op: "probeStream", cat: "model" });
+    await until(() => result(c.frames, 1) !== undefined, "subscribe ack");
+    bus.emit(ev("model", "model.call", 111));
+    await until(() => c.frames.some((f) => f.t === "probe"), "probe frame");
+    expect(probeFrames(c.frames).length).toBe(1);
+    op(c.ws, 2, { op: "probeStream", cat: "off" });
+    await until(() => result(c.frames, 2) !== undefined, "off ack");
+    bus.emit(ev("model", "model.call", 222));
+    await until(() => c.frames.length > 0, "settle");
+    expect(probeFrames(c.frames).length).toBe(1); // 退订后零帧
+    op(c.ws, 3, { op: "probeStream" });
+    await until(() => result(c.frames, 3) !== undefined, "resubscribe ack");
+    bus.emit(ev("model", "model.call", 333));
+    await until(() => probeFrames(c.frames).length === 2, "frame after resubscribe");
+    c.ws.close();
+  });
+
+  it("probeEnable 翻 WUDAO_PROBE：回执带 modelCallNeedsRestart；非法 on 拒", async () => {
+    const prev = process.env.WUDAO_PROBE;
+    try {
+      delete process.env.WUDAO_PROBE;
+      const bus = busStub();
+      const { c } = await authed(bus);
+      op(c.ws, 1, { op: "probeEnable", on: true });
+      await until(() => result(c.frames, 1) !== undefined, "enable ack");
+      expect(result(c.frames, 1)?.ok).toEqual({ enabled: true, modelCallNeedsRestart: true });
+      expect(process.env.WUDAO_PROBE).toBe("on");
+      op(c.ws, 2, { op: "probeEnable", on: false });
+      await until(() => result(c.frames, 2) !== undefined, "disable ack");
+      expect((result(c.frames, 2)?.ok as { enabled: boolean }).enabled).toBe(false);
+      expect(process.env.WUDAO_PROBE).toBeUndefined();
+      op(c.ws, 3, { op: "probeEnable", on: "yes" as never });
+      await until(() => result(c.frames, 3) !== undefined, "bad on rejected");
+      expect(String((result(c.frames, 3) as { err?: string }).err)).toContain("probeEnable on must be a boolean");
+      c.ws.close();
+    } finally {
+      if (prev === undefined) delete process.env.WUDAO_PROBE;
+      else process.env.WUDAO_PROBE = prev;
+    }
   });
 });

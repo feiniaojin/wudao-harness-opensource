@@ -1,8 +1,8 @@
 // ω99 拆分运动 弧 B：computer 工具面的模块级 helper 族外提（ok/err 回执构造、
 // 视觉/选项缝类型、osascript 调用与失败分类、win32 执行层——原 tools.ts 模块级
 // 段逐字保留；tools.ts import 回用 + re-export 门面保公共面）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import type { ToolResult } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import type { ToolResult } from "@wudao-org/core";
 import {
   ACCESSIBILITY_GUIDE,
   PERM_MARKER_ACCESSIBILITY,

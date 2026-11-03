@@ -8,7 +8,7 @@
 // silently omit the readout (Reasonix: empty balance_url → (nil, nil)).
 // Money never enters a float: the API's amount STRINGS ride through verbatim,
 // untouched by arithmetic.
-import { truncateSafe } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core";
 
 export interface BalanceInfo {
   readonly currency: string;

@@ -100,8 +100,11 @@ describe("ω99-207 — B 反向：英文族归零 + dist 反查 + 计数 + 术�
     // 中文警语族）、misc-config.ts +14（settings 校验警示）、agent-driver.ts +3、
     // idle-seam.ts +2（headless 周期自治）、mission.ts +2——全部带 CJK，② 的
     // 英文族归零不受影响）。
-    // 131 弧 defer 闲时车道 +2（schedules.ts add 门口两拒行）。
-    expect(n).toBe(525);
+    // 131 弧 defer 闲时车道 +2（schedules.ts add 门口两拒行）→ 525。
+    // 记忆两库收敛弧（722df55e）随源演进：525 → 531（longterm-memory.ts +6
+    // ——settings 节点两行英文警语 + 拦截/写入/遗忘/设置四行中文警语；
+    // ② 的英文族归零只扫 hooks-config 家族与 settings-layer.ts，不受影响）。
+    expect(n).toBe(531);
   });
 
   it("⑤ 术语保留钉：mcp_tool/sessionEnd/RegExp//trust 译后仍在场（防过度翻译）", () => {

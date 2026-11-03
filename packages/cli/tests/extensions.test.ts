@@ -9,8 +9,8 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { AgentState, Tool } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { AgentState, Tool } from "@wudao-org/core";
 import { loadExtensions } from "../src/extensions/loader.js";
 import {
   createExtensionState,

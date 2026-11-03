@@ -12,7 +12,7 @@
 // 自动预热——用户可能选择轮转开窗，预热付的冷读会白烧；offer 不成立
 // （大概率仍暖/前缀小/便宜）时照常预热。严格不劣于现状：offer 成立时
 // 用户若照常继续，真实请求付的冷读与无预热时相同。
-import type { SessionEntry } from "@wudao/core";
+import type { SessionEntry } from "@wudao-org/core";
 import {
   classifyCacheClock,
   estimateRewarm,
@@ -23,7 +23,7 @@ import {
   type CacheIdentity,
   type ColdCacheOffer,
   type RewarmEstimate,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 /** 台账侧的缓存身份。T003 N2/N11 语义：**逐行 last-wins，无跨行残留**——
  * model_change 行更新 model，且只在该行自带 provider 时更新 provider

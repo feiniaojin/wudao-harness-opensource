@@ -17,9 +17,9 @@
 //     loopback; self frames skip the peer tier classification (operator
 //     configured the hook) but their TEXT keeps the untrusted content rules —
 //     the same posture as hook stdout anywhere else.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { createHash, randomBytes, randomInt } from "node:crypto";
-import { MAIL_CONTENT_MAX_CHARS } from "@wudao/core";
+import { MAIL_CONTENT_MAX_CHARS } from "@wudao-org/core";
 
 /** The peer permission tier: "bypass" = the session runs with the ask layer
  *  off (mode "auto" — the local equivalent of CC's bypassPermissions). */
@@ -75,7 +75,7 @@ export const PEER_PROTOCOL_VERSION = 1;
 export const PEER_FRAME_MAX_BYTES = 64 * 1024;
 /** Inbound message text cap (commands arrive as PLAIN TEXT — bounded text,
  *  never structured payloads). Single-sourced from the mail constitution
- *  (ω99-67): the value is MAIL_CONTENT_MAX_CHARS via @wudao/core — the
+ *  (ω99-67): the value is MAIL_CONTENT_MAX_CHARS via @wudao-org/core — the
  *  name stays (export ABI), the local 8k literal is gone. */
 export const PEER_TEXT_MAX_CHARS = MAIL_CONTENT_MAX_CHARS;
 /** Messages per connection before the receiver closes it (protocol abuse

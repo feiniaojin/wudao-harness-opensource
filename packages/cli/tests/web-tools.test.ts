@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao-org/core";
 import { loadWebSettings, webSearchConfig, DEFAULT_WEB_SETTINGS } from "../src/web-config.js";
 import { buildToolSet } from "../src/tools.js";
 import { decideRichPermission, ruleMatches, askRuleFor, applyAskAnswer, EMPTY_PERMISSION_SETTINGS } from "../src/permission.js";

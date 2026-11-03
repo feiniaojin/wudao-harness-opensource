@@ -23,8 +23,8 @@
 // into a <skill> user message submitted through the normal prompt path.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, dirname, join, relative, sep } from "node:path";
-import { parseSkillPrunedMarker } from "@wudao/core";
-import type { AgentMessage } from "@wudao/core";
+import { parseSkillPrunedMarker } from "@wudao-org/core";
+import type { AgentMessage } from "@wudao-org/core";
 import { loadLayeredSettings, resolveGlobalHome } from "./settings-layer.js";
 import { globMatchesPath, parseInlineList } from "./rules.js";
 // cc-plugins D2 — the invocation-time preprocessor. skills.ts owns the

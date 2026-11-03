@@ -17,7 +17,7 @@
 // latency only); full mode writes the wire line capped at TRACE_BODY_CAP —
 // the explicit env opt-in is the consent boundary for recording possibly
 // sensitive tool arguments to a local file or stderr.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { appendFileSync } from "node:fs";
 
 /** Cap on the `body` field (full mode only). */

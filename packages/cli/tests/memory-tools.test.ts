@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { openMemoryStore, readMemoryFile } from "@wudao/core";
+import { openMemoryStore, readMemoryFile } from "@wudao-org/core";
 import {
   createLongtermMemorySaveTool,
   createLongtermMemorySearchTool,

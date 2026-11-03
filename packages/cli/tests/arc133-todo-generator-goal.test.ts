@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentState } from "@wudao/core";
+import type { AgentState } from "@wudao-org/core";
 import { createGoalController, type EvaluatorModel, type GoalController } from "../src/goal.js";
 
 let ws: string;
@@ -18,7 +18,7 @@ afterEach(async () => {
 
 const NOT_YET = ["VERDICT: not-yet\nreal work remains"];
 
-function fixture(verdicts: readonly string[], messages: AgentState["messages"], generatorPolicy?: import("@wudao/core").TodoGeneratorPolicy) {
+function fixture(verdicts: readonly string[], messages: AgentState["messages"], generatorPolicy?: import("@wudao-org/core").TodoGeneratorPolicy) {
   const responses = verdicts.map((v) => ({ role: "assistant" as const, content: v }));
   let i = 0;
   const evalModel: EvaluatorModel = {

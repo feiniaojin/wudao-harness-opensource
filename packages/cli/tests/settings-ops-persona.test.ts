@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createSettingsOps, readGlobalDefaultPersonaId } from "../src/driver/settings-ops.js";
 import { createProviderRegistryOps, readProviderPersonaBinding } from "../src/driver/provider-registry-ops.js";
-import { defaultProviderRegistryPath } from "@wudao/providers";
+import { defaultProviderRegistryPath } from "@wudao-org/providers";
 
 let home: string;
 let root: string;

@@ -2,7 +2,7 @@
 // 分段口径（estimateTokens 三段原生形 + serializePrompt 分段字节）/
 // 合计=分项和 / 窗口% / 压缩感知窗口号 / 晚绑盒拒答 / 挂载面（defer 轮白名单）。
 import { describe, expect, it } from "vitest";
-import { buildTool, SUMMARY_MARKER, type Tool } from "@wudao/core";
+import { buildTool, SUMMARY_MARKER, type Tool } from "@wudao-org/core";
 import { contextDoctorSections, contextDoctorText, createContextDoctorTool, type ContextDoctorSnapshot } from "../src/context-doctor.js";
 import { buildToolSet } from "../src/tools.js";
 

@@ -14,7 +14,7 @@
 // PROMPT's constitution section — which is session-static (prefix-cache
 // law), so they take effect on the NEXT session start (the receipt says
 // so; this is the same restart note as lsp.enabled / MCP config changes).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { approvePendingClause, constitutionStatus, rejectPendingClause } from "../constitution/store.js";
 
 export interface RunConstitutionCommandArgs {

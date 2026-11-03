@@ -232,7 +232,7 @@ describe("BUILTIN_PERSONAS", () => {
     // (+https://github.com/deepseek-ai/a reference harness)`, always sent,
     // cannot be suppressed.
     expect(byId("deepseek-native").headers["openai-chat"]?.["user-agent"]).toBe(
-      "wudao-harness/0.4.15 (+https://github.com/feiniaojin/wudao-harness-opensource)",
+      "wudao-harness/0.4.20 (+https://github.com/feiniaojin/wudao-harness-opensource)",
     );
   });
 

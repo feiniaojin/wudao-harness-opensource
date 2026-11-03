@@ -6,8 +6,8 @@
 // units, sticky exhaustion, threshold reminder_index counting, per-thread /
 // per-window delivery dedup, and rearm-without-refund.
 import type { EvalDefinition } from "../runner.js";
-import { createSessionBudget } from "@wudao/core";
-import type { ModelUsage } from "@wudao/core";
+import { createSessionBudget } from "@wudao-org/core";
+import type { ModelUsage } from "@wudao-org/core";
 
 export interface NightPorting24Evidence {
   // ① weighted units = output×sampling + non-cached-input×prefill (codex 40-of-100)

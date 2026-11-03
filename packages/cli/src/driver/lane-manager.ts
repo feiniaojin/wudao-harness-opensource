@@ -21,8 +21,8 @@
 // 本模块按降配 preset 新建。server/web 的车道化（lane 表、帧 sid 寻址）是
 // 后续弧——本模块是它们的生命周期地基。
 import { join } from "node:path";
-import { createJsonlSessionStore, activeBranchLeafKey, applySummaryMarkers, repairOrphanedToolCalls, resumeChain, createMultiSlotLeaseBox } from "@wudao/core";
-import type { AgentMessage, MultiSlotSessionLeaseBox } from "@wudao/core";
+import { createJsonlSessionStore, activeBranchLeafKey, applySummaryMarkers, repairOrphanedToolCalls, resumeChain, createMultiSlotLeaseBox } from "@wudao-org/core";
+import type { AgentMessage, MultiSlotSessionLeaseBox } from "@wudao-org/core";
 import type { AgentDriver } from "./agent-driver.js";
 import { createDriverSession } from "./session-engine.js";
 import type { DriverSession, DriverSessionOptions } from "./session-engine.js";
@@ -143,6 +143,21 @@ async function loadLaneHistory(sessionsDir: string, sessionId: string): Promise<
   return repairOrphanedToolCalls(applySummaryMarkers(resumeChain(messages, activeBranchLeafKey(entries)), { chain: true }));
 }
 
+/** 138 续（2026-11-03 用户拍板「桌面端新会话从上次工作区起步」）：把
+ * WUDAO_BOOT_WORKSPACE（桌面端 main.rs 读 recent-workspaces 首行下发；只有
+ * 它设置——CLI/TUI 的 cwd 约定零变化）应用到一条刚落地的会话。boot 会话与
+ * 新开副车道共用；有史会话不走（resume 的 agent_root 重放自会带会话自己
+ * 的根，后到覆盖）。失效路径由 agentRootSwitch 的 exists+is-dir 类型化守卫
+ * 拒绝——静默回落 boot 根，永不挡启动。 */
+export async function adoptBootWorkspace(
+  driver: { agentRootSwitch(path: string): Promise<unknown> },
+  bootRoot: string | undefined,
+  sessionRoot: string,
+): Promise<void> {
+  if (bootRoot === undefined || bootRoot === "" || bootRoot === sessionRoot) return;
+  await driver.agentRootSwitch(bootRoot).catch(() => undefined);
+}
+
 export function createLaneManager(props: LaneManagerOptions): LaneManager {
   const { main, base } = props;
   const sessionsDir = join(base.workspaceRoot, ".wudao", "sessions");
@@ -175,6 +190,9 @@ export function createLaneManager(props: LaneManagerOptions): LaneManager {
         // frees ONLY this lane's slot (the multi-slot box contract).
         sessionLeases: multiBox.laneView(),
       });
+      // 138 续：全新副车道（无史）从上次工作区起步——主车道 boot-adopt 的
+      // 同一条 env。resume 的重放在其后到达时自带会话根，覆盖成立。
+      if (history === undefined) await adoptBootWorkspace(session.driver, process.env.WUDAO_BOOT_WORKSPACE, base.workspaceRoot);
       lanes.set(sessionId, { session });
       return session.driver;
     },

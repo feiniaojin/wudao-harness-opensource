@@ -14,8 +14,8 @@
 // where the sidechain store + id are resolved) and lives inside the ω-4e
 // AskContext — a per-spawn memory object that dies with the child's gate.
 // No new env, no new config face, no global singleton.
-import { callFingerprint } from "@wudao/core";
-import type { PermissionDecision, SessionStore } from "@wudao/core";
+import { callFingerprint } from "@wudao-org/core";
+import type { PermissionDecision, SessionStore } from "@wudao-org/core";
 
 /** The generic-entry type tag (brief §1.1). Old readers never see it in the
  *  message stream — loadSidechain filters non-messages — and entry readers

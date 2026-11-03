@@ -16,8 +16,8 @@
 // receipt（217 泛型车道）+ 工具调用条目（resume 从 messages 重建同源：本模块
 // 的链投影与 driver.resume 同一 projection 函数）+ file-receipt（125 名册门）。
 // 纯读投影，不新造持久面。
-import { createJsonlSessionStore, resumeChain, activeBranchLeafKey, type AgentMessage, type SessionEntry, type SessionStore } from "@wudao/core";
-import type { RecoveryObservation, RecoveryPort, RecoverySettle } from "@wudao/server";
+import { createJsonlSessionStore, resumeChain, activeBranchLeafKey, type AgentMessage, type SessionEntry, type SessionStore } from "@wudao-org/core";
+import type { RecoveryObservation, RecoveryPort, RecoverySettle } from "@wudao-org/server";
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { AgentDriver } from "./driver/agent-driver.js";

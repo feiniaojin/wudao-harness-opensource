@@ -2,7 +2,7 @@
 // ask_user: the printed prompt (question + numbered options) and the mapping
 // of one typed answer line to the final answer (a bare in-range number picks
 // that option's label; anything else is the free-text answer, verbatim).
-import type { AskUserOption } from "@wudao/core";
+import type { AskUserOption } from "@wudao-org/core";
 
 /** The full text shown before the answer line is read. */
 export function formatAskUserPrompt(question: string, options?: readonly AskUserOption[]): string {

@@ -9,7 +9,7 @@ import { mkdtemp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync, inflateRawSync } from "node:zlib";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // zip 地基（本弧增量：unzipEntriesWithMeta / smartZip）+ 123 写器（夹具）。
 import { crc32, smartZip, storedZip, unzipEntries, unzipEntriesWithMeta } from "../src/doc-zip.js";
 import type { RawZipEntry } from "../src/doc-zip.js";

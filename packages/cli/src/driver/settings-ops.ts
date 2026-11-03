@@ -1,5 +1,5 @@
 // M63 §B — the CLI-side settings/credentials handler behind the web
-// settings page. Four ops (relayed by @wudao/server after the SAME
+// settings page. Four ops (relayed by @wudao-org/server after the SAME
 // first-frame auth as every other op):
 //
 //   settingsStatus        the provider-card matrix (status dots), the
@@ -67,9 +67,9 @@ import {
   personaIdsInDir,
   savePersonaDefinition,
   validatePersonaDefinition,
-} from "@wudao/providers";
-import { openMemoryStore, readMemoryFile } from "@wudao/core";
-import type { EffectiveProfile, PersonaDefinition, ProviderName, ReasoningEffort } from "@wudao/providers";
+} from "@wudao-org/providers";
+import { openMemoryStore, readMemoryFile } from "@wudao-org/core";
+import type { EffectiveProfile, PersonaDefinition, ProviderName, ReasoningEffort } from "@wudao-org/providers";
 import { resolveMemorySettings, resolveDocSuiteEnabled, schedulesSettingsFromNode } from "../misc-config.js";
 import { resolveLanguagePreference } from "../language.js";
 import { loadLayeredSettings, readGlobalDefaultPermissionMode, readGlobalSettings, readGlobalSettingsSync, resolveGlobalHome, saveGlobalSettings } from "../settings-layer.js";
@@ -82,7 +82,7 @@ import type { AgentDriver } from "./agent-driver.js";
 // 小精灵会话弧 — 会话级 fork 复用 CLI --fork-session 的实现（字节复制 +
 // 120-a A3 的 rewind lineage 继承），经 op 通道（resume 携 fork:true）暴露。
 import { forkSessionFile } from "../fork-session.js";
-import type { UiDriverPort } from "@wudao/server";
+import type { UiDriverPort } from "@wudao-org/server";
 import { createAttachmentOps } from "./attachment-ops.js";
 // cc-plugins C1 — the plugin-management ops ride the SAME A1/A2 marketplace
 // engine the /plugin slash face and `wudao plugin` drive (one engine, three
@@ -1192,7 +1192,7 @@ export function createSettingsOps(deps: SettingsOpsDeps): SettingsOps {
       // Lazy: ui.ts imports from driver/ which imports settings-ops — a
       // top-level import here would cycle at module-init time.
       const { startUiSession } = await import("../ui.js");
-      const { resolveProviderConfig } = await import("@wudao/providers");
+      const { resolveProviderConfig } = await import("@wudao-org/providers");
       const env = process.env as unknown as Record<string, string>;
       const resolved = resolveProviderConfig(env);
       if (resolved === null) throw new Error("no provider configured — set a key in settings first");
@@ -1664,6 +1664,8 @@ export function withSettingsOps(driver: AgentDriver, deps: SettingsOpsDeps): UiD
     agentRootSwitch: (path) => driver.agentRootSwitch(path),
     // M76-ux2 §8: the ctx hover's breakdown rides the same wrapped port.
     ctxInfo: () => driver.ctxInfo(),
+    // 140：会话解剖（监控面板的提示词/消息全量读）。
+    sessionAnatomy: () => driver.sessionAnatomy?.() ?? Promise.resolve({ systemPrompt: "", messages: [] }),
     // M79 §4: the attachment ops ride the same wrapped port. The get-ref
     // arrives transport-typed (kind optional on this direction — the id trio
     // is what the store keys on); normalized here.

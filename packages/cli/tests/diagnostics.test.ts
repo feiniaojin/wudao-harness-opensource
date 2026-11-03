@@ -6,7 +6,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { captureBaseline, createDiagnosticsLayer, BASELINE_TTL_MS, BASELINE_LRU_LIMIT } from "../src/diagnostics.js";
-import type { WriteVerifyConfig, WriteVerifyOutcome } from "@wudao/core";
+import type { WriteVerifyConfig, WriteVerifyOutcome } from "@wudao-org/core";
 
 const CONFIG: WriteVerifyConfig = { enabled: true, tsTsc: false };
 

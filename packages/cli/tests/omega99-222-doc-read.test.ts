@@ -8,7 +8,7 @@ import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // 写面反哺：storedZip/crc32 造夹具 + buildDocx/buildPptx roundtrip（读写的
 // 同源互测是本弧的验收面之一——三件套读半边收口）。
 import { storedZip, crc32 } from "../src/doc-zip.js";

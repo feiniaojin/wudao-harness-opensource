@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel, createJsonlSessionStore, createReadFileTool } from "@wudao/core";
+import { createScriptedModel, createJsonlSessionStore, createReadFileTool } from "@wudao-org/core";
 import { formatStatusReport, formatCtxLine } from "../src/commands/status.js";
 import { formatCostReport, recordUsage, emptyUsageTotals, usageTotalsFromStats, formatWallDuration, CostRegistry } from "../src/commands/cost.js";
 import { appendCostLedgerRow, readCostLedger, costLedgerPath } from "../src/commands/wallet.js";

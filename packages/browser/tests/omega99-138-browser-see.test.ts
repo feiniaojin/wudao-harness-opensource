@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ImageBlock, Tool } from "@wudao/core";
+import type { ImageBlock, Tool } from "@wudao-org/core";
 import { browserToolsFor, type BrowserImageSink } from "../src/tools.js";
 import { createBrowserRuntime } from "../src/runtime.js";
 import { COLLECT_SCRIPT } from "../src/snapshot.js";

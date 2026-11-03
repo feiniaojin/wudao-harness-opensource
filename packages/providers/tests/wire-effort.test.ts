@@ -26,7 +26,7 @@ import { MaxTokensThinkingBudgetConflictError } from "../src/index.js";
 import { isModelFallbackEligible } from "../src/model-failure.js";
 // conflict-origin: the marker field name's single source is the core port
 // constant — the class stamps under this computed name (seam pin below).
-import { CONFIG_CAP_ALSO_CONFLICTS_FIELD } from "@wudao/core";
+import { CONFIG_CAP_ALSO_CONFLICTS_FIELD } from "@wudao-org/core";
 
 /** A fetch that must never run — a fail-closed request-construction gate
  *  fires before any network byte. */

@@ -5,9 +5,9 @@
 // 每会话每类一次。serializePrompt 字节 pin：assistant 消息带不带 effort，
 // 下一轮 ModelInput 序列化（systemPrompt+messages+tools）逐字节相同。
 import { describe, it, expect } from "vitest";
-import { runAgentLoop } from "@wudao/core";
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
-import { serializePrompt } from "@wudao/providers";
+import { runAgentLoop } from "@wudao-org/core";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
+import { serializePrompt } from "@wudao-org/providers";
 import {
   analyzeCacheWaste,
   asCacheWasteBaseline,
@@ -147,8 +147,8 @@ import { afterEach } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore, type ModelUsage } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createJsonlSessionStore, type ModelUsage } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createDriverSession } from "../src/driver/session-engine.js";
 import type { DriverSession } from "../src/driver/session-engine.js";
 

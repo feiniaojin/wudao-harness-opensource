@@ -124,9 +124,12 @@ function TreeError({ message, onRetry }: { message: string; onRetry: () => void 
   );
 }
 
-export function FileTree({ client, workspaceRoot, selectedPath, onSelect, onAtMention, refreshKey, onSwitchWorkspace, onOpenOtherWorkspace, onPathsChange, modifiedPaths, modifiedKey, onManualRefresh }: {
+export function FileTree({ client, workspaceRoot, bootRoot, selectedPath, onSelect, onAtMention, refreshKey, onSwitchWorkspace, onOpenOtherWorkspace, onPathsChange, modifiedPaths, modifiedKey, onManualRefresh }: {
   client: FileOpsClient;
   workspaceRoot: string;
+  /** 138 续（2026-11-03 用户令）：boot 根（会话锚）——树顶菜单「默认空间」
+   * 钉项的落点。可选：缺席/未解析 → 钉项不渲染，普通树挂载照常编译。 */
+  bootRoot?: string;
   selectedPath: string | null;
   /** The selected RELATIVE path (plus isDir so the App can route the middle
    *  panel); handlers that ignore the second arg still typecheck. */
@@ -407,6 +410,22 @@ export function FileTree({ client, workspaceRoot, selectedPath, onSelect, onAtMe
                 menu closes it on any outside click. */}
             <div className="ws-backdrop" onClick={() => setWsMenu(false)} />
             <div className="ws-menu" role="menu">
+              {/* 138 续：默认空间钉在 recents 之上（chip 同款契约）——一键
+                  回会话锚，面板与 agent 根同走 onSwitchWorkspace 缝。 */}
+              {bootRoot !== undefined && bootRoot !== "" ? (
+                <button
+                  type="button"
+                  className="ws-item ws-default"
+                  role="menuitem"
+                  title={bootRoot}
+                  onClick={() => {
+                    setWsMenu(false);
+                    onSwitchWorkspace?.(bootRoot);
+                  }}
+                >
+                  默认空间 · {baseName(bootRoot)}
+                </button>
+              ) : null}
               {(recents ?? []).map((w) => (
                 <button
                   key={w.path}

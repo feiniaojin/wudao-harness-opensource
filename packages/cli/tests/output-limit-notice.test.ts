@@ -6,7 +6,7 @@
 // "exhausted" = the ⚠️ incompleteness marker — without it a cut answer is
 // indistinguishable from a finished one in every frontend.
 import { describe, it, expect } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 

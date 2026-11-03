@@ -33,7 +33,7 @@
 // Extensions (.wudao/extensions/*.mjs) are CODE and are NOT rescanned: their
 // boot-time hooks object rides every rebuild (extensionsHooks below), because
 // re-importing a module would double-register its state for zero benefit.
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 import { loadSkills, applySkillVisibility, loadSkillOverrides, skillsPromptSection } from "./skills.js";
 import type { LoadedSkill } from "./skills.js";
 // ω99-18 — the campaign-scoped bundle tier. extension-state imports
@@ -51,7 +51,7 @@ import type { HooksSettings } from "./hooks-config.js";
 import { loadMcpConfig } from "./mcp/config.js";
 import type { McpConfig } from "./mcp/config.js";
 import { parsePluginFlags } from "./args.js";
-import type { RosterPluginAgent } from "@wudao/core";
+import type { RosterPluginAgent } from "@wudao-org/core";
 
 /** The assembled extension surface — everything the boot entry feeds its
  *  frontends and everything a rescan swaps. */

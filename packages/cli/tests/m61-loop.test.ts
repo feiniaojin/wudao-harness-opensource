@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage } from "@wudao/core";
+import type { AssistantMessage } from "@wudao-org/core";
 import { createCronRuntime } from "../src/cron.js";
 import { summarizeToolCall } from "../src/log.js";
 import {

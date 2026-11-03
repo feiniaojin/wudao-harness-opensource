@@ -14,15 +14,15 @@
 // 接线：goalBox 家族晚绑盒——buildToolSet 收盒，宿主（session-engine）在
 // driver 存在后回填；one-shot/REPL 未接线时工具诚实拒答（fail-closed 家族，
 // 不静默报零）。
-import { buildTool, SUMMARY_MARKER, estimateTokens, type Tool } from "@wudao/core";
-import { serializePrompt } from "@wudao/providers";
+import { buildTool, SUMMARY_MARKER, estimateTokens, type Tool } from "@wudao-org/core";
+import { serializePrompt } from "@wudao-org/providers";
 
 /** The late-bound snapshot the doctor reads at execute time (post-resume
  *  rotations included — the goalBox discipline). */
 export interface ContextDoctorSnapshot {
   readonly systemPrompt: string;
   readonly tools: readonly Tool[];
-  readonly messages: readonly import("@wudao/core").AgentMessage[];
+  readonly messages: readonly import("@wudao-org/core").AgentMessage[];
   readonly contextWindowTokens: number;
 }
 
@@ -43,7 +43,7 @@ interface SectionBill {
  *  只喂该段——CJK 感知口径与压缩触发完全同源）；bytes 走 serializePrompt
  *  分段构造（M47 canonical 形——与字节前缀钉同源）。 */
 export function contextDoctorSections(snap: ContextDoctorSnapshot): readonly SectionBill[] {
-  const bytesOf = (input: { systemPrompt: string; tools: readonly Tool[]; messages: readonly import("@wudao/core").AgentMessage[] }): number =>
+  const bytesOf = (input: { systemPrompt: string; tools: readonly Tool[]; messages: readonly import("@wudao-org/core").AgentMessage[] }): number =>
     Buffer.byteLength(serializePrompt(input), "utf8");
   return [
     {

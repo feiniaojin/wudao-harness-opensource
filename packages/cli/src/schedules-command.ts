@@ -1,6 +1,6 @@
 // ω99 拆分运动 弧 B：/schedule 命令解析 + 读面行构造外提——原 schedules.ts
 // 模块级段逐字保留；schedules.ts re-export 门面保公共面。
-import { parseCronExpr } from "@wudao/core";
+import { parseCronExpr } from "@wudao-org/core";
 import type { AddableSchedule, DurableTask, ScheduleRuntimeOverrides } from "./schedules-model.js";
 import { describeScheduleHuman, nextFireOf } from "./schedules-logic.js";
 

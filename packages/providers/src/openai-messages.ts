@@ -1,8 +1,8 @@
 // 拆分运动 C：从 openai-compatible.ts 原样外提的 openai-chat 消息序列化域
 //（OOM 累计上限、M47 reasoning 回放、ω-1a id 还原、M24 canonical prompt）。
 // 纯函数模块：零包内依赖（config 类型 + tool-call-ids 除外），无环。
-import type { FileBlock, ImageBlock, ModelInput } from "@wudao/core";
-import { truncateSafe } from "@wudao/core";
+import type { FileBlock, ImageBlock, ModelInput } from "@wudao-org/core";
+import { truncateSafe } from "@wudao-org/core";
 import type { ReasoningReplay } from "./config.js";
 import { restoreToolCallId, restoreToolCallIds } from "./tool-call-ids.js";
 

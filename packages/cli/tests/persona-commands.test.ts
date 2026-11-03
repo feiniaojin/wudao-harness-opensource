@@ -3,9 +3,9 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import { createPersonaRuntime, resolvePersona } from "@wudao/providers";
-import type { PersonaDefinition, PersonaRegistry } from "@wudao/providers";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import { createPersonaRuntime, resolvePersona } from "@wudao-org/providers";
+import type { PersonaDefinition, PersonaRegistry } from "@wudao-org/providers";
 import {
   parsePersonaArgument, resolvePersonaSwitch, resolveBootstrapPersona,
   personaSwitchBreaksCache, recordPersonaChange, formatPersonaList,

@@ -27,7 +27,7 @@ import {
   withSidecarLayer,
 } from "../src/permission.js";
 import { createSidecar } from "../src/sidecar.js";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 
 describe("modeFromArgv", () => {
   it("defaults to workspace", () => { expect(modeFromArgv(["hi"])).toBe("workspace"); });

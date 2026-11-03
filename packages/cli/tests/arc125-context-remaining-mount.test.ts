@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { buildToolSet } from "../src/tools.js";
 import { READ_TOOLS } from "../src/permission-modes.js";
 import { DEFAULT_ASK_TOOLS } from "../src/permission-rules.js";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 
 const noop = (): void => {};
 

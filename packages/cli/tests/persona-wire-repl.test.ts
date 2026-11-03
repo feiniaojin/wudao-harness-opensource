@@ -14,13 +14,13 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
-import { createScriptedModel, createReadFileTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { createScriptedModel, createReadFileTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { runRepl } from "../src/repl.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 
@@ -138,7 +138,7 @@ describe("final-review C1 — REPL runtime slots (runRepl integration)", () => {
     // slot value — pre-fix this threw inside resolveTemplate on EVERY call.
     expect(call.headers["x-a reference harness-session-id"]).toBe("wire-sess-1");
     // The literal template layer: the pinned attribution header rides too.
-    expect(call.headers["user-agent"]).toBe("wudao-harness/0.4.15 (+https://github.com/feiniaojin/wudao-harness-opensource)");
+    expect(call.headers["user-agent"]).toBe("wudao-harness/0.4.20 (+https://github.com/feiniaojin/wudao-harness-opensource)");
     // No templated value ever reaches the wire unresolved.
     expect(Object.values(call.headers).some((v) => v.includes("{{"))).toBe(false);
     // The adapter's own headers stay intact (persona spreads after, adds only).

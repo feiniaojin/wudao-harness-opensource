@@ -8,8 +8,8 @@
 //          interrupt 一并停（用户意图优先：per-call signal aborted）
 //   纯层   parseBgCommand（/recall 同款 TUI 自有命令）
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput, ToolResultMessage } from "@wudao/core";
-import { buildTool, type Tool } from "@wudao/core";
+import type { ModelClient, ModelInput, ToolResultMessage } from "@wudao-org/core";
+import { buildTool, type Tool } from "@wudao-org/core";
 import { createDetachLane, describeDetachVerdict, DETACH_RESULT_INJECTION_CHARS } from "../src/driver/detach-lane.js";
 import { createAgentDriver, type AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";

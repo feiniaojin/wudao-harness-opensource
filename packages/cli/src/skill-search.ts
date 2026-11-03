@@ -32,7 +32,7 @@
 //   cwd-keyed cache exists because their index re-reads the filesystem.
 export { tokenizeText } from "./tokenize.js";
 
-import { buildTool, type Tool } from "@wudao/core";
+import { buildTool, type Tool } from "@wudao-org/core";
 import { hasCjk, tokenizeText } from "./tokenize.js";
 import type { LoadedSkill } from "./skills.js";
 

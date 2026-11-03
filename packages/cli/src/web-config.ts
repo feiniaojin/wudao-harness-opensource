@@ -13,8 +13,8 @@
 //     "allowDomains": ["example.com", "*.github.com"]
 //   }
 // Credentials NEVER live here — apiKeyEnv names an environment variable.
-import type { WebSearchConfig, WebSearchProvider } from "@wudao/core";
-import { classifyAddress, endpointGuardReason, isIpLiteralHost } from "@wudao/core";
+import type { WebSearchConfig, WebSearchProvider } from "@wudao-org/core";
+import { classifyAddress, endpointGuardReason, isIpLiteralHost } from "@wudao-org/core";
 import { lookup as dnsLookup } from "node:dns/promises";
 import { loadLayeredSettings } from "./settings-layer.js";
 

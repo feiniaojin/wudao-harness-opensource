@@ -1,6 +1,6 @@
 // packages/providers/src/responses.ts — OpenAI Responses 协议适配器（spec §5，codex 原生）
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao/core";
-import { UnsupportedContentError, offloadRequestFiles } from "@wudao/core";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao-org/core";
+import { UnsupportedContentError, offloadRequestFiles } from "@wudao-org/core";
 import { createKeyPool, cooldownClassForStatus } from "./key-pool.js";
 import { createRatePauseWindow, DEFAULT_RATE_PAUSE_MS, type RatePauseWindow } from "./rate-pause.js";
 import type { KeyPool } from "./key-pool.js";

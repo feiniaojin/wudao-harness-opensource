@@ -14,7 +14,7 @@ importers:
 
   .:
     dependencies:
-      '@wudao/slack':
+      '@wudao-org/slack':
         specifier: workspace:*
         version: link:packages/slack
     devDependencies:
@@ -52,7 +52,7 @@ importers:
         specifier: 1.63.0
         version: 1.63.0
     devDependencies:
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
       typescript:
@@ -64,18 +64,21 @@ importers:
 
   packages/cli:
     dependencies:
-      '@wudao/browser':
+      '@wudao-org/browser':
         specifier: workspace:*
         version: link:../browser
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
-      '@wudao/providers':
+      '@wudao-org/providers':
         specifier: workspace:*
         version: link:../providers
-      '@wudao/server':
+      '@wudao-org/server':
         specifier: workspace:*
         version: link:../server
+      '@wudao-org/web':
+        specifier: workspace:*
+        version: link:../web
       cli-highlight:
         specifier: ^2.1.11
         version: 2.1.11
@@ -132,13 +135,13 @@ importers:
 
   packages/evals:
     dependencies:
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
-      '@wudao/providers':
+      '@wudao-org/providers':
         specifier: workspace:*
         version: link:../providers
-      '@wudao/slack':
+      '@wudao-org/slack':
         specifier: workspace:*
         version: link:../slack
       wudao-harness:
@@ -154,7 +157,7 @@ importers:
 
   packages/providers:
     dependencies:
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -186,10 +189,10 @@ importers:
       '@slack/bolt':
         specifier: ^4.4.0
         version: 4.7.3(@types/express@5.0.6)(debug@4.4.3(supports-color@7.1.0))(supports-color@7.1.0)
-      '@wudao/core':
+      '@wudao-org/core':
         specifier: workspace:*
         version: link:../core
-      '@wudao/providers':
+      '@wudao-org/providers':
         specifier: workspace:*
         version: link:../providers
       wudao-harness:
@@ -204,13 +207,6 @@ importers:
         version: 2.1.8(@types/node@22.20.1)(jsdom@25.0.1(supports-color@7.1.0))(supports-color@7.1.0)
 
   packages/web:
-    dependencies:
-      react:
-        specifier: 19.2.8
-        version: 19.2.8
-      react-dom:
-        specifier: 19.2.8
-        version: 19.2.8(react@19.2.8)
     devDependencies:
       '@types/react':
         specifier: ^19.2.18
@@ -227,6 +223,12 @@ importers:
       lucide-static:
         specifier: ^1.48.0
         version: 1.48.0
+      react:
+        specifier: 19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: 19.2.8
+        version: 19.2.8(react@19.2.8)
       typescript:
         specifier: 5.6.3
         version: 5.6.3

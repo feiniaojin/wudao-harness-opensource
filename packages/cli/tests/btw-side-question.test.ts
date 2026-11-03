@@ -5,8 +5,8 @@
 // 所有前端可见（TUI/web/desktop 一处接线），但永不进 state.messages、永不
 // 持久化 JSONL、主 agent 永不可见。运行中可用——旁问的全部意义就是不打断。
 import { describe, it, expect } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 

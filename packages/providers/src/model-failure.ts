@@ -9,7 +9,7 @@
 //   model-failure（零包内依赖）← model-fallback ← openai-compatible（再 re-export）
 // openai-compatible.ts 对这些名字逐名 re-export，既有导入方（anthropic/
 // responses/测试/index）零改动；类的定义全仓唯一，instanceof 语义逐字节不变。
-import { UnsupportedContentError, MAX_TOKENS_THINKING_BUDGET_CONFLICT_CODE, CONFIG_CAP_ALSO_CONFLICTS_FIELD } from "@wudao/core";
+import { UnsupportedContentError, MAX_TOKENS_THINKING_BUDGET_CONFLICT_CODE, CONFIG_CAP_ALSO_CONFLICTS_FIELD } from "@wudao-org/core";
 import type { ReasoningEffort } from "./config.js";
 
 // ---------------------------------------------------------------------------

@@ -43,9 +43,9 @@
 // schema 加参数=工具列字节变更，跨版本一次冷转（cold turn expected），会话内
 // 字节冻结；hashLine 无位置=click/type 的 ref 路径字节级零扰动（结构与位置
 // 解耦——纯移动不作废编号；位置过时风险记弧报告诚实边界）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import { buildTool } from "@wudao/core";
-import type { Tool, ToolResult } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import { buildTool } from "@wudao-org/core";
+import type { Tool, ToolResult } from "@wudao-org/core";
 import { readFile, unlink } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import {

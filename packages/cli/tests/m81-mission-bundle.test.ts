@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, PermissionDecision } from "@wudao/core";
+import type { ModelClient, PermissionDecision } from "@wudao-org/core";
 import {
   createMissionController,
   createMissionTools,

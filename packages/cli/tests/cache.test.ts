@@ -1,7 +1,7 @@
 // M24 cache observability + attribution unit tests.
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelInput, ModelUsage } from "@wudao/core";
-import { serializePrompt } from "@wudao/providers";
+import type { AgentMessage, ModelInput, ModelUsage } from "@wudao-org/core";
+import { serializePrompt } from "@wudao-org/providers";
 import {
   CACHE_FLOOR_TOKENS,
   CacheStats,
@@ -212,7 +212,7 @@ describe("detectCacheBreak (B3)", () => {
 describe("createCacheTrackingModel", () => {
   function fakeModel(
     usages: readonly ModelUsage[],
-  ): { model: import("@wudao/core").ModelClient; inputs: ModelInput[] } {
+  ): { model: import("@wudao-org/core").ModelClient; inputs: ModelInput[] } {
     const inputs: ModelInput[] = [];
     let i = 0;
     return {

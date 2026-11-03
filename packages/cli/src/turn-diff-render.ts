@@ -8,7 +8,7 @@
 // silent drop). The preview line rides the run's notice text; the full diff
 // rides the notice detail.
 import { unifiedDiffBody } from "./file-changes.js";
-import { formatTurnDiffPreview, type TurnDiffFile } from "@wudao/core";
+import { formatTurnDiffPreview, type TurnDiffFile } from "@wudao-org/core";
 
 export interface TurnDiffRender {
   /** The notice preview line ("" for an empty ledger). */

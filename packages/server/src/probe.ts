@@ -4,6 +4,8 @@
 // 三个读面 op（全部 never vaulted——不进 vault 不重放，ω99-260 memoryList 读表
 // 先例）：
 //   probeStream  {cat?}        订阅：其后每条匹配事件转发一帧 {t:"probe",event}
+//                              （139：cat:"off" 退订——仪表盘关页停流）
+//   probeEnable  {on}          139：运行时翻转探针总闸（WUDAO_PROBE）
 //   probeRecent  {cat?,limit?} 拉环形缓冲（recent 同形直通）
 //   probeStats   {}            拉统计面（stats 原样回）
 // 缺省纪律（缺省零变化）：未挂 bus → 三 op 干净拒答（optional-ops 既有文案族）、
@@ -70,14 +72,35 @@ export function createProbeRelay(opts: {
       }
       switch (o.op) {
         case "probeStream": {
-          // cat 缺省=全部；"*" 同义（subscribe 域）；五类别外的串拒。
-          if (o.cat !== undefined && o.cat !== "*" && (typeof o.cat !== "string" || !isCat(o.cat))) {
-            reply(undefined, `probeStream cat must be one of ${PROBE_CATS.join("|")}|* when present`);
+          // cat 缺省=全部；"*" 同义（subscribe 域）；"off" 退订（139 仪表盘
+          // 关页即停流——单过滤槽无独立 unsubscribe，语义走换槽）；其余串拒。
+          if (o.cat !== undefined && o.cat !== "*" && o.cat !== "off" && (typeof o.cat !== "string" || !isCat(o.cat))) {
+            reply(undefined, `probeStream cat must be one of ${PROBE_CATS.join("|")}|*|off when present`);
+            return;
+          }
+          if (o.cat === "off") {
+            filter = null;
+            reply(true);
             return;
           }
           const cat = typeof o.cat === "string" && o.cat !== "*" ? (o.cat as ProbeCat) : undefined;
           filter = { cat };
           reply(true);
+          return;
+        }
+        case "probeEnable": {
+          // 139（用户令：默认仪表盘实时采集探针）：运行时翻转探针总闸——
+          // probeEnabled() 逐调用读环境（probe.ts §3），翻 process.env 即全
+          // 部挂载点即时生效。loop 挂载（agent.* 与 tool.*）按 run 重裹，下一
+          // run 起可见；model.call 的包装在 provider 工厂构造时一次成形，
+          // 运行时开闸对它不追溯（回执字段说明，前端照实提示）。
+          if (typeof o.on !== "boolean") {
+            reply(undefined, "probeEnable on must be a boolean");
+            return;
+          }
+          if (o.on) process.env.WUDAO_PROBE = "on";
+          else delete process.env.WUDAO_PROBE;
+          reply({ enabled: o.on, modelCallNeedsRestart: true });
           return;
         }
         case "probeRecent": {

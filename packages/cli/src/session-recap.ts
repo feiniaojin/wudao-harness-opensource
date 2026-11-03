@@ -6,7 +6,7 @@
 // 结构化历史**数**出来，不是模型编的；模型只写叙事胶水。
 // querySource:"recap" 走 providers 的 background 语义（不在
 // FOREGROUND_QUERY_SOURCES 集内——过载即弃零重试，title/btw 同律）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import type { HistoryEntry } from "./driver/agent-driver.js";
 
 /** Rides ModelInput.querySource — a background lane (bail-on-overload, no

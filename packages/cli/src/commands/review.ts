@@ -5,7 +5,7 @@
 // audit surface is pinned, not vibes. No diff → a notice, never an empty
 // review run. The patch is capped (a pathological diff must not eat the
 // context window before the model even starts).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { createGitFn, insideWorkTree } from "./diff.js";
 import type { GitFn } from "./diff.js";
 

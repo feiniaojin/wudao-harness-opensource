@@ -33,8 +33,8 @@ import { smartZip, unzipEntriesWithMeta } from "./doc-zip.js";
 import { validateDocDoc, blockXml } from "./doc-docx.js";
 import type { DocBlock } from "./doc-docx.js";
 import { parseDocxBlocks } from "./doc-docx-read.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 

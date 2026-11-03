@@ -12,8 +12,8 @@
 import React, { useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import type { AskAnswer } from "../permission.js";
-import { formatSpoofLine } from "@wudao/core";
-import type { SpoofInspection } from "@wudao/core";
+import { formatSpoofLine } from "@wudao-org/core";
+import type { SpoofInspection } from "@wudao-org/core";
 
 const CONTROL_CHARS = /[\x00-\x1f\x7f]/g;
 

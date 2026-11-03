@@ -12,7 +12,7 @@
 // Inert shape: WUDAO_DISABLE_PEER=1, or sandbox without the socket override,
 // yields a runtime carrying `refusal` — tools answer with it (fail-closed,
 // never a silent no-op), no socket, no registry entry.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { loadLayeredSettings } from "../settings-layer.js";

@@ -5,7 +5,7 @@ import { mkdtemp, rm, mkdir, writeFile, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createFileHistory, createReadStateTable } from "@wudao/core";
+import { createFileHistory, createReadStateTable } from "@wudao-org/core";
 import { parseRewindTarget, formatRewindList, formatRewindTurnList, applyRewind, buildFilesRewoundNote, displayPath } from "../src/rewind.js";
 import { parseReplCommand } from "../src/repl.js";
 

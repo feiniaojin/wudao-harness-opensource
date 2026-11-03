@@ -16,7 +16,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore, createScriptedModel, type AgentMessage, type AssistantMessage, type ModelClient, type ModelInput } from "@wudao/core";
+import { createJsonlSessionStore, createScriptedModel, type AgentMessage, type AssistantMessage, type ModelClient, type ModelInput } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { collectSessionRows, isErrorTail, isUnfinishedTail } from "../src/session-list.js";
 import { selectMessagesToPersist } from "../src/persist.js";

@@ -4,7 +4,7 @@
 // rewrite semantics the /resume picker and `--list-sessions` render. Nothing
 // is deleted; the history of names stays auditable in the JSONL.
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 
 /** Same bound as a derived name (session-list NAME_MAX_CHARS). */
 export const SESSION_NAME_MAX_CHARS = 48;

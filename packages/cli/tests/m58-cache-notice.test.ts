@@ -3,7 +3,7 @@
 // /effort gets NO notice — OpenAI-compatible request prefixes don't vary
 // with effort, and a fake cost warning would be a lie.
 import { describe, it, expect } from "vitest";
-import { createScriptedModel, buildTool } from "@wudao/core";
+import { createScriptedModel, buildTool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { MODEL_SWITCH_CACHE_NOTE } from "../src/commands/model.js";

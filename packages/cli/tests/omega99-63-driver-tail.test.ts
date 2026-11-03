@@ -6,8 +6,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool } from "@wudao/core";
-import type { Tool, ModelClient, ModelInput, AssistantMessage, ToolUpdateFn } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool, ModelClient, ModelInput, AssistantMessage, ToolUpdateFn } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriverOptions, AgentDriver } from "../src/driver/agent-driver.js";
 

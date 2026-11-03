@@ -6,8 +6,8 @@
 //   3. 脚本模型（不上报 usage.durationMs）→ assistant 不带 durationMs、
 //      收据无模型段（不拿 0 冒充）。
 import { describe, it, expect } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver, formatMs, formatRunStats } from "../src/driver/agent-driver.js";
 

@@ -20,8 +20,8 @@ import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
 import { truncateMultiline } from "../src/log.js";
-import type { ProviderConfig } from "@wudao/providers";
-import type { Tool } from "@wudao/core";
+import type { ProviderConfig } from "@wudao-org/providers";
+import type { Tool } from "@wudao-org/core";
 
 // ω99-32 T2: the info preview rides the dim escape pair — assert on the
 // stripped text so ^/$ anchors hold.

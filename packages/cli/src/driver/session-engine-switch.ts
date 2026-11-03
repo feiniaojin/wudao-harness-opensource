@@ -2,10 +2,10 @@
 // createAgentDriver options 体内的 onProviderSwitch 连续段，闭包体逐字保留——
 // 仅两类机械改写：可变 `model` 绑定走 getModel/setModel（单绑定，重建后引擎体
 // 内的活引用同步换新）；其余闭包自由变量收进 ctx 显式线程）。
-import { createProvider, createLiveKeyPool, withPersona } from "@wudao/providers";
-import type { PersonaRuntime, ProviderConfig } from "@wudao/providers";
-import { createFileAttachmentStore } from "@wudao/core";
-import type { ModelUsage } from "@wudao/core";
+import { createProvider, createLiveKeyPool, withPersona } from "@wudao-org/providers";
+import type { PersonaRuntime, ProviderConfig } from "@wudao-org/providers";
+import { createFileAttachmentStore } from "@wudao-org/core";
+import type { ModelUsage } from "@wudao-org/core";
 import { resolveProviderSwitch, applyProviderConfig, keyRefreshPending, configRefreshPending, PROVIDER_SWITCH_COLD_ATTRIBUTION } from "../commands/provider.js";
 import { readCredentialsFileSync, WIZARD_PLACEHOLDER_KEY } from "../credentials.js";
 import { applyPersonaChainAfterProviderSwitch, formatPersonaChainFollow, recordPersonaChange } from "../commands/persona.js";

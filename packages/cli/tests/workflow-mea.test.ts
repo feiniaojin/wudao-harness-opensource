@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import {
   advanceMeaState,
   buildAuditorPrompt,

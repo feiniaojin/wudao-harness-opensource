@@ -1,4 +1,4 @@
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { splitEndOfOptions, ABLATION_FEATURES } from "./args.js";
 // ω99-236: #5 — the doc trio's twelve summaries now ride the doc-suite
 // ROSTER (docSuiteSummarizers——名册模块 doc-suite.ts 的摘要器映射，纯件复

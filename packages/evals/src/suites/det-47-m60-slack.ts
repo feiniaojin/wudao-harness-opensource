@@ -13,7 +13,7 @@
 import { mkdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import type { AgentDriver } from "wudao-harness/driver/agent-driver";
 import type { SessionAllowlist } from "wudao-harness/permission";
 import {
@@ -25,7 +25,7 @@ import {
   ASK_ACTION_ALWAYS,
   loadThreadMap,
   mdToMrkdown,
-} from "@wudao/slack";
+} from "@wudao-org/slack";
 import { createDriverSession } from "wudao-harness/driver/session-engine";
 import type { EvalDefinition } from "../runner.js";
 

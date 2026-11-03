@@ -25,7 +25,7 @@ import {
   CRON_TASK_CAP_PER_SESSION,
   CRON_EXPIRY_MS,
   type CronTask,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { createCronRuntime } from "../src/cron.js";
 
 const at = (iso: string): number => new Date(iso).getTime();

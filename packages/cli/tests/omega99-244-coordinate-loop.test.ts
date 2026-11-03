@@ -16,7 +16,7 @@ import {
   type ExecSeam,
 } from "../src/computer/exec.js";
 import { createComputerTools } from "../src/computer/tools.js";
-import { createOpenAICompatibleProvider } from "@wudao/providers";
+import { createOpenAICompatibleProvider } from "@wudao-org/providers";
 
 // Platform contract: this suite exercises the macOS execution plane
 // (osascript / caffeinate seams) — skip off-darwin CI runners instead of

@@ -10,16 +10,16 @@ import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createAskUserTool, createJsonlSessionStore, activeBranchLeafKey, applySummaryMarkers, repairOrphanedToolCalls, resumeChain } from "@wudao/core";
-import type { AgentMessage, LoopGates, ModelClient, SessionLeaseBox, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
-import { createUiServer } from "@wudao/server";
-import type { UiServer } from "@wudao/server";
+import { createAskUserTool, createJsonlSessionStore, activeBranchLeafKey, applySummaryMarkers, repairOrphanedToolCalls, resumeChain } from "@wudao-org/core";
+import type { AgentMessage, LoopGates, ModelClient, SessionLeaseBox, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
+import { createUiServer } from "@wudao-org/server";
+import type { UiServer } from "@wudao-org/server";
 // ω99-242 — 中断任务自动续跑：boot 恢复协调器（journal=append-only JSONL +
 // 观察-分类-认领-限流 + graceful shutdown checkpoint）。M24 声明：恢复注入发
 // 生在 resume 边界=冷转预期（cold turn expected）——细节见 recovery-admission.ts
 // 头注与弧报告 §一。
-import { createRecoveryCoordinator } from "@wudao/server";
+import { createRecoveryCoordinator } from "@wudao-org/server";
 import { createRecoveryPort } from "./recovery-admission.js";
 import { createScheduleDaemon, SCHEDULES_SESSION_ID, scheduleWakeRequested } from "./schedules.js";
 import type { ScheduleDaemon } from "./schedules.js";
@@ -42,7 +42,7 @@ import type { Sidecar } from "./sidecar.js";
 import { readGlobalDefaultPermissionMode, readGlobalSettingsSync } from "./settings-layer.js";
 import { VERSION } from "./version.js";
 import { modelLabel } from "./log.js";
-import { LaneManager, createLaneManager } from "./driver/lane-manager.js";
+import { LaneManager, createLaneManager, adoptBootWorkspace } from "./driver/lane-manager.js";
 // PB-2（探针基础设施弧）— 进程内 ProbeBus 单例挂上 server（三读面 op +
 // {t:"probe"} 帧）；设置 probe.auditFile 开 JSONL 审计（缺省关：零写零帧）。
 import { getDefaultProbeBus, setupProbeAudit } from "./probe.js";
@@ -77,11 +77,11 @@ export interface RunUiProps {
   readonly sandbox?: { readonly image?: string };
   /** .wudao/settings.json-configured hooks (M19); forwarded to the loop.
    *  M63-A: also carries the session-surface events the driver fires. */
-  readonly hooks?: import("@wudao/core").AgentHooks;
+  readonly hooks?: import("@wudao-org/core").AgentHooks;
   /** M63-A: the SessionStart source at driver creation ("fork" for
    *  --fork-session); absent → derived from resumeHistory. Flows through the
    *  DriverSessionOptions spread below. */
-  readonly sessionStartSource?: import("@wudao/core").SessionStartSource;
+  readonly sessionStartSource?: import("@wudao-org/core").SessionStartSource;
   /** M63-B: FileChanged watch targets (onFileChanged plain matchers). */
   readonly fileChangeTargets?: readonly string[];
   /** M63-B: the skills root for the skills-position ConfigChange face. */
@@ -122,11 +122,11 @@ export interface RunUiProps {
   readonly extensions?: ExtensionRuntime;
   /** M32: the session's read-state table (shared with a stub tool set in tests);
    *  absent → a fresh one per session (the same instance the tool set uses). */
-  readonly readState?: import("@wudao/core").ReadStateTable;
+  readonly readState?: import("@wudao-org/core").ReadStateTable;
   /** M46 §1: write-verify config injected into the core write tools. */
-  readonly writeVerify?: import("@wudao/core").WriteVerifyConfig;
+  readonly writeVerify?: import("@wudao-org/core").WriteVerifyConfig;
   /** M46 §2: long-output shaping config for shell. */
-  readonly longOutput?: import("@wudao/core").LongOutputConfig;
+  readonly longOutput?: import("@wudao-org/core").LongOutputConfig;
   /** M59 §3: web runtime for the tool set (fetch caps + optional search). */
   readonly web?: import("./tools.js").WebToolsRuntime;
   /** M59 §2: web.allowDomains — the permission gate's pre-approval list. */
@@ -273,7 +273,9 @@ export function parseUiPort(argv: readonly string[]): number | undefined {
 }
 
 // The web build, when it exists (v1-A serves the placeholder otherwise).
-async function probeStaticDir(): Promise<string | undefined> {
+export async function probeStaticDir(
+  here: string = dirname(fileURLToPath(import.meta.url)),
+): Promise<string | undefined> {
   // M43-C: standalone packaging (the desktop sidecar) can't probe relative to
   // dist/ — the SEA entry extracts the embedded web build and names it here.
   // Purely an override: unset/invalid falls through to the probe below.
@@ -286,13 +288,21 @@ async function probeStaticDir(): Promise<string | undefined> {
       // fall through to the packaged-dist probe
     }
   }
-  const candidate = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "web", "dist");
-  try {
-    const info = await stat(candidate);
-    return info.isDirectory() ? candidate : undefined;
-  } catch {
-    return undefined;
+  // 两个候选：仓内（packages/cli/dist → packages/web/dist）与 npm 安装形态
+  // （node_modules/wudao-harness/dist → node_modules/@wudao-org/web/dist）——
+  // 后者随 0.4.20 的 npm 首发线进来（@wudao-org/web 成为 CLI 的正式依赖）。
+  for (const candidate of [
+    join(here, "..", "..", "web", "dist"),
+    join(here, "..", "..", "@wudao-org", "web", "dist"),
+  ]) {
+    try {
+      const info = await stat(candidate);
+      if (info.isDirectory()) return candidate;
+    } catch {
+      // 试下一个候选
+    }
   }
+  return undefined;
 }
 
 function openOnMacOS(url: string): void {
@@ -369,6 +379,10 @@ export async function startUiSession(props: RunUiProps): Promise<UiSession> {
     topLevelTools: [createAskUserTool({ askUser: askLane.park.askUser })],
   });
   const { driver, registry } = session;
+  // 138 续：桌面端 boot 会话从上次工作区起步（main.rs 读 recents 首行经
+  // WUDAO_BOOT_WORKSPACE 下发；仅桌面端设置）。boot 会话空闲 → 立即落地
+  // 全链（agent_root 条目落盘，resume/fork 可继承）。
+  await adoptBootWorkspace(driver, process.env.WUDAO_BOOT_WORKSPACE, workspaceRoot);
   scheduleNotify.notify = (line: string) => driver.notify(line);
   // 122 项 2 — LaunchAgent 定时唤起回执：launchd 到点用 `open -a` 把 app
   // 拉起，Tauri 壳把 --schedule-wake 译成 WUDAO_SCHEDULE_WAKE=1 递进来

@@ -10,7 +10,7 @@ const HAD_FORCE_COLOR = process.env.FORCE_COLOR;
 process.env.FORCE_COLOR = "1";
 const React = await import("react");
 const { render } = await import("ink-testing-library");
-const { createScriptedModel } = await import("@wudao/core");
+const { createScriptedModel } = await import("@wudao-org/core");
 const { HistoryItem, WudaoApp } = await import("../src/tui/app.js");
 const { SPINNER_FRAMES, Spinner } = await import("../src/tui/spinner.js");
 const { StatusBar } = await import("../src/tui/status-bar.js");
@@ -21,7 +21,7 @@ import { describe, it, expect, afterAll, vi, afterEach } from "vitest";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 afterAll(() => {
   if (HAD_FORCE_COLOR === undefined) delete process.env.FORCE_COLOR;
@@ -277,7 +277,7 @@ describe("M25-B4 StatusBar", () => {
   it("threads model/session/cache/board into the app's bottom bar (integration)", async () => {
     let call = 0;
     const model = {
-      async generate(input: import("@wudao/core").ModelInput) {
+      async generate(input: import("@wudao-org/core").ModelInput) {
         call += 1;
         input.onUsage?.({ promptTokens: 2000, cacheHitTokens: 0, cacheMissTokens: 2000 });
         return { role: "assistant" as const, content: "BAR-ANSWER" };
@@ -325,7 +325,7 @@ describe("M35 defer status", () => {
   });
 
   it("a load_tools call through the app bumps the bar to `defer 1` and lands a deferred_loaded entry in the JSONL", async () => {
-    const { buildTool } = await import("@wudao/core");
+    const { buildTool } = await import("@wudao-org/core");
     const deferredTool = buildTool({
       name: "task",
       description: "Defer-marked orchestration stub.",
@@ -428,7 +428,7 @@ describe("0.3.15 duration surfaces", () => {
     // entirely, and a 300ms-only window made the old exact-match flake
     // (gate run 3). 2.6s widens the visible window to 1.6s.
     const model = {
-      async generate(input: import("@wudao/core").ModelInput) {
+      async generate(input: import("@wudao-org/core").ModelInput) {
         await new Promise((r) => setTimeout(r, 2_600));
         input.onUsage?.({ promptTokens: 100, cacheHitTokens: 0, cacheMissTokens: 100, durationMs: 2_600 });
         return { role: "assistant" as const, content: "SLOW-ANSWER" };

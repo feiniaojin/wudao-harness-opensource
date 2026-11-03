@@ -25,7 +25,7 @@
 import { exec } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { scrubChildEnv, type PermissionDecision } from "@wudao/core";
+import { scrubChildEnv, type PermissionDecision } from "@wudao-org/core";
 
 /** The trust label D1's loader stamps; re-declared structurally so this
  *  module stays import-cycle-free (skills.ts imports HERE for real). */

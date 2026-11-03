@@ -9,9 +9,9 @@
 import { open, readFile, readdir, realpath, rename, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput } from "@wudao/core"
-import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection } from "@wudao/core";
-import { isValidImageBlock, isValidFileBlock } from "@wudao/core";
+import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput } from "@wudao-org/core"
+import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection } from "@wudao-org/core";
+import { isValidImageBlock, isValidFileBlock } from "@wudao-org/core";
 import { renderTurnDiff } from "../turn-diff-render.js";
 import { truncate, formatCompactedLine, modelLabel, RESULT_PREVIEW_CHARS } from "../log.js";
 // ω99-41: streaming deltas accumulate in chunk buffers (linear) and fold into
@@ -114,7 +114,7 @@ import type { ModelChoice, ModelSelection } from "../commands/model.js";
 // M63 §A: the /provider command's shared machinery (pure halves; the client
 // rebuild reaches the frontend through the onProviderSwitch seam below).
 import { validateProviderName, providerRows, formatProviderList, recordProviderChange, envOnlyProviderResolver, borrowedKeyPoolNote, PROVIDER_SWITCH_CACHE_NOTE } from "../commands/provider.js";
-import type { BuiltinProviderName, ProviderName } from "@wudao/providers";
+import type { BuiltinProviderName, ProviderName } from "@wudao-org/providers";
 // SDD 2026-08-23 persona: the /persona command's pure layer (parse → resolve
 // → apply → record) — the driver's handler is a thin shell over it, exactly
 // like the REPL's (repl.ts ~1668), with appendHistory notices for output.
@@ -123,9 +123,9 @@ import {
   personaSwitchBreaksCache, recordPersonaChange, formatPersonaList, PERSONA_SWITCH_CACHE_NOTE,
 } from "../commands/persona.js";
 import type { PersonaChainSources } from "../commands/persona.js";
-import { applyWirePersona, resolveContextWindowTokens } from "@wudao/providers";
+import { applyWirePersona, resolveContextWindowTokens } from "@wudao-org/providers";
 import { loadEffectiveProfiles } from "../provider-registry.js";
-import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao/providers";
+import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao-org/providers";
 // ω99-320: the session's soft-warn slot (run-scoped accounting + live notice).
 import type { SoftWarnSlot } from "../soft-warn-tracker.js";
 import { runPermissionsCommand } from "../commands/permissions.js";
@@ -156,7 +156,7 @@ import { runAgentsCommand } from "../commands/agents-roster.js";
 import { validateAddDirPath, buildAddedDirEntry, formatAddDirNotice, ADDED_DIR_TYPE } from "../commands/add-dir.js";
 import { formatDoctorReport, type DoctorInput } from "../commands/doctor.js";
 import { buildTaskRows, formatTasksReport } from "../commands/tasks.js";
-import type { RosterPluginAgent } from "@wudao/core";
+import type { RosterPluginAgent } from "@wudao-org/core";
 import { VERSION } from "../version.js";
 import { getCompactInstructionsRider } from "../project-context.js";
 // workspace-ux B1: the recents write behind panelRootSet (settings-ops owns
@@ -375,9 +375,22 @@ export interface PanelRootSetResult {
  *  only through panelRootSet); agentRoot is the session's workspace root
  *  (the tools' boundary — cwd when none was given). aligned is a plain
  *  string equality: true until a panelRootSet diverges them. */
+/** 140（2026-11-03 用户令：监控要看全——系统提示词、用户提示词、工具入参/
+ * 出参/异常、思考全量）— 会话解剖 op 的回执。messages 是持久消息链的直读
+ *（role/content/reasoning/toolCalls/toolCallId/isError 全字段；投影层对模型
+ * 所见的裁剪不在此——这里给的是完整存档）。 */
+export interface SessionAnatomyResult {
+  readonly systemPrompt: string;
+  readonly messages: readonly Record<string, unknown>[];
+}
+
 export interface AgentRootStatusResult {
   readonly panelRoot: string;
   readonly agentRoot: string;
+  /** 138 续（2026-11-03 用户令）：boot 根（会话锚：CLI 的 cwd / 桌面端的
+   * 数据目录）——工作区菜单「默认空间」钉项的落点，切走后一键回默认。
+   * 可选：老 server 缺席 → 前端不渲染钉项，字节不变。 */
+  readonly bootRoot?: string;
   readonly aligned: boolean;
 }
 
@@ -533,7 +546,7 @@ export interface AgentDriverOptions {
   /** 125 项 1（codex new_context 形）：模型侧轮转的端口盒——session-engine
    *  构造并传入，driver 把它接到 loop 的 contextRotation 端口。缺省=不接
    *  （new_context 工具 fail-absent，行为不变）。 */
-  contextRotationBox?: import("@wudao/core").NewContextPortBox;
+  contextRotationBox?: import("@wudao-org/core").NewContextPortBox;
   /** 125 项 1：轮转事件的回调面——driver 在 compacted 事件的 trigger 为
    *  agent-rotation 时调用（session-engine 消费它落 context_rotation 条目）。 */
   onContextRotation?: (info: { window: number; rationale: string }) => void;
@@ -636,7 +649,7 @@ export interface AgentDriverOptions {
    *  (buildToolSet opts.stopTree) and this driver, so child registration and
    *  the driver's interrupt-path stop planning share one tree. Absent box /
    *  unarmed slots → no bookkeeping, every dispatch byte-identical. */
-  stopTreeBox?: import("@wudao/core").StopTreeDispatchPort;
+  stopTreeBox?: import("@wudao-org/core").StopTreeDispatchPort;
   /** M63-C R1: the fire-runtime view (getMode/common/mcp/rewake) — the SAME
    *  boxes the session's configured hooks compiled with, so the
    *  skill-position overlay's compile is contract-complete (§2 common fields
@@ -729,7 +742,7 @@ export interface AgentDriverOptions {
   onBeforeToolDispatch?: LoopOptions["onBeforeToolDispatch"];
   /** M55 §C1: session store for recording added_dir entries. Optional — the driver
    *  works without it, just won't persist the entries. */
-  sessionStore?: import("@wudao/core").SessionStore;
+  sessionStore?: import("@wudao-org/core").SessionStore;
   /** Fired once when the AgentState is created, so the caller can hand the tool
    *  set's contextProbe / getForkContext closures a live reference. */
   onStateReady?: (state: AgentState) => void;
@@ -747,7 +760,7 @@ export interface AgentDriverOptions {
     readonly reason: string;
     readonly tier: 0 | 1 | 2 | 3;
     readonly windowIndex?: number;
-    readonly worldState?: import("@wudao/core").WorldState;
+    readonly worldState?: import("@wudao-org/core").WorldState;
   }) => void;
   /** Fired when the run's one load_tools call applied (M35 §1/§2). */
   onDeferLoaded?: (names: readonly string[]) => void;
@@ -772,19 +785,19 @@ export interface AgentDriverOptions {
    *  SAME instance the tool set records into. Reset at run start; the
    *  run-settle seam renders the receipt (preview text + full diff detail).
    *  Absent → no net-change notice, unchanged behavior. */
-  turnDiff?: import("@wudao/core").TurnDiffTracker;
+  turnDiff?: import("@wudao-org/core").TurnDiffTracker;
   /** 夜移 035 (codex turn_timing.rs): the run's phase recorder — threaded
    *  verbatim into the loop's options. Consumer-owned (created before the
    *  run; completed+read at the consumer's settle seam — complete is
    *  idempotent/memoized). Absent → the loop's hot path is untouched. */
-  turnProfile?: import("@wudao/core").TurnProfileRecorder;
+  turnProfile?: import("@wudao-org/core").TurnProfileRecorder;
   /** 夜移 036 (codex rollout_budget.rs): the SESSION-tree token budget —
    *  one instance for the whole driver (root loop + every subagent share
    *  the accounting; subagents rebind the reminder threadId). Threaded as
    *  { budget, threadId: "root" }. Exhaustion ends runs through
    *  {reason:"session_budget_exhausted"} — sticky across later runs.
    *  Absent → unchanged behavior. */
-  sessionBudget?: import("@wudao/core").SessionBudget;
+  sessionBudget?: import("@wudao-org/core").SessionBudget;
   /** Frontend-owned permission ask (the TUI's PermissionPrompt). Present →
    *  asks route through it verbatim (zero TUI behavior change); absent → the
    *  ask parks as `status.pendingPermission` and `answerPermission` resolves
@@ -939,7 +952,7 @@ export interface AgentDriverOptions {
    *  resolveProviderSwitch's 0.3.32c note. */
   onProviderSwitch?: {
     readonly resolve: (target: string) => import("../commands/provider.js").ProviderSwitchResult;
-    readonly build: (config: import("@wudao/providers").ProviderConfig) => ModelClient;
+    readonly build: (config: import("@wudao-org/providers").ProviderConfig) => ModelClient;
     readonly isPlaceholderLive?: () => boolean;
     readonly keyRefreshPending?: () => boolean;
     /** 2026-08-31 config-drift: a fresh resolve of the LIVE provider would

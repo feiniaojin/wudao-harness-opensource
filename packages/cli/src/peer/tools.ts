@@ -3,8 +3,8 @@
 // Built with the core buildTool factory, fail-closed annotations, validation
 // BEFORE side effects, and a FIXED position in the tool array (registered at
 // session start — the tool-list prefix stays byte-stable all session).
-import { buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { peerShortId } from "./registry.js";
 import type { PeerRuntime } from "./runtime.js";
 

@@ -2,9 +2,9 @@
 // 体内连续段，闭包体逐字保留——props/config/liveConfig/workspaceRoot/sessionId0
 // 收进 ctx 显式线程）。
 import { join } from "node:path";
-import { loadPersonaRegistry, createPersonaRuntime } from "@wudao/providers";
-import type { PersonaRuntime, ProtocolId } from "@wudao/providers";
-import type { ProviderConfig } from "@wudao/providers";
+import { loadPersonaRegistry, createPersonaRuntime } from "@wudao-org/providers";
+import type { PersonaRuntime, ProtocolId } from "@wudao-org/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { resolveBootstrapPersona, resolveActivePersona } from "../commands/persona.js";
 import type { PersonaChainSources } from "../commands/persona.js";
 import { resolveGlobalHome } from "../settings-layer.js";

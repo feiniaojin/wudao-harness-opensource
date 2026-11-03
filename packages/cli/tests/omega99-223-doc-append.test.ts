@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // 写面原语（追加复用的构造器与校验 schema 都在写面文件）。
 import { buildDocx } from "../src/doc-docx.js";
 import type { DocBlock } from "../src/doc-docx.js";

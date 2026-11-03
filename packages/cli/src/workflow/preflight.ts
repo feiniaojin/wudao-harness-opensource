@@ -16,8 +16,8 @@
 // All pure values: env + numbers + the credentials file in, refusals out.
 // Failures refuse fast with clear reasons; the engine turns a refusal into
 // a preflight-refused task failure with ZERO model calls.
-import { parseApiKeyPool, resolveProviderConfigResult } from "@wudao/providers";
-import type { EffectiveProfile, ProviderSelection } from "@wudao/providers";
+import { parseApiKeyPool, resolveProviderConfigResult } from "@wudao-org/providers";
+import type { EffectiveProfile, ProviderSelection } from "@wudao-org/providers";
 import { availableModels } from "../commands/model.js";
 // Review R1 (M63 §B): the credentials-file fallback — admission must pass
 // for file-only-key users exactly like routing does.

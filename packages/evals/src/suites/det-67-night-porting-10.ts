@@ -22,7 +22,7 @@
 //                     stale glm-era `true` onto deepseek (explicit beats
 //                     profile — a stale true would wrongly suppress the
 //                     repair on the next provider).
-import { createOpenAICompatibleProvider, PROVIDER_PROFILES, resolveProviderConfigResult, omitsReasoningOnToolTurns, type ProviderConfig } from "@wudao/providers";
+import { createOpenAICompatibleProvider, PROVIDER_PROFILES, resolveProviderConfigResult, omitsReasoningOnToolTurns, type ProviderConfig } from "@wudao-org/providers";
 import { resolveProviderSwitch, applyProviderConfig } from "wudao-harness/commands/provider";
 import type { MutableProviderConfig } from "wudao-harness/commands/model";
 import type { EvalDefinition } from "../runner.js";

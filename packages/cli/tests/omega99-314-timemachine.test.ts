@@ -21,8 +21,8 @@ import {
   createTurnDiffTracker,
   createWriteFileTool,
   createJsonlSessionStore,
-} from "@wudao/core";
-import type { ModelClient, SessionEntry, AgentMessage } from "@wudao/core";
+} from "@wudao-org/core";
+import type { ModelClient, SessionEntry, AgentMessage } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { createSnapshotStore, sha256Hex } from "../src/snapshots.js";

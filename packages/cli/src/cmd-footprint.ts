@@ -22,10 +22,10 @@
 //   * mtimeMs+size 指纹理论盲区：同 ms 同 size 不同内容 → 漏报（实践罕见）。
 //   * M24：本层全程旁路——不进 state.messages、不进 system prompt、不进
 //     模型请求投影；产出只走 emit 队列（settle 的 appendEntries 之外零写）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 import type { SnapshotStore } from "./snapshots.js";
 
 /** 指纹扫描的固定忽略集（目录名或文件名，每一层都判）。★`.wudao` 在场是

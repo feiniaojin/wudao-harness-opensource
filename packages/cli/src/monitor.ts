@@ -18,7 +18,7 @@
 // shell:true spawn's real work sits in the shell's CHILDREN, so stop()
 // signals the whole GROUP — kill(-pid) — instead of orphaning them; win32,
 // which has no process groups, keeps the direct kill).
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { spawn as nodeSpawn } from "node:child_process";
 import { watch as nodeWatch } from "node:fs";
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -47,7 +47,7 @@ import {
   type MonitorTerminalReason,
   type MonitorWatch,
   type MonitorWatchState,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 /** How often silence/TTL are re-checked (unref'd; never keeps the process alive). */
 export const MONITOR_TICK_MS = 1000;

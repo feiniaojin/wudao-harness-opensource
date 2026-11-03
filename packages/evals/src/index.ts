@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// @wudao/evals CLI (`pnpm eval`): run the deterministic suites (always) plus
+// @wudao-org/evals CLI (`pnpm eval`): run the deterministic suites (always) plus
 // the live suites (skipped with a reason when no API key is present), print a
 // pass/fail/skip table, write .wudao/evals/last.json, and exit non-zero on any
 // failure. Deterministic or live — a failure is a failure.

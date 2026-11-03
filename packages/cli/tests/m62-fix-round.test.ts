@@ -21,7 +21,7 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import { routePreflight } from "../src/workflow/preflight.js";
 import { workflowMain } from "../src/workflow/cli.js";
 import { runConfigCommand } from "../src/commands/config.js";
@@ -119,16 +119,22 @@ describe("M62 fix M1 — one-shot memoryEnabled:false → no memory store", () =
       expect(off.code).toBe(0);
       expect(stub.toolLists.length).toBeGreaterThanOrEqual(1);
       const offTools = stub.toolLists[0] ?? [];
-      expect(offTools).not.toContain("memory_write");
+      // 记忆两库收敛后工具面换轨到长期记忆三件套（memory_save/search/forget；
+      // M49 的 memory_write 已不挂载——同时钉住新旧两面都不在场）。
+      expect(offTools).not.toContain("memory_save");
       expect(offTools).not.toContain("memory_search");
+      expect(offTools).not.toContain("memory_forget");
+      expect(offTools).not.toContain("memory_write");
       // No store was opened behind the flag's back: nothing to read or write.
       expect(existsSync(join(disabledWs, ".wudao", "memory.jsonl"))).toBe(false);
+      // 读面也不许落地目录（懒 mkdir——只读入口零文件系统副作用）。
+      expect(existsSync(join(disabledWs, ".wudao", "memory"))).toBe(false);
 
       stub.toolLists.length = 0;
       const on = await runOneShot("hi", enabledWs, envHome, baseURL);
       expect(on.code).toBe(0);
       const onTools = stub.toolLists[0] ?? [];
-      expect(onTools).toContain("memory_write");
+      expect(onTools).toContain("memory_save");
       expect(onTools).toContain("memory_search");
     } finally {
       await stub.close();

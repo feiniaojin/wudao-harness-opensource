@@ -8,7 +8,7 @@
 import { describe, it, expect } from "vitest";
 import { withCommandFootprint } from "../src/cmd-footprint.js";
 import { createSnapshotStore, withSnapshotCapture } from "../src/snapshots.js";
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 
 const fpDeps = {
   liveRoot: () => undefined, // hooks 永不被调用——只查旗标形状

@@ -29,8 +29,8 @@ import {
   activeBranchLeafKey,
   SUMMARY_MARKER,
   type AgentMessage,
-} from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+} from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 

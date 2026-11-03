@@ -11,7 +11,7 @@ import { pluginMain, runPluginSlashCommand, tokenizeArgs } from "../src/commands
 import { isBuiltinCommandName } from "../src/plugins.js";
 import { parseReplCommand } from "../src/repl.js";
 import { listSlashCommands } from "../src/slash-commands.js";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 

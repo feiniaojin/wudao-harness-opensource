@@ -135,13 +135,27 @@ describe("ω99-307 — Buddy 模式 composer 的工作区 chip（#457）", () =>
     await act(async () => {
       h.server.socket.serverSend({ t: "result", id: switchOp?.id, ok: { root: "/Users/u/work/proj-y" } });
     });
-    // 回执 + 面板根跟进（chip 标签随新根）。
-    expect(h.container.textContent).toContain("文件面板根 → /Users/u/work/proj-y");
+    // 137：一次点击两个根一起动——agentRootSwitch 跟在 panelRootSet 后出线
+    //（第二跳；panel 回执后才发，需再排一轮）。回执后 chip 标签随新根。
+    let agentOp = opFrames(h).find((o) => o.op.op === "agentRootSwitch");
+    await act(async () => {
+      if (agentOp === undefined) return;
+      h.server.socket.serverSend({ t: "result", id: agentOp.id, ok: { applied: true, queued: false } });
+    });
+    if (agentOp === undefined) {
+      // 上一轮 act 内才发出——再排一轮拿到帧并应答。
+      await act(async () => {
+        agentOp = opFrames(h).find((o) => o.op.op === "agentRootSwitch");
+        h.server.socket.serverSend({ t: "result", id: agentOp?.id, ok: { applied: true, queued: false } });
+      });
+    }
+    expect(agentOp?.op).toMatchObject({ path: "/Users/u/work/proj-y" });
+    expect(h.container.textContent).toContain("工作区已切换（agent 工作目录已跟随）→ /Users/u/work/proj-y");
     expect(
       (h.container.querySelector(".buddy .composer-tools .chip.work") as HTMLButtonElement | null)?.textContent,
     ).toContain("proj-y");
-    // B3：agent 根没动——确认卡在 buddy 的同一列里问（不是只属于高级面）。
-    expect(h.container.querySelector(".buddy .approval.agent-root")).not.toBeNull();
+    // B3 确认卡退役：任何分支都不再升起。
+    expect(h.container.querySelector(".approval.agent-root")).toBeNull();
   });
 
   it("高级面 composer 不渲染该 chip（树顶切换器是唯一家——ω99-298 单一交互家纪律）", async () => {

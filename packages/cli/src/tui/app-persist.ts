@@ -2,8 +2,8 @@
 // M33 append-only JSONL 落账、夜移 017 用户先行持久化、波次8 #45 工具前屏障、
 // ω99-38 /clear 旋转镜像。hook 簇原序整体迁移；显式依赖对象。
 import { useCallback, useRef } from "react";
-import type { AgentMessage, SessionStore } from "@wudao/core";
-import { repairOrphanedToolCalls } from "@wudao/core";
+import type { AgentMessage, SessionStore } from "@wudao-org/core";
+import { repairOrphanedToolCalls } from "@wudao-org/core";
 import { appendSessionEntry, buildClearBoundaryEntry, buildCompactBoundaryEntry, buildDeferredLoadedEntry } from "../session-entry.js";
 import { selectMessagesToPersist } from "../persist.js";
 import type { CacheTrackingModel } from "../cache.js";
@@ -47,7 +47,7 @@ const onCompactBoundary = useCallback((info: {
   readonly reason: string;
   readonly tier: 0 | 1 | 2 | 3;
   readonly windowIndex?: number;
-  readonly worldState?: import("@wudao/core").WorldState;
+  readonly worldState?: import("@wudao-org/core").WorldState;
 }): void => {
   appendSessionEntry(S.storeRef.current, S.sessionRef.current, buildCompactBoundaryEntry(info)).catch(persistFailed);
 }, [persistFailed]);

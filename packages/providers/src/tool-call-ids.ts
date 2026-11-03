@@ -16,7 +16,7 @@
 // The scope is ONE assistant message (the wire's own uniqueness scope), and
 // resume needs no registry: outbound stripping is shape-based, so persisted
 // deduped ids strip identically on every later request.
-import type { ToolCall } from "@wudao/core";
+import type { ToolCall } from "@wudao-org/core";
 
 /** Is this the name-as-id shape the dedupe applies to (id echoes the name)?
  *  Empty ids/names are excluded — a missing id on a missing name is

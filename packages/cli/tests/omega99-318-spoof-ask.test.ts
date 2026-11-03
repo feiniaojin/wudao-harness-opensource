@@ -12,8 +12,8 @@ import { render } from "ink-testing-library";
 import { mkdtempSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel, createJsonlSessionStore, buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { createScriptedModel, createJsonlSessionStore, buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import type { AskAnswer } from "../src/permission.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
@@ -32,7 +32,7 @@ async function until(cond: () => boolean | Promise<boolean>, what: string, timeo
   }
 }
 
-function parkingGate(box: { current?: AgentDriver }): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao/core").PermissionDecision> {
+function parkingGate(box: { current?: AgentDriver }): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao-org/core").PermissionDecision> {
   return async (toolName, input) => box.current?.ask(toolName, input) ?? { behavior: "allow" };
 }
 

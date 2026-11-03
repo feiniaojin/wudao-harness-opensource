@@ -6,8 +6,8 @@
 // tool never bypasses it) — user-scope suggestions land pending at most, so
 // the review NEVER writes the user domain directly. WUDAO_BG_REVIEW=off
 // disables the whole mechanism.
-import type { AgentMessage, ModelClient, Tool } from "@wudao/core";
-import { buildTool } from "@wudao/core";
+import type { AgentMessage, ModelClient, Tool } from "@wudao-org/core";
+import { buildTool } from "@wudao-org/core";
 import type { AgentRegistry } from "../agents/index.js";
 import { openMemoryStore } from "./store.js";
 

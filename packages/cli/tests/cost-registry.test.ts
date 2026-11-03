@@ -9,7 +9,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelUsage } from "@wudao/core";
+import type { ModelUsage } from "@wudao-org/core";
 import {
   priceEnvName,
   parsePriceEntry,

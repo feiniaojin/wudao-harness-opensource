@@ -1,4 +1,4 @@
-// @wudao/server — the localhost WS protocol server for an AgentDriver (M43-A
+// @wudao-org/server — the localhost WS protocol server for an AgentDriver (M43-A
 // §2). node:http serves the static frontend (placeholder when absent) and
 // carries the WS endpoint; `ws` is the ONLY new runtime dependency. The server
 // is transport-only: it relays the driver's two channels (append-only history,
@@ -692,6 +692,7 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
         case "probeStream":
         case "probeRecent":
         case "probeStats":
+        case "probeEnable":
           probeRelay.handleOp(o, reply);
           return;
         case "sessions":
@@ -1354,6 +1355,20 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           );
           return;
         }
+        // 140（监控要看全）：会话解剖——系统提示词 + 消息链全量（监控面板的
+        // 数据源）。纯读、可选方法（老 driver 拒答族）；载荷可能大，loopback
+        // 单用户无分页（面板侧截断渲染）。
+        case "sessionAnatomy": {
+          if ((opts.driver as { sessionAnatomy?: () => Promise<unknown> }).sessionAnatomy === undefined) {
+            reply(undefined, "session anatomy not supported by this driver");
+            return;
+          }
+          void (opts.driver as { sessionAnatomy: () => Promise<unknown> }).sessionAnatomy().then(
+            (result) => reply(result),
+            (err) => reply(undefined, errText(err)),
+          );
+          return;
+        }
         // ω99-213: #2 — the away recap. Same op contract as the file ops
         // (auth-gated, exactly one result, optional driver method); shape
         // validation only — the session-identity / mark / threshold gates and
@@ -1830,7 +1845,9 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
   opts.driver.onHistory((entries, reset) =>
     send(reset ? { t: "history", entries, reset: true } : { t: "history", entries }),
   );
-  opts.driver.onLoopEvent((event) => send({ t: "event", event }));
+  // 137（监督者三件）：事件帧带 at（epoch ms，转发时刻=发射同 tick）。裸
+  // LoopEvent 自身无时间戳——消费者按序号即可，监督者做时序分析用本字段。
+  opts.driver.onLoopEvent((event) => send({ t: "event", at: Date.now(), event }));
 
   // Heartbeat: ping every interval; a socket that never pongged since the
   // last sweep is terminated (dead-tab detection).

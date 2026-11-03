@@ -3,7 +3,7 @@
 // 层、ω99-21 免疫顶、M63-A PermissionRequest 钩子层、主闸 modeGate 与
 // 子代理闸 subagentGate。hook 簇原序整体迁移；显式依赖对象。
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 import { summarizeToolCall } from "../log.js";
 import {
   askAnswerToDecision,
@@ -29,7 +29,7 @@ export interface PermissionStackDeps {
   readonly notifyRef: { current: (text: string) => void };
   readonly initialMode: { readonly current: Mode };
   readonly liveHooks: AgentHooks | undefined;
-  readonly onPermissionAsk: (toolName: string, summary: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao/core").SpoofInspection }) => Promise<AskAnswer>;
+  readonly onPermissionAsk: (toolName: string, summary: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao-org/core").SpoofInspection }) => Promise<AskAnswer>;
   readonly sidecar: Sidecar | undefined;
   readonly webAllowDomains: readonly string[] | undefined;
   readonly trustSuppressed: (() => boolean) | undefined;
@@ -149,7 +149,7 @@ const subagentGate = useCallback(
 // becomes the hook layer's no-opinion fall-through (mandated order: after
 // deny rules, before the sidecar checks).
 const sidecarGate = useCallback(
-  (toolName: string, input: Record<string, unknown>, ctx: SidecarEscalation): Promise<import("@wudao/core").PermissionDecision> =>
+  (toolName: string, input: Record<string, unknown>, ctx: SidecarEscalation): Promise<import("@wudao-org/core").PermissionDecision> =>
     P.apiRef.current?.driver.ask(toolName, input, { sidecarReason: ctx.circuitOpen ? undefined : ctx.reason }) ??
     Promise.resolve({ behavior: "deny" as const, reason: "driver unavailable" }),
   [],

@@ -28,7 +28,7 @@
 // red names BOTH the betrayed acceptance (addedByTask) and the completing
 // task that triggered the detection. Ratchet reds bill the completing task's
 // attempt budget exactly like gate reds.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readFile } from "node:fs/promises";
 import { readdirSync, existsSync } from "node:fs";
 import { join, sep } from "node:path";

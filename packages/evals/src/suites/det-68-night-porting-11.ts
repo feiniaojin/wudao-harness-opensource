@@ -24,7 +24,7 @@
 //                       does not suppress the fallback leg's retry (a 500
 //                       walks the M62 chain; the fallback leg's missing
 //                       turn still replays and recovers).
-import { createOpenAICompatibleProvider, type ProviderConfig } from "@wudao/providers";
+import { createOpenAICompatibleProvider, type ProviderConfig } from "@wudao-org/providers";
 import type { EvalDefinition } from "../runner.js";
 
 export interface NightPorting11Evidence {

@@ -2,7 +2,7 @@ packages:
   - "packages/*"
   # M43-C: the desktop shell joins the workspace so its deps install with the
   # rest — but every root script filters explicitly ('./packages/*' or named
-  # @wudao/* packages), so it stays OUT of `pnpm build` / `pnpm test` chains.
+  # @wudao-org/* packages), so it stays OUT of `pnpm build` / `pnpm test` chains.
   # Its own lifecycle runs only through the root `desktop:*` scripts.
   - "apps/*"
 allowBuilds:

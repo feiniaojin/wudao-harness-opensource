@@ -6,7 +6,7 @@
 // byte-identical text-only golden, and the canonical serializer's durable
 // ref form (spec invariants 1/2/3/4 at the provider boundary).
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelInput } from "@wudao/core";
+import type { AgentMessage, ModelInput } from "@wudao-org/core";
 import {
   createOpenAICompatibleProvider,
   serializePrompt,

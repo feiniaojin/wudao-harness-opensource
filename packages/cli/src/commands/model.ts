@@ -9,10 +9,10 @@
 // switches the NEXT request without rebuilding the client (identity-stable —
 // cache stats and every tool closure over the model stay valid).
 import { join } from "node:path";
-import { REASONING_EFFORTS, isBuiltinProviderName } from "@wudao/providers";
-import type { ProviderConfig, ProviderName, ReasoningEffort } from "@wudao/providers";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { ModelChangeEntry, SessionEntry, ThinkingLevelChangeEntry } from "@wudao/core";
+import { REASONING_EFFORTS, isBuiltinProviderName } from "@wudao-org/providers";
+import type { ProviderConfig, ProviderName, ReasoningEffort } from "@wudao-org/providers";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { ModelChangeEntry, SessionEntry, ThinkingLevelChangeEntry } from "@wudao-org/core";
 import { loadEffectiveProfiles } from "../provider-registry.js";
 
 /** One selectable model: the profile it belongs to and where it came from. */

@@ -152,6 +152,8 @@ async function drain(h: Harness, recents: readonly { path: string; lastUsed: str
         ok = { workspaces: f.op.add !== undefined ? [{ path: f.op.add, lastUsed: "now" }, ...recents] : recents };
       } else if (f.op.op === "agentRootStatus") {
         ok = { panelRoot: "/w/root", agentRoot: "/w/root", aligned: true };
+      } else if (f.op.op === "agentRootSwitch") {
+        ok = { applied: true, queued: false };
       } else if (f.op.op === "panelRootSet") {
         ok = { root: f.op.path };
       }
@@ -369,8 +371,14 @@ describe("ui-review-r2 I4 — the workspace pick (workspace-ux B1: panel re-root
     expect(h.container.querySelector(".modal-card")).toBeNull();
     expect(hasOp(h, (o) => o.op === "panelRootSet" && o.path === "/w/proj-b")).toBe(true);
     expect(hasOp(h, (o) => o.op === "switchWorkspace")).toBe(false);
-    // Still busy — nothing was interrupted.
-    expect(h.container.querySelector(".chat")?.textContent).toContain("文件面板根 → /w/proj-b");
+    // 137：agent 根跟发出线；busy 由 driver 排队（不中断运行）。排空第二跳。
+    for (let i = 0; i < 4 && opFrames(h).some((f) => !h.answered.has(f.id)); i += 1) {
+      await drain(h);
+    }
+    expect(hasOp(h, (o) => o.op === "agentRootSwitch" && o.path === "/w/proj-b")).toBe(true);
+    // Still busy — nothing was interrupted（本 harness 答 applied:true → 成功
+    // 文案；排队文案由 agent-root-card.test.tsx 的 busy 用例钉）。
+    expect(h.container.querySelector(".chat")?.textContent).toContain("工作区已切换（agent 工作目录已跟随）→ /w/proj-b");
   });
 
   it("an unsent draft survives a pick (no navigate anymore); the label follows the receipt", async () => {

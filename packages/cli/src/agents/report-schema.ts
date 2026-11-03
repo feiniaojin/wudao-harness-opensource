@@ -10,8 +10,8 @@
 // provider shapes the call's arguments against it (goose final_output parity:
 // tool-args JSON is far more reliable than free text), and execute re-checks
 // through the M29 subset validator. Side-effect-free by construction.
-import { buildTool } from "@wudao/core";
-import type { Tool, ToolParameterSchema } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool, ToolParameterSchema } from "@wudao-org/core";
 import { validateJsonSchemaSubset } from "../workflow/structured-output.js";
 import type { JsonSchemaType, JsonSchemaSubset } from "../workflow/structured-output.js";
 

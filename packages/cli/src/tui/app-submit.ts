@@ -2,10 +2,10 @@
 // /resume 选择器、!cmd、/find、slash 命令族、@-mention/bang 前缀编织）。
 // 显式依赖对象（无闭包捕获）；app.tsx 的 useCallback 包装保持原依赖数组，
 // 闭包捕获语义与原函数体逐字节同源。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { join } from "node:path";
 import type { Dispatch, SetStateAction } from "react";
-import type { SessionStore } from "@wudao/core";
+import type { SessionStore } from "@wudao-org/core";
 import type { AgentRegistry } from "../agents/index.js";
 import type { ExtensionCommand } from "../extensions/api.js";
 import type { PluginCommand } from "../plugins.js";

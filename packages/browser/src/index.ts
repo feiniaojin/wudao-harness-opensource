@@ -1,4 +1,4 @@
-// @wudao/browser — the controlled-browser foundation (ω99-112).
+// @wudao-org/browser — the controlled-browser foundation (ω99-112).
 // Zero core runtime dependency: core appears as a TYPE import only (Tool,
 // ToolResult), playwright-core loads only inside the default port's launch()
 // as a dynamic import. Construction of the runtime is zero-IO.

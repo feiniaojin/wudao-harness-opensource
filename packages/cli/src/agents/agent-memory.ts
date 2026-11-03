@@ -25,8 +25,8 @@
 // untrusted-message machinery does not apply to them (nothing special here).
 import { readFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
-import { createEditTool, createReadFileTool, createWriteFileTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { createEditTool, createReadFileTool, createWriteFileTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 
 export type AgentMemoryTier = "project" | "local" | "user";
 

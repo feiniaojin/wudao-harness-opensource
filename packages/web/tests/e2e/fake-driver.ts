@@ -1,7 +1,7 @@
 // PB-3 E2E — the scripted fake driver (test double)。不挂真模型：每个会话
 // 挂一份「剧本」（FakeTurn[]），第 N 次 submit 回放第 N 条预设回合；状态
 // （busy / 会话表 / 设置 / 回收站 / 虚拟文件树）全部可编程。结构化满足
-// @wudao/server 的 UiDriverPort + LaneDriverPort（本包不 import server ——
+// @wudao-org/server 的 UiDriverPort + LaneDriverPort（本包不 import server ——
 // pnpm 隔离下 web 解析不到它，这里用纯结构形状对接，server 侧结构收货）。
 //
 // 回放纪律（对齐真 driver 的帧面）：

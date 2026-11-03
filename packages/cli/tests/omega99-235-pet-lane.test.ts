@@ -8,9 +8,9 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool } from "@wudao/core";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool } from "@wudao-org/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { startUiSession, PET_SESSION_ID, type UiSession } from "../src/ui.js";
 import { TITLE_QUERY_SOURCE } from "../src/session-title.js";
 

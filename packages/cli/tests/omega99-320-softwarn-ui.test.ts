@@ -21,8 +21,8 @@ import {
   type ModelClient,
   type ModelInput,
   type ModelStreamEvent,
-} from "@wudao/core";
-import { createOpenAICompatibleProvider } from "@wudao/providers";
+} from "@wudao-org/core";
+import { createOpenAICompatibleProvider } from "@wudao-org/providers";
 import { vi } from "vitest";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver, formatRunStats } from "../src/driver/agent-driver.js";

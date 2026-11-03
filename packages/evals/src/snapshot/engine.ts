@@ -36,8 +36,8 @@ import {
   type ModelInput,
   type Terminal,
   type Tool,
-} from "@wudao/core";
-import { createOpenAICompatibleProvider, serializePrompt, type ProviderConfig } from "@wudao/providers";
+} from "@wudao-org/core";
+import { createOpenAICompatibleProvider, serializePrompt, type ProviderConfig } from "@wudao-org/providers";
 import { containsMarker, diffPromptBytes, diffValues, INJECTION_MARKER, normalizeText, normalizeValue } from "./normalize.js";
 
 /** Fixture schema version — replay refuses unknown versions loudly. */

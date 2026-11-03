@@ -21,9 +21,9 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createScriptedModel, createJsonlSessionStore } from "@wudao/core";
-import type { Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool, createScriptedModel, createJsonlSessionStore } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { summarizeToolCall } from "../src/log.js";
 import type { AskAnswer } from "../src/permission.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
@@ -47,7 +47,7 @@ async function until(cond: () => boolean | Promise<boolean>, what: string, timeo
 }
 
 // m58 式规则门（248 同款）：一切工具调用落 ask → driver.ask。
-function parkingGate(box: { current?: AgentDriver }): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao/core").PermissionDecision> {
+function parkingGate(box: { current?: AgentDriver }): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao-org/core").PermissionDecision> {
   return async (toolName, input) => box.current?.ask(toolName, input) ?? { behavior: "allow" };
 }
 

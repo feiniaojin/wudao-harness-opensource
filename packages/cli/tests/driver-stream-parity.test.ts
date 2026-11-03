@@ -10,8 +10,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { AssistantMessage, ModelClient, ModelStreamEvent, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { AssistantMessage, ModelClient, ModelStreamEvent, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions, HistoryEntry } from "../src/driver/agent-driver.js";

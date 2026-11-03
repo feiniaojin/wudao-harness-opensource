@@ -5,7 +5,7 @@ import { describe, expect, it, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 
@@ -23,7 +23,7 @@ afterEach(async () => {
 const wait = (ms = 30) => new Promise((r) => setTimeout(r, ms));
 
 /** 大结果工具（可压缩面）。 */
-function bigTool(name: string): import("@wudao/core").Tool {
+function bigTool(name: string): import("@wudao-org/core").Tool {
   return {
     name,
     description: "big",
@@ -35,7 +35,7 @@ function bigTool(name: string): import("@wudao/core").Tool {
     async execute(input: { seq?: number }) {
       return { content: `BIG-RESULT#${String(input.seq ?? 0)}-` + "x".repeat(2000) };
     },
-  } as unknown as import("@wudao/core").Tool;
+  } as unknown as import("@wudao-org/core").Tool;
 }
 
 /** 一个跑 N 轮工具调用的模型。 */
@@ -85,7 +85,7 @@ describe("123-5 — idle microcompact seam", () => {
     // 隔离构造：手写一个带 8 条陈旧大工具结果的会话文件再 resume——run 内
     // 的请求路径管线从未碰过它（这些结果不经过任何 run），空闲档是它们
     // 的第一个压缩者。这是对本缝的孤立验证；run 内路径已有自己的管线。
-    const store = new (await import("@wudao/core")).createJsonlSessionStore(join(ws, ".wudao", "sessions"));
+    const store = new (await import("@wudao-org/core")).createJsonlSessionStore(join(ws, ".wudao", "sessions"));
     const rows: AgentMessage[] = [{ role: "user", content: "go" }];
     for (let i = 1; i <= 8; i += 1) {
       rows.push({ role: "assistant", content: "", toolCalls: [{ id: `c${i}`, name: "bigtool", arguments: { seq: i } }] });

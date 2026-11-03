@@ -543,7 +543,7 @@ export type ClientOp =
   | { op: "recoveryStatus" }
   /** PB-2 — 探针遥测读面三 op（server-answered，recoveryStatus 同族；纯读
    *  never vaulted；probeStream 订阅后事件走 {t:"probe"} 帧）。 */
-  | { op: "probeStream"; cat?: string } | { op: "probeRecent"; cat?: string; limit?: number } | { op: "probeStats" }
+  | { op: "probeStream"; cat?: string } | { op: "probeRecent"; cat?: string; limit?: number } | { op: "probeStats" } | { op: "probeEnable"; on: boolean } | { op: "sessionAnatomy" }
   /** M79 §4: admit base64 images → durable refs (fail-closed admission in
    *  the driver's AttachmentStore BEFORE any write; the error string names
    *  TOO_MANY_IMAGES / IMAGES_TOO_LARGE / the invalid field). */
@@ -972,6 +972,9 @@ export interface PanelRootSetResult {
 export interface AgentRootStatusResult {
   readonly panelRoot: string;
   readonly agentRoot: string;
+  /** 138 续（2026-11-03 用户令）：boot 根（会话锚）——工作区菜单「默认空
+   * 间」钉项的落点。可选：老 server 缺席 → 钉项不渲染，字节不变。 */
+  readonly bootRoot?: string;
   readonly aligned: boolean;
 }
 
@@ -989,6 +992,15 @@ export interface AgentRootSwitchResult {
  *  context window — the StatusBar ctx segment's hover breakdown. R5-I1:
  *  `imagesTokens` is the image estimate; OPTIONAL because an old server
  *  predates it (absent = treat as 0 — no hover line). */
+/** 140 — 会话解剖（PROTOCOL "sessionAnatomy"）：系统提示词 + 消息链全量
+ * （监控面板的「会话解剖」区段）。消息行是持久 AgentMessage 的直读形：
+ * role/user|assistant|tool、content、reasoning?（思考全文）、toolCalls?、
+ * toolCallId?/name?（tool 行）、isError?。可选 op：老 server 拒答。 */
+export interface SessionAnatomyResult {
+  readonly systemPrompt: string;
+  readonly messages: readonly Record<string, unknown>[];
+}
+
 export interface CtxInfoResult {
   readonly systemTokens: number;
   readonly toolsTokens: number;

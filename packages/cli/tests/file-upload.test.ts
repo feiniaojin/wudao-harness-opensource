@@ -7,14 +7,14 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createFileAttachmentStore } from "@wudao/core";
-import type { FileBlock, ModelClient, ModelInput } from "@wudao/core";
-import { createOpenAICompatibleProvider } from "@wudao/providers";
+import { createFileAttachmentStore } from "@wudao-org/core";
+import type { FileBlock, ModelClient, ModelInput } from "@wudao-org/core";
+import { createOpenAICompatibleProvider } from "@wudao-org/providers";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 import { resumeEntries } from "../src/tui/resume.js";
-import { isValidFileBlock } from "@wudao/core";
+import { isValidFileBlock } from "@wudao-org/core";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 

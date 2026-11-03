@@ -1,7 +1,7 @@
 // ω99 拆分运动 弧 B：mission 工具面外提（createMissionTools + /mission 命令
 // 解析——原 mission.ts 模块级段逐字保留；mission.ts re-export 门面保公共面。
 // MissionController 走 type-only 互引——类型级循环安全）。
-import { buildTool, type Tool } from "@wudao/core";
+import { buildTool, type Tool } from "@wudao-org/core";
 import { GOAL_GATE_MAX_CHARS } from "./goal.js";
 import { MISSION_NOTE_KINDS, NOTE_KIND_SET, MISSION_NOTE_TITLE_MAX_CHARS, MISSION_NOTE_CONTENT_MAX_CHARS, MISSION_BUNDLE_NAME_PATTERN } from "./mission-model.js";
 import type { PlanTaskInput } from "./mission-model.js";

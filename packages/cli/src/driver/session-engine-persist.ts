@@ -3,7 +3,7 @@
 // （earlyUserPersist/freshBootPending）走单一 persistState holder（单绑定+直写，
 // 不双份）；model 的 rotate() 走 getModel()（/provider 重建换实例后仍指向活模型）。
 // 其余闭包自由变量收进 ctx 显式线程。
-import type { AgentMessage, SessionStore } from "@wudao/core";
+import type { AgentMessage, SessionStore } from "@wudao-org/core";
 import type { AgentDriverOptions, AgentDriver } from "./agent-driver.js";
 import type { MutableProviderConfig } from "../commands/model.js";
 import type { SessionAllowlist } from "../permission.js";

@@ -7,8 +7,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { SessionEntry } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { SessionEntry } from "@wudao-org/core";
 import {
   buildWorkspaceRootEntry,
   recordedWorkspaceRoot,

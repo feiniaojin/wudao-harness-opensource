@@ -21,7 +21,7 @@
 import { readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { isProviderName } from "@wudao/providers";
+import { isProviderName } from "@wudao-org/providers";
 // Provider management: the `model:` shorthand gate widens to registry ids.
 import { loadEffectiveProfiles } from "./provider-registry.js";
 import { loadSkillsUnderDir, parseSkillFrontmatter } from "./skills.js";
@@ -32,7 +32,7 @@ import { normalizeServer } from "./mcp/config.js";
 import type { McpConfig, McpServerConfig } from "./mcp/config.js";
 import type { HookCommandConfig, HooksSettings, CanonicalHookEvent } from "./hooks-config.js";
 import { CANONICAL_HOOK_EVENTS } from "./hooks-config.js";
-import type { AgentRoleProfile, RosterPluginAgent } from "@wudao/core";
+import type { AgentRoleProfile, RosterPluginAgent } from "@wudao-org/core";
 import { readGlobalSettingsSync, resolveGlobalHome } from "./settings-layer.js";
 
 export type PluginWarn = (msg: string) => void;

@@ -24,11 +24,11 @@
 // decision verbatim — context plumbing, not a policy layer (capability ≠
 // policy). `loop.ts` and the `canUseTool` signature are untouched.
 import { AsyncLocalStorage } from "node:async_hooks";
-import { buildAuthzExcerpt, renderAskDigest } from "@wudao/core";
-import type { AgentMessage, AskerInfo } from "@wudao/core";
+import { buildAuthzExcerpt, renderAskDigest } from "@wudao-org/core";
+import type { AgentMessage, AskerInfo } from "@wudao-org/core";
 import type { ChildApprovalFace } from "./agents/child-approvals.js";
 
-export type { AskerInfo } from "@wudao/core";
+export type { AskerInfo } from "@wudao-org/core";
 
 export interface AskContext {
   readonly asker: AskerInfo;

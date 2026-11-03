@@ -53,7 +53,7 @@ export type ImprovementStatus =
   | "activated" // 规则已写入 rules 车道
   | "undone"; // 已激活后撤销（规则文件已删；可再激活）
 
-/** 门禁结果的序列化镜像（结构上等同 @wudao/evals 的 verdict——cli 不能
+/** 门禁结果的序列化镜像（结构上等同 @wudao-org/evals 的 verdict——cli 不能
  * import evals（工作区依赖图无环律），结构镜像 + 双侧测试钉同一字面量）。 */
 export interface ImprovementGateResult {
   readonly ok: boolean;
@@ -233,7 +233,7 @@ export function withStatus(record: ImprovementRecord, to: ImprovementStatus, pat
 // ---------------------------------------------------------------------------
 
 /** The exact bytes activation writes. MUST stay byte-identical to the gate's
- *  renderer (@wudao/evals improvement-gate.ts renderRuleFile) — both sides'
+ *  renderer (@wudao-org/evals improvement-gate.ts renderRuleFile) — both sides'
  *  tests pin the same literals; changing the shape is a two-file change by
  *  design (a drifted renderer gates the wrong bytes). */
 export function renderRuleFileForActivation(ruleText: string, paths?: readonly string[]): string {

@@ -1,4 +1,4 @@
-// @wudao/server — the localhost WS protocol server for an AgentDriver (M43-A
+// @wudao-org/server — the localhost WS protocol server for an AgentDriver (M43-A
 // §2). node:http serves the static frontend (placeholder when absent) and
 // carries the WS endpoint; `ws` is the ONLY new runtime dependency. The server
 // is transport-only: it relays the driver's two channels (append-only history,
@@ -266,6 +266,11 @@ export interface UiDriverPort {
    *  (the StatusBar ctx segment's tooltip data). Read-only over driver
    *  state; the relay below is a pass-through. */
   ctxInfo?(): Promise<unknown>;
+
+  /** 140（监控要看全）: the session's full anatomy — system prompt text +
+   *  the persisted message chain (user prompts, assistant content/reasoning,
+   *  tool calls/results). Optional like ctxInfo (absent → the op refuses). */
+  sessionAnatomy?(): Promise<unknown>;
   /** The away recap (PROTOCOL "recap"): stats counted from the
    *  session's structured history since the viewer's mark, plus an optional
    *  narrative from one tiny background model call. The reply is the payload

@@ -10,9 +10,9 @@
 // 协调器纯逻辑（树递归/属主校验/深度上限/admission 三态）的确定性测试在
 // packages/core/tests/stop-tree.test.ts——这里只钉接线面。
 import { describe, expect, it } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import type { AgentDriver, AgentDriverOptions, Tool } from "../src/driver/agent-driver.js";
-import type { StopTreeDispatchPort } from "@wudao/core";
+import type { StopTreeDispatchPort } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 

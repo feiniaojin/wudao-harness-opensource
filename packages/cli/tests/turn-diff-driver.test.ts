@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel, createTurnDiffTracker, createWriteFileTool, createEditTool } from "@wudao/core";
+import { createScriptedModel, createTurnDiffTracker, createWriteFileTool, createEditTool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 

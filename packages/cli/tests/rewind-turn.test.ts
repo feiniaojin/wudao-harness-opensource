@@ -14,8 +14,8 @@ import {
   createJsonlSessionStore,
   createScriptedModel,
   nodeKey,
-} from "@wudao/core";
-import type { AgentMessage, Tool } from "@wudao/core";
+} from "@wudao-org/core";
+import type { AgentMessage, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions, HistoryEntry } from "../src/driver/agent-driver.js";

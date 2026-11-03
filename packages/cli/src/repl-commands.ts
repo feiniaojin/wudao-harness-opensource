@@ -1,4 +1,4 @@
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { join, relative } from "node:path";
 import * as readline from "node:readline/promises";
 import { stdin as defaultStdin, stdout as defaultStdout } from "node:process";
@@ -6,15 +6,15 @@ import { randomUUID } from "node:crypto";
 // ω99-35: the headless (non-TTY) input batcher — the non-TTY rl wiring's
 // bracketed-paste equivalent (blank-line terminator + idle window).
 import { createHeadlessLineBatcher } from "./headless-batch.js";
-import { runAgentLoop, createJsonlSessionStore, createTaskTool, createAskUserTool, createCronTools, createMonitorTools, repairOrphanedToolCalls, manualCompact, compactionRetentionFor, resolveWorkspacePath, toModelToolDefinition, nodeKey, renderBranchTree, replaceSystemPrompt, newSessionId, type AgentHooks, type AgentMessage, type AgentState, type LoopEvent, type LoopGates, type ModelClient, type ReadStateTable } from "@wudao/core";
+import { runAgentLoop, createJsonlSessionStore, createTaskTool, createAskUserTool, createCronTools, createMonitorTools, repairOrphanedToolCalls, manualCompact, compactionRetentionFor, resolveWorkspacePath, toModelToolDefinition, nodeKey, renderBranchTree, replaceSystemPrompt, newSessionId, type AgentHooks, type AgentMessage, type AgentState, type LoopEvent, type LoopGates, type ModelClient, type ReadStateTable } from "@wudao-org/core";
 import { buildContextReport, formatContextReport } from "./context-report.js";
-import type { ProviderConfig, ProtocolId, ResolvedPersona } from "@wudao/providers";
-import { createProvider, createLiveKeyPool, loadPersonaRegistry, createPersonaRuntime, withPersona, applyWirePersona } from "@wudao/providers";
-import { createFileAttachmentStore } from "@wudao/core";
+import type { ProviderConfig, ProtocolId, ResolvedPersona } from "@wudao-org/providers";
+import { createProvider, createLiveKeyPool, loadPersonaRegistry, createPersonaRuntime, withPersona, applyWirePersona } from "@wudao-org/providers";
+import { createFileAttachmentStore } from "@wudao-org/core";
 import { CostRegistry } from "./commands/cost.js";
 import { parseLogLevel, summarizeToolCall, truncate, truncateMultiline, formatCompactedLine, modelLabel, LEVEL_ORDER, RESULT_PREVIEW_CHARS, type LogLevel } from "./log.js";
 import { renderTurnDiff } from "./turn-diff-render.js";
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 import { decideRichPermission, modeFromArgv, modeLabel, cycleMode, parseAskAnswer, createSessionAllowlist, createPermissionSettingsWatcher, applyAskAnswer, recordAskRules, protectedSettingsFile, withSidecarLayer, livePermissionRequestHook, toolMetaResolverFor, immuneAskCeiling } from "./permission.js";
 import { SESSION_END_BUDGET_MS } from "./hooks-config.js";
 import { composeReflectHooks, reflectRuntimeFor } from "./reflect-config.js";
@@ -433,7 +433,7 @@ export function parseReplCommand(
  *  buildTools callback's probe/fork closures read through it at execution
  *  time (tools exist before the state does). */
 export interface ReplStateHandle {
-  state?: import("@wudao/core").AgentState;
+  state?: import("@wudao-org/core").AgentState;
 }
 
 /** M53 §1: the /edit listing — plain user prompts of the chain, 1 = most
@@ -611,7 +611,7 @@ export function createTurnSerializer(
  *  the first child). */
 export interface SubagentCostSink {
   readonly bind: (registry: CostRegistry) => void;
-  readonly record: (info: { readonly model: string; readonly usage: import("@wudao/core").ModelUsage }) => void;
+  readonly record: (info: { readonly model: string; readonly usage: import("@wudao-org/core").ModelUsage }) => void;
 }
 
 /** Build the sink box (index.ts constructs it beside its buildTools call and

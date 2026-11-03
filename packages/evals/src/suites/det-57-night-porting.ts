@@ -26,8 +26,8 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createReadFileTool, createScriptedModel, type Tool } from "@wudao/core";
-import { createOpenAICompatibleProvider } from "@wudao/providers";
+import { createReadFileTool, createScriptedModel, type Tool } from "@wudao-org/core";
+import { createOpenAICompatibleProvider } from "@wudao-org/providers";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { decideRichPermission } from "wudao-harness/permission";
 import { LANGUAGE_BLOCK_ZH, REASONING_BLOCK_ZH } from "wudao-harness/language";

@@ -22,7 +22,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createDriverSession } from "../src/driver/session-engine.js";
 import type { DriverSession } from "../src/driver/session-engine.js";
 

@@ -1,5 +1,5 @@
 // packages/providers/src/persona/decorator.ts — 层3：协议无关的 ModelInput 变换（spec §4）
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import type { PersonaRuntime } from "./runtime.js";
 import type { PromptStyle } from "./types.js";
 

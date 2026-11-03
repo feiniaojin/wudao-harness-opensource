@@ -15,8 +15,10 @@ const BASE = readPiece("00-base.css");
 
 describe("arc119c 极简模式贴边", () => {
   it("① simple 门下 .chat/.composer 撤居中帽 + 会话流圆角容器", () => {
-    expect(COMPOSER).toMatch(/\.simple \.chat \{ max-width: none; margin: 0; \}/);
-    expect(COMPOSER).toMatch(/\.simple \.composer \{ max-width: none; margin: 0; \}/);
+    // ca7e348a 根治形：max-width/margin 归零外再补 width:100%（三次修补的
+    // 终态）——钉随之演进（含注释里的形状说明）。
+    expect(COMPOSER).toMatch(/\.simple \.chat \{ max-width: none; margin: 0; width: 100%; \}/);
+    expect(COMPOSER).toMatch(/\.simple \.composer \{ max-width: none; margin: 0; width: 100%; margin-top: var\(--sp-3\); \}/);
     // 09-27 根治：base .chat 已有圆角+同宽（inputarea 侧 padding 已撤）
     expect(BASE).toMatch(/\.chat \{[\s\S]*?border-radius: var\(--radius-md\);[\s\S]*?\}/);
   });

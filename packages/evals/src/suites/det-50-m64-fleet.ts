@@ -16,8 +16,8 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { execFile } from "node:child_process";
 import { writeFileSync, existsSync } from "node:fs";
-import type { AgentHooks, AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
-import { buildTool, createReadFileTool, createWriteFileTool } from "@wudao/core";
+import type { AgentHooks, AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { buildTool, createReadFileTool, createWriteFileTool } from "@wudao-org/core";
 import {
   createTeamRuntime,
   openTeamBoard,

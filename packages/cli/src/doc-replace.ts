@@ -46,8 +46,8 @@ import { smartZip, unzipEntriesWithMeta } from "./doc-zip.js";
 import type { ZipEntry } from "./doc-zip.js";
 import { parseDocxDocument } from "./doc-docx-read.js";
 import { parsePptxSlides } from "./doc-pptx-read.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 

@@ -79,8 +79,8 @@
 //                                set/clear chrome core (四缝布线/四处全清)
 //   doc-chrome-first-page.ts   — titlePg flag + first-reference pair layer
 //   doc-chrome-even-pages.ts   — evenAndOddHeaders flag + even-reference layer
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 import { validateDocxChrome, setDocxChrome, clearDocxChrome } from "./doc-chrome-xml.js";

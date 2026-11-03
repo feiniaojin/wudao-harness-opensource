@@ -107,7 +107,7 @@ describe("终端式布局 — 长权限卡的 DOM 契约", () => {
         pendingPermission: {
           toolName: "bash",
           summary: "需要先重写配置与入口模块再跑验证。".repeat(60),
-          input: { command: "pnpm --filter @wudao/web exec vitest run " + "case-1234567890 ".repeat(40) },
+          input: { command: "pnpm --filter @wudao-org/web exec vitest run " + "case-1234567890 ".repeat(40) },
           warning: "该命令将写入工作区并修改 git 状态；".repeat(40),
           sidecar: "写操作会修改工作区文件，请确认内容。",
         },

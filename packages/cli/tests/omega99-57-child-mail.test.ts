@@ -8,8 +8,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
-import { buildTool, toModelToolDefinition, createParentMessageTool, PARENT_MESSAGE_TOOL_NAME, MAIL_NO_EDGE_ERROR } from "@wudao/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { buildTool, toModelToolDefinition, createParentMessageTool, PARENT_MESSAGE_TOOL_NAME, MAIL_NO_EDGE_ERROR } from "@wudao-org/core";
 import { createAgentsTaskTool, createSessionRegistry } from "../src/agents/index.js";
 import { createChildMailLane } from "../src/agents/child-mail.js";
 import { buildToolSet } from "../src/tools.js";
@@ -21,7 +21,7 @@ afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetrie
 
 /** Sequential scripted model — one call counter shared across every consumer
  * (the parent loop and its awaited children run strictly in sequence). */
-function script(responses: readonly import("@wudao/core").AssistantMessage[]): { model: ModelClient; inputs: ModelInput[] } {
+function script(responses: readonly import("@wudao-org/core").AssistantMessage[]): { model: ModelClient; inputs: ModelInput[] } {
   const inputs: ModelInput[] = [];
   let call = 0;
   const model: ModelClient = {

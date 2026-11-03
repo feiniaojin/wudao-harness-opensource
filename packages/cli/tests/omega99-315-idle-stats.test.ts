@@ -18,7 +18,7 @@ import {
   type ModelClient,
   type ModelInput,
   type ModelStreamEvent,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver, formatRunStats } from "../src/driver/agent-driver.js";
 import { loadStreamSettings, DEFAULT_STREAM_SETTINGS, streamIdleProviderOptions } from "../src/stream-idle-config.js";

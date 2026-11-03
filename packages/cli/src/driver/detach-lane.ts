@@ -15,14 +15,14 @@
 //     收到的是进程组 TERM→KILL；已停任务落定的结果不再注入，只回执一行。
 // 裁决的诚实窗口：帧到点击之间调用可能已自然落定——loop 会忽略该请求，
 // 下一帧即真相（verdict 的 ok 是乐观的，行为不撒谎）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import {
   createToolDetachHub,
   formatDetachedResultInjection,
   type DetachedCall,
   type ToolDetachHub,
-} from "@wudao/core";
-import type { Tool } from "@wudao/core";
+} from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 
 /** The landed-result tail budget riding the injection (monitor's inline
  *  payload discipline — the full output, when huge, already spilled by the

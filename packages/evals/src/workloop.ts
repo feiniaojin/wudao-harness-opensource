@@ -9,7 +9,7 @@
 //
 // Scoring is decoupled from findings: findings fire ONLY on `missing` checks
 // (an inspected gap), never from a score.
-import type { AgentMessage, AssistantMessage, ToolCall } from "@wudao/core";
+import type { AgentMessage, AssistantMessage, ToolCall } from "@wudao-org/core";
 
 export type EvidenceState =
   | "present"

@@ -13,8 +13,8 @@
 //   只有 make_pptx 的顶层 filename 参数；
 // - cell 规与 doc-xlsx 同款（对照测试钉两侧一致）；本层未改 doc-xlsx.ts，
 //   cell 检查本地实现，收/拒矩阵由 tests/omega99-124 逐值对照钉死。
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { storedZip } from "./doc-zip.js";

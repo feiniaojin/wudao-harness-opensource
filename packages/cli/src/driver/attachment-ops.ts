@@ -6,8 +6,8 @@
 // discipline as the session store.
 import { readFile } from "node:fs/promises";
 import { extname } from "node:path";
-import { createFileAttachmentStore } from "@wudao/core";
-import type { ImageAttachmentRef, ImageSaveInput, AttachmentLimits, FileBlock, FileSaveInput, FileLimits } from "@wudao/core";
+import { createFileAttachmentStore } from "@wudao-org/core";
+import type { ImageAttachmentRef, ImageSaveInput, AttachmentLimits, FileBlock, FileSaveInput, FileLimits } from "@wudao-org/core";
 
 export interface AttachmentOpsDeps {
   readonly workspaceRoot: string;

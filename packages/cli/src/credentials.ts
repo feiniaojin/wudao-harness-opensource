@@ -17,7 +17,7 @@
 //     strictly AFTER env vars: any env key (WUDAO_API_KEY / OPENAI_API_KEY /
 //     WUDAO_API_KEYS pool) wins over the file — a CI env key must not be
 //     silently shadowed by a stale on-disk entry (documented at the
-//     resolution seam in @wudao/providers config.ts);
+//     resolution seam in @wudao-org/providers config.ts);
 //   - ω99-2b: the DIRECTORY tier is hardened too — every write rides the
 //     private-storage primitive (dir 0700, Windows icacls, directory links
 //     refused), so the 0600 file never sits in a group-walkable 0755 tree.

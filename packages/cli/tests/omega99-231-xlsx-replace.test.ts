@@ -10,7 +10,7 @@ import { mkdtemp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // 读面（读写互证）+ 追加面（scanXlsxSheetPart 同族邻居）。
 import { parseXlsxSheets } from "../src/doc-xlsx-read.js";
 import { buildXlsx } from "../src/doc-xlsx.js";

@@ -57,7 +57,7 @@ describe("ω99-202 — A 正向：App error 尾中文形在场（源钉法；ω9
   // P2 巡检补齐（gate 随源演进惯例）：M-Memory 三弧合一（377dfa23）新增
   // 追问失败 / 打开会话列表失败 两 catch 面未随弧 bump 钉——21 → 23。
   it("② `失败：${e instanceof Error` 全 App 计数=23（202 八面 + 200 #3 旧面 + 204 warn 族八面 − ω99-234 迁出两面 − ω99-258 /edit 门并缝 +2 + ω99-279 删除/恢复 + batch3 面 − 0.4.1 断点续跑退役迁出两面与基线校正 + 377dfa23 追问/会话列表两面）", () => {
-    expect(countOf(appSrc, "失败：${e instanceof Error")).toBe(23); // 多driver+断点续跑退役随迁（fireContinue 两面清理+基线校正）+ 377dfa23 两面
+    expect(countOf(appSrc, "失败：${e instanceof Error")).toBe(24); // 137 工作区双根切换补两面（panelRootSet/agentRootSwitch 失败），23→24 // 多driver+断点续跑退役随迁（fireContinue 两面清理+基线校正）+ 377dfa23 两面
   });
 });
 

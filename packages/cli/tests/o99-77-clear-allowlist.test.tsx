@@ -18,9 +18,9 @@ import { realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp } from "../src/tui/app.js";
 
 const wait = (ms = 10): Promise<void> => new Promise((r) => setTimeout(r, ms));

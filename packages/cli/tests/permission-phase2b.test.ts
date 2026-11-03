@@ -294,8 +294,8 @@ describe("index.ts — Phase 2b funnel-1 wiring call sites (static source scan)"
     expect(indexSource).toContain('import { askReviewIntro } from "./ask-reviewer.js"');
   });
 
-  it("(c.4) `ModelClient` is imported from @wudao/core (the box type)", () => {
-    expect(indexSource).toMatch(/import\s*\{[^}]*\bModelClient\b[^}]*\}\s*from\s+["']@wudao\/core["']/);
+  it("(c.4) `ModelClient` is imported from @wudao-org/core (the box type)", () => {
+    expect(indexSource).toMatch(/import\s*\{[^}]*\bModelClient\b[^}]*\}\s*from\s+["']@wudao-org\/core["']/);
   });
 });
 

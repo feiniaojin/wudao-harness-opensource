@@ -5,9 +5,9 @@
 // 无效档位/配置来源/支持列表/怎么改，且在任何会话/租约建立之前（不建会话先
 // 报）。通过时产出用户可见的健康摘要行（收益向、零实现术语；未验证/降级
 // 诚实标注不编造）。纯函数 + 一个可选的首 token 轻量探测（§三，默认关）。
-import { REASONING_EFFORTS, supportedEfforts } from "@wudao/providers";
-import type { EffectiveProfile } from "@wudao/providers";
-import type { ModelClient, ModelInput } from "@wudao/core";
+import { REASONING_EFFORTS, supportedEfforts } from "@wudao-org/providers";
+import type { EffectiveProfile } from "@wudao-org/providers";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
 import { readProviderEffortBinding } from "./provider-registry-ops.js";
 import { readStoredModelDefaults } from "./settings-ops.js";
 import { readGlobalSettingsSync } from "../settings-layer.js";

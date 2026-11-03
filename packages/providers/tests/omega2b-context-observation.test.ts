@@ -14,7 +14,7 @@ import {
   resolveProviderConfig,
   resolveWindowMode,
 } from "../src/index.js";
-import type { ModelInput } from "@wudao/core";
+import type { ModelInput } from "@wudao-org/core";
 
 const jsonRes = (status: number, body: unknown): Response =>
   ({ ok: status === 200, status, json: async () => body, text: async () => (typeof body === "string" ? body : JSON.stringify(body)) }) as unknown as Response;

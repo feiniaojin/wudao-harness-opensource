@@ -130,7 +130,7 @@ export function parseAllFlag(argv: readonly string[]): boolean {
 // parseSessionFlags: `--provider <v>` / `--provider=<v>` / single-dash
 // variants, and likewise for `--reasoning-effort`. A value token that is
 // missing or flag-looking is not consumed. Values are validated downstream in
-// @wudao/providers resolveProviderConfig (throws on junk).
+// @wudao-org/providers resolveProviderConfig (throws on junk).
 export interface ProviderFlags {
   provider?: string;
   reasoningEffort?: string;

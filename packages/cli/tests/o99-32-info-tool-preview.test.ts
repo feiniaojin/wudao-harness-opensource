@@ -20,8 +20,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
-import type { AgentMessage, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AgentMessage, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 // Case ⑤'s dynamic index.js import pulls ink → yoga-wasm. Loading the tui
 // graph STATICALLY first (m80-resolver-wiring's shape) lets the externalized
 // module evaluate on the healthy static path; the post-resetModules dynamic
@@ -76,7 +76,7 @@ async function driveRepl(o: {
   readonly level?: "info" | "debug";
   readonly contextWindowTokens?: number;
   readonly resumeHistory?: readonly AgentMessage[];
-  readonly hooks?: import("@wudao/core").AgentHooks;
+  readonly hooks?: import("@wudao-org/core").AgentHooks;
 }): Promise<string> {
   const globalHome = await mkdtemp(join(tmpdir(), "o9932p-gh-"));
   const prevGlobal = process.env.WUDAO_GLOBAL_HOME;

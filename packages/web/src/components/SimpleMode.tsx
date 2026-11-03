@@ -115,6 +115,8 @@ export interface SimpleModeProps {
    *  App 的 switchPanelRoot（B1 面板根 + B3 arm 确认卡），agent 根切换与
    *  保持现状走 App 的既有回调；rootCard 形态即 App 的内联 state。 */
   readonly workspaceRoot: string;
+  /** 138 续：boot 根（会话锚）——「默认空间」钉项的落点。可选：缺席不渲染。 */
+  readonly bootRoot?: string;
   readonly onSwitchWorkspace: (path: string) => void;
   readonly onOpenOtherWorkspace: () => void;
   readonly rootCard: { readonly panelRoot: string; readonly agentRoot: string; queued: boolean } | null;
@@ -139,7 +141,7 @@ export function isConversationEmpty(history: readonly HistoryEntry[]): boolean {
 }
 
 export function SimpleMode(props: SimpleModeProps): React.JSX.Element {
-  const { status, history, connected, commands, onSubmit, onInterrupt, onCycleMode, onAnswerPermission, onRecallSteer, onDetachTool, pendingAsk, onAnswerAskUser, onShield, notify, parked, onPark, onDropParked, onDraftApplied, draft, onBufferChange, onImagesChange, imageSeed, onImageSeedApplied, onFilesChange, fileSeed, onFileSeedApplied, modelLabel, modelProvider, modelChoices, modelRecent, onPickModel, onPersistModelDefault, effort, efforts, onPickEffort, effortProviderLabel, onPersistEffortDefault, workspaceRoot, onSwitchWorkspace, onOpenOtherWorkspace, rootCard, onAgentRootSwitch, onAgentRootKeep, fileOpsClient, onSideAsk, sideQas, onPromoteSideQa } = props;
+  const { status, history, connected, commands, onSubmit, onInterrupt, onCycleMode, onAnswerPermission, onRecallSteer, onDetachTool, pendingAsk, onAnswerAskUser, onShield, notify, parked, onPark, onDropParked, onDraftApplied, draft, onBufferChange, onImagesChange, imageSeed, onImageSeedApplied, onFilesChange, fileSeed, onFileSeedApplied, modelLabel, modelProvider, modelChoices, modelRecent, onPickModel, onPersistModelDefault, effort, efforts, onPickEffort, effortProviderLabel, onPersistEffortDefault, workspaceRoot, bootRoot, onSwitchWorkspace, onOpenOtherWorkspace, rootCard, onAgentRootSwitch, onAgentRootKeep, fileOpsClient, onSideAsk, sideQas, onPromoteSideQa } = props;
   const busy = status?.busy ?? false;
   const ask = status?.pendingPermission ?? null;
   const chatRef = useRef<HTMLDivElement>(null);
@@ -240,7 +242,7 @@ export function SimpleMode(props: SimpleModeProps): React.JSX.Element {
             {/* 0.3.81 精修: parked 不再上状态行——composer 的 ⏳ chip 是它唯一
                 的家（带放弃钮），同一消息屏上只显一次。 */}
             <SimpleTurnStatus busy={busy} live={status.live} queued={status.queued} onRecall={onRecallSteer} />
-            {status.live.reasoning !== "" ? <ReasoningBlock text={status.live.reasoning} streaming={status.live.thinking ?? false} /> : null}
+            {status.live.reasoning !== "" ? <ReasoningBlock text={status.live.reasoning} streaming={status.live.thinking ?? false} defaultOpen={true} /> : null}
             {status.live.answer !== "" ? <LiveAnswer text={status.live.answer} /> : null}
             {/* UI-3 C1: the in-flight tools render HERE too (mockup P1's
                 running ◐ card) — the SAME BusyToolRow the advanced timeline
@@ -337,6 +339,7 @@ export function SimpleMode(props: SimpleModeProps): React.JSX.Element {
             <WorkspaceChip
               client={fileOpsClient}
               root={workspaceRoot}
+              bootRoot={bootRoot}
               connected={connected}
               onPick={onSwitchWorkspace}
               onOpenOther={onOpenOtherWorkspace}

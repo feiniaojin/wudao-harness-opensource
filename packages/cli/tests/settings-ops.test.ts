@@ -23,7 +23,7 @@ import { credentialsFilePath, readCredentialsFileSync } from "../src/credentials
 import { resolveProviderSwitch, applyProviderConfig, keyRefreshPending, configRefreshPending } from "../src/commands/provider.js";
 import { asMutableConfig } from "../src/commands/model.js";
 import { createProviderRegistryOps } from "../src/driver/provider-registry-ops.js";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 import { openLongtermMemoryStore } from "../src/longterm-memory.js";

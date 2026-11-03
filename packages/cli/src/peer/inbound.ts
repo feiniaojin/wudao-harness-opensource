@@ -6,7 +6,7 @@
 // delivered/denied/expired outcomes, and the untrusted-content rendering of
 // every delivered note. Pure state machine over an injected clock — no
 // sockets (inbox.ts), no fs (registry.ts), no settings IO (runtime.ts).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import {
   PEER_DIALOG_EXPIRY_DEFAULT_MS,
   PEER_DUP_WINDOW_MS,

@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao-org/core";
 import { buildToolSet, deferToolsEnabled, markDeferCandidates } from "../src/tools.js";
 
 let root: string;
@@ -113,7 +113,7 @@ describe("buildToolSet extraTools (MCP wiring)", () => {
 describe("buildToolSet M24 wiring (probe / spill / fork)", () => {
   it("contextProbe reaches read_file (repeat read elides)", async () => {
     await writeFile(join(root, "note.txt"), "PROBE-SENTINEL-7\n", "utf8");
-    const seen: import("@wudao/core").AgentMessage[] = [
+    const seen: import("@wudao-org/core").AgentMessage[] = [
       { role: "tool", toolCallId: "c0", name: "read_file", content: "PROBE-SENTINEL-7\n" },
     ];
     const tools = buildToolSet({
@@ -165,7 +165,7 @@ describe("buildToolSet M24 wiring (probe / spill / fork)", () => {
         return r;
       },
     };
-    const parentState: import("@wudao/core").AgentState = {
+    const parentState: import("@wudao-org/core").AgentState = {
       systemPrompt: "PARENT-SYS",
       messages: [{ role: "user", content: "parent prompt" }],
       tools: [],
@@ -180,7 +180,7 @@ describe("buildToolSet M24 wiring (probe / spill / fork)", () => {
     });
     // The fork must see the loop's REAL tool array — assign after building.
     parentState.tools = tools;
-    const { runAgentLoop } = await import("@wudao/core");
+    const { runAgentLoop } = await import("@wudao-org/core");
     const events: unknown[] = [];
     const gen = runAgentLoop(parentState, forkModel, { maxTurns: 5 });
     for (;;) {
@@ -190,7 +190,7 @@ describe("buildToolSet M24 wiring (probe / spill / fork)", () => {
     }
     // parent request → fork child request → parent continuation.
     expect(inputs).toHaveLength(3);
-    const { serializePrompt } = await import("@wudao/providers");
+    const { serializePrompt } = await import("@wudao-org/providers");
     expect(serializePrompt(inputs[1]!).startsWith(serializePrompt(inputs[0]!))).toBe(true);
     // The parent state object mutated by the loop is the SAME one the fork saw.
     expect(inputs[1]!.systemPrompt).toBe("PARENT-SYS");

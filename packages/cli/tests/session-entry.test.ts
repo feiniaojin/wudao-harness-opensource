@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import {
   appendSessionEntry,
   buildDeferredLoadedEntry,

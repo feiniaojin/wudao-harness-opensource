@@ -412,7 +412,7 @@ describe("E2E: driver", () => {
   it("boot notice lands in history; /trust status + accept work through submit()", async () => {
     const { createAgentDriver } = await import("../src/driver/agent-driver.js");
     const { buildExtensionState, initExtensionRuntime, getExtensionState, resetExtensionRuntime } = await import("../src/extension-state.js");
-    const { createScriptedModel } = await import("@wudao/core");
+    const { createScriptedModel } = await import("@wudao-org/core");
     const { summarizeToolCall } = await import("../src/log.js");
     const { formatTrustGateNotice } = await import("../src/trust.js");
 

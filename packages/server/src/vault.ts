@@ -1,4 +1,4 @@
-// @wudao/server — ω-3a 变更幂等 vault 的纯函数段外提（多 driver 并发弧 B 的
+// @wudao-org/server — ω-3a 变更幂等 vault 的纯函数段外提（多 driver 并发弧 B 的
 // 顺带件，file-size 棘轮纪律：index.ts 的白名单帽只收不涨）。逐字节搬家：
 // isVaultedMutation / canonicalJson / VaultEntry 三段自 index.ts 原样外提；
 // index.ts 的 re-export 门面维持既有公共面（vaulted-mirror.test.ts 把

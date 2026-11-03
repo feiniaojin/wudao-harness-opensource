@@ -4,7 +4,7 @@
 // shows a PREVIEW + confirm hint, and only the user's `ok` writes the file
 // (the same review seam /plan uses). An existing AGENTS.md is never
 // overwritten: the confirm appends a dated section instead.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { existsSync } from "node:fs";
 import { appendFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";

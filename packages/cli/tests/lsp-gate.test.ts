@@ -6,7 +6,7 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { toModelToolDefinition, type Tool, type ModelClient, type PermissionDecision } from "@wudao/core";
+import { toModelToolDefinition, type Tool, type ModelClient, type PermissionDecision } from "@wudao-org/core";
 import { resolveLspEnabled } from "../src/misc-config.js";
 import { setLspRuntimeEnabled, lspRuntimeEnabled, lspToolsFor, closeLspTools } from "../src/lsp/tools.js";
 import { buildToolSet } from "../src/tools.js";

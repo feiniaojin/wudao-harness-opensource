@@ -6,8 +6,8 @@
 //   ③warm（未过 TTL）不触发
 //   ④cleared=0 时不打旗不置位
 import { describe, it, expect } from "vitest";
-import { clearTier, CLEARED_MARKER } from "@wudao/core";
-import type { AgentMessage } from "@wudao/core";
+import { clearTier, CLEARED_MARKER } from "@wudao-org/core";
+import type { AgentMessage } from "@wudao-org/core";
 
 const BIG = "x".repeat(35_000); // 过 CLEAR_TIER_MIN_CHARS（30k）
 const bigHistory = (): AgentMessage[] => {

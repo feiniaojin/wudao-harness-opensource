@@ -129,6 +129,7 @@ describe("M64-visual §4 — topbar (34px shell)", () => {
       "会话列表",
       "审查专注",
       "切换主题",
+      "监控", // 139：探针仪表盘入口（IconChart 细线折线）
       "设置",
     ]);
     expect(h.container.querySelector(".header")).toBeNull();
@@ -243,7 +244,7 @@ describe("T9 墨线 — topbar session name + run badge", () => {
     // INSIDE .sp, never a new direct child.
     expect(
       [...bar.children].map((c) => (c instanceof HTMLButtonElement ? c.getAttribute("aria-label") : c.className)),
-    ).toEqual(["sp", "新对话", "会话列表", "审查专注", "切换主题", "设置"]);
+    ).toEqual(["sp", "新对话", "会话列表", "审查专注", "切换主题", "监控", "设置"]);
     expect(bar.querySelector(".sp > .tb-name")).not.toBeNull();
     expect(bar.querySelector(".sp > .tb-run")).not.toBeNull();
     // The name/badge ARE the drag surface now (Tauri v2 checks the mousedown

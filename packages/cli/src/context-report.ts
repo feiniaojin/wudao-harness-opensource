@@ -4,9 +4,9 @@
 // the driver, the REPL, and tests all share it. Breakdown dimensions: by
 // segment/role (core occupancyBreakdown), per MCP server (tool results), and
 // per system-prompt section (heading-split).
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import { applySummaryMarkers, clearTier, microcompact, occupancyBreakdown, toModelToolDefinition } from "@wudao/core";
-import type { AgentMessage, OccupancyBreakdown, Tool } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import { applySummaryMarkers, clearTier, microcompact, occupancyBreakdown, toModelToolDefinition } from "@wudao-org/core";
+import type { AgentMessage, OccupancyBreakdown, Tool } from "@wudao-org/core";
 
 export interface ContextReportInput {
   readonly systemPrompt: string;

@@ -81,7 +81,7 @@ describe("ω99-204 — A 正向：43 面全角在场（源钉法）", () => {
   // P2 巡检补齐（gate 随源演进惯例）：M-Memory 三弧合一（377dfa23）新增
   // 追问失败 / 打开会话列表失败 两全角面未随弧 bump 钉——24 → 26。
   it("② 逐文件计数钉：App=26（202 基 10+11 − ω99-234 迁出两面 + ω99-258 /edit 门并 armFromTurn 缝 −1+2 + ω99-279 删除/恢复 + batch3 面 − 0.4.1 断点续跑退役迁出两面 + 377dfa23 追问/会话列表两面）且未保存=1；PreferencesTab=2（ω99-234 迁入 + ω99-260 管理记忆决定回执）；Wizard=9；ProviderDetail=9；Persona=6；Modal=2；ProviderTab=2；未保存 Appearance=2；PermissionsTab=1", () => {
-    expect(countOf(srcOf("components/App.tsx"), "失败：")).toBe(26); // 多driver+断点续跑退役随迁（fireContinue 两面清理）+ 377dfa23 两面
+    expect(countOf(srcOf("components/App.tsx"), "失败：")).toBe(27); // 137 工作区双根切换补两面，26→27 // 多driver+断点续跑退役随迁（fireContinue 两面清理）+ 377dfa23 两面
     expect(countOf(srcOf("components/App.tsx"), "未保存：")).toBe(1);
     expect(countOf(srcOf("components/PreferencesTab.tsx"), "失败：")).toBe(4); // wave2 改进提案小节 +2（同意失败/激活失败回执）
     expect(countOf(srcOf("components/Wizard.tsx"), "失败：")).toBe(9);

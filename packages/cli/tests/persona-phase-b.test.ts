@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const CFG: ProviderConfig = {
   apiKey: "sk-phase-b",

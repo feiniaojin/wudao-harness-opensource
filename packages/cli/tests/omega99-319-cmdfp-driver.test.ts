@@ -24,8 +24,8 @@ import {
   createWriteFileTool,
   createShellTool,
   createJsonlSessionStore,
-} from "@wudao/core";
-import type { ModelClient, SessionStore, ModelInput, AssistantMessage } from "@wudao/core";
+} from "@wudao-org/core";
+import type { ModelClient, SessionStore, ModelInput, AssistantMessage } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { createSnapshotStore, sha256Hex } from "../src/snapshots.js";

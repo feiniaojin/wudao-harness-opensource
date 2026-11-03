@@ -7,8 +7,8 @@ import { render } from "ink-testing-library";
 import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createFileHistory, createReadStateTable, createWriteFileTool, createScriptedModel } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createFileHistory, createReadStateTable, createWriteFileTool, createScriptedModel } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp } from "../src/tui/app.js";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));

@@ -28,7 +28,7 @@ import {
   type ModelClient,
   type ModelInput,
   type AssistantMessage,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { createCronRuntime } from "../src/cron.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";

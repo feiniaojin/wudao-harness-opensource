@@ -3,7 +3,7 @@
 // prices 校验（fail-visible）、overlay 的空字段继承。
 import { describe, it, expect } from "vitest";
 import { deriveCachePricing, isModelPrices, catalogPricesFor, validateUserProviderEntry } from "../src/index.js";
-import { DEFAULT_CACHE_WRITE_READ_RATIO } from "@wudao/core";
+import { DEFAULT_CACHE_WRITE_READ_RATIO } from "@wudao-org/core";
 
 const PRICES = (inputPerM: number, cacheReadPerM: number, cacheWritePerM?: number) =>
   ({ inputPerM, cacheReadPerM, ...(cacheWritePerM !== undefined ? { cacheWritePerM } : {}) });

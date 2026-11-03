@@ -7,7 +7,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createGoalController, goalEvaluatorAvailable } from "../src/goal.js";
-import type { AgentState, AssistantMessage, ModelInput } from "@wudao/core";
+import type { AgentState, AssistantMessage, ModelInput } from "@wudao-org/core";
 
 let ws: string;
 beforeEach(async () => {

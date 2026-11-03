@@ -10,8 +10,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
-import { createReadFileTool, createWriteFileTool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { createReadFileTool, createWriteFileTool } from "@wudao-org/core";
 import { createTeamRuntime, LEAD_NAME, type TeamRuntime } from "../src/teams/runtime.js";
 import { TEAM_MESSAGE_MAX_CHARS, readTeamInbox } from "../src/teams/mailbox.js";
 

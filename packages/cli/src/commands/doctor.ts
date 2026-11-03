@@ -3,7 +3,7 @@
 // driver aggregates the checks; the command module only validates + formats.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { resolveProviderConfigResult } from "@wudao/providers";
+import { resolveProviderConfigResult } from "@wudao-org/providers";
 // M63 §B: the credentials-file check — counts only, never values.
 import { credentialsFileStatusSync, readCredentialsFileSync } from "../credentials.js";
 

@@ -32,8 +32,8 @@
 //   notesSlide 部件 → 文本读回等值（读侧同源 parsePptxNotes）。
 import { smartZip, unzipEntriesWithMeta } from "./doc-zip.js";
 import type { RawZipEntry, SmartZipEntry } from "./doc-zip.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 

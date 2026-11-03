@@ -4,8 +4,8 @@
 // reasoning 按调用窗口切片（不再整轮堆在最后一条）；纯工具调用轮不产生
 // 空正文卡；单调用回合字节不变。
 import { describe, it, expect, vi } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions } from "../src/driver/agent-driver.js";

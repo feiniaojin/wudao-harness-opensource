@@ -5,7 +5,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentHooks, AgentState } from "@wudao/core";
+import type { AgentHooks, AgentState } from "@wudao-org/core";
 import {
   buildReflectRuntime,
   composeReflectHooks,

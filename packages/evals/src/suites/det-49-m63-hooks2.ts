@@ -16,8 +16,8 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildTool, createScriptedModel, runAgentLoop } from "@wudao/core";
-import type { AgentState, AssistantMessage, LoopEvent, ModelInput, Terminal, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel, runAgentLoop } from "@wudao-org/core";
+import type { AgentState, AssistantMessage, LoopEvent, ModelInput, Terminal, Tool } from "@wudao-org/core";
 import {
   buildConfiguredHooks,
   compileHookMatcher,

@@ -25,7 +25,7 @@
 // 原始异常（调用方 catch 吞掉结算错误、rethrow 原异常）。
 import { formatRunStats } from "./driver/agent-driver.js";
 import { selectMessagesToPersist } from "./persist.js";
-import type { AgentMessage, SessionStore } from "@wudao/core";
+import type { AgentMessage, SessionStore } from "@wudao-org/core";
 import type { SessionSearchIndex } from "./session-search.js";
 
 /** 一个 pass 的统计快照（runPass 局部的同名六元组）。 */

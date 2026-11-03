@@ -19,8 +19,8 @@
 //   append-only，前缀字节稳定）。
 // - 会话不经 JSONL 恢复：PTY 状态本质不可持久化，重启即清（诚实声明——
 //   工具描述与 README 都写了）。
-import { buildTool, capOutputLines, type Tool } from "@wudao/core";
-import type { GenericSessionEntry } from "@wudao/core";
+import { buildTool, capOutputLines, type Tool } from "@wudao-org/core";
+import type { GenericSessionEntry } from "@wudao-org/core";
 import { loadNodePty, terminalPtyStatus, type PtySpawnFn } from "./pty.js";
 import { TerminalManager, TERMINAL_SETTLE_MAX_MS, validSessionName } from "./manager.js";
 import { buildTerminalEntry as buildEntry, TERMINAL_ENTRY_TYPE } from "../session-entry.js";

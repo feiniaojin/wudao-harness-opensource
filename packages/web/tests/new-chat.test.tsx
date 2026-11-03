@@ -135,13 +135,16 @@ describe("new-chat button (M75-ux3 §10)", () => {
     // advanced-only 审查专注 affordance sits between the picker and the
     // theme/settings pair.
     const topbar = [...h.container.querySelectorAll(".topbar > *")];
-    expect(topbar.indexOf(plus!)).toBe(1); // [sp, +, sessions, review-focus, theme, settings]
+    // 139：顶栏新增「监控」（📈 的细线折线 IconChart 位，在主题前）——
+    // [sp, +, sessions, review-focus, theme, 监控, settings]。
+    expect(topbar.indexOf(plus!)).toBe(1);
     expect(topbar[0]?.classList.contains("sp")).toBe(true);
     expect(topbar[2]?.getAttribute("aria-label")).toBe("会话列表");
     expect(topbar[3]?.getAttribute("aria-label")).toBe("审查专注");
     expect(topbar[3]?.getAttribute("aria-pressed")).toBe("false");
     expect(topbar[4]?.getAttribute("aria-label")).toBe("切换主题");
-    expect(topbar[5]?.getAttribute("aria-label")).toBe("设置");
+    expect(topbar[5]?.getAttribute("aria-label")).toBe("监控");
+    expect(topbar[6]?.getAttribute("aria-label")).toBe("设置");
 
     // The confirm dialog — the round's wording + 确认/取消.
     click(plus);

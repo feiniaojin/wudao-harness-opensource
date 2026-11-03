@@ -1,8 +1,8 @@
 // 拆分运动 C：从 openai-compatible.ts 原样外提的单次 HTTP 执行引擎域
 //（generateOnce/streamOnce、ω99-42 分类、M70 §4 自修复重试、safeText）。
 // 依赖方向：engine → wire/messages/images/json-arguments/retry-ladder（无环）。
-import type { AssistantMessage, ModelInput, ModelStreamEvent, ModelUsage, ToolCall } from "@wudao/core";
-import { truncateSafe } from "@wudao/core";
+import type { AssistantMessage, ModelInput, ModelStreamEvent, ModelUsage, ToolCall } from "@wudao-org/core";
+import { truncateSafe } from "@wudao-org/core";
 import type { ProviderConfig } from "./config.js";
 import {
   mandatoryRepairReasoningBody,

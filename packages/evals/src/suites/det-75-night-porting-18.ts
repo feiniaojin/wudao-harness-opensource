@@ -6,7 +6,7 @@
 // assistant toolCall blocks, never LLM-dependent — and survives N chained
 // compactions by re-parsing the tags out of the prior frozen summary (the
 // wudao delta: state-free re-derivation where pi persists entry details).
-// Pinned through the PUBLIC `@wudao/core` exports: the constants, the
+// Pinned through the PUBLIC `@wudao-org/core` exports: the constants, the
 // extraction classification (modified-wins, recency bump, non-file tools
 // ignored), the parse round-trip (omission line stripped, torn tags
 // ignored, last block wins), the cross-boundary promotion, the cap, and
@@ -24,9 +24,9 @@ import {
   FILE_LEDGER_CAP,
   SUMMARY_MARKER,
   SUMMARY_END_MARKER,
-} from "@wudao/core";
-import { createScriptedModel } from "@wudao/core";
-import type { AgentMessage, ModelClient } from "@wudao/core";
+} from "@wudao-org/core";
+import { createScriptedModel } from "@wudao-org/core";
+import type { AgentMessage, ModelClient } from "@wudao-org/core";
 
 const tc = (id: string, name: string, args: Record<string, unknown>) => ({ id, name, arguments: args });
 const user = (content: string): AgentMessage => ({ role: "user", content });

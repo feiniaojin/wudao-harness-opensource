@@ -10,7 +10,7 @@ import { mkdtemp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateRawSync } from "node:zlib";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // 写面原语（裸 docx 夹具；238 setDocxChrome 造「已有页眉/页脚」起点）。
 import { buildDocx } from "../src/doc-docx.js";
 import type { DocBlock } from "../src/doc-docx.js";

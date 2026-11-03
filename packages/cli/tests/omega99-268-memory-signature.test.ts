@@ -16,7 +16,7 @@ import { describe, it, expect, vi } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
 import type { AgentDriver, AgentDriverOptions, DriverStatus } from "../src/driver/agent-driver.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { openMemoryStore } from "../src/memory/store.js";
@@ -62,7 +62,7 @@ async function seedStore(dir: string): Promise<{ activeId: string; pendingId: st
  *  source; the seed rows go through the same audit-row mapping the driver
  *  uses, never a hand-copied formula). */
 const sigTracker = createMemorySignatureTracker({ workspaceRoot: undefined, emit: () => {}, openStore: () => { throw new Error("unused"); } });
-const sigOf = (entries: readonly import("@wudao/core").MemoryEntry[]): string =>
+const sigOf = (entries: readonly import("@wudao-org/core").MemoryEntry[]): string =>
   sigTracker.compute(entries.map((e) => longtermMemoryAuditRow(e)));
 /** 新库当前全量（confirmed + pending——memoryList 的同面）。 */
 const allOf = (dir: string) => openLongtermMemoryStore(dir).list({ includePending: true });

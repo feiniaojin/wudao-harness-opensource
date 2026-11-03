@@ -1,4 +1,4 @@
-// @wudao/server — 多 driver 并发弧 B：车道表（lane table）。把「具名槽
+// @wudao-org/server — 多 driver 并发弧 B：车道表（lane table）。把「具名槽
 // driver（+petDriver?）」泛化为可寻址的会话车道集合：主车道 key="main"
 // （opts.driver，一切 op 的缺省目标）、副车道 key=sessionId（构造期
 // laneDrivers 或运行时 mountLane 挂载）。pet 车道不入表——它是具名槽

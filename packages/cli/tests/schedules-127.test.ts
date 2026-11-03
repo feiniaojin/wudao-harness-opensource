@@ -18,7 +18,7 @@ import {
 } from "../src/schedules-model.js";
 import type { DurableTask } from "../src/schedules-model.js";
 import { buildToolSet } from "../src/tools.js";
-import { continueTaskPrompt } from "@wudao/core";
+import { continueTaskPrompt } from "@wudao-org/core";
 
 let ws: string;
 beforeEach(async () => {

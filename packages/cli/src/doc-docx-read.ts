@@ -17,8 +17,8 @@
 // - 段落一行一块：文本里的制表符/换行折成空格（块的行不变量）；
 // - 读夹具反哺：本层与 doc-docx.ts 写器同源互测（buildDocx 造 roundtrip）。
 import { unzipEntries } from "./doc-zip.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 

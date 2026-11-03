@@ -6,7 +6,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateToolArguments } from "@wudao/core";
+import { validateToolArguments } from "@wudao-org/core";
 import { createLspTool, renderLspLocations, renderLspHover, LSP_MAX_LOCATIONS, closeLspTools } from "../src/lsp/tools.js";
 import type { LspProviderLaunchSpec } from "../src/lsp/manager.js";
 

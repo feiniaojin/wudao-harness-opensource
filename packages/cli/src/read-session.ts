@@ -16,8 +16,8 @@
 //
 // 接线：seam `(sessionId) => corpus | undefined`（undefined=会话不存在）；
 // session id 过 SESSION_ID_RE 形状门（session-delete 的防穿越先例）。
-import { buildTool, SESSION_ID_RE, type Tool } from "@wudao/core";
-import type { HistorySearchCorpus } from "@wudao/core";
+import { buildTool, SESSION_ID_RE, type Tool } from "@wudao-org/core";
+import type { HistorySearchCorpus } from "@wudao-org/core";
 
 /** 缺省/边界（zcode 同值）。 */
 export const READ_SESSION_DEFAULT_BUDGET = 24_000;

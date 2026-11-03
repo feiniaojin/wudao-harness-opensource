@@ -12,8 +12,8 @@
 // 的一种）；被拦=可见拦截（台账 source:"improve"），提案记录落
 // proposer-failed 形（attempts 帽照走）——fail-open：什么都不改。
 // 防重蹈覆辙（reef C4）：同 subject 的被拒提案全文回读给提案器。
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import type { ModelClient } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import type { ModelClient } from "@wudao-org/core";
 import type { AgentRegistry } from "../agents/index.js";
 import { createFinalOutputTool, FINAL_OUTPUT_TOOL_NAME } from "../agents/report-schema.js";
 import type { JsonSchemaSubset } from "../workflow/structured-output.js";

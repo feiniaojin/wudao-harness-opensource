@@ -3,16 +3,16 @@
 // deferred to the turn boundary; ≥ threshold+8k → immediate), and the
 // tier-2 summary as a byte-level WARM REPLAY of the conversation it
 // summarizes. Byte-prefix assertions use the one canonical serializer
-// exported by @wudao/providers (core's test-only devDependency).
+// exported by @wudao-org/providers (core's test-only devDependency).
 import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { serializePrompt } from "../src/index.js";
-import { runAgentLoop } from "@wudao/core";
-import { createReadFileTool } from "@wudao/core";
-import { createScriptedModel } from "@wudao/core";
-import type { LoopEvent, Terminal } from "@wudao/core";
-import type { ModelClient, ModelInput, ModelUsage } from "@wudao/core";
+import { runAgentLoop } from "@wudao-org/core";
+import { createReadFileTool } from "@wudao-org/core";
+import { createScriptedModel } from "@wudao-org/core";
+import type { LoopEvent, Terminal } from "@wudao-org/core";
+import type { ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
 import type { AgentMessage, AgentState } from "../src/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));

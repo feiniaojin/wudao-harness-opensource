@@ -1,4 +1,4 @@
-// @wudao/server tests — the localhost WS contract: first-frame auth matrix
+// @wudao-org/server tests — the localhost WS contract: first-frame auth matrix
 // (wrong token / no frame / timeout / non-JSON), Host allowlist, single-client
 // rejection, the two-channel relay + op round-trip against a scripted driver
 // port, reconnect full replay, static placeholder, and loopback-only binds.
@@ -213,6 +213,12 @@ describe("round-trip (scripted driver)", () => {
 
     await until(() => c.frames.some((f) => f.t === "state" && (f.state as { busy?: boolean }).busy === true), "busy state");
     await until(() => c.frames.some((f) => f.t === "event"), "raw loop event");
+    // 137（监督者车道）：事件帧带 at（epoch ms，转发同 tick）——裸 LoopEvent
+    // 自身无时间戳，时序消费者读本字段。
+    {
+      const ev = c.frames.find((f) => f.t === "event") as { at?: number } | undefined;
+      expect(typeof ev?.at).toBe("number");
+    }
     await until(() => {
       const hist = c.frames.filter((f) => f.t === "history" && f.reset !== true).flatMap((f) => f.entries ?? []);
       return hist.some((e) => (e as { kind?: string }).kind === "assistant" && (e as { text?: string }).text === "WUDAO-ROUNDTRIP");

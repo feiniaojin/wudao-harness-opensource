@@ -6,8 +6,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
-import { createEditTool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
+import { createEditTool } from "@wudao-org/core";
 import {
   SIDECAR_CLASSIFIER_PROMPT,
   SIDECAR_CACHE_LIMIT,
@@ -19,7 +19,7 @@ import {
   // ω99-42: the classifier-config shape pin (soft none).
   sidecarClassifierConfig,
 } from "../src/sidecar.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 /** A scripted sidecar model: records every ModelInput, answers from a queue. */
 function fakeModel(
@@ -343,7 +343,7 @@ import {
   type StaticRuleDecide,
 } from "../src/permission.js";
 import { createAgentsTaskTool, createSessionRegistry } from "../src/agents/index.js";
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 
 describe("sidecarGatesTool (scope matrix)", () => {
   it("audits the write/exec class and unknown tools", () => {

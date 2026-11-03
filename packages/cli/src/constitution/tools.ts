@@ -7,7 +7,7 @@
 // the only writer (this arc's red line). memory_write precedent: a plain
 // fail-closed buildTool, NOT read-only (it writes a file), default tool
 // posture (TOOL_DEFAULTS underneath).
-import { buildTool, type Tool } from "@wudao/core";
+import { buildTool, type Tool } from "@wudao-org/core";
 import {
   CONSTITUTION_CLAUSE_MAX_CHARS,
   appendPendingSuggestion,

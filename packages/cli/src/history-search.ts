@@ -40,7 +40,7 @@ import {
   type HistorySearchEntry,
   type SessionEntry,
   type SessionStore,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { COMPACT_BOUNDARY_TYPE } from "./session-entry.js";
 
 /** The `at` timestamp of a timestamped ledger receipt, when it has one. */

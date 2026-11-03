@@ -4,8 +4,8 @@
 // present; and the permission pre-layer routes submission-class browser
 // actions to the human ask unless a rule pre-approves them.
 import { describe, it, expect } from "vitest";
-import type { Tool } from "@wudao/core";
-import { createBrowserRuntime } from "@wudao/browser";
+import type { Tool } from "@wudao-org/core";
+import { createBrowserRuntime } from "@wudao-org/browser";
 import { buildToolSet } from "../src/tools.js";
 import { DEFAULT_ASK_TOOLS, isDefaultAskCall, decideRichPermission, PLAN_DENY_REASON } from "../src/permission.js";
 

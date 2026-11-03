@@ -1,10 +1,10 @@
 // PB-1 探针基础设施弧——providers 工厂缝挂载钉。createOpenAICompatibleProvider
 // 的返回处包 probeModelClient（core 的装饰器）：WUDAO_PROBE=on 时 model.call 落
-// @wudao/core 的进程级 probeBus（tokens/latency 取 usage 通道真值）；关闭=原
+// @wudao-org/core 的进程级 probeBus（tokens/latency 取 usage 通道真值）；关闭=原
 // 对象透传，provider 行为零差（此测试同时是挂载线不被误删的回归钉）。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createOpenAICompatibleProvider } from "../src/index.js";
-import { PROBE_ENV, probeBus } from "@wudao/core";
+import { PROBE_ENV, probeBus } from "@wudao-org/core";
 
 const CFG = { apiKey: "k", baseURL: "https://x/v1", model: "m" };
 

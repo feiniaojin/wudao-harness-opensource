@@ -11,7 +11,7 @@
 //                 "0" means UNLIMITED (the fuse is off — long tasks are
 //                 stopped by the board gates, not the counter).
 //   WUDAO_LONG_TASK_GATES=off — emergency kill switch for BOTH gates.
-import type { LoopGates } from "@wudao/core";
+import type { LoopGates } from "@wudao-org/core";
 import { isFeatureAblated } from "./args.js";
 import { loadLayeredSettings } from "./settings-layer.js";
 

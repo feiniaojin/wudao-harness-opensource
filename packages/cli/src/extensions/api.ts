@@ -17,8 +17,8 @@
 // skipped; a timed-out interceptor degrades to allow/original — the SAME
 // path a throw takes, so a hung extension can no more wedge a run than a
 // throwing one (mirrors the config-hooks timeoutMs posture in hooks-config).
-import { buildTool } from "@wudao/core";
-import type { AgentHooks, AgentMessage, AgentState, SessionEntry, SessionStore, Tool, ToolParameterSchema, ToolResult } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { AgentHooks, AgentMessage, AgentState, SessionEntry, SessionStore, Tool, ToolParameterSchema, ToolResult } from "@wudao-org/core";
 import { sanitizeWireToolSegment } from "../mcp/tools.js";
 import { isBuiltinCommandName } from "../plugins.js";
 

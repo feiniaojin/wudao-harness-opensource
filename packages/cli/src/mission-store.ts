@@ -1,7 +1,7 @@
 // ω99 拆分运动 弧 B：mission 存储层外提（指针/档案的读写原子性 + 台账装载 +
 // 活跃技能包根只读面——原 mission.ts 模块级段逐字保留；mission.ts re-export
 // 门面保公共面）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { lstat, readFile, writeFile, mkdir, rename } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";

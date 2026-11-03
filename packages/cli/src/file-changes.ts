@@ -8,7 +8,7 @@
 // the run — the freshness gate in edit/write_file still fails closed).
 import { readFile, stat, realpath } from "node:fs/promises";
 import { relative } from "node:path";
-import { hashContent, readStateEntry, type ReadStateTable } from "@wudao/core";
+import { hashContent, readStateEntry, type ReadStateTable } from "@wudao-org/core";
 
 /** Hard cap on one <file_changed> note (unified header + hunks). */
 export const NOTE_CAP_BYTES = 8 * 1024;

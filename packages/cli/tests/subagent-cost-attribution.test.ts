@@ -9,12 +9,12 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
-import type { AssistantMessage, ModelClient, ModelInput, ModelUsage, LoopEvent } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, ModelUsage, LoopEvent } from "@wudao-org/core";
 import { createAgentsTaskTool, createSessionRegistry } from "../src/agents/index.js";
 import { createSubagentCostSink } from "../src/repl.js";
 import { CostRegistry } from "../src/commands/cost.js";
 import type { CostLedgerRow } from "../src/commands/wallet.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createDriverSession, type DriverSession } from "../src/driver/session-engine.js";
 import { createCacheTrackingModel } from "../src/cache.js";
 

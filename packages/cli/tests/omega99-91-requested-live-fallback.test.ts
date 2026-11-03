@@ -17,8 +17,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, AssistantMessage } from "@wudao/core";
-import type { AgentRegistry, AgentSpawnSpec } from "@wudao/core";
+import type { ModelClient, ModelInput, AssistantMessage } from "@wudao-org/core";
+import type { AgentRegistry, AgentSpawnSpec } from "@wudao-org/core";
 import { buildToolSet } from "../src/tools.js";
 
 const allow = async () => ({ kind: "allow" as const });

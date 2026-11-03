@@ -10,8 +10,8 @@
 // budget exhausted, no API key, unknown resume id); 2 = usage / validation.
 import { readFileSync } from "node:fs";
 import { extname } from "node:path";
-import type { ModelClient, PermissionDecision } from "@wudao/core";
-import { createProvider, resolveProviderConfigResult, type ProviderConfig } from "@wudao/providers";
+import type { ModelClient, PermissionDecision } from "@wudao-org/core";
+import { createProvider, resolveProviderConfigResult, type ProviderConfig } from "@wudao-org/providers";
 import { credentialMaterialPath, decidePermission, decideRichPermission, modeFromArgv } from "../permission.js";
 import { loadLayeredSettings } from "../settings-layer.js";
 import { parseFallbackModels } from "../misc-config.js";

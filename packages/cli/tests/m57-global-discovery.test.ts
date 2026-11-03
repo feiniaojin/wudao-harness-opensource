@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { loadMcpConfig, globalMcpConfigPath } from "../src/mcp/config.js";
 import { loadKeybindings } from "../src/tui/keybindings.js";
 import { loadSkills, skillsPromptSection, findSkill } from "../src/skills.js";
-import { loadRoleProfiles } from "@wudao/core";
+import { loadRoleProfiles } from "@wudao-org/core";
 
 let globalHome: string;
 let savedEnv: string | undefined;

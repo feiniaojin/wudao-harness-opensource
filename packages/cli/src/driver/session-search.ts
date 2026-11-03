@@ -9,7 +9,7 @@ import { createReadStream } from "node:fs";
 import { createInterface } from "node:readline";
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { firstUserMessage, recordedWorkspaceRoot, sessionNameSource } from "../session-list.js";
 import { truncate } from "../log.js";
 

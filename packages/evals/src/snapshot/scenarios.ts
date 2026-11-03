@@ -6,7 +6,7 @@
 // (WUDAO_SNAPSHOT=record), replay keylessly forever after (`pnpm test`).
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { createGlobTool, createGrepTool, createReadFileTool } from "@wudao/core";
+import { createGlobTool, createGrepTool, createReadFileTool } from "@wudao-org/core";
 import { buildSystemPrompt } from "wudao-harness/prompt";
 import type { SnapshotScenario } from "./engine.js";
 

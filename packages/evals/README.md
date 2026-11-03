@@ -1,9 +1,9 @@
-# @wudao/evals
+# @wudao-org/evals
 
 Eval suites for **wudao-harness** — the product safety net.
 
 ```
-pnpm build   # build all packages (evals imports @wudao/core dist types)
+pnpm build   # build all packages (evals imports @wudao-org/core dist types)
 pnpm eval    # run everything: deterministic + live (root workspace script)
 ```
 
@@ -83,7 +83,7 @@ request — recorded or replayed — fails the suite.
 
 ```
 pnpm test                                          # replays keylessly (part of CI)
-WUDAO_SNAPSHOT=record pnpm --filter @wudao/evals test -- snapshot   # re-record (dev key)
+WUDAO_SNAPSHOT=record pnpm --filter @wudao-org/evals test -- snapshot   # re-record (dev key)
 ```
 
 Recording self-replays before committing the fixture, so a normalization
@@ -108,7 +108,7 @@ or live) fails; skips never fail the run.
 An eval is a plain object, not a framework:
 
 ```ts
-import type { EvalDefinition } from "@wudao/evals/runner"; // or relative path
+import type { EvalDefinition } from "@wudao-org/evals/runner"; // or relative path
 
 const myEval: EvalDefinition<MyCtx, MyEvidence> = {
   name: "det-09-my-behavior",   // det- / live- prefix + number

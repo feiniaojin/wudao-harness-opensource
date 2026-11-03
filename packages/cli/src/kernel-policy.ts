@@ -1,4 +1,4 @@
-// M41 — the kernel-policy single source. `@wudao/core` owns the mechanisms
+// M41 — the kernel-policy single source. `@wudao-org/core` owns the mechanisms
 // (concurrency slots, the budget fuse, grace-turn semantics); the deployment's
 // OPERATING POINTS live here and are threaded into every construction site.
 // Core keeps the types and the semantics, never the values — grep-audit table

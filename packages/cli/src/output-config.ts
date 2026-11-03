@@ -13,8 +13,8 @@
 //                                pre-M46 byte-cap behavior
 //   WUDAO_GENERIC_SHAPING=off  → the loop-level generic large-result
 //                                backstop off → pre-ω-1b passthrough
-import type { GenericResultShaping, LongOutputConfig, LogSlimmingPorts, WriteVerifyConfig } from "@wudao/core";
-import { createProvider, type ProviderConfig } from "@wudao/providers";
+import type { GenericResultShaping, LongOutputConfig, LogSlimmingPorts, WriteVerifyConfig } from "@wudao-org/core";
+import { createProvider, type ProviderConfig } from "@wudao-org/providers";
 import { loadLayeredSettings } from "./settings-layer.js";
 
 export interface WriteVerifySettings {

@@ -14,7 +14,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 import {
   scanFingerprints,
   diffFingerprints,

@@ -6,7 +6,7 @@ import {
   EVIDENCE_CEILING, WORKLOOP_DIMENSIONS, scoreWorkloop, loadSessionMessages, PARTIAL_SUCCESS_SCORE,
   type WorkloopInput, type CheckId,
 } from "../src/workloop.js";
-import type { AgentMessage } from "@wudao/core";
+import type { AgentMessage } from "@wudao-org/core";
 
 // ---------------------------------------------------------------------------
 // the evidence-state ceiling table (better-harness models/agent-work-loop.md)

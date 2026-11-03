@@ -14,12 +14,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { connect } from "node:net";
 import { execFile } from "node:child_process";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import type { AgentDriverOptions, AgentDriver } from "../src/driver/agent-driver.js";
-import type { ModelInput, Tool } from "@wudao/core";
+import type { ModelInput, Tool } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { createDriverSession } from "../src/driver/session-engine.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { summarizeToolCall } from "../src/log.js";
 import { stripProjectedNotes } from "./projected-notes.js";
 import {

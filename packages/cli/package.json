@@ -1,6 +1,6 @@
 {
   "name": "wudao-harness",
-  "version": "0.4.15",
+  "version": "0.4.21",
   "type": "module",
   "bin": {
     "wudao": "./dist/index.js"
@@ -304,13 +304,14 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "pnpm run build && pnpm run test"
+    "prepublishOnly": "pnpm run build && pnpm run test && node ../../scripts/publish-assets.mjs"
   },
   "dependencies": {
-    "@wudao/core": "workspace:*",
-    "@wudao/providers": "workspace:*",
-    "@wudao/server": "workspace:*",
-    "@wudao/browser": "workspace:*",
+    "@wudao-org/core": "workspace:*",
+    "@wudao-org/providers": "workspace:*",
+    "@wudao-org/server": "workspace:*",
+    "@wudao-org/browser": "workspace:*",
+    "@wudao-org/web": "workspace:*",
     "cli-highlight": "^2.1.11",
     "grok-mermaid": "0.2.3",
     "ink": "^7.1.1",

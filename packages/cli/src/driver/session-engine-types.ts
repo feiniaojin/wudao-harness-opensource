@@ -1,7 +1,7 @@
 // ω99 拆分运动 弧 B：session-engine 的两个门面类型（原文件模块级段外提，
 // 纯移动——正文与 doc 注释逐字保留；session-engine.ts re-export 门面保公共面）。
-import type { AgentHooks, AgentMessage, LoopGates, ModelClient, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AgentHooks, AgentMessage, LoopGates, ModelClient, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import type { AskAnswer, SessionAllowlist } from "../permission.js";
 import type { Sidecar } from "../sidecar.js";
 import type { AgentRegistry, RosterPluginAgent } from "../agents/index.js";
@@ -69,7 +69,7 @@ export interface DriverSessionOptions {
   readonly hooks?: AgentHooks;
   /** M63-A: the SessionStart source at driver creation ("fork" for
    *  --fork-session); absent → derived from resumeHistory. */
-  readonly sessionStartSource?: import("@wudao/core").SessionStartSource;
+  readonly sessionStartSource?: import("@wudao-org/core").SessionStartSource;
   /** M63-B: literal filenames the FileChanged watcher watches (from the
    *  onFileChanged config's plain matchers; the fire seam is
    *  hooks.onFileChanged). Absent/empty → no watcher. */
@@ -112,11 +112,11 @@ export interface DriverSessionOptions {
   readonly extensions?: ExtensionRuntime;
   /** M32: the session's read-state table (shared with a stub tool set in tests);
    *  absent → a fresh one per session (the same instance the tool set uses). */
-  readonly readState?: import("@wudao/core").ReadStateTable;
+  readonly readState?: import("@wudao-org/core").ReadStateTable;
   /** M46 §1: write-verify config injected into the core write tools. */
-  readonly writeVerify?: import("@wudao/core").WriteVerifyConfig;
+  readonly writeVerify?: import("@wudao-org/core").WriteVerifyConfig;
   /** M46 §2: long-output shaping config for shell. */
-  readonly longOutput?: import("@wudao/core").LongOutputConfig;
+  readonly longOutput?: import("@wudao-org/core").LongOutputConfig;
   /** M59 §3: web runtime for the tool set (fetch caps + optional search). */
   readonly web?: import("../tools.js").WebToolsRuntime;
   /** M59 §2: web.allowDomains — the permission gate's pre-approval list. */
@@ -140,7 +140,7 @@ export interface DriverSessionOptions {
     toolName: string,
     summary: string,
     input: Record<string, unknown>,
-    ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao/core").SpoofInspection },
+    ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao-org/core").SpoofInspection },
   ) => Promise<AskAnswer>;
   /** M64-A §A: the session's peer-messaging name (--name; /rename follows
    *  live). Absent → argv --name → the cwd-derived default. */
@@ -156,7 +156,7 @@ export interface DriverSessionOptions {
    *  ONE current id — a second concurrent same-process session through it
    *  would RELEASE the first lane's lease at every acquire (the box's
    *  rotation semantics). Absent → the memoized root box (unchanged). */
-  readonly sessionLeases?: import("@wudao/core").SessionLeaseBox;
+  readonly sessionLeases?: import("@wudao-org/core").SessionLeaseBox;
   /** ω99-235: construct the session's cron runtime INERT (the refusal
    *  posture — the cron tools answer fail-closed). The pet lane sets this: a
    *  second same-process runtime over the same .wudao/cron.json arms fires

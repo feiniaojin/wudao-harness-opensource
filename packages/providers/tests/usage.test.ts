@@ -10,7 +10,7 @@
 //   bytes; append-only history growth → byte-prefix growth.
 import { describe, it, expect } from "vitest";
 import { createOpenAICompatibleProvider, serializePrompt } from "../src/index.js";
-import type { ModelInput, ModelUsage } from "@wudao/core";
+import type { ModelInput, ModelUsage } from "@wudao-org/core";
 
 const CFG = { apiKey: "k", baseURL: "https://x/v1", model: "m" };
 

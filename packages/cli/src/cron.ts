@@ -21,7 +21,7 @@ import {
   nextFire,
   type CronTask,
   type CronTaskSchedule,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 /** How often due-ness is re-checked (unref'd; never keeps the process alive). */
 export const CRON_TICK_MS = 15_000;

@@ -17,7 +17,7 @@
 // but cannot approve it — the only path to an ok run is deterministic
 // receipts. Executor failures are NOT run failures; they are next-round
 // recovery input (ch10:220).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { DEFAULT_STEP_TOOLS } from "./schema.js";
 import type { BudgetView, TaskResult } from "./vm.js";
 import type { JournalRecord } from "./journal.js";

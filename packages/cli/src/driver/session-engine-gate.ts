@@ -2,7 +2,7 @@
 // 体内 allowlist→subagentGate 连续段，闭包体逐字保留——props/hooks/workspaceRoot/
 // agentRootBox/driverBox/toolsBox/initialMode 收进 ctx 显式线程；watcher/
 // richDecide/sidecarLayer/permissionLayer 变为构造器内部实现细节）。
-import type { PermissionDecision, Tool } from "@wudao/core";
+import type { PermissionDecision, Tool } from "@wudao-org/core";
 import { decideRichPermission, createSessionAllowlist, createPermissionSettingsWatcher, withSidecarLayer, withPermissionRequestHook, toolMetaResolverFor, applyAskAnswer, recordAskRules, immuneAskCeiling } from "../permission.js";
 import type { Mode, AskAnswer, SessionAllowlist } from "../permission.js";
 import { persistAllowRule } from "../commands/permissions.js";
@@ -29,7 +29,7 @@ export interface SessionPermissionGate {
   readonly gate: import("../permission.js").StaticRuleDecide;
   readonly subagentGate: (toolName: string, input: Record<string, unknown>) => Promise<PermissionDecision>;
   /** Present only when props.askRelay is (absent → asks park in the driver). */
-  readonly onPermissionAsk?: (toolName: string, summary: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao/core").SpoofInspection }) => Promise<AskAnswer>;
+  readonly onPermissionAsk?: (toolName: string, summary: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao-org/core").SpoofInspection }) => Promise<AskAnswer>;
 }
 
 export async function createSessionPermissionGate(ctx: SessionGateCtx): Promise<SessionPermissionGate> {
@@ -39,7 +39,7 @@ export async function createSessionPermissionGate(ctx: SessionGateCtx): Promise<
   // M63-B: the ConfigChange consult rides the watcher — a blocking
   // onConfigChange hook vetoes the rules swap (the previously accepted rules
   // stay cached).
-  const configChangeConsult = async (positions: readonly import("@wudao/core").ConfigChangePosition[]): Promise<boolean> => {
+  const configChangeConsult = async (positions: readonly import("@wudao-org/core").ConfigChangePosition[]): Promise<boolean> => {
     for (const position of positions) {
       const decision = await hooks?.onConfigChange?.(position, {});
       if (typeof decision === "object" && decision.block) return false;
@@ -73,7 +73,7 @@ export async function createSessionPermissionGate(ctx: SessionGateCtx): Promise<
   // raw answer back for askAnswerToDecision.
   const askRelay = props.askRelay;
   const onPermissionAsk = askRelay !== undefined
-    ? (toolName: string, summary: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao/core").SpoofInspection }): Promise<AskAnswer> =>
+    ? (toolName: string, summary: string, input: Record<string, unknown>, ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao-org/core").SpoofInspection }): Promise<AskAnswer> =>
         askRelay(toolName, summary, input, ctx).then((answer) => {
           const { sessionRule, persistentRule } = applyAskAnswer(answer, toolName, input);
           // 夜移 009: shared recording seam — a session-only rule's receipt

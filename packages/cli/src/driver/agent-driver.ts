@@ -6,12 +6,12 @@
 // asks, owns the runtime mode, and exposes the ops every frontend submits
 // through. React (the TUI) is a useSyncExternalStore adapter over this class;
 // the WS server (wudao ui) is another consumer.
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { open, readFile, readdir, realpath, rename, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { runAgentLoop, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, compactionOpportunity, resolveCompactionThresholdTokens, classifyCacheClock, usagePrefixFingerprint, shouldTrustUsage, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput, isValidImageBlock, isValidFileBlock, clearTier, isQuotaParkError, createStreamPreemptChannel, microcompact, cumulativeModifiedFiles, activeToolsOf, worldStateDiff, goalTokensTotal, StopCoordinator, persistentShellRuntime } from "@wudao/core"
-import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection, RosterPluginAgent, StreamPreemptChannel, WorldState } from "@wudao/core";
+import { runAgentLoop, observeRun, createOtlpExporterFromEnv, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, compactionOpportunity, resolveCompactionThresholdTokens, classifyCacheClock, usagePrefixFingerprint, shouldTrustUsage, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput, isValidImageBlock, isValidFileBlock, clearTier, isQuotaParkError, createStreamPreemptChannel, microcompact, cumulativeModifiedFiles, activeToolsOf, worldStateDiff, goalTokensTotal, StopCoordinator, persistentShellRuntime } from "@wudao-org/core"
+import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection, RosterPluginAgent, StreamPreemptChannel, WorldState } from "@wudao-org/core";
 import { renderTurnDiff } from "../turn-diff-render.js";
 import { truncate, formatCompactedLine, modelLabel, RESULT_PREVIEW_CHARS } from "../log.js";
 // ω99-41: streaming deltas accumulate in chunk buffers (linear) and fold into
@@ -136,7 +136,7 @@ import type { ModelChoice, ModelSelection } from "../commands/model.js";
 // M63 §A: the /provider command's shared machinery (pure halves; the client
 // rebuild reaches the frontend through the onProviderSwitch seam below).
 import { validateProviderName, providerRows, formatProviderList, recordProviderChange, envOnlyProviderResolver, borrowedKeyPoolNote, PROVIDER_SWITCH_CACHE_NOTE } from "../commands/provider.js";
-import type { BuiltinProviderName, ProviderName } from "@wudao/providers";
+import type { BuiltinProviderName, ProviderName } from "@wudao-org/providers";
 // SDD 2026-08-23 persona: the /persona command's pure layer (parse → resolve
 // → apply → record) — the driver's handler is a thin shell over it, exactly
 // like the REPL's (repl.ts ~1668), with appendHistory notices for output.
@@ -145,10 +145,10 @@ import {
   personaSwitchBreaksCache, recordPersonaChange, formatPersonaList, PERSONA_SWITCH_CACHE_NOTE,
 } from "../commands/persona.js";
 import type { PersonaChainSources } from "../commands/persona.js";
-import { applyWirePersona, outputLimitEscalateFor, resolveContextWindowTokens, catalogPricesFor } from "@wudao/providers";
+import { applyWirePersona, outputLimitEscalateFor, resolveContextWindowTokens, catalogPricesFor } from "@wudao-org/providers";
 import { loadEffectiveProfiles, resolveSessionCachePricing } from "../provider-registry.js";
 import { coldCacheResumeDecision } from "../cache-clock-ledger.js";
-import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao/providers";
+import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao-org/providers";
 // ω99-320: the session's soft-warn slot (run-scoped accounting + live notice).
 import type { SoftWarnSlot } from "../soft-warn-tracker.js";
 import { runPermissionsCommand } from "../commands/permissions.js";
@@ -239,7 +239,7 @@ export type {
   HistoryEntry, LiveState, RuleGate, PendingPermission, FileTreeEntry, FileTreeResult,
   FileReadResult, FileWriteResult, FileRevertResult, BranchLeaf, MemoryEntryMirror,
   CtxInfoResult, PanelRootSetResult, AgentRootStatusResult, AgentRootSwitchResult,
-  DriverStatus, DriverPersonaContext, AgentDriverOptions,
+  DriverStatus, DriverPersonaContext, AgentDriverOptions, SessionAnatomyResult,
 } from "./types.js";
 export type { SubmitOutcome, DriverExtensionSwap, ResumeOutcome, AgentDriver } from "./contract.js";
 export { notePreview, formatMs, formatRunStats } from "./format.js";
@@ -248,7 +248,7 @@ import type {
   HistoryEntry, LiveState, RuleGate, PendingPermission, FileTreeEntry, FileTreeResult, MemoryEntryMirror,
   FileReadResult, FileWriteResult, FileRevertResult, BranchLeaf, CtxInfoResult,
   PanelRootSetResult, AgentRootStatusResult, AgentRootSwitchResult, DriverStatus,
-  DriverPersonaContext, AgentDriverOptions,
+  DriverPersonaContext, AgentDriverOptions, SessionAnatomyResult,
 } from "./types.js";
 import type { SubmitOutcome, DriverExtensionSwap, ResumeOutcome, AgentDriver } from "./contract.js";
 import {
@@ -313,7 +313,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   const snapshotCatalog = new Map<string, string>();
   /** ω99-314: 目录的重建入口（三处回放缝共用）——条目读侧纯函数 + 文件序
    *  last-wins 覆盖（后到的恢复/settle 记录天然盖过旧的）。 */
-  const rebuildSnapshotCatalog = (entries: readonly import("@wudao/core").SessionEntry[]): void => {
+  const rebuildSnapshotCatalog = (entries: readonly import("@wudao-org/core").SessionEntry[]): void => {
     const next = latestAfterShaByPath(snapshotIndexFromEntries(entries));
     if (next.size === 0 && snapshotCatalog.size === 0) return;
     for (const [k, v] of next) snapshotCatalog.set(k, v);
@@ -367,6 +367,9 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // anchor (the JSONL store, spill, settings/memory writes) — the workspace
   // root is not a session concept, so the switch never touches any of those.
   let agentWorkspaceRoot = opts.workspaceRoot ?? process.cwd();
+  // 138 续：boot 根的只读镜像（会话锚；agentWorkspaceRoot 会随切换走，这
+  // 个不跟——agentRootStatus 的 bootRoot 字段读它）。
+  const bootRoot = agentWorkspaceRoot;
   // ω99-253: #3 — the branch face's cached read (declared with the
   // workspace-root family it belongs to). The VALUE rides DriverStatus
   // verbatim; the read itself runs at exactly three seams — boot (below,
@@ -587,7 +590,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // the 0.3.33 same-name key refresh (settings-originated, endpoint-
   // preserving), which parks like any busy-run switch and lands at settle.
   let pendingProviderApply: {
-    readonly config: import("@wudao/providers").ProviderConfig;
+    readonly config: import("@wudao-org/providers").ProviderConfig;
     readonly provider: string;
     readonly model: string;
     readonly from?: string;
@@ -738,7 +741,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   };
   // M63-B: the SessionEnd fire — always VOIDED (the 1.5s shared budget at the
   // bridge bounds it; teardown/clear never waits on hooks).
-  const sessionEndHook = (source: import("@wudao/core").SessionEndSource): void => {
+  const sessionEndHook = (source: import("@wudao-org/core").SessionEndSource): void => {
     // R1 fix: the deadline is created HERE — every composed layer (config,
     // plugins, extensions) shares this one budget instead of each minting
     // its own 1.5s window.
@@ -767,7 +770,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       }
     }
   };
-  const stopFailureHook = (kind: import("@wudao/core").StopFailureKind, message: string): void => {
+  const stopFailureHook = (kind: import("@wudao-org/core").StopFailureKind, message: string): void => {
     void (async () => {
       try {
         await o.hooks?.onStopFailure?.(kind, { message, sessionId });
@@ -782,7 +785,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // event across invocations; the compiled overlay composes OVER the
   // session's configured hooks for every run.
   const skillHookEntries = new Map<string, readonly unknown[]>();
-  let skillHooksCompiled: import("@wudao/core").AgentHooks | undefined;
+  let skillHooksCompiled: import("@wudao-org/core").AgentHooks | undefined;
   const armSkillHooks = (skill: import("../skills.js").LoadedSkill): void => {
     if (skill.hooks === undefined) return;
     for (const [event, entries] of Object.entries(skill.hooks)) {
@@ -838,7 +841,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     approvalGate.humanSettled = null; // ω99-70: the per-call marker dies with the posture
     appendHistory({ kind: "notice", text: `🚧 审批门已解除 (${why})` }); // ω99-166c-iii: #2
   };
-  const instructionsLoadedHook = (source: import("@wudao/core").InstructionsLoadedSource): void => {
+  const instructionsLoadedHook = (source: import("@wudao-org/core").InstructionsLoadedSource): void => {
     void (async () => {
       try {
         await o.hooks?.onInstructionsLoaded?.(source, {});
@@ -986,9 +989,16 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       if (m === undefined || m.role !== "assistant") continue;
       if (committedAssistantSegments.has(m)) return;
       committedAssistantSegments.add(m);
-      if (m.content !== "") {
-        const segmentReasoning =
-          live.reasoning.length > reasoningMark ? live.reasoning.slice(reasoningMark) : "";
+      // 136（2026-11-02 用户报障「思考过程没有流式输出／思考和结果一股脑」
+      // 根因）：此前只在 m.content !== "" 时落条目 —— 纯工具调用的模型调用
+      //（工具重回合的常态）思考被整段丢弃：live 卡在 tool_call_started 被
+      // 清空，历史里又没有对账条目，用户只在回合末尾看到最后一轮思考与正文
+      // 同时出现。10-27 用户令「LLM 返回的任何内容都要展示」同样要求这段
+      // 思考进转录 → 有思考无正文也落一条 assistant 条目（text 空串，前端
+      // 只渲染思考块；无思考无正文仍零条目，老历史零变化）。
+      const segmentReasoning =
+        live.reasoning.length > reasoningMark ? live.reasoning.slice(reasoningMark) : "";
+      if (m.content !== "" || segmentReasoning !== "") {
         appendHistory({
           kind: "assistant",
           text: m.content,
@@ -1518,8 +1528,8 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // already rides the transcript's pre-dispatch tool-call message. Best-effort
   // like the 217 receipts: a failed persist must not break the ask seam. M24:
   // generic entries never reach state.messages/system prompt — zero cache cost.
-  let askLedgerStore: import("@wudao/core").SessionStore | null | undefined;
-  const askLedger = (entry: import("@wudao/core").SessionEntry, parkedSessionId?: string): void => {
+  let askLedgerStore: import("@wudao-org/core").SessionStore | null | undefined;
+  const askLedger = (entry: import("@wudao-org/core").SessionEntry, parkedSessionId?: string): void => {
     if (o.persistPermissionAsks === false) return; // the pet lane's isolation opt-out
     const sid = parkedSessionId ?? sessionId;
     if (askLedgerStore === undefined) {
@@ -1985,7 +1995,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       // user-configured hook runs FIRST (its block wins), then the goal's.
       // M63-C §3: the skill-position overlay composes over the configured
       // hooks (its onRunStop, if any, runs before the goal's evaluator).
-      const overlayStop = (state: AgentState): Promise<import("@wudao/core").StopHookDecision> => {
+      const overlayStop = (state: AgentState): Promise<import("@wudao-org/core").StopHookDecision> => {
         const base = skillHooksCompiled?.onRunStop;
         if (base === undefined) return Promise.resolve("allow");
         return (async () => {
@@ -1999,8 +2009,8 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         })();
       };
       const composedStop = goalController !== undefined
-        ? async (state: AgentState): Promise<import("@wudao/core").StopHookDecision> => {
-            let user: import("@wudao/core").StopHookDecision = "allow";
+        ? async (state: AgentState): Promise<import("@wudao-org/core").StopHookDecision> => {
+            let user: import("@wudao-org/core").StopHookDecision = "allow";
             try { user = (await o.hooks?.onRunStop?.(state)) ?? "allow"; } catch { user = "allow"; }
             if (typeof user === "object") return user; // both shapes block
             const overlaid = await overlayStop(state);
@@ -2008,7 +2018,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
             return goalController.onStop(state);
           }
         : o.hooks?.onRunStop !== undefined || skillHooksCompiled?.onRunStop !== undefined
-          ? async (state: AgentState): Promise<import("@wudao/core").StopHookDecision> => {
+          ? async (state: AgentState): Promise<import("@wudao-org/core").StopHookDecision> => {
               try {
                 const d = await o.hooks?.onRunStop?.(state);
                 if (typeof d === "object") return d;
@@ -2044,7 +2054,9 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       // command_footprint 泛型条目 + 快照目录播种）。run 结束即弃（跨 run 零
       // 串扰——每条足迹的归因窗口只在各自命令的 pre/post 配对里）。
       const cmdFootprints: CommandFootprint[] = [];
+      // 137：会话身份下发探针（监督者按会话归并事件）。
       const run = runAgentLoop(state, o.model, {
+        sessionId,
         maxTurns: o.maxTurns,
         // 取证弧 0921（polyglot 三败题根因）: the output-limit ladder ran
         // nudge-only in the product path — escalateTo existed in core, was
@@ -2080,7 +2092,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
                 //  指针，note=command 截断）。空清单字节不变（renderOutstandingWork
                 //  的 no-op 契约）。
                 outstandingWork: () => {
-                  const items: import("@wudao/core").OutstandingWorkItem[] = [];
+                  const items: import("@wudao-org/core").OutstandingWorkItem[] = [];
                   for (const s of o.agentsRegistry?.status() ?? []) {
                     if (s.status === "queued" || s.status === "running") {
                       items.push({ kind: "subagent", id: s.id, note: `${s.status} agent` });
@@ -2266,7 +2278,30 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           ? { sessionBudget: { budget: o.sessionBudget, threadId: "root" } }
           : {}),
       });
-      gen = run;
+
+      // 135 — 可观测投影：缺省不启用。WUDAO_OTEL_ENDPOINT 未设时
+      // createOtlpExporterFromEnv 返回 null，observeRun(undefined) 原样返回
+      // 内层 generator（同一引用）——开关闭合时连包装层都不存在（字节零影响）。
+      // 开启时：每次 run 结算出一棵 span 树，异步批量发出，失败静默。
+      {
+        const exporter = createOtlpExporterFromEnv();
+        const tracingEnv = process.env["WUDAO_OTEL_CONTENT"];
+        const contentMode = tracingEnv === "off" || tracingEnv === "full" ? tracingEnv : "hash";
+        gen = exporter === null
+          ? run
+          : observeRun(run, {
+              sessionId,
+              contentMode,
+              homeDir: process.env["HOME"],
+              onSettled: (traceRun) => {
+                try {
+                  exporter.enqueue(traceRun);
+                } catch {
+                  /* 导出永不打断运行 */
+                }
+              },
+            });
+      }
 
       // M25 §A5: context watermark refresh — same occupancy measure the loop's
       // compaction trigger uses (max(estimate, last real prompt usage)), so
@@ -2416,7 +2451,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       // ω-4b: the fork's usage row (reflectionTokens-stamped) — parked here
       // so the reflection_fork event can stitch it into its session entry
       // (core emits the usage event immediately before reflection_fork).
-      let lastReflectionUsage: import("@wudao/core").ModelUsage | undefined;
+      let lastReflectionUsage: import("@wudao-org/core").ModelUsage | undefined;
 
       // OOM fix: coalesce delta-driven status emissions. Deltas still
       // accumulate IN FULL — into the ω99-41 chunk buffers, folded into `live`
@@ -3262,7 +3297,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
           // state.messages/system prompt——load() 滤泛型=store 既有契约，M24
           // 前缀缓存零影响。sidechain（子 agent run）v1 不落（turn-diff
           // tracker 本就 parent-run 域）。
-          const settledReceipts: import("@wudao/core").SessionEntry[] = [];
+          const settledReceipts: import("@wudao-org/core").SessionEntry[] = [];
           if (process.env.WUDAO_G2_PROBE) console.log("G2: receipts block reached, cause=", runEndCause);
           // ω99-319: 命令足迹的 settle 面先行折叠——非 deleted 足迹文件 merge 进
           // 本轮 changes（同 path 时 cmd 行 wins，op 用足迹 kind）；deleted 只走
@@ -4405,7 +4440,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   // requests stay on the old provider end-to-end. Mid-STREAM submissions
   // never reach here (refused in the routing below).
   const applyProviderSwitch = (
-    config: import("@wudao/providers").ProviderConfig,
+    config: import("@wudao-org/providers").ProviderConfig,
     provider: ProviderName,
     label: string,
     /** 0.3.32c kimi-401: an optional receipt line appended to BOTH the
@@ -5130,7 +5165,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
             // no hook is configured (timing-sensitive callers ride this path).
             const manualPreHook = o.hooks?.onPreCompact;
             if (manualPreHook !== undefined) {
-              let manualPre: import("@wudao/core").PreCompactDecision = "compact";
+              let manualPre: import("@wudao-org/core").PreCompactDecision = "compact";
               try {
                 manualPre = (await manualPreHook(state.messages, "manual")) ?? "compact";
               } catch {
@@ -6112,7 +6147,7 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
   /** M61 review fix: the registry label for an evaluator usage row — its own
    *  model name when the row carries one (the matrix-cheap client), else the
    *  session's model (the effort=low fallback). */
-  const evaluatorLabelFor = (_u: import("@wudao/core").ModelUsage): string =>
+  const evaluatorLabelFor = (_u: import("@wudao-org/core").ModelUsage): string =>
     goalEvaluatorLabelRef.current ?? o.statusline?.model ?? "evaluator";
   const goalEvaluatorLabelRef: { current?: string } = {};
 
@@ -6268,6 +6303,16 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     agentWorkspaceRoot = path;
     if (agentRootBox !== undefined) agentRootBox.current = path;
     armFileWatch(agentWorkspaceRoot);
+    // 138（2026-11-03 用户报障「岔开会话后工作目录没带过去」）：根切换落
+    // 一条 agent_root 会话条目——MetaNote 是纯投影（M24 前缀纪律，永不落
+    // 盘），此前 resume 扫消息链找 <workspace_changed> 是死路：条目不在消
+    // 息里，岔轮/恢复永远回落 boot 根。append-only JSONL 不受压缩改写，
+    // 最后一条 agent_root 就是会话的当前根。best-effort：写失败不挡切换。
+    if (o.workspaceRoot !== undefined) {
+      void (sessionStore ?? createJsonlSessionStore(join(o.workspaceRoot, ".wudao", "sessions")))
+        .appendEntry(sessionId, { type: "agent_root", data: { path, at: new Date().toISOString() } })
+        .catch(() => { /* best-effort — the switch itself already landed */ });
+    }
     // Best-effort (same discipline as panelRootSet): a failed recents write
     // must not fail the switch — but it is AWAITED so the op's receipt
     // implies the row landed (the switcher menu reads it right after).
@@ -6622,15 +6667,36 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         // 描最后一条 <workspace_changed path="..."> MetaNote，agentRootBox 对
         // 齐（用户每次恢复后不用再手动切目录）。零 workspace_changed 条目=
         // 行为不变（默认工作区保持）。
-        if (agentRootBox !== undefined) {
-          for (let i = state.messages.length - 1; i >= 0; i -= 1) {
-            const m = state.messages[i];
-            if (m === undefined || m.role !== "user") continue;
-            const wm = /<workspace_changed path="([^"]+)">/.exec(String(m.content));
-            if (wm !== null) {
-              agentRootBox.current = wm[1]!;
+        // 138：会话的根从 agent_root 条目重放（岔轮复制 JSONL → 新会话同源
+        // 继承）。两变量一起齐：agentRootBox 喂工具边界，agentWorkspaceRoot
+        // 是 driver 自读面（git 分支/钩子/快照）——旧代码只齐 box，driver
+        // 自身仍读 boot 根。旧会话（无条目）兜底扫消息链的投影残迹（历史
+        // 上从未落盘，通常零命中——零条目=行为不变，默认工作区保持）。
+        {
+          let resumedRoot: string | undefined;
+          for (let i = entries.length - 1; i >= 0; i -= 1) {
+            const e = entries[i] as { type?: string; data?: { path?: string } };
+            if (e?.type === "agent_root" && typeof e.data?.path === "string" && e.data.path !== "") {
+              resumedRoot = e.data.path;
               break;
             }
+          }
+          if (resumedRoot === undefined && agentRootBox !== undefined) {
+            for (let i = state.messages.length - 1; i >= 0; i -= 1) {
+              const m = state.messages[i];
+              if (m === undefined || m.role !== "user") continue;
+              const wm = /<workspace_changed path="([^"]+)">/.exec(String(m.content));
+              if (wm !== null) {
+                resumedRoot = wm[1]!;
+                break;
+              }
+            }
+          }
+          if (resumedRoot !== undefined) {
+            agentWorkspaceRoot = resumedRoot;
+            if (agentRootBox !== undefined) agentRootBox.current = resumedRoot;
+            armFileWatch(agentWorkspaceRoot);
+            refreshGitBranch();
           }
         }
         // M61 §3: a still-active goal restores on resume (counters reset).
@@ -7008,7 +7074,10 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       // tmpdir's /var vs /private/var — must not false-negative the flag.
       const norm = async (p: string): Promise<string> => realpath(p).catch(() => p);
       const [panelReal, agentReal] = await Promise.all([norm(panelRoot), norm(agentWorkspaceRoot)]);
-      return { panelRoot, agentRoot: agentWorkspaceRoot, aligned: panelReal === agentReal };
+      // 138 续（用户令 2026-11-03「下拉列表给一个默认空间的选项，方便切回
+      // 去」）：bootRoot = 会话锚（CLI 的 cwd / 桌面端的数据目录）——切走后
+      // 一键回默认的落点。加性字段，老前端零变化。
+      return { panelRoot, agentRoot: agentWorkspaceRoot, bootRoot, aligned: panelReal === agentReal };
     },
     // workspace-ux B2: the confirm-card action. Validation mirrors
     // panelRootSet's exists-and-directory gate (typed errors, nothing moves)
@@ -7051,6 +7120,15 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     // the SAME live state the watermark's updateCtxTokens reads (never a
     // cached snapshot), available clamped at zero so a post-compaction
     // estimate above the window cannot render a negative remainder.
+    // 140 — 会话解剖：系统提示词 + 消息链全量直读（监控面板的「会话解剖」
+    // 数据源）。与下方 ctxInfo 同一活 state（持久真身，非模型投影——投影的
+    // 裁剪不在此）。压缩后的链带 SUMMARY_MARKER/桩，面板按原文渲染。
+    async sessionAnatomy(): Promise<SessionAnatomyResult> {
+      return {
+        systemPrompt: state.systemPrompt,
+        messages: state.messages.map((m) => ({ ...m }) as Record<string, unknown>),
+      };
+    },
     async ctxInfo(): Promise<CtxInfoResult> {
       const b = estimateTokensBreakdown(state.systemPrompt, state.tools.map(toModelToolDefinition), state.messages);
       const window = o.compaction?.contextWindowTokens ?? 64_000;

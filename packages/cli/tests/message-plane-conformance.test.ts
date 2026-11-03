@@ -37,7 +37,7 @@ import {
   describeMessagePlane, checkMessagePlaneInvariants, buildTool,
   type MessagePlane, type Tool, type ModelClient, type ModelInput, type AssistantMessage,
   type SteerRegistry,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import {
   createPeerTools, PEER_TEXT_MAX_CHARS, PEER_UNTRUSTED_BANNER, formatPeerInjection,
   type PeerRuntime,
@@ -209,9 +209,9 @@ describe("ω99-66 message-plane conformance — shared invariants", () => {
     // are now definitions over the imported constitutional value — names
     // kept (the peer/teams export ABI is untouched), the VALUE single-
     // sourced. A regression back to a numeric literal must go red here.
-    expect(proto).toMatch(/import \{ MAIL_CONTENT_MAX_CHARS \} from "@wudao\/core";/);
+    expect(proto).toMatch(/import \{ MAIL_CONTENT_MAX_CHARS \} from "@wudao-org\/core";/);
     expect(proto).toMatch(/export const PEER_TEXT_MAX_CHARS = MAIL_CONTENT_MAX_CHARS;/);
-    expect(mbox).toMatch(/import \{ MAIL_CONTENT_MAX_CHARS \} from "@wudao\/core";/);
+    expect(mbox).toMatch(/import \{ MAIL_CONTENT_MAX_CHARS \} from "@wudao-org\/core";/);
     expect(mbox).toMatch(/export const TEAM_MESSAGE_MAX_CHARS = MAIL_CONTENT_MAX_CHARS;/);
     // And NO assignment-shaped 8k literal anywhere under the peer/ and
     // teams/ trees: the cap may only enter them through the import. The

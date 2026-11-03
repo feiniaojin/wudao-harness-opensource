@@ -17,8 +17,8 @@
 //   parseFloat 再 toString，浮点漂移是静默数据损坏）；
 // - read 夹具反哺：本层与 doc-zip 写器同源互测（storedZip 造夹具、
 //   deflateRawSync 造压缩道夹具）。
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 // ω99-222: #2 — zip 解压层搬家后的连续缝：unzipEntries/ZipEntry/UnzipCheck

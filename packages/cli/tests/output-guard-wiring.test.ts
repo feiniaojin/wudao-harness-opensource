@@ -31,7 +31,7 @@ describe("夜移 034 stage-2 — bounded commands ride the guard lane", () => {
     expect(src).toContain("stdoutGuard.writeRawStdout(`${formatStatuslineLine(snapshot)}");
     expect(src).toContain("stdoutGuard.writeRawStdout(`${JSON.stringify(snapshot, null, 2)}");
     // the slack load-fail fallback (its exit(1) is a direct exit)
-    expect(src).toMatch(/stdoutGuard\.writeRawStdout\([\s\S]{0,80}@wudao\/slack could not be loaded/);
+    expect(src).toMatch(/stdoutGuard\.writeRawStdout\([\s\S]{0,80}@wudao-org\/slack could not be loaded/);
     // and the bare `process.stdout.write` exits are gone from those sites
     expect(src).not.toContain('process.stdout.write("用法：wudao perms lint'); // ω99-166d-i: 双负钉同步演进（直写禁止仍以新串为靶，#9）
     expect(src).not.toContain('process.stdout.write("用法：wudao purge'); // ω99-166d-i: 双负钉同步演进（直写禁止仍以新串为靶，#11）

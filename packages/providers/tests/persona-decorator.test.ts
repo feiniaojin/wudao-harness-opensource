@@ -1,6 +1,6 @@
 // packages/providers/tests/persona-decorator.test.ts
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput, AssistantMessage } from "@wudao/core";
+import type { ModelClient, ModelInput, AssistantMessage } from "@wudao-org/core";
 import { withPersona } from "../src/persona/decorator.js";
 import { createPersonaRuntime, resolvePersona } from "../src/persona/runtime.js";
 import type { PersonaDefinition } from "../src/persona/types.js";

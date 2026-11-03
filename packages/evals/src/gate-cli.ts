@@ -2,7 +2,7 @@
 // 永续 v6 wave2（reef C1）——改进提案门禁的子进程入口（CLI 侧 gate.ts 以
 // `node …/dist/gate-cli.js --proposal <json> --out <json>` 拉起）。为什么是
 // 子进程而不是 cli 直接 import：工作区依赖图必须无环（server/ports.ts 的
-// 既律——@wudao/evals 依赖 wudao-harness（要用真套件），cli 不能反向依赖
+// 既律——@wudao-org/evals 依赖 wudao-harness（要用真套件），cli 不能反向依赖
 // evals）。dist 解析失败=门不可用=上游 fail-open（提案永不激活，什么都不
 // 改）——桌面打包未随附 evals dist 时诚实降级，绝不跳过门。
 //

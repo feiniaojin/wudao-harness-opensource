@@ -13,7 +13,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createPermissionSettingsWatcher, createPermissionGate } from "../src/permission.js";
 import type { Sidecar, SidecarVerdict } from "../src/sidecar.js";
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const fx = (name: string): string => join(FIXTURES, name);

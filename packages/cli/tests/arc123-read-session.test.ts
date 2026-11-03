@@ -1,10 +1,10 @@
 // 123-2（zcode ReadSessionContext 引进）— read_session 整会话预算读取收据。
 // 保尾预算/省略头行诚实/压缩感知窗口行/会话缺席与形状门/晚绑缝挂载面。
 import { describe, expect, it } from "vitest";
-import type { HistorySearchCorpus } from "@wudao/core";
+import type { HistorySearchCorpus } from "@wudao-org/core";
 import { createReadSessionTool, readSessionText, READ_SESSION_DEFAULT_BUDGET } from "../src/read-session.js";
 import { historySearchCorpus } from "../src/history-search.js";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";

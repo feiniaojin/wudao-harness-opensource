@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient } from "@wudao/core";
-import { createJsonlSessionStore } from "@wudao/core";
+import type { AssistantMessage, ModelClient } from "@wudao-org/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { createSessionRegistry } from "../src/agents/index.js";
 import type { AgentRegistry, AgentSpawnSpec } from "../src/agents/index.js";
 

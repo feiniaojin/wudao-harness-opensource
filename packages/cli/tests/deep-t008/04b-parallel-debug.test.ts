@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import { runScriptWorkflow } from "../../src/workflow/engine.js";
 import { journalFilePath, loadJournal, openJournal } from "../../src/workflow/journal.js";
 import type { JsflowOptions } from "../../src/workflow/engine.js";

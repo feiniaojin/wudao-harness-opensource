@@ -55,7 +55,7 @@ Sorted by what you must trust when you install something. Each rung is a deliber
 ```
 wudao-harness/
 ├── packages/
-│   ├── core/        @wudao/core — the harness runtime. ZERO runtime deps, imports no provider.
+│   ├── core/        @wudao-org/core — the harness runtime. ZERO runtime deps, imports no provider.
 │   │   ├── loop.ts            runAgentLoop: async generator, typed transitions, exit-on-no-tool_use,
 │   │   │                      steering/metaNote drains, gates, abort
 │   │   ├── tool.ts            Tool interface + fail-closed buildTool + validateToolArguments
@@ -72,7 +72,7 @@ wudao-harness/
 │   │   └── tools/             read-file, write-file, edit, shell, glob, grep, todo, task,
 │   │                          ask-user, read-state (freshness table), file-history (rewind),
 │   │                          workspace (path safety), output-caps
-│   ├── providers/   @wudao/providers — OpenAI-compatible ModelClient adapter.
+│   ├── providers/   @wudao-org/providers — OpenAI-compatible ModelClient adapter.
 │   │   ├── config.ts          provider profiles + reasoning-format matrix + effort validation
 │   │   └── openai-compatible.ts  SSE streaming · reasoning sniffing · retry ladder · onUsage ·
 │   │                              serializePrompt (THE canonical request serializer)
@@ -87,7 +87,7 @@ wudao-harness/
 │   │   │                      supplied to core at every construction site
 │   │   ├── agents/ · workflow/ · plan.ts · rewind.ts · git-safety.ts · mentions.ts · cache.ts
 │   │   └── tui/               app.tsx, keybindings.ts, status-bar, diff/markdown renderers
-│   └── evals/       @wudao/evals (private) — 28 offline deterministic suites + 4 live suites
+│   └── evals/       @wudao-org/evals (private) — 28 offline deterministic suites + 4 live suites
 ├── docs/            research/, superpowers/specs/, ARCHITECTURE.md, RELEASE.md, hooks-examples.md
 ├── examples/agents/ sample role profiles
 └── skills/          bundled ultracode-quality skill (install into a workspace to use)

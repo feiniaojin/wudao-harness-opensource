@@ -3,8 +3,8 @@
 // system-prompt prefix must stay byte-identical across a mode switch (the
 // provider prefix cache must not see the cycle).
 import { describe, it, expect } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";
@@ -39,7 +39,7 @@ function stubTool(name: string): Tool {
 
 /** The frontends' gate shape: layered rules over the LIVE mode, asks parked
  *  through the driver's ask seam (pendingPermission). */
-function wireGate(driver: AgentDriver): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao/core").PermissionDecision> {
+function wireGate(driver: AgentDriver): (toolName: string, input: Record<string, unknown>) => Promise<import("@wudao-org/core").PermissionDecision> {
   return async (toolName, input) => {
     const d = decideRichPermission({ mode: driver.getMode(), toolName, input, settings: EMPTY_PERMISSION_SETTINGS });
     return d !== "ask" ? d : driver.ask(toolName, input);

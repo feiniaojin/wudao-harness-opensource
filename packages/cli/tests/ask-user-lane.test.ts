@@ -11,7 +11,7 @@
 import { describe, it, expect } from "vitest";
 import { createAskUserLane } from "../src/driver/ask-user-park.js";
 import type { AgentDriver } from "../src/driver/contract.js";
-import type { UiDriverPort } from "@wudao/server";
+import type { UiDriverPort } from "@wudao-org/server";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 

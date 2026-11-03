@@ -555,6 +555,13 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
       { op: "fileWrite", path: "a.ts", content: "x", base: "" },
       { op: "agentRootStatus" },
       { op: "ctxInfo" },
+      // 139 探针仪表盘：三读 + 运行时总闸（总闸翻转收敛——重放同值幂等）。
+      { op: "probeStream" },
+      { op: "probeRecent", limit: 50 },
+      { op: "probeStats" },
+      { op: "probeEnable", on: true },
+      // 140：会话解剖（监控面板的全量读）。
+      { op: "sessionAnatomy" },
       // ω99-213: a read — the op's model call is a side-channel burn guarded
       // client-side by the (sessionId, mark) memoization, and a replay
       // converges to the same payload (nothing is mutated).
@@ -695,7 +702,7 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
     // PB-2 (探针基础设施弧): probeStream + probeRecent + probeStats (reads —
     // the probe telemetry face; a replay re-subscribes/re-scans, never vaulted)
     // joined the reads above → 69 + 3.
-    expect(actions.size).toBe(75); // M-Memory 面两 op 入表（读 1 + 删 1，73→75）
+    expect(actions.size).toBe(77); // 140 会话解剖入表（76→77，读）
 
     // Report-86 review M1 (report 89 item 1): the count pin above is
     // RUNTIME-only — a new ClientOp action that never enters the lists trips

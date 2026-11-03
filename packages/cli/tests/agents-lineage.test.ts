@@ -8,8 +8,8 @@ import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
-import { createReadFileTool, createWriteFileTool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { createReadFileTool, createWriteFileTool } from "@wudao-org/core";
 import { createAgentsTaskTool, createRegistryTools, createSessionRegistry, defaultStatsPath, loadAgentStats } from "../src/agents/index.js";
 import type { AgentRegistry } from "../src/agents/index.js";
 

@@ -1,14 +1,14 @@
 // AgentHooks layer composition — module-level segment extracted from
 // hooks-config.ts (ω99 file-size discipline arc A): the deny-only wrapper
 // for agent-writable hook sources and the two-layer sequential composer.
-// Pure functions over @wudao/core's AgentHooks contract.
+// Pure functions over @wudao-org/core's AgentHooks contract.
 import type {
   AgentHooks,
   AgentMessage,
   AgentState,
   PermissionDecision,
   StopHookDecision,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 /** ω99-21 — wrap an AGENT-WRITABLE source's AgentHooks deny-only: the
  *  permission face may DENY or stay silent, but its ALLOW is downgraded to
@@ -73,7 +73,7 @@ export function composeAgentHooks(first: AgentHooks | undefined, second: AgentHo
     hooks.onPreToolUse = async (
       toolName: string,
       input: Record<string, unknown>,
-    ): Promise<import("@wudao/core").PreToolUseDecision> => {
+    ): Promise<import("@wudao-org/core").PreToolUseDecision> => {
       const a = await first.onPreToolUse?.(toolName, input);
       if (a !== undefined) return a;
       return second.onPreToolUse?.(toolName, input);
@@ -93,7 +93,7 @@ export function composeAgentHooks(first: AgentHooks | undefined, second: AgentHo
   if (first.onPreCompact || second.onPreCompact) {
     // M63-A: trigger forwarded; a defer from EITHER layer wins (the first
     // one seen — same short-circuit as the other gate compositions).
-    hooks.onPreCompact = async (messages: readonly AgentMessage[], trigger: "manual" | "auto"): Promise<import("@wudao/core").PreCompactDecision> => {
+    hooks.onPreCompact = async (messages: readonly AgentMessage[], trigger: "manual" | "auto"): Promise<import("@wudao-org/core").PreCompactDecision> => {
       const a = await first.onPreCompact?.(messages, trigger);
       if (typeof a === "object" && a.defer) return a;
       const b = await second.onPreCompact?.(messages, trigger);
@@ -115,7 +115,7 @@ export function composeAgentHooks(first: AgentHooks | undefined, second: AgentHo
     };
   }
   if (first.onPostToolBatch || second.onPostToolBatch) {
-    hooks.onPostToolBatch = async (batch: readonly import("@wudao/core").PostToolBatchCall[]): Promise<import("@wudao/core").PostToolBatchDecision> => {
+    hooks.onPostToolBatch = async (batch: readonly import("@wudao-org/core").PostToolBatchCall[]): Promise<import("@wudao-org/core").PostToolBatchDecision> => {
       const a = await first.onPostToolBatch?.(batch);
       if (typeof a === "object") return a; // {continue:false} short-circuits
       return (await second.onPostToolBatch?.(batch)) ?? "allow";
@@ -125,7 +125,7 @@ export function composeAgentHooks(first: AgentHooks | undefined, second: AgentHo
   // permission policy composes deny-and-allow-decisively: the FIRST definite
   // decision (either direction) answers — later layers never override it.
   if (first.onSessionStart || second.onSessionStart) {
-    hooks.onSessionStart = async (source: import("@wudao/core").SessionStartSource, info: { readonly sessionId?: string }): Promise<void | string> => {
+    hooks.onSessionStart = async (source: import("@wudao-org/core").SessionStartSource, info: { readonly sessionId?: string }): Promise<void | string> => {
       // cc-plugins E4: SessionStart contexts CHAIN across layers (the same
       // rule as the M62 §5 onPostToolUse composition).
       const a = await first.onSessionStart?.(source, info);
@@ -135,7 +135,7 @@ export function composeAgentHooks(first: AgentHooks | undefined, second: AgentHo
     };
   }
   if (first.onNotification || second.onNotification) {
-    hooks.onNotification = async (kind: import("@wudao/core").NotificationKind, info: { readonly sessionId?: string }): Promise<void> => {
+    hooks.onNotification = async (kind: import("@wudao-org/core").NotificationKind, info: { readonly sessionId?: string }): Promise<void> => {
       await first.onNotification?.(kind, info);
       await second.onNotification?.(kind, info);
     };

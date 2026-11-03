@@ -462,6 +462,31 @@ fn workspace_dir() -> Result<PathBuf, String> {
 // Handshake (mirrors launchSidecar in sidecar-protocol.ts)
 //
 
+/// 138 — the sidecar's boot WORKSPACE (not cwd): the CLI records every agent
+/// root switch into ~/.wudao/recent-workspaces.json (row 0 = latest), and the
+/// user ruled (2026-11-03) that desktop sessions should START in the
+/// last-used workspace instead of the internal data dir. Session storage,
+/// .env and .wudao all stay at the cwd — only the agent root moves, through
+/// the CLI's own agentRootSwitch (typed guards, entry persistence for
+/// fork/resume inheritance). Desktop-only by construction: nothing else sets
+/// WUDAO_BOOT_WORKSPACE. Missing/corrupt file or a dead/not-dir path → None
+/// → the v1 boot root stands.
+fn boot_workspace_env() -> Option<(String, String)> {
+    let home = std::env::var("HOME").ok()?;
+    let recents = PathBuf::from(home).join(".wudao").join("recent-workspaces.json");
+    let raw = std::fs::read_to_string(recents).ok()?;
+    let v: serde_json::Value = serde_json::from_str(&raw).ok()?;
+    let ws = v.get(0)?.get("path")?.as_str()?.to_string();
+    let md = std::fs::metadata(&ws).ok()?;
+    if !md.is_dir() {
+        return None;
+    }
+    if ws == workspace_dir().ok()? {
+        return None;
+    }
+    Some(("WUDAO_BOOT_WORKSPACE".to_string(), ws))
+}
+
 fn spawn_sidecar(launch: &SidecarLaunch, cwd: &PathBuf) -> std::io::Result<Child> {
     let mut cmd = Command::new(&launch.bin);
     cmd.args(&launch.args)
@@ -478,6 +503,13 @@ fn spawn_sidecar(launch: &SidecarLaunch, cwd: &PathBuf) -> std::io::Result<Child
     if let Some(dir) = &launch.static_dir {
         cmd.env("WUDAO_UI_STATIC_DIR", dir);
     }
+    if let Some((k, v)) = boot_workspace_env() {
+        cmd.env(k, v);
+    }
+    // 139 — probes ON by default on the desktop: the built-in dashboard (📈)
+    // reads them out of the box. Per-event cost is one object + a ring push
+    // (fail-silent); the CLI keeps WUDAO_PROBE off by default.
+    cmd.env("WUDAO_PROBE", "on");
     // The sidecar is a console-subsystem binary (a SEA-injected node). Spawned
     // from this GUI process, Windows would allocate a NEW console window for
     // it — a large black box that, when closed, KILLS the sidecar (the

@@ -3,11 +3,11 @@
 // roster, and worktree implementations are core's (bound through
 // core-bind.ts); what this module owns is the session-level composition:
 // the validator injection, the provider model resolver, and the pilot probe.
-import { createProvider, resolveProviderConfigResult, isOverloadClassFailure } from "@wudao/providers";
-import type { ProviderConfig, AttachmentResolver } from "@wudao/providers";
-import type { ModelClient, AgentMessage } from "@wudao/core";
-import { AimdGate } from "@wudao/core";
-import type { ConcurrencyGate } from "@wudao/core";
+import { createProvider, resolveProviderConfigResult, isOverloadClassFailure } from "@wudao-org/providers";
+import type { ProviderConfig, AttachmentResolver } from "@wudao-org/providers";
+import type { ModelClient, AgentMessage } from "@wudao-org/core";
+import { AimdGate } from "@wudao-org/core";
+import type { ConcurrencyGate } from "@wudao-org/core";
 import { createAgentRegistry } from "./core-bind.js";
 import type { AgentRegistry } from "./core-bind.js";
 import { DEFAULT_MAX_CONCURRENT, HARD_MAX_CONCURRENT, ORCHESTRATION_TOOL_NAMES } from "./contract.js";
@@ -32,8 +32,8 @@ export { KERNEL_POLICY } from "../kernel-policy.js";
 export type { KernelPolicy } from "../kernel-policy.js";
 // 121 项 1: the AIMD gate re-export — frontends compose one gate across the
 // registry (createSessionRegistry) and the resolver's onOverload threading.
-export { AimdGate } from "@wudao/core";
-export type { ConcurrencyGate, AimdGateOptions } from "@wudao/core";
+export { AimdGate } from "@wudao-org/core";
+export type { ConcurrencyGate, AimdGateOptions } from "@wudao-org/core";
 import { validateJsonSchemaSubset } from "../workflow/structured-output.js";
 export type { AgentsTaskToolOptions } from "./task-tool.js";
 // M31 §1 — the write-scope tool guard (applied inside the task tool at child

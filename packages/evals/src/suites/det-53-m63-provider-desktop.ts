@@ -42,9 +42,9 @@ import {
   type ModelInput,
   type ModelUsage,
   type Tool,
-} from "@wudao/core";
-import { PROVIDER_PROFILES, resolveProviderConfigResult } from "@wudao/providers";
-import type { BuiltinProviderName, ProviderConfig, ProviderName } from "@wudao/providers";
+} from "@wudao-org/core";
+import { PROVIDER_PROFILES, resolveProviderConfigResult } from "@wudao-org/providers";
+import type { BuiltinProviderName, ProviderConfig, ProviderName } from "@wudao-org/providers";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import type { AgentDriver } from "wudao-harness/driver/agent-driver";
 import { summarizeToolCall } from "wudao-harness/log";

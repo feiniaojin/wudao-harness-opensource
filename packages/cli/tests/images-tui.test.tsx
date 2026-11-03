@@ -11,8 +11,8 @@ import { render } from "ink-testing-library";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createFileAttachmentStore } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createFileAttachmentStore } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { WudaoApp } from "../src/tui/app.js";
 import { loadImageFiles } from "../src/driver/attachment-ops.js";
 

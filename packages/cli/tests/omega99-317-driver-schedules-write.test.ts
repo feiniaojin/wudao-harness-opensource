@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, readFile, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore, type ModelClient, type ModelInput } from "@wudao/core";
+import { createJsonlSessionStore, type ModelClient, type ModelInput } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createScheduleDaemon, SCHEDULES_SESSION_ID } from "../src/schedules.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";

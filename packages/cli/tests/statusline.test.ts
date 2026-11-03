@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { mkdtemp, rm, utimes, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel, createJsonlSessionStore } from "@wudao/core";
+import { createScriptedModel, createJsonlSessionStore } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { DriverStatus } from "../src/driver/agent-driver.js";

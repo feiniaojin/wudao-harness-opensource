@@ -15,7 +15,7 @@
 //
 // M24 声明：泛型条目只进 JSONL 永不进 state.messages/system prompt（load()
 // 滤泛型=store 既有契约）——前缀缓存零代价，与 217 收据同款。
-import type { GenericSessionEntry, SessionEntry } from "@wudao/core";
+import type { GenericSessionEntry, SessionEntry } from "@wudao-org/core";
 
 /** ω99-248 — the parked ask's evidence line (append-only; the settle line is a
  *  SEPARATE later append — this line's bytes never move). */

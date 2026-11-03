@@ -18,7 +18,7 @@ import { buildGoalSetEntry, buildGoalOutcomeEntry, activeGoalFromEntries } from 
 import { hardenedGitArgs } from "./git-hardened.js";
 import type { GoalSetData } from "./session-entry.js";
 import { loadLayeredSettings } from "./settings-layer.js";
-import type { AgentState, ModelClient, ModelInput, ModelUsage, StopHookDecision } from "@wudao/core";
+import type { AgentState, ModelClient, ModelInput, ModelUsage, StopHookDecision } from "@wudao-org/core";
 // 133 #4（a reference harness collection-planner 轻量形）— 工作集生成器治理件。
 import {
   parseTodoBoard,
@@ -30,8 +30,8 @@ import {
   todoExhaustionNote,
   INITIAL_TODO_GENERATOR_STATE,
   type TodoGeneratorState,
-} from "@wudao/core";
-import { createProvider, createKeyPool, resolveProviderConfigResult } from "@wudao/providers";
+} from "@wudao-org/core";
+import { createProvider, createKeyPool, resolveProviderConfigResult } from "@wudao-org/providers";
 // Review R1 (M63 §B): the credentials-file fallback for the evaluator pick.
 import { readCredentialsFileSync } from "./credentials.js";
 // ω99-13 — the deterministic gate's default runners (shell command + git
@@ -243,7 +243,7 @@ export interface GoalControllerOptions {
   /** 133 #4 — 工作集生成器的策略旋钮（缺省 = DEFAULT：frontier 3 / 10 轮 /
    *  3 无增长）。注意默认帽下无增长熔断实际难触发（在飞<3 时最多 2 轮
    *  新完成）——熔断是安全终态，须可调（测试与紧治理场景用）。 */
-  readonly generatorPolicy?: import("@wudao/core").TodoGeneratorPolicy;
+  readonly generatorPolicy?: import("@wudao-org/core").TodoGeneratorPolicy;
   /** Evaluator usage fold (the turn_usage evaluator column). */
   readonly onEvaluatorUsage?: (usage: ModelUsage) => void;
   /** ω99-13 — the deterministic gate's command runner. Injected everywhere in

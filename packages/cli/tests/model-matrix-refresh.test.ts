@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { withSettingsOps } from "../src/driver/settings-ops.js";
 import { summarizeToolCall } from "../src/log.js";

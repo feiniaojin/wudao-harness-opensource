@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { fileURLToPath } from "node:url";
-import { validateToolArguments } from "@wudao/core";
+import { validateToolArguments } from "@wudao-org/core";
 import { loadMcpTools, closeMcpTools, toMcpParameters, sanitizeMcpText, sanitizeWireToolSegment, mcpToolFromDescriptor, MAX_MCP_DESCRIPTION_CHARS } from "../src/mcp/tools.js";
 import type { McpConfig } from "../src/mcp/config.js";
 

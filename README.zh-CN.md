@@ -4,11 +4,9 @@
 
 [English](README.md) | 简体中文
 
-生产级 **agent harness**（TypeScript 实现）——包裹 LLM 的运行时骨架（agent 循环 + 工具 + 上下文 + 控制）。
+wudao-harness 让大模型真正动手干活：它能读写你的代码、跑命令、查网页、操作电脑，把一个任务从开头做到结尾——而不只是陪聊。
 
-> Agent = LLM + Context + Tools。harness 就是等式右边的一切。
-
-为**推理模型**（DeepSeek / GLM / Qwen / Kimi / MiniMax）深度适配，核心与供应商无关。
+支持 DeepSeek / GLM / Qwen / Kimi / MiniMax，配一个 API 密钥就能用。
 
 ## 安装
 
@@ -103,7 +101,7 @@ wudao --model deepseek-v4-pro "hello"      # 指定模型
 
 **工具** — 20+ 内置工具（read/write/edit/grep/glob/bash/web_search/computer_use），fail-closed 权限管线（拒绝 → 询问 → 允许 → 安全检查），并发安全批处理。
 
-**上下文管理** — 四层模型（Session → AgentState → AgentContext → ModelInput）、cheapest-first 压缩管线（工具结果预算 → snip → microcompact → autocompact）、供应商前缀缓存字节不变量（缓存 token 绝不会因 harness 缺陷而失效）。
+**上下文管理** — 超长对话自动压缩：先清冗余的工具输出、再摘要旧对话，绝不动你的代码事实；缓存 token 绝不白白作废，长会话又快又省。
 
 **会话** — append-only JSONL、恢复任意历史会话（`wudao --resume <id>`）、从任意点分叉（`/rewind`）、分支对比。崩溃安全：撕裂写下次加载自愈。
 
@@ -119,19 +117,19 @@ wudao --model deepseek-v4-pro "hello"      # 指定模型
 
 | 包 | npm 名 | 职责 |
 |---|---|---|
-| core | `@wudao/core` | Agent 循环、工具、会话、压缩、子代理 |
-| providers | `@wudao/providers` | DeepSeek/GLM/Qwen/Kimi/MiniMax 适配器 |
+| core | `@wudao-org/core` | Agent 循环、工具、会话、压缩、子代理 |
+| providers | `@wudao-org/providers` | DeepSeek/GLM/Qwen/Kimi/MiniMax 适配器 |
 | cli | `wudao-harness` | CLI + TUI（`wudao` 命令） |
-| web | `@wudao/web` | Web 前端（React 19） |
-| server | `@wudao/server` | Web UI 的 WebSocket 服务 |
-| evals | `@wudao/evals` | 确定性评估套件 |
-| builtin-tools | `@wudao/builtin-tools` | read/write/edit/grep/glob/bash |
+| web | `@wudao-org/web` | Web 前端（React 19） |
+| server | `@wudao-org/server` | Web UI 的 WebSocket 服务 |
+| evals | `@wudao-org/evals` | 确定性评估套件 |
 
 ## 文档
 
 - [完整指南](docs/GUIDE.md) — 每个特性、每个参数、每项配置
 - [架构](docs/ARCHITECTURE.md) — 设计决策与层边界
 - [协议](packages/server/PROTOCOL.md) — WebSocket 通信契约
+- [上手系列](docs/onboarding/README.md) — 新贡献者阅读路径：先常量后循环、每个机制一句箴言、参考对照表
 
 ## 开发
 

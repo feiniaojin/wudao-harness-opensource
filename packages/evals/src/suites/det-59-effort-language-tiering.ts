@@ -28,7 +28,7 @@ import { mkdir, mkdtemp } from "node:fs/promises";
 import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel, type ModelClient, type ModelInput } from "@wudao/core";
+import { createScriptedModel, type ModelClient, type ModelInput } from "@wudao-org/core";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { withSettingsOps } from "wudao-harness/driver/settings-ops";
 import { readProviderEffortBinding } from "wudao-harness/driver/provider-registry-ops";

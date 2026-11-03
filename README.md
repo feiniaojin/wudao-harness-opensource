@@ -4,11 +4,9 @@
 
 English | [简体中文](README.zh-CN.md)
 
-A production-grade **agent harness** in TypeScript — the runtime scaffolding around an LLM (agent loop + tools + context + control).
+wudao-harness puts a large language model to work: it reads and writes your code, runs commands, searches the web, and drives your computer to carry a task from start to finish — not just chat about it.
 
-> Agent = LLM + Context + Tools. The harness is everything on the right side of that equation.
-
-Built for **reasoning models** (DeepSeek / GLM / Qwen / Kimi / MiniMax) with a provider-agnostic core.
+Works with DeepSeek / GLM / Qwen / Kimi / MiniMax. One API key and you're running.
 
 ## Install
 
@@ -103,7 +101,7 @@ wudao --model deepseek-v4-pro "hello"      # specific model
 
 **Tools** — 20+ built-in (read/write/edit/grep/glob/bash/web_search/computer_use), fail-closed permission pipeline (deny → ask → allow → safety check), concurrency-safe batching.
 
-**Context management** — 4-layer model (Session → AgentState → AgentContext → ModelInput), cheapest-first compaction (tool-result budget → snip → microcompact → autocompact), provider prefix-cache byte invariants (your cached tokens never get invalidated by harness bugs).
+**Context management** — long conversations compact automatically: redundant tool output goes first, then older dialogue — never your code facts; cached tokens are never wasted, so long sessions stay fast and cheap.
 
 **Sessions** — append-only JSONL, resume any past session (`wudao --resume <id>`), fork from any point (`/rewind`), branch and compare. Crash-safe: torn writes self-heal on next load.
 
@@ -119,19 +117,19 @@ wudao --model deepseek-v4-pro "hello"      # specific model
 
 | Package | npm name | What it does |
 |---|---|---|
-| core | `@wudao/core` | Agent loop, tools, sessions, compaction, subagents |
-| providers | `@wudao/providers` | DeepSeek/GLM/Qwen/Kimi/MiniMax adapters |
+| core | `@wudao-org/core` | Agent loop, tools, sessions, compaction, subagents |
+| providers | `@wudao-org/providers` | DeepSeek/GLM/Qwen/Kimi/MiniMax adapters |
 | cli | `wudao-harness` | CLI + TUI (the `wudao` command) |
-| web | `@wudao/web` | Web frontend (React 19) |
-| server | `@wudao/server` | WebSocket server for web UI |
-| evals | `@wudao/evals` | Deterministic eval suites |
-| builtin-tools | `@wudao/builtin-tools` | read/write/edit/grep/glob/bash |
+| web | `@wudao-org/web` | Web frontend (React 19) |
+| server | `@wudao-org/server` | WebSocket server for web UI |
+| evals | `@wudao-org/evals` | Deterministic eval suites |
 
 ## Documentation
 
 - [Full Guide](docs/GUIDE.md) — every feature, every flag, every config option
 - [Architecture](docs/ARCHITECTURE.md) — design decisions and layer boundaries
 - [Protocol](packages/server/PROTOCOL.md) — WebSocket wire contract
+- [Onboarding](docs/onboarding/README.md) — new-contributor reading path: constants first, loop first, one motto per mechanism, reference-comparison table
 
 ## Development
 

@@ -16,8 +16,8 @@ import {
   type LoopEvent,
   type Terminal,
   type AgentState,
-} from "@wudao/core";
-import { resolveProviderConfigResult, createOpenAICompatibleProvider, NO_KEY_REASON } from "@wudao/providers";
+} from "@wudao-org/core";
+import { resolveProviderConfigResult, createOpenAICompatibleProvider, NO_KEY_REASON } from "@wudao-org/providers";
 import { buildSystemPrompt } from "wudao-harness/prompt";
 import type { EvalDefinition } from "../runner.js";
 import { drain } from "./deterministic.js";

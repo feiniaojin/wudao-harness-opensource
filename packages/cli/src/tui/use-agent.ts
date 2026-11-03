@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
 import { createAgentDriver } from "../driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions, DriverStatus, HistoryEntry, LiveState, RuleGate } from "../driver/agent-driver.js";
-import type { AgentHooks, AgentMessage, AgentState, LoopEvent, ModelClient, ReadStateTable, Tool } from "@wudao/core";
+import type { AgentHooks, AgentMessage, AgentState, LoopEvent, ModelClient, ReadStateTable, Tool } from "@wudao-org/core";
 import type { AskAnswer } from "../permission.js";
 import type { Mode } from "../permission.js";
 import type { AgentRegistry } from "../agents/index.js";
@@ -116,7 +116,7 @@ export interface UseAgentOptions {
     readonly reason: string;
     readonly tier: 0 | 1 | 2 | 3;
     readonly windowIndex?: number;
-    readonly worldState?: import("@wudao/core").WorldState;
+    readonly worldState?: import("@wudao-org/core").WorldState;
   }) => void;
   // cli log.ts summarizeToolCall
   summarize: (toolName: string, input: Record<string, unknown>) => string;
@@ -137,7 +137,7 @@ export interface UseAgentOptions {
     toolName: string,
     summary: string,
     input: Record<string, unknown>,
-    ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao/core").SpoofInspection },
+    ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao-org/core").SpoofInspection },
   ) => Promise<AskAnswer>;
   /** M35 §1/§2: fired when the run's one load_tools call applied — the App
    *  records a deferred_loaded session entry and bumps the status-bar count. */
@@ -160,12 +160,12 @@ export interface UseAgentOptions {
   extensionCommands?: readonly { readonly name: string; readonly extension?: string }[];
   /** M37 §2: the session's file history (the SAME instance the tool set wires
    *  into write_file/edit) — drives the driver-level /rewind. */
-  fileHistory?: import("@wudao/core").FileHistory;
+  fileHistory?: import("@wudao-org/core").FileHistory;
   /** 夜移 032 stage-2: the session's net-change tracker (the SAME instance
    *  the tool set wires into write_file/edit) — the driver resets it at run
    *  start and lands the net-change receipt notice at settle (ahead of the
    *  run-stats receipt). */
-  turnDiff?: import("@wudao/core").TurnDiffTracker;
+  turnDiff?: import("@wudao-org/core").TurnDiffTracker;
   /** ω99-314: 文件级时光机——workspace 全局快照仓（驱动接管写前捕获 +
    *  settle 索引 + fileRevert）。 */
   snapshots?: import("../snapshots.js").SnapshotStore;

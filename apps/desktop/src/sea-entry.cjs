@@ -2,7 +2,7 @@
 //
 // It is NOT a second server: it boots the EXISTING `wudao ui` stack (the
 // bundled packages/cli dist — driver, tools, permissions, sessions, the
-// @wudao/server WS protocol) with two desktop-only adjustments, both made
+// @wudao-org/server WS protocol) with two desktop-only adjustments, both made
 // BEFORE the CLI dist loads (its top-level main() runs on require):
 //
 //   1. web build: inside a single-file executable there is no

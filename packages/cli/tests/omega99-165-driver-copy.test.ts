@@ -3,7 +3,7 @@
 // 与 164 镜像：TUI/web 走的 agent-driver.ts 孪生串无独立 e2e 宿主可钉
 // stdout 累积串，沿 ω99-161 #7 / ω99-164 的源接线钉范式（readFileSync
 // 定位 src/driver/agent-driver.ts）钉串值本身。renderBranchTree 树身
-// （@wudao/core 导出）刻意不钉——本弧不触树身。
+// （@wudao-org/core 导出）刻意不钉——本弧不触树身。
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

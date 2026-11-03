@@ -2,7 +2,7 @@
 // DISABLED in Slack-driven sessions. The call resolves to a refusal result
 // that tells the model to ask in the Slack conversation directly — headless
 // sessions must never wait on a terminal prompt that does not exist.
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 
 /** Tools whose entire purpose is interactive prompting — disabled in Slack. */
 export const INTERACTIVE_TOOL_NAMES: readonly string[] = ["ask_user"];

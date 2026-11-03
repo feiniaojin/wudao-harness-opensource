@@ -4,7 +4,7 @@
 // hot-reloading settings watcher. File IO only — no decision logic.
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-import type { ConfigChangePosition } from "@wudao/core";
+import type { ConfigChangePosition } from "@wudao-org/core";
 import { loadLayeredSettings, globalSettingsPath } from "./settings-layer.js";
 
 /** The `permissions` node of .wudao/settings.json (M33 §1). ω99-27 T2 adds

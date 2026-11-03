@@ -1,5 +1,5 @@
-import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, TerminalRepairKind } from "@wudao/core";
-import { DEFAULT_MAX_REQUEST_IMAGE_BYTES, probeModelClient } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, TerminalRepairKind } from "@wudao-org/core";
+import { DEFAULT_MAX_REQUEST_IMAGE_BYTES, probeModelClient } from "@wudao-org/core";
 import type { ProviderConfig } from "./config.js";
 import { acceptsReasoningOnlyFinish, omitsReasoningOnToolTurns, parseReasoningEffort } from "./config.js";
 import type { PersonaRuntime } from "./persona/runtime.js";

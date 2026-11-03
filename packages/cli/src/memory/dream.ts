@@ -15,10 +15,10 @@
 // corrupt: every step sits in the review-fork try/catch shape; a failed dream
 // never breaks the run it rode. M24: zero cache cost — Dream is a separate
 // child with its own prompt; parent ModelInput bytes are untouched throughout.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { mkdir, readFile, appendFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { ModelClient } from "@wudao/core";
+import type { ModelClient } from "@wudao-org/core";
 import type { AgentRegistry } from "../agents/index.js";
 import { memoryDirectory, openSessionMemoryStore, isHeldOutEntry, type MemoryEntry } from "./store.js";
 import { createMemoryWriteTool, createMemorySearchTool } from "./tools.js";

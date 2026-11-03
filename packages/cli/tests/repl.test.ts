@@ -12,8 +12,8 @@ import { fileURLToPath } from "node:url";
 import { PassThrough } from "node:stream";
 import { parseReplCommand, formatResumeLine, createProgrammaticSubmitGate, createTurnSerializer, runRepl } from "../src/repl.js";
 import { VERSION } from "../src/version.js";
-import type { AgentMessage } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AgentMessage } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const replSrc = (): string =>
   readFileSync(fileURLToPath(new URL("../src/repl.ts", import.meta.url)), "utf8");

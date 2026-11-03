@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { PersonaDefinition, PersonaRegistry } from "@wudao/providers";
+import type { PersonaDefinition, PersonaRegistry } from "@wudao-org/providers";
 import { parseReplCommand } from "../src/repl.js";
 import { listSlashCommands } from "../src/slash-commands.js";
 import {

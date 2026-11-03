@@ -9,10 +9,10 @@
 // frontend-owned (config resolution order differs per frontend) and is
 // reached through the driver's onProviderSwitch seam.
 import { join } from "node:path";
-import { PROVIDER_PROFILES, parseApiKeyPool, supportsReasoningEffort, isBuiltinProviderName, parseWire, parseReasoningReplay, capClientReasoningReplay } from "@wudao/providers";
-import type { BuiltinProviderName, EffectiveProfile, ProviderConfig, ProviderName, ReasoningReplay } from "@wudao/providers";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { ProviderChangeEntry } from "@wudao/core";
+import { PROVIDER_PROFILES, parseApiKeyPool, supportsReasoningEffort, isBuiltinProviderName, parseWire, parseReasoningReplay, capClientReasoningReplay } from "@wudao-org/providers";
+import type { BuiltinProviderName, EffectiveProfile, ProviderConfig, ProviderName, ReasoningReplay } from "@wudao-org/providers";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { ProviderChangeEntry } from "@wudao-org/core";
 import { availableModels, foldEffortChain, validateEffort } from "./model.js";
 import type { MutableProviderConfig } from "./model.js";
 // M63 §C: the wizard boot's stand-in key — never a usable credential (the

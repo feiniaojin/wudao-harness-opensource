@@ -10,11 +10,11 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, readdir, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tool } from "@wudao/core";
-import { createFileAttachmentStore } from "@wudao/core";
-import { createBrowserRuntime } from "@wudao/browser";
+import type { Tool } from "@wudao-org/core";
+import { createFileAttachmentStore } from "@wudao-org/core";
+import { createBrowserRuntime } from "@wudao-org/browser";
 import { buildToolSet } from "../src/tools.js";
-import { COLLECT_SCRIPT } from "@wudao/browser";
+import { COLLECT_SCRIPT } from "@wudao-org/browser";
 
 const stubModel = { stream: async function* () { /* never invoked */ } } as unknown as never;
 const gate = async (): Promise<{ behavior: "allow" }> => ({ behavior: "allow" });

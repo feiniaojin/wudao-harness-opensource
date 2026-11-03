@@ -9,7 +9,7 @@
 // 停泊时 state.messages 的尾形一字不动（user/tool 尾本来就是 isUnfinishedTail
 // 的继续形），不注合成 assistant——唤醒续跑的模型输入尾即停泊点前驱，字节
 // 原样。
-import type { GenericSessionEntry, SessionEntry } from "@wudao/core";
+import type { GenericSessionEntry, SessionEntry } from "@wudao-org/core";
 
 /** 唤醒余量：resetAt + 30s 才排唤醒（网关重置有抖动；one-shot 在 :00/:30 分
  *  钟还有 ≤90s 的早射抖动——早射命中未重置的账户只会再停一次，有界自愈）。 */

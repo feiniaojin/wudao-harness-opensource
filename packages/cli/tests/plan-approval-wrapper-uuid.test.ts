@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { nodeKey, type AgentMessage } from "@wudao/core";
+import { nodeKey, type AgentMessage } from "@wudao-org/core";
 import { appendPlanApprovalTrace } from "../src/plan.js";
 import { appendPlanExecutionWrapper, buildPlanExecutionBranchLink } from "../src/repl.js";
 

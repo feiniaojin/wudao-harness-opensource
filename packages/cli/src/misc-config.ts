@@ -28,7 +28,7 @@ import { resolve } from "node:path";
 import {
   PYTHON_KERNEL_DEFAULT_IDLE_TIMEOUT_MS, DEFAULT_COMPACTION_THRESHOLD_RATIO, DEFAULT_COMPACTION_HEADROOM_TOKENS,
   resolveOutputReserveTokens,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { loadLayeredSettings } from "./settings-layer.js";
 import { SCHEDULE_NEAR_FIRE_GUARD_MS } from "./schedules-model.js";
 import { KERNEL_POLICY } from "./kernel-policy.js";
@@ -504,7 +504,7 @@ export async function loadCompactionSettings(
  * resolveOutputReserveTokens（windowMode 已画像且请求帽已知 → reserve =
  * maxTokens；unknown/无帽 → 缺席 = 平比，零行为变化）。 */
 export function compactionThresholdFields(
-  config: { readonly maxTokens?: number; readonly windowMode?: import("@wudao/core").CompactionWindowMode },
+  config: { readonly maxTokens?: number; readonly windowMode?: import("@wudao-org/core").CompactionWindowMode },
   settings: CompactionSettings,
 ): { readonly thresholdRatio: number; readonly headroomTokens: number; readonly outputReserveTokens?: number } {
   const outputReserveTokens = resolveOutputReserveTokens(config.maxTokens, config.windowMode);

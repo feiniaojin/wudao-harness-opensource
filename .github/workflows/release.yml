@@ -89,14 +89,14 @@ jobs:
         run: pnpm build
 
       - name: Build web frontend
-        run: pnpm --filter @wudao/web build
+        run: pnpm --filter @wudao-org/web build
 
       - name: Build desktop app (SEA sidecar + click helper + tauri bundle)
         # desktop:build = build-sea.mjs (server sidecar per triple, darwin
         # produces BOTH aarch64 + x86_64 for the universal dmg) followed by
         # tauri-build.mjs (universal target + the swift click helper). The raw
         # `tauri build` cannot work alone: externalBin expects the sidecar.
-        run: pnpm --filter @wudao/desktop run desktop:build
+        run: pnpm --filter @wudao-org/desktop run desktop:build
         env:
           # The SEA build needs the Node.js binary
           NODE_SEA_CWD: ${{ github.workspace }}
@@ -144,10 +144,10 @@ jobs:
         run: pnpm build
 
       - name: Build web frontend
-        run: pnpm --filter @wudao/web build
+        run: pnpm --filter @wudao-org/web build
 
       - name: Build desktop app (SEA sidecar + tauri bundle)
-        run: pnpm --filter @wudao/desktop run desktop:build
+        run: pnpm --filter @wudao-org/desktop run desktop:build
         continue-on-error: true  # Desktop on Linux is best-effort
 
       - name: Upload Linux packages
@@ -182,9 +182,9 @@ jobs:
       - name: Build all packages
         run: pnpm build
       - name: Build web frontend
-        run: pnpm --filter @wudao/web build
+        run: pnpm --filter @wudao-org/web build
       - name: Build desktop app (SEA sidecar + tauri NSIS bundle)
-        run: pnpm --filter @wudao/desktop run desktop:build
+        run: pnpm --filter @wudao-org/desktop run desktop:build
         continue-on-error: true  # Windows desktop is best-effort until first verified ship
       - name: Upload Windows installer
         if: success()

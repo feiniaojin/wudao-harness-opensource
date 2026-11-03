@@ -2,7 +2,7 @@
 // behind the TUI's resumed view. The resumed view is an INDEX, not a replay:
 // tool turns fold to one line, marker/system messages drop, a divider heads it.
 import { describe, it, expect } from "vitest";
-import type { AgentMessage } from "@wudao/core";
+import type { AgentMessage } from "@wudao-org/core";
 import { resumeEntries } from "../src/tui/resume.js";
 
 const SESSION = "wudao-mfoobar-abcdef12";

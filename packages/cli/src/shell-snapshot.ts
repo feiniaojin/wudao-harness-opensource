@@ -28,7 +28,7 @@ import {
   scrubChildEnvOf,
   LOGIN_SHELL_SNAPSHOT_MAX_BYTES,
   LOGIN_SHELL_SNAPSHOT_TIMEOUT_MS,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { isFeatureAblated } from "./args.js";
 
 /** What a spawned capture child exposes to the runtime: its stdout (utf8)

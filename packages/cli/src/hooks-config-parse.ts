@@ -2,8 +2,8 @@
 // hooks-config.ts (ω99 file-size discipline arc A): every "parse hook
 // stdout as contract X" pure function plus the fileChangeTargets watcher
 // plan. No IO, no runtime state.
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import type { PermissionDecision, StopHookDecision } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import type { PermissionDecision, StopHookDecision } from "@wudao-org/core";
 import type { HooksSettings } from "./hooks-config-types.js";
 
 /** Parse stdout as the SubagentStop contract — the Stop spelling
@@ -166,7 +166,7 @@ const ADDITIONAL_CONTEXT_TRUNCATION = "\n[… additionalContext truncated at 8k 
 
 /** Parse a TeammateIdle hook's stdout as {"continue":true,"feedback":"…"}
  *  (M64-C §C). Anything else is no opinion (stays idle). */
-export function parseTeammateContinueJson(stdout: string): import("@wudao/core").TeammateIdleDecision | undefined {
+export function parseTeammateContinueJson(stdout: string): import("@wudao-org/core").TeammateIdleDecision | undefined {
   const text = stdout.trim();
   if (text === "") return undefined;
   let parsed: unknown;

@@ -3,9 +3,9 @@
 // reverse order (a create is undone by deleting the file), invalidates the
 // session's read-state entries for the touched files, and informs the model
 // through the MetaNote channel (the message history is never rewritten).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { relative } from "node:path";
-import type { FileHistory, FileHistoryEntry, ReadStateTable } from "@wudao/core";
+import type { FileHistory, FileHistoryEntry, ReadStateTable } from "@wudao-org/core";
 
 /** What `/rewind [args]` asked for. P2-10 (96 队列) adds the conversation档:
  *  `turn` lists the active chain's recent user messages, `turn <n>` rewinds

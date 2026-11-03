@@ -1,6 +1,6 @@
 import { stdin, stdout } from "node:process";
-import type { PermissionDecision } from "@wudao/core";
-import { domainMatchesAllowlist, inspectToolInput, formatSpoofLine } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
+import { domainMatchesAllowlist, inspectToolInput, formatSpoofLine } from "@wudao-org/core";
 import { summarizeToolCall, truncate } from "./log.js";
 import { gitRiskAskWarning } from "./git-safety.js";
 import { askDigestPrefix, currentAskContext } from "./ask-evidence.js";
@@ -35,8 +35,8 @@ import type { PermissionRequestHookFn, SidecarEscalation, SidecarToolMetaResolve
 
 // Re-export the gate's decision type: this module is the public
 // `wudao-harness/permission` subpath, and consumers of its gate signatures
-// need `PermissionDecision` importable from here, not just from @wudao/core.
-export type { PermissionDecision } from "@wudao/core";
+// need `PermissionDecision` importable from here, not just from @wudao-org/core.
+export type { PermissionDecision } from "@wudao-org/core";
 
 // ω99 file-size discipline arc A — this module keeps the layered rich
 // decision (decideRichPermission) and the interactive gate builders

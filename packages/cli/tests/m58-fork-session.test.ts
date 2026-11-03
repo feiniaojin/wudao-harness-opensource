@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { forkSessionFile, newForkSessionId } from "../src/fork-session.js";
 import { parseForkSessionFlag } from "../src/args.js";
 import { stripLogFlags } from "../src/log.js";

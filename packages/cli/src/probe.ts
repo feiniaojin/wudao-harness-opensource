@@ -7,11 +7,11 @@
 // `wudao ui` 的 server 三读面 op、PB-1 的发射点共享同一实例，无需经 opts
 // 层层穿针。文件由调用方管理（旋转/清理是调用方职责）；emit/落盘失败静默吞
 // ——审计与遥测绝不阻塞执行（审计不是执行的一部分，是观察）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { appendFile, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
-import type { ProbeCat, ProbeEventWire, UiProbeBusPort } from "@wudao/server";
-import { probeBus, type ProbeCategory } from "@wudao/core";
+import type { ProbeCat, ProbeEventWire, UiProbeBusPort } from "@wudao-org/server";
+import { probeBus, type ProbeCategory } from "@wudao-org/core";
 import { loadLayeredSettings } from "./settings-layer.js";
 
 /** 环形缓冲容量（PB-1 同量级：足够回看一轮长跑，内存有界）。 */

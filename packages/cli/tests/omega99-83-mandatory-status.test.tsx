@@ -23,8 +23,8 @@ import { render } from "ink-testing-library";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, AssistantMessage } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ModelClient, ModelInput, AssistantMessage } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriverOptions, AgentDriver } from "../src/driver/agent-driver.js";
 import { WudaoApp } from "../src/tui/app.js";
@@ -47,8 +47,8 @@ const { providerOpts, driverOpts } = vi.hoisted(() => ({
   driverOpts: [] as Array<Record<string, unknown>>,
 }));
 
-vi.mock("@wudao/providers", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@wudao/providers")>();
+vi.mock("@wudao-org/providers", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@wudao-org/providers")>();
   return {
     ...actual,
     createProvider: (config: ProviderConfig, opts?: Record<string, unknown>) => {

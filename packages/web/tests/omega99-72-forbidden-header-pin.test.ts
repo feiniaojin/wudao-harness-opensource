@@ -3,7 +3,7 @@
 // providers single source (packages/providers/src/header-validation.ts since
 // ω99-69; persona/schema.ts only re-exports it) must hold the SAME 14 keys
 // forever. There is no runtime import edge BY DESIGN (the web package never
-// depends on @wudao/providers — pulling the Node-side providers package into
+// depends on @wudao-org/providers — pulling the Node-side providers package into
 // the frontend's dependency graph for 14 strings was ruled out), so the
 // consistency check runs at TEST time: the web export is imported (the real
 // form surface) and the providers source is readFileSync'd to extract the

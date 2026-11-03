@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { selectMessagesToPersist } from "../src/persist.js";
-import { SUMMARY_MARKER, CLEARED_MARKER, EMERGENCY_DROP_PREFIX, SKILL_PRUNED_PREFIX, toolResultRef, type AgentMessage } from "@wudao/core";
+import { SUMMARY_MARKER, CLEARED_MARKER, EMERGENCY_DROP_PREFIX, SKILL_PRUNED_PREFIX, toolResultRef, type AgentMessage } from "@wudao-org/core";
 
 describe("selectMessagesToPersist", () => {
   it("excludes messages that are identity-in the loaded history (already persisted)", () => {

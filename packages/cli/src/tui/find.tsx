@@ -6,7 +6,7 @@
 // app-level useInput stands down. No alt-screen, no scrollback control —
 // the "jump" IS the focused in-panel view (the terminal keeps its own
 // scrollback; that boundary is the architecture, not a gap).
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import React, { useMemo, useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { T } from "./theme.js";

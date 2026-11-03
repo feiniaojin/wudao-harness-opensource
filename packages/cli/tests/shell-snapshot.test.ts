@@ -10,8 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
-import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao/core";
-import { buildLoginShellCaptureScript, LOGIN_SHELL_SNAPSHOT_MAX_BYTES } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao-org/core";
+import { buildLoginShellCaptureScript, LOGIN_SHELL_SNAPSHOT_MAX_BYTES } from "@wudao-org/core";
 import { maybeLoginShellEnv, type SpawnShellFn, type SpawnShellChild } from "../src/shell-snapshot.js";
 import { buildToolSet } from "../src/tools.js";
 

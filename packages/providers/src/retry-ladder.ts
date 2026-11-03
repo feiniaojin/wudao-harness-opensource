@@ -2,8 +2,8 @@
 //（M26 P11 梯子本体、M58 §A 上下文溢出分类、M70 §3/§4、梯子判定族）。
 // 本模块零 openai-compatible 依赖（无环）；openai-compatible.ts 逐名 re-export
 // 保公共面（anthropic/responses/tests/index 既有导入方零演进）。
-import { findProxyEgressCause, probeModelRetry, truncateSafe } from "@wudao/core";
-import type { ModelInput } from "@wudao/core";
+import { findProxyEgressCause, probeModelRetry, truncateSafe } from "@wudao-org/core";
+import type { ModelInput } from "@wudao-org/core";
 import type { ProviderConfig } from "./config.js";
 import { BackgroundOverloadError, ContextLengthError, ProviderHttpError } from "./model-failure.js";
 import type { ReasoningMandatoryError } from "./model-failure.js";

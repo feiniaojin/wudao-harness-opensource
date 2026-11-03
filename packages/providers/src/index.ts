@@ -1,4 +1,4 @@
-// @wudao/providers — concrete ModelClient adapters. Depends on @wudao/core (the port).
+// @wudao-org/providers — concrete ModelClient adapters. Depends on @wudao-org/core (the port).
 export {
   createOpenAICompatibleProvider,
   serializePrompt,
@@ -231,4 +231,4 @@ export type {
   PersonaSource,
 } from "./persona/types.js";
 
-export const PACKAGE_NAME = "@wudao/providers";
+export const PACKAGE_NAME = "@wudao-org/providers";

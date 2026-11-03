@@ -7,7 +7,7 @@ import { describe, it, expect } from "vitest";
 import { withPermissionRequestHook, withSidecarLayer, sidecarGatesTool, EMPTY_PERMISSION_SETTINGS } from "../src/permission.js";
 import type { Mode, StaticRuleDecide } from "../src/permission.js";
 import type { Sidecar, SidecarVerdict } from "../src/sidecar.js";
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 
 // A recording static layer: returns queued decisions and records call order
 // into `log` when given (shared with the hook/sidecar recordings for order
@@ -88,7 +88,7 @@ describe("withPermissionRequestHook — the mandated order vs the sidecar", () =
   // lets a hook allow skip the classifier. Built the same way session-engine/
   // app.tsx/repl.ts/createPermissionGate build it.
   const build = (
-    hook: (tool: string, input: Record<string, unknown>) => Promise<import("@wudao/core").PermissionDecision | undefined>,
+    hook: (tool: string, input: Record<string, unknown>) => Promise<import("@wudao-org/core").PermissionDecision | undefined>,
     order: string[],
     mode: () => Mode,
     staticOutcome: PermissionDecision | "ask",

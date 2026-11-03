@@ -23,12 +23,12 @@
 // spawn failure / any internal error resolves to void (lint) or "allow"
 // (test). Default OFF: no `reflect` node (or WUDAO_REFLECT=off) → no hooks
 // mounted, byte-zero change. Command values never reach the warn sink.
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { execFile } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { relative, resolve } from "node:path";
-import type { AgentHooks, AgentState } from "@wudao/core";
-import { resolveWorkspacePath } from "@wudao/core";
+import type { AgentHooks, AgentState } from "@wudao-org/core";
+import { resolveWorkspacePath } from "@wudao-org/core";
 import { composeAgentHooks, tokenizeCommand } from "./hooks-config.js";
 import { loadLayeredSettings } from "./settings-layer.js";
 
@@ -350,7 +350,7 @@ export function buildReflectRuntime(
     // feed the output back as the reason. Everything but a real failing run
     // resolves "allow" (fail-open); the round cap eventually lets the run
     // stop even with red tests (one warning, command value never logged).
-    onRunStop: async (_state: AgentState): Promise<import("@wudao/core").StopHookDecision> => {
+    onRunStop: async (_state: AgentState): Promise<import("@wudao-org/core").StopHookDecision> => {
       try {
         if (test === undefined) return "allow";
         if (!state.hasEditedFiles) return "allow";

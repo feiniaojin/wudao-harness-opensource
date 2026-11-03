@@ -3,9 +3,9 @@
 // history 条目（action/session/首行截断/控制字符转义）、输出零 ANSI、
 // 风险标注（ask 档：非只读/破坏性/open-world）。
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { validateToolArguments } from "@wudao/core";
+import { validateToolArguments } from "@wudao-org/core";
 import { createTerminalTool, closeTerminalTools, setTerminalHistorySink, __resetTerminalRuntimeForTests, buildTerminalEntry, TERMINAL_ENTRY_TYPE } from "../src/terminal/tools.js";
-import type { GenericSessionEntry } from "@wudao/core";
+import type { GenericSessionEntry } from "@wudao-org/core";
 import { loadNodePty } from "../src/terminal/pty.js";
 
 const TEST_SHELL = { file: "/bin/bash", args: ["--noprofile", "--norc"] } as const;

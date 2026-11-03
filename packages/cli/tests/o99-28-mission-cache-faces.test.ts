@@ -15,9 +15,9 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, AgentMessage } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
-import { serializePrompt } from "@wudao/providers";
+import type { ModelClient, ModelInput, AgentMessage } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
+import { serializePrompt } from "@wudao-org/providers";
 import { detectCacheBreak, createBreakLineGuard } from "../src/cache.js";
 import {
   buildExtensionState,

@@ -1,6 +1,6 @@
-// Vite build + vitest config for @wudao/web. The build is standalone (no
+// Vite build + vitest config for @wudao-org/web. The build is standalone (no
 // workspace cross-deps): React + this package's sources in, static assets out
-// to dist/, which @wudao/server serves when present (see cli/src/ui.ts
+// to dist/, which @wudao-org/server serves when present (see cli/src/ui.ts
 // probeStaticDir). Tests run the same sources under jsdom for the component
 // suites; protocol/input-machine suites are pure logic.
 /// <reference types="vitest" />

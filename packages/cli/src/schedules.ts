@@ -16,20 +16,20 @@
 // the next future fire, missed fires are not compensated. `paused` is an
 // ADDITIVE store field: an older host re-saving the store drops it (one-way
 // upgrade, accepted).
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { lstat, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { nextFire, parseCronExpr } from "@wudao/core";
-import type { CronTask } from "@wudao/core";
-import { cronDisabled } from "@wudao/core";
-import { buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { nextFire, parseCronExpr } from "@wudao-org/core";
+import type { CronTask } from "@wudao-org/core";
+import { cronDisabled } from "@wudao-org/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 // 113-C1 — the runtime tier's persona door reuses the providers' persona
 // registry (merged builtin/global/workspace — the REPL boot chain's loader).
-import { loadPersonaRegistry, lookupPersona } from "@wudao/providers";
+import { loadPersonaRegistry, lookupPersona } from "@wudao-org/providers";
 import { resolveGlobalHome } from "./settings-layer.js";
 import {
   SCHEDULES_STORE_FILE, SCHEDULES_SESSION_ID, SCHEDULE_RUN_ENV, SCHEDULE_TICK_MS,

@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, utimes, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createReadStateTable, hashContent, createReadFileTool } from "@wudao/core";
+import { createReadStateTable, hashContent, createReadFileTool } from "@wudao-org/core";
 import { buildFileChangedNote, buildFileChangedNoSnapshotNote, createExternalChangeProber, unifiedDiffBody, NOTE_CAP_BYTES } from "../src/file-changes.js";
 
 let root: string;

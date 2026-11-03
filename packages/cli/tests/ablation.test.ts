@@ -11,12 +11,12 @@ import {
 } from "../src/args.js";
 import { resolveLanguageBlockMode, languageBlockFor } from "../src/language.js";
 import { backgroundReviewEnabled } from "../src/memory/review.js";
-import { createScriptedModel } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriverOptions } from "../src/driver/agent-driver.js";
-import { buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 async function until(cond: () => boolean | Promise<boolean>, what: string, timeoutMs = 4000): Promise<void> {
@@ -129,8 +129,8 @@ describe("ablated feature seams (M53 §5)", () => {
 // and --no-gates' LOOP behavior (the flag must disable the stop gates, not
 // hand the loop an undefined it defaults back to on).
 // ---------------------------------------------------------------------------
-import { runAgentLoop, createTodoTool } from "@wudao/core";
-import type { AgentMessage, LoopEvent, LoopGates, Terminal } from "@wudao/core";
+import { runAgentLoop, createTodoTool } from "@wudao-org/core";
+import type { AgentMessage, LoopEvent, LoopGates, Terminal } from "@wudao-org/core";
 import { applyGatesAblation, resolveLongTaskRuntime, DEFAULT_LONG_TASK } from "../src/long-task-config.js";
 
 describe("ablation argv scoping (M53 review fix)", () => {

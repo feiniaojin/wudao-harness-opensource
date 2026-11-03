@@ -3,10 +3,10 @@
 // 理器只做薄壳。persona 切换是 PersonaRuntime.current 的字段替换（次轮生
 // 效、无 client 重建——/model 先例，非 /provider 先例）。
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { GenericSessionEntry } from "@wudao/core";
-import { lookupPersona, parsePersonaSpec, resolvePersona } from "@wudao/providers";
-import type { LayerFlags, PersonaRegistry, PersonaRuntime, ResolvedPersona } from "@wudao/providers";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { GenericSessionEntry } from "@wudao-org/core";
+import { lookupPersona, parsePersonaSpec, resolvePersona } from "@wudao-org/providers";
+import type { LayerFlags, PersonaRegistry, PersonaRuntime, ResolvedPersona } from "@wudao-org/providers";
 
 export type PersonaArgument =
   | { kind: "list" }

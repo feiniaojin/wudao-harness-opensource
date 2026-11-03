@@ -11,8 +11,8 @@ import type {
   SessionStartSource,
   Tool,
   TurnDiffTracker,
-} from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+} from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import type { Mode } from "../permission.js";
 import type { Sidecar } from "../sidecar.js";
 import type { PeerRuntime } from "../peer/runtime.js";
@@ -82,7 +82,7 @@ export interface WudaoAppProps {
    *  trailing MCP section of the system prompt. */
   readonly extraTools?: readonly Tool[];
   /** M23 long-task stop gates, resolved by the caller from settings + env. */
-  readonly gates?: import("@wudao/core").LoopGates;
+  readonly gates?: import("@wudao-org/core").LoopGates;
   /** M23 turn fuse (env/longTask-resolved). Falls back to maxTurns(). */
   readonly maxTurns?: number;
   /** M27 skills (loaded by the caller): drive the prompt tail manifest (only
@@ -104,13 +104,13 @@ export interface WudaoAppProps {
    *  Resolving feeds the driver's addTools seam — typically inside the
    *  user's typing window, before the first run (a late arrival parks at
    *  run settle; the receipt names the boundary either way). */
-  readonly deferredTools?: Promise<readonly import("@wudao/core").Tool[]>;
+  readonly deferredTools?: Promise<readonly import("@wudao-org/core").Tool[]>;
   /** M30: background agent registry shared with the task tool. Created when
    *  absent; pass one to observe it (tests, alternative frontends). */
   readonly agentsRegistry?: AgentRegistry;
   /** M32: the session's read-state table — shared by the tool set (edit/write
    *  freshness gate) and the external-change prober wired inside useAgent. */
-  readonly readState?: import("@wudao/core").ReadStateTable;
+  readonly readState?: import("@wudao-org/core").ReadStateTable;
   /** M37 §2: the session's file history (write_file/edit snapshots → /rewind).
    *  Absent → the App creates one per session id under
    *  .wudao/history/<session>/ (rotating with /clear); pass one to share an

@@ -7,7 +7,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { defaultProviderRegistryPath, writeProviderRegistrySync } from "@wudao/providers";
+import { defaultProviderRegistryPath, writeProviderRegistrySync } from "@wudao-org/providers";
 import { readCredentialsFileSync, writeCredentialsFileSync } from "../src/credentials.js";
 import { migrateKimiCodeSplit } from "../src/driver/provider-registry-ops.js";
 

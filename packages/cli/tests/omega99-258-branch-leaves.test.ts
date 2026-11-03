@@ -10,8 +10,8 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createJsonlSessionStore, createScriptedModel, nodeKey } from "@wudao/core";
-import type { AgentMessage, AssistantMessage, Tool } from "@wudao/core";
+import { buildTool, createJsonlSessionStore, createScriptedModel, nodeKey } from "@wudao-org/core";
+import type { AgentMessage, AssistantMessage, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 

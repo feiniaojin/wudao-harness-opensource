@@ -3,7 +3,7 @@
 // read/edit/workspace tool-class rosters, the workspace-safe command class,
 // and the pure builtin-tier decision. No runtime state, no IO beyond the
 // global-settings read in resolveInitialMode.
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 import { readGlobalDefaultPermissionMode, readGlobalSettingsSync } from "./settings-layer.js";
 // ω99-236: the doc trio's name rosters (READ/EDIT) — the two Sets below
 // consume them at the tail instead of hardcoding the twelve doc names

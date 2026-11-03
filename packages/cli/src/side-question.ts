@@ -15,8 +15,8 @@
 // （可能带 toolCalls），工具结果后落——mid-run 快照会捕获悬空 assistant 或
 // 部分批次，发给 provider 会 400。snapshotForSideLane 把尾部不完整的
 // tool-call 批次整段截掉（只影响旁路所见，永不改写主历史）。
-import type { AgentMessage, AgentState, ModelClient, ModelInput, Tool } from "@wudao/core";
-import { runAgentLoop } from "@wudao/core";
+import type { AgentMessage, AgentState, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { runAgentLoop } from "@wudao-org/core";
 import { BTW_MAX_TOKENS, BTW_QUERY_SOURCE, buildBtwEnvelope } from "./btw.js";
 
 /** The side loop's turn cap (brief §2): 3 model calls, then the honest

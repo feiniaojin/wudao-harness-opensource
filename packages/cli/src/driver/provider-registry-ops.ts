@@ -1,5 +1,5 @@
 // Provider management Task 3 — the cli-side handler behind the three registry
-// wire ops (design §5; relayed by @wudao/server after the same first-frame
+// wire ops (design §5; relayed by @wudao-org/server after the same first-frame
 // auth as every op):
 //
 //   settingsSaveProvider   validateUserProviderEntry → read-modify-write
@@ -47,8 +47,8 @@ import {
   parseApiKeyPool,
   validateUserProviderEntry,
   writeProviderRegistrySync,
-} from "@wudao/providers";
-import type { ProviderModelEntry, UserProviderConfig } from "@wudao/providers";
+} from "@wudao-org/providers";
+import type { ProviderModelEntry, UserProviderConfig } from "@wudao-org/providers";
 import { readCredentialsFile, readCredentialsFileSync, writeCredentialsFileSync } from "../credentials.js";
 import { readGlobalSettings, saveGlobalSettings } from "../settings-layer.js";
 import { loadEffectiveProfiles, loadProviderRegistry, invalidateProviderRegistryCache } from "../provider-registry.js";

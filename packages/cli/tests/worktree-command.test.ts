@@ -13,7 +13,7 @@ import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
 import { parseReplCommand } from "../src/repl.js";
 import {
   WORKTREE_USAGE,

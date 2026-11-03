@@ -20,7 +20,7 @@ import {
   truncateSafe,
   type PersistentShellStatus,
   type Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 
 const strArg = (v: unknown): string => (typeof v === "string" ? v : "");
 

@@ -19,8 +19,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao/core";
-import { serializePrompt } from "@wudao/providers";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
+import { serializePrompt } from "@wudao-org/providers";
 import {
   createMissionController,
   createMissionTools,

@@ -43,8 +43,8 @@ import {
   type Terminal,
   type Tool,
   type WriteVerifyConfig,
-} from "@wudao/core";
-import { createOpenAICompatibleProvider, createKeyPool, resolveProviderConfigResult, serializePrompt } from "@wudao/providers";
+} from "@wudao-org/core";
+import { createOpenAICompatibleProvider, createKeyPool, resolveProviderConfigResult, serializePrompt } from "@wudao-org/providers";
 import { loadSkills, buildSkillInvocationMessage, skillsPromptSection, findSkill, type LoadedSkill } from "wudao-harness/skills";
 import { loadPlugins, appendPluginSkills, collectPluginCommands, collectPluginAgents, mergeMcpConfigs, buildPluginCommandMessage } from "wudao-harness/plugins";
 import {
@@ -128,7 +128,7 @@ import {
   staticTier2Compact,
   tier2Compact,
   createCtxInspectTool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { createSidecar, SIDECAR_CLASSIFIER_PROMPT } from "wudao-harness/sidecar";
 // M53: branching UX (driver-level /edit //tree //switch + branch-summary),
 // the statusline contract, and the ablation matrix.
@@ -176,7 +176,7 @@ import {
   createWebFetchTool, createWebSearchTool, parseSearchHits, formatSearchResults, capSearchOutput,
   WEB_FETCH_MAX_BYTES, WEB_SEARCH_MAX_QUERY_CHARS,
   type DnsLookup,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { loadWebSettings, webSearchConfig } from "wudao-harness/web-config";
 import { ruleMatches, askRuleFor, EMPTY_PERMISSION_SETTINGS } from "wudao-harness/permission";
 
@@ -7471,7 +7471,7 @@ const det45Eval: EvalDefinition<{ dir: string }, M59Evidence> = {
 
     // -- 6) registry -----------------------------------------------------------
     const stubModel = createRecordingModel([]);
-    const allowAll = async (): Promise<import("@wudao/core").PermissionDecision> => ({ behavior: "allow" });
+    const allowAll = async (): Promise<import("@wudao-org/core").PermissionDecision> => ({ behavior: "allow" });
     const unconfiguredSet = buildToolSet({ workspaceRoot: ctx.dir, model: stubModel, canUseTool: allowAll, contextWindowTokens: 64_000 });
     const configuredSet = buildToolSet({ workspaceRoot: ctx.dir, model: stubModel, canUseTool: allowAll, contextWindowTokens: 64_000, web: { fetch: { maxChars: 8_000 }, search: { provider: "searxng", endpoint: "http://searx.local/" } } });
 

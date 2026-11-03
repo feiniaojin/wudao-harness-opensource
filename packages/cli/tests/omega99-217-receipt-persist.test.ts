@@ -18,8 +18,8 @@ import {
   createTurnDiffTracker,
   createWriteFileTool,
   createJsonlSessionStore,
-} from "@wudao/core";
-import type { AgentMessage, SessionEntry, SessionStore } from "@wudao/core";
+} from "@wudao-org/core";
+import type { AgentMessage, SessionEntry, SessionStore } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { receiptNoticesFromEntries } from "../src/tui/resume.js";

@@ -12,9 +12,9 @@
 // command string inside it is the point, not a leak. No future extension may
 // widen this surface; see the ADR before touching SIDECAR_CLASSIFIER_PROMPT
 // or buildSidecarInput.
-import type { AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
-import { createProvider } from "@wudao/providers";
-import type { ProviderConfig } from "@wudao/providers";
+import type { AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
+import { createProvider } from "@wudao-org/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { canonicalJson, extractStructuredOutput, validateJsonSchemaSubset } from "./workflow/structured-output.js";
 import type { JsonSchemaSubset } from "./workflow/structured-output.js";
 import { loadLayeredSettings } from "./settings-layer.js";

@@ -20,8 +20,8 @@ import { join } from "node:path";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { createDriverSession } from "wudao-harness/driver/session-engine";
 import { summarizeToolCall } from "wudao-harness/log";
-import type { ProviderConfig } from "@wudao/providers";
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { ProviderConfig } from "@wudao-org/providers";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import type { EvalDefinition } from "../runner.js";
 
 export interface NightPorting6Evidence {

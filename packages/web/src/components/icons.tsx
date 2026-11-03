@@ -82,6 +82,15 @@ export function IconPlus(props: { size?: number; className?: string }): React.JS
   );
 }
 
+export function IconChart(props: { size?: number; className?: string }): React.JSX.Element {
+  return (
+    <svg {...base(props)}>
+      <path d="M3 20h18" />
+      <path d="M4 16l5-6 4 3 7-9" />
+    </svg>
+  );
+}
+
 export function IconRefresh(props: { size?: number; className?: string }): React.JSX.Element {
   return (
     <svg {...base(props)}>

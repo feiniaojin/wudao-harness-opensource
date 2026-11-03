@@ -21,7 +21,7 @@ import {
   latestAfterShaByPath,
   withSnapshotCapture,
 } from "../src/snapshots.js";
-import type { AgentHooks, SessionEntry } from "@wudao/core";
+import type { AgentHooks, SessionEntry } from "@wudao-org/core";
 
 const sha = (s: string): string => createHash("sha256").update(s, "utf8").digest("hex");
 

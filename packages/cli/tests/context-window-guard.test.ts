@@ -8,8 +8,8 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel } from "@wudao/core";
-import { defaultProviderRegistryPath, writeProviderRegistrySync } from "@wudao/providers";
+import { createScriptedModel } from "@wudao-org/core";
+import { defaultProviderRegistryPath, writeProviderRegistrySync } from "@wudao-org/providers";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";
@@ -146,8 +146,8 @@ describe("context-window guard (0.3.31) — /provider lane", () => {
         tools: [],
         sessionMeta: { provider: "deepseek", model: "boot-model" },
         onProviderSwitch: {
-          resolve: (target: import("@wudao/providers").ProviderName) => resolveProviderSwitch({ target, env: process.env, current: live }),
-          build: (config: import("@wudao/providers").ProviderConfig) => {
+          resolve: (target: import("@wudao-org/providers").ProviderName) => resolveProviderSwitch({ target, env: process.env, current: live }),
+          build: (config: import("@wudao-org/providers").ProviderConfig) => {
             builds.push(config.provider ?? "?");
             return createScriptedModel([{ role: "assistant", content: "x" }]);
           },

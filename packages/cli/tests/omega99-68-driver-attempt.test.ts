@@ -9,8 +9,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { ModelClient, ModelInput, ModelStreamEvent, ModelUsage, SessionEntry } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { ModelClient, ModelInput, ModelStreamEvent, ModelUsage, SessionEntry } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriverOptions, AgentDriver } from "../src/driver/agent-driver.js";
 

@@ -2,7 +2,7 @@
 // permission.ts (ω99 file-size discipline arc A): the M63-A PermissionRequest
 // hook layer (the deterministic policy engine + ω99-21 immune-ask ceiling)
 // and the M45 auto-mode sidecar audit layer. Pure layer builders — no IO.
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 import type { Sidecar, SidecarVerdict } from "./sidecar.js";
 import type { Mode } from "./permission-modes.js";
 import { READ_TOOLS } from "./permission-modes.js";
@@ -41,7 +41,7 @@ import type { PermissionSettings } from "./permission-settings.js";
 export type PermissionRequestHookFn = (
   toolName: string,
   input: Record<string, unknown>,
-) => import("@wudao/core").PermissionDecision | undefined | Promise<import("@wudao/core").PermissionDecision | undefined>;
+) => import("@wudao-org/core").PermissionDecision | undefined | Promise<import("@wudao-org/core").PermissionDecision | undefined>;
 
 /** ω99-21 — the shared opts of the two layer builders below. `immuneAsk` is
  *  the authorization-ceiling predicate: when a hook answers ALLOW and the
@@ -98,7 +98,7 @@ export function withPermissionRequestHook(
     // nothing behind it is already decided — no policy question to answer.
     const sidecarWouldGate = opts?.sidecarPresent === true && getMode() === "auto" && sidecarGatesTool(toolName);
     if (d !== "ask" && !sidecarWouldGate) return d;
-    let decision: import("@wudao/core").PermissionDecision | undefined;
+    let decision: import("@wudao-org/core").PermissionDecision | undefined;
     try {
       decision = await hook(toolName, input);
     } catch {
@@ -250,7 +250,7 @@ export type SidecarToolMetaResolver = (toolName: string) => SidecarToolMeta | un
  *  is constructed before the tool set at several frontends, so the resolver
  *  reads through a late-bound getter at CALL time. */
 export function toolMetaResolverFor(
-  getTools: () => readonly import("@wudao/core").Tool[] | undefined,
+  getTools: () => readonly import("@wudao-org/core").Tool[] | undefined,
 ): SidecarToolMetaResolver {
   return (toolName) => getTools()?.find((t) => t.name === toolName);
 }

@@ -16,7 +16,7 @@ import {
   renderWalletReport,
   type CostLedgerRow,
 } from "../src/commands/wallet.js";
-import type { ProviderBalance } from "@wudao/providers";
+import type { ProviderBalance } from "@wudao-org/providers";
 
 async function tmpWs(): Promise<string> {
   return mkdtemp(join(tmpdir(), "p04-wallet-"));

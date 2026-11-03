@@ -6,8 +6,8 @@
 // top and never reimplements loop logic.
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createDriverSession, type DriverSessionOptions } from "wudao-harness/driver/session-engine";
 // SDD 2026-08-23 persona Task 4 — the REAL persona-chain reads (the Slack face
 // is a production session-engine consumer exactly like ui.ts; the engine's

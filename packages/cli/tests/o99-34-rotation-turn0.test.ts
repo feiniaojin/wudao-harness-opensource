@@ -12,7 +12,7 @@
 //   ④ side 链不消费轮换一次性档（ω99-31 红线）；
 //   ⑤ 轮换把窗口身份移交给下一主行的合成 advance（Review I1 同机制）。
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
 import { createCacheTrackingModel, type WindowAdvance } from "../src/cache.js";
 
 function fakeModel(usages: readonly ModelUsage[]): { model: ModelClient; inputs: ModelInput[] } {
@@ -170,7 +170,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const delay = (ms = 10): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -11,12 +11,12 @@
 // root matches THIS worktree; `--all` lifts the filter. Sessions without a
 // recorded root (pre-M58 files, forks of them) are unattributable and stay
 // visible under every filter.
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { stat } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
-import { createJsonlSessionStore, type AgentMessage, type SessionEntry, type SessionStore } from "@wudao/core";
+import { createJsonlSessionStore, type AgentMessage, type SessionEntry, type SessionStore } from "@wudao-org/core";
 import { lastModelState } from "./run.js";
 import { hardenedGitArgs } from "./git-hardened.js";
 import { truncate } from "./log.js";

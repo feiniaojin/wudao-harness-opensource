@@ -16,10 +16,10 @@ import {
   resolveTemplateValue,
   type HookMcpSeam,
 } from "../src/hooks-config.js";
-import { runSubagent } from "@wudao/core";
-import { createScriptedModel } from "@wudao/core";
-import { buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { runSubagent } from "@wudao-org/core";
+import { createScriptedModel } from "@wudao-org/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 const fx = (name: string): string => join(FIXTURES, name);

@@ -19,10 +19,10 @@ import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { resolveWorkspacePath } from "@wudao/core";
-import type { SessionEntry } from "@wudao/core";
+import { resolveWorkspacePath } from "@wudao-org/core";
+import type { SessionEntry } from "@wudao-org/core";
 import { FILE_RECEIPT_TOOLS } from "./driver/file-receipt.js";
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 
 /** 全 64 位 sha256（内容寻址的摘要面——与 read-state 的 16 位截断哈希不同用途）。 */
 export function sha256Hex(content: string): string {

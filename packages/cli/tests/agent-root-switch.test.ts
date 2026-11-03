@@ -12,8 +12,8 @@ import { execFile as execFileCb } from "node:child_process";
 import { promisify } from "node:util";
 import { tmpdir } from "node:os";
 import { basename, join, relative } from "node:path";
-import { createScriptedModel } from "@wudao/core";
-import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
+import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { buildToolSet } from "../src/tools.js";
 import { hookCommonFields } from "../src/hooks-config.js";
@@ -232,8 +232,14 @@ describe("workspace-ux B2 — agentRootSwitch (idle immediate / busy → settle)
       },
     });
     let observed: { root: string; noticeLanded: boolean } | undefined;
+    // 观察窗修正（0.4.20 发版排查）：run 起跑前可能有一发 boot 侧的空闲
+    // emit（初始化异步面），原观察窗把它当「第一发 busy=false」捕获——读到
+    // 的自然是旧根。缝的原子性契约针对的是「停运后的第一发空闲」：先见过
+    // busy=true（run 真正起跑），其后的第一发 busy=false 才是判读点。
+    let sawBusyRun = false;
     driver.subscribe(() => {
-      if (observed !== undefined || driver.getStatus().busy) return;
+      if (driver.getStatus().busy) sawBusyRun = true;
+      if (observed !== undefined || !sawBusyRun || driver.getStatus().busy) return;
       observed = {
         root: box.current,
         noticeLanded: driver.getHistory().some(
@@ -565,7 +571,8 @@ describe("workspace-ux B2 — agentRootSwitch (idle immediate / busy → settle)
     await symlink(rootB, link);
     await driver.panelRootSet(link);
     await driver.agentRootSwitch(rootB);
-    expect(await driver.agentRootStatus()).toEqual({ panelRoot: link, agentRoot: rootB, aligned: true });
+    // 138b：bootRoot（会话锚）是加性字段——直读 boot 根（未切换过）。
+    expect(await driver.agentRootStatus()).toEqual({ panelRoot: link, agentRoot: rootB, bootRoot: rootA, aligned: true });
     driver.dispose();
   });
 });

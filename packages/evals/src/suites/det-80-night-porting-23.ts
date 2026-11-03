@@ -8,7 +8,7 @@
 // nested-begin inert guard + complete-freeze, the rounding absorption
 // invariant (buckets re-sum to totalMs), and retry-vs-request separation.
 import type { EvalDefinition } from "../runner.js";
-import { createTurnProfileRecorder } from "@wudao/core";
+import { createTurnProfileRecorder } from "@wudao-org/core";
 
 export interface NightPorting23Evidence {
   // ① transitions account to the CURRENT phase at exact clock steps

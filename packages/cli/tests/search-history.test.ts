@@ -20,7 +20,7 @@ import {
   type Tool,
   type ModelClient,
   type PermissionDecision,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { historySearchCorpus } from "../src/history-search.js";
 import { buildCompactBoundaryEntry } from "../src/session-entry.js";
 import { buildToolSet } from "../src/tools.js";

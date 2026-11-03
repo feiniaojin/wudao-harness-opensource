@@ -13,9 +13,9 @@
 // Fault posture mirrors readProviderRegistrySync: a missing/malformed file
 // never blocks boot — the builtins always cover everything, and the invalid
 // rows ride out for the settings page to badge (fail-visible, never silent).
-import { defaultProviderRegistryPath, effectiveProfiles, readProviderRegistrySync, resolveContextWindowTokens } from "@wudao/providers";
-import type { EffectiveProfile, RegistryLoadResult } from "@wudao/providers";
-import type { CachePricing } from "@wudao/core";
+import { defaultProviderRegistryPath, effectiveProfiles, readProviderRegistrySync, resolveContextWindowTokens } from "@wudao-org/providers";
+import type { EffectiveProfile, RegistryLoadResult } from "@wudao-org/providers";
+import type { CachePricing } from "@wudao-org/core";
 import { resolveRunCachePricing } from "./commands/cost.js";
 import { resolveAutoCompactSettings } from "./misc-config.js";
 

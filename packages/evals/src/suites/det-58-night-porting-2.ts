@@ -43,13 +43,13 @@ import {
   type ModelClient,
   type ModelInput,
   type Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import {
   createKeyPool,
   cooldownClassForStatus,
   DEFAULT_AUTH_COOLDOWN_MS,
   DEFAULT_KEY_COOLDOWN_MS,
-} from "@wudao/providers";
+} from "@wudao-org/providers";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { askRuleFor, decideRichPermission, recordAskRules } from "wudao-harness/permission";
 import { summarizeToolCall } from "wudao-harness/log";

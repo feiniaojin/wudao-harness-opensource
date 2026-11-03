@@ -83,7 +83,10 @@ const SNAPSHOT = join(import.meta.dirname, "fixtures", "barrel-surface.txt");
 /** 125b 撞车吸收：canonical oracle 再生。127 项 1（continue_task 工具面）—
  *  534 = 510 + 24（tools/continue-task.ts 的导出：工具工厂 + baton 纯层 +
  *  常量 + 类型）。 */
-const PINNED_COUNT = 627; // stop-tree 停止协调器 +6（2 值：StopCoordinator/MAX_STOP_TREE_DEPTH；4 类型：StopTreeEvent/StopTreePlan/
+const PINNED_COUNT = 631; // 135 trace 投影层 +4（observeRun / createOtlpExporterFromEnv 两值 +
+// ObserveRunOptions / OtlpExporter 两类型——其余投影/编码面走子路径 @wudao-org/core/trace，
+// 不进 barrel：PB-1 探针先例，挂载件与内部机制不加宽公共面）。
+// 前值 627：stop-tree 停止协调器 +6（2 值：StopCoordinator/MAX_STOP_TREE_DEPTH；4 类型：StopTreeEvent/StopTreePlan/
 // StopTreeDispatchPort/PendingRequestKind——openwork opencode-interruption 的 wudao 移植弧），
 // 同树并行吸收（census 撞车纪律，后到者吸收）：persistent-shell 面 +22（并行弧的 persistentShellRuntime 族），
 // 前值 599（调研引入弧 B 缓存感知压缩调度 +13——其前的撞车吸收链：memory-store 面 +9、

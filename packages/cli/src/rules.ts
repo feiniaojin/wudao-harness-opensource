@@ -23,10 +23,10 @@
 // boundary. Everything is memoized per workspace root — session-static, no
 // hot reload (editing a rule mid-session does nothing until restart; the
 // prefix cache rules).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
-import { globToRegex } from "@wudao/core";
+import { globToRegex } from "@wudao-org/core";
 import { resolveGlobalHome } from "./settings-layer.js";
 
 /** Single-rule body cap (chars, line boundary — spec §1). */

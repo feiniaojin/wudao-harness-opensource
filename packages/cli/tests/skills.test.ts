@@ -287,8 +287,8 @@ describe("findSkill / formatSkillError", () => {
 // compaction seam, the pruned-marker detector, and the /skill: reload hint.
 // ---------------------------------------------------------------------------
 
-import { formatSkillPrunedMarker } from "@wudao/core";
-import type { AgentMessage } from "@wudao/core";
+import { formatSkillPrunedMarker } from "@wudao-org/core";
+import type { AgentMessage } from "@wudao-org/core";
 import { createSkillReadClassifier, isSkillPruned } from "../src/skills.js";
 
 describe("createSkillReadClassifier (M48 §3)", () => {

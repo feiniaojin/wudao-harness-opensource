@@ -9,8 +9,8 @@ import { render } from "ink-testing-library";
 import { existsSync, readFileSync, writeFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createScriptedModel } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import {
   appendPromptHistory,
   loadPromptHistory,

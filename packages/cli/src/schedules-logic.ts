@@ -1,8 +1,8 @@
 // ω99 拆分运动 弧 B：schedules 纯调度逻辑外提（下次触发计算/结构化日程判定/
 // due 判定/漏火处置/人读描述——原 schedules.ts 模块级段逐字保留；schedules.ts
 // re-export 门面保公共面）。
-import { nextFire, parseCronExpr } from "@wudao/core";
-import type { CronTask } from "@wudao/core";
+import { nextFire, parseCronExpr } from "@wudao-org/core";
+import type { CronTask } from "@wudao-org/core";
 import type { DurableSchedule, DurableTask, StructuredSchedule } from "./schedules-model.js";
 import { DEFER_IDLE_MAX_MINUTES, DEFER_IDLE_MIN_MINUTES, SCHEDULE_MIN_INTERVAL_MS, SCHEDULE_MISS_RETRY_DELAY_MS, validWeekdays, validTimeOfDay } from "./schedules-model.js";
 

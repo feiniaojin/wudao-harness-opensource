@@ -37,7 +37,7 @@ import { mergeHooksSettings } from "../src/plugins.js";
 import type { LoadedPlugin } from "../src/plugins.js";
 import { attachBootExtensions, buildExtensionState } from "../src/extension-state.js";
 import type { ExtensionState } from "../src/extension-state.js";
-import type { AgentHooks } from "@wudao/core";
+import type { AgentHooks } from "@wudao-org/core";
 
 const NO_RULES = { allow: [], deny: [], ask: [] } as const;
 

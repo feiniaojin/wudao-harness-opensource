@@ -20,8 +20,8 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, toModelToolDefinition } from "@wudao/core";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
+import { buildTool, toModelToolDefinition } from "@wudao-org/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { summarizeToolCall } from "wudao-harness/log";
 import { parseReplCommand } from "wudao-harness/repl";

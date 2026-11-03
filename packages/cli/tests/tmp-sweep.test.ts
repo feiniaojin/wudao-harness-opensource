@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtempSync, existsSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { PYTHON_KERNEL_TMP_PREFIX } from "@wudao/core";
+import { PYTHON_KERNEL_TMP_PREFIX } from "@wudao-org/core";
 import { sweepStaleRpcDirs, RPC_TMP_PREFIX, STALE_RPC_DIR_MAX_AGE_MS } from "../src/tmp-sweep.js";
 
 const HOUR = 60 * 60 * 1000;

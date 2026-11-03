@@ -12,7 +12,7 @@
 // Pure reads, zero new dependencies (glob matching is a tiny RegExp
 // translation), and `pnpm eval` behavior is untouched — this is test-infra.
 //
-// Runnable directly after `pnpm --filter @wudao/evals build`:
+// Runnable directly after `pnpm --filter @wudao-org/evals build`:
 //   node packages/evals/dist/contracts.js --changed <file>...      # 训练面（held-out 排除）
 //   node packages/evals/dist/contracts.js --changed-all <file>...  # 全量面（CI/验收）
 //   node packages/evals/dist/contracts.js --suite <name>

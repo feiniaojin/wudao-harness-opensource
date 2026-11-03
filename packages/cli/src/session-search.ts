@@ -7,11 +7,11 @@
 // subsystem (tokenize.ts): latin word-runs + CJK bigrams. Ranking is
 // BM25-lite. A corrupt/foreign-version index file rebuilds itself from the
 // session JSONLs (auto-heal).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
-import { createJsonlSessionStore } from "@wudao/core";
-import type { AgentMessage } from "@wudao/core";
+import { createJsonlSessionStore } from "@wudao-org/core";
+import type { AgentMessage } from "@wudao-org/core";
 import { tokenizeText } from "./tokenize.js";
 
 const INDEX_VERSION = 1;

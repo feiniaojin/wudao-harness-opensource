@@ -7,7 +7,7 @@ import type { LayerFlags, ProtocolId } from "./persona/types.js";
 import { PROTOCOL_IDS } from "./persona/schema.js";
 import { parsePersonaSpec } from "./persona/runtime.js";
 import type { EffectiveProfile, ProviderModelEntry } from "./registry.js";
-import type { ModelInput } from "@wudao/core";
+import type { ModelInput } from "@wudao-org/core";
 
 /** The closed set of profiles compiled into the binary. The registry
  *  (registry.ts) layers user overlays on top of these and adds custom

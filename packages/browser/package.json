@@ -1,6 +1,6 @@
 {
-  "name": "@wudao/browser",
-  "version": "0.3.46",
+  "name": "@wudao-org/browser",
+  "version": "0.4.21",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,13 +16,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "node ../../scripts/publish-assets.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
   },
   "devDependencies": {
-    "@wudao/core": "workspace:*",
+    "@wudao-org/core": "workspace:*",
     "typescript": "5.6.3",
     "vitest": "2.1.8"
   },

@@ -7,8 +7,8 @@ import { describe, it, expect } from "vitest";
 import { createSessionRegistry, AimdGate } from "../src/agents/index.js";
 import { KERNEL_POLICY } from "../src/kernel-policy.js";
 import { agentsSettingsFromNode, DEFAULT_AGENTS_SETTINGS } from "../src/misc-config.js";
-import type { ModelClient, ModelInput } from "@wudao/core";
-import type { AssistantMessage } from "@wudao/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
+import type { AssistantMessage } from "@wudao-org/core";
 import { BUILTIN_ROLES } from "../src/agents/index.js";
 
 // The CLI spelling is a Map (core-bind adapts core's Record).

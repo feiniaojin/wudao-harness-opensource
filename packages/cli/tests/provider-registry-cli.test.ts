@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { readCredentialsFileSync } from "../src/credentials.js";
 import { buildRunPlan } from "../src/run.js";
 import { availableModels } from "../src/commands/model.js";
-import { createScriptedModel } from "@wudao/core";
+import { createScriptedModel } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { validateProviderName, resolveProviderSwitch, providerRows } from "../src/commands/provider.js";
@@ -27,7 +27,7 @@ import {
   resetProviderRegistryCacheForTests,
   resolveSessionWindowTokens,
 } from "../src/provider-registry.js";
-import { resolveProviderConfigResult } from "@wudao/providers";
+import { resolveProviderConfigResult } from "@wudao-org/providers";
 
 let home: string;
 let bareHome: string;

@@ -23,7 +23,7 @@ import { openMemoryStore } from "./store.js";
 import type { MemoryEntry as LegacyMemoryEntry, MemoryKind as LegacyMemoryKind } from "./store.js";
 import { longtermMemoryDir, openLongtermMemoryStore } from "../longterm-memory.js";
 import { appendBlockedLearningAt, buildBlockedRecord, screenLearningInput } from "./guard.js";
-import type { MemoryStore } from "@wudao/core";
+import type { MemoryStore } from "@wudao-org/core";
 
 /** 迁移完成 marker：`<ws>/.wudao/memory/migrated`（存在即零动作）。 */
 export function legacyMemoryMigrationMarker(workspaceRoot: string): string {

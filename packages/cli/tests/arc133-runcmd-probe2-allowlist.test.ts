@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient } from "@wudao/core";
+import type { AssistantMessage, ModelClient } from "@wudao-org/core";
 import { runScriptWorkflow } from "../src/workflow/engine.js";
 import { journalFilePath, loadJournal, openJournal, workflowIdentity } from "../src/workflow/journal.js";
 import type { JsflowOptions } from "../src/workflow/engine.js";

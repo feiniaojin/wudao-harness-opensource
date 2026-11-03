@@ -3,7 +3,7 @@
 // （消息内容/工具载荷永不进 span），turn 边界批量 flush，best-effort 自吞，
 // 缺省 off 零外发。deterministic：fetch/时钟/id 工厂全部注入。
 import { describe, it, expect } from "vitest";
-import type { LoopEvent, ModelUsage } from "@wudao/core";
+import type { LoopEvent, ModelUsage } from "@wudao-org/core";
 import { CostRegistry } from "../src/commands/cost.js";
 import {
   resolveTelemetryConfig,

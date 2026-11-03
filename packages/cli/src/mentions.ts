@@ -10,7 +10,7 @@
 // token as written + a dim notice; the same file expands ONCE (later tokens
 // stay literal); no glob support (a glob pattern is simply not a file).
 import { readFile } from "node:fs/promises";
-import { resolveWorkspacePath, readTextWindow } from "@wudao/core";
+import { resolveWorkspacePath, readTextWindow } from "@wudao-org/core";
 
 /** What expandMentions produced: the rewritten text + human-facing dim
  *  notices (missing file, workspace escape). Notices never enter the

@@ -9,7 +9,7 @@ import {
   type ModelClient,
   type PermissionDecision,
   type Terminal,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { basename } from "node:path";
 import { buildToolSet } from "../tools.js";
 import { buildSystemPrompt } from "../prompt.js";

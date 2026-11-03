@@ -1,7 +1,7 @@
 // ω99 拆分运动 弧 B：schedules 域模型外提（常量/类型/台账形状校验——原
 // schedules.ts 模块级段逐字保留；schedules.ts re-export 门面保公共面）。
 
-import { SESSION_ID_RE } from "@wudao/core";
+import { SESSION_ID_RE } from "@wudao-org/core";
 
 export const SCHEDULES_STORE_FILE = "schedules.json";
 export const SCHEDULES_SESSION_ID = "schedules";

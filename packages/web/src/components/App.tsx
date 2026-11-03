@@ -56,6 +56,7 @@ import { SettingsPage } from "./SettingsPage.js";
 import { Wizard } from "./Wizard.js";
 // M63 §D: the 简洁模式 shell — same driver state, novice projection.
 import { SimpleMode } from "./SimpleMode.js";
+import { Dashboard } from "./Dashboard.js";
 import type { ShieldMode } from "./ShieldSelector.js";
 // M74-ide §3: the advanced shell's data panels — the lazy file tree (left)
 // and the read-only viewer (center). The structural FileOpsClient port means
@@ -99,7 +100,7 @@ import { attachmentSendErrorText, fileSendErrorText } from "../attachments.js";
 // ui-review-r2 P5: the formerly-dead glyphs find their slots — IconPlus (the
 // + new-chat), IconClose (the tab ×), IconFileText (a file tab's glyph,
 // IconFolder's twin for dir tabs).
-import { IconSessions, IconSettings, IconTheme, IconFolder, IconPlus, IconClose, IconFileText, IconSpinner, IconPanelLeft, IconTrash } from "./icons.js";
+import { IconSessions, IconChart, IconSettings, IconTheme, IconFolder, IconPlus, IconClose, IconFileText, IconSpinner, IconPanelLeft, IconTrash } from "./icons.js";
 // workspace-ux A2: the ONE seam for desktop-plugin calls (directory dialog /
 // finish notification / window drag) — no caller hand-rolls a `__TAURI__`
 // optional-chain again; an absent or throwing bridge reads as null/false.
@@ -209,6 +210,8 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // M63 §B: the settings page — a full-area view swap (chat + input hide;
   // header/banner/status bar stay).
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // 139 — 探针仪表盘整页开关（settings-page 同款覆盖面）。
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   // M63 §C: the first-run wizard's gate — resolved ONCE from settingsStatus
   // (readiness join; a ready matrix never shows the wizard). "checking" until
   // the reply lands; a gate failure never blocks the app.
@@ -361,6 +364,9 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // reconnect, an ask takeover, or a mode swap can only re-render it, never
   // drop the decision.
   const [agentRoot, setAgentRoot] = useState("");
+  // 138 续（2026-11-03 用户令「下拉列表给一个默认空间的选项」）：boot 根
+  //（会话锚）的显示镜像——「默认空间」钉项的落点，切走后一键回默认。
+  const [bootRoot, setBootRoot] = useState("");
   const [rootCard, setRootCard] = useState<{
     readonly panelRoot: string;
     readonly agentRoot: string;
@@ -741,6 +747,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
       .then((r) => {
         if (cancelled) return;
         if (typeof r?.agentRoot === "string" && r.agentRoot !== "") setAgentRoot(r.agentRoot);
+        if (typeof r?.bootRoot === "string" && r.bootRoot !== "") setBootRoot(r.bootRoot);
         if (panelRootTouched.current) return;
         if (typeof r?.panelRoot === "string" && r.panelRoot !== "") setPanelRoot(r.panelRoot);
       })
@@ -767,6 +774,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
       .then((r) => {
         if (cancelled) return;
         if (typeof r?.agentRoot === "string" && r.agentRoot !== "") setAgentRoot(r.agentRoot);
+        if (typeof r?.bootRoot === "string" && r.bootRoot !== "") setBootRoot(r.bootRoot);
         if (r?.aligned === true) setRootCard(null);
       })
       .catch(() => { /* stay queued — the next status frame retries */ });
@@ -1918,13 +1926,13 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // gone, and the gate with it). The driver records the recents row itself,
   // so the wire carries the ONE op. The receipt's root drives the switcher
   // label and the tree remount; tabs/marks/palette paths die with the root
-  // they were relative to. (The agent-root switch — B2/B3 — is a separate
-  // op with its own confirm card.)
-  // workspace-ux B3: a successful pick also ARMS the agent-root confirm card
-  // (spec B·Web 交互流) — the panel moved, the agent did not, and that gap
-  // is exactly the card's question. The armed card REPLACES any earlier one
-  // (a second pick re-asks with the fresh pair — last pick wins, mirroring
-  // the driver's pending-switch rule).
+  // they were relative to.
+  // 137（2026-11-02 用户报障「点击切换工作空间后没有真正切换过来」）：选
+  // 目录 = 切工作区，不再分两步。原 B3 的确认卡把 agent 根留在旧目录，用
+  // 户以为切了、agent 却在 ~/.wudao-desktop/workspace 里翻 Downloads——
+  // 一次点击两个根一起动：agentRootSwitch 跟在 panelRootSet 后出线，idle
+  // 立即生效；busy 由 driver 排队到本轮收束（不中途换根，红线的时序不
+  // 变），排队态以通知说明。确认卡退役：不再 arm。
   const switchPanelRoot = useCallback(
     (path: string): void => {
       void client.panelRootSet(path).then(
@@ -1936,13 +1944,22 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
           setActiveTabIndex(0);
           knownPathsRef.current = []; // the Ctrl+P index is root-relative too
           onClearAgentModified(); // M76-ux2 §1: the marks name old-root paths
-          notify(`文件面板根 → ${root}`);
-          setRootCard({ panelRoot: root, agentRoot, queued: false });
+          void client.agentRootSwitch(root).then(
+            (sr) => {
+              setAgentRoot(root); // local mirror; the status channel agrees on its next reply
+              notify(sr?.applied === false
+                ? `工作区切换已排队——当前任务结束后生效 → ${root}`
+                : `工作区已切换（agent 工作目录已跟随）→ ${root}`);
+            },
+            (e) => {
+              notify(`⚠️ agent 工作目录切换失败：${e instanceof Error ? e.message : String(e)}——文件面板已切到 ${root}`);
+            },
+          );
         },
         (e) => { notify(`⚠️ 切换失败：${e instanceof Error ? e.message : String(e)}`); },
       );
     },
-    [client, notify, onClearAgentModified, agentRoot],
+    [client, notify, onClearAgentModified],
   );
   const onSwitchWorkspace = switchPanelRoot;
   const onOpenOtherWorkspace = useCallback((): void => {
@@ -2592,6 +2609,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
                   <WorkspaceChip
                     client={client}
                     root={panelRoot}
+                  bootRoot={bootRoot !== "" ? bootRoot : undefined}
                     connected={connected}
                     onPick={onSwitchWorkspace}
                     onOpenOther={onOpenOtherWorkspace}
@@ -2786,6 +2804,10 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
         <button type="button" className="icobtn" aria-label="切换主题" title="切换主题(浅色/暗色)" onClick={onToggleTheme}>
           <IconTheme />
         </button>
+        {/* 139：探针仪表盘（默认可观测面）——settings 同款整页覆盖。 */}
+        <button type="button" className="icobtn" aria-label="监控" title="监控（探针仪表盘）" onClick={() => setDashboardOpen(true)}>
+          <IconChart />
+        </button>
         <button type="button" className="icobtn" aria-label="设置" title="设置" onClick={() => setSettingsOpen(true)}>
           <IconSettings />
         </button>
@@ -2829,6 +2851,10 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
             重连
           </button>
         </div>
+      ) : null}
+      {/* 139 — 探针仪表盘：整页覆盖（settings 同位；关页即停探针流）。 */}
+      {dashboardOpen ? (
+        <Dashboard client={client} status={status} connected={connected} onClose={() => setDashboardOpen(false)} />
       ) : null}
       {settingsOpen ? (
         <SettingsPage
@@ -2919,6 +2945,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
           effortProviderLabel={providerCardLabel(gateStatus, status?.model?.provider)}
           onPersistEffortDefault={persistEffortProviderDefault}
           workspaceRoot={panelRoot}
+          bootRoot={bootRoot !== "" ? bootRoot : undefined}
           onSwitchWorkspace={switchPanelRoot}
           onOpenOtherWorkspace={onOpenOtherWorkspace}
           rootCard={rootCard}
@@ -3022,6 +3049,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
                   key={panelRoot}
                   client={client}
                   workspaceRoot={panelRoot}
+                  bootRoot={bootRoot !== "" ? bootRoot : undefined}
                   selectedPath={activeTab?.path ?? null}
                   onSelect={onTreeSelect}
                   onAtMention={onAtMention}

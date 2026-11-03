@@ -3,7 +3,7 @@
 // NOTE: The registry status does NOT include the prompt (AgentStatusInfo lacks
 // that field), so the prompt line is omitted. Pure formatting: the driver
 // fetches the snapshot from the agent registry.
-import type { AgentStatusInfo } from "@wudao/core";
+import type { AgentStatusInfo } from "@wudao-org/core";
 
 /** One task row for the /tasks table. */
 export interface TaskRow {

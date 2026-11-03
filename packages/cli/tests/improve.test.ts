@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { AgentRegistry } from "../src/agents/index.js";
-import type { RegistryResult } from "@wudao/core";
+import type { RegistryResult } from "@wudao-org/core";
 import { buildObservedEvent, appendFailureEvent, failureFingerprintPath } from "../src/failure-fingerprints.js";
 import {
   listImprovements,

@@ -34,7 +34,7 @@
 import { randomUUID } from "node:crypto";
 import { appendFileSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { truncateSafe } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core";
 import type { InboundTarget } from "./channel.js";
 
 export type DeliveryState = "pending" | "attempting" | "delivered" | "failed" | "abandoned";

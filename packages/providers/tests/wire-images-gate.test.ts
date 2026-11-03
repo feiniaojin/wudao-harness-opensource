@@ -7,7 +7,7 @@
 // any network call (fail-closed — never dropped, never degraded, never
 // truncated), with the wire name and the recovery in the message.
 import { describe, it, expect } from "vitest";
-import { UnsupportedContentError } from "@wudao/core";
+import { UnsupportedContentError } from "@wudao-org/core";
 import { createAnthropicProvider } from "../src/anthropic.js";
 import { createResponsesProvider } from "../src/responses.js";
 

@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildTool, createScriptedModel } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
 import type { CostRegistry } from "../src/commands/cost.js";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
@@ -69,7 +69,7 @@ describe("driver onEvent seam → TelemetryRuntime (E2E)", () => {
     ]);
     const model = {
       ...base,
-      async generate(input: import("@wudao/core").ModelInput) {
+      async generate(input: import("@wudao-org/core").ModelInput) {
         const res = await base.generate(input);
         await input.onUsage?.({
           promptTokens: 1000,

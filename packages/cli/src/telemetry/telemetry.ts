@@ -16,7 +16,7 @@
 // • 批量纪律：turn 边界（turn_finished）批量 flush，close（sessionEnd）
 //   强制 flush；队列上限保护（超限丢最老并计数，绝不无界增长）。
 // • 导出失败重试一次后放弃并 log——批次丢弃不回队（防死亡螺旋）。
-import type { LoopEvent } from "@wudao/core";
+import type { LoopEvent } from "@wudao-org/core";
 import type { CostRow } from "../commands/cost.js";
 import { buildTracesPayload, intAttr, doubleAttr, strAttr, mintSpanId, mintTraceId, nanosFromMs } from "./otlp.js";
 import type { OtelAttribute, OtelSpan } from "./otlp.js";

@@ -27,13 +27,13 @@ import {
   type TurnDiffTracker,
   type PermissionDecision,
   type Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 // 125 项 1/项 2：预留感知触发线 + 水位线查询工具的装配缝与缺省锚。
 import { compactionThresholdFields, DEFAULT_COMPACTION_SETTINGS } from "../misc-config.js";
 // ω99-314: 文件级时光机——快照仓纯层。
 import { createSnapshotStore } from "../snapshots.js";
-import { createProvider, createLiveKeyPool, loadPersonaRegistry, withPersona } from "@wudao/providers";
-import type { KeyPool, PersonaRegistry, PersonaRuntime, ProviderConfig, ResolvedPersona } from "@wudao/providers";
+import { createProvider, createLiveKeyPool, loadPersonaRegistry, withPersona } from "@wudao-org/providers";
+import type { KeyPool, PersonaRegistry, PersonaRuntime, ProviderConfig, ResolvedPersona } from "@wudao-org/providers";
 // ω99-320: the session's soft-warn slot (流式软警告的 driver 侧消费).
 import { createSoftWarnSlot } from "../soft-warn-tracker.js";
 import { asMutableConfig, applyModelSelection } from "../commands/model.js";
@@ -323,7 +323,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
       toolName: string,
       summary: string,
       input: Record<string, unknown>,
-      ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao/core").SpoofInspection },
+      ctx?: { readonly sidecarReason?: string; readonly askDigest?: string; readonly askReview?: string; readonly spoof?: import("@wudao-org/core").SpoofInspection },
     ): Promise<AskAnswer> => {
       const settingsFile = protectedSettingsFile(toolName, input);
       // M37 §3: a high-risk git shell upgrades the ask (never blocks).
@@ -477,7 +477,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
 
   // M24: the tool set's probe/fork closures read the AgentState through this
   // handle at execution time (the state is created later, inside useAgent).
-  const stateHandle = useRef<{ state?: import("@wudao/core").AgentState }>({});
+  const stateHandle = useRef<{ state?: import("@wudao-org/core").AgentState }>({});
   const spillDir = useMemo(() => join(workspaceRoot, ".wudao", "spill", sessionId), [workspaceRoot, sessionId]);
   // ω-4d: one login-shell snapshot provider per TUI session, keyed on the
   // workspace (stable identity — the buildToolSet memo below re-runs on
@@ -511,7 +511,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
   // per-render rebuild would orphan an armed sink mid-run and drop every
   // child delta after the first re-render); injected into BOTH the tool set
   // memo and the useAgent opts below (the same instance, two seams).
-  const subagentUpdateBox = useRef<{ sink?: (delta: import("@wudao/core").IdentifiedOutputDelta) => void }>({});
+  const subagentUpdateBox = useRef<{ sink?: (delta: import("@wudao-org/core").IdentifiedOutputDelta) => void }>({});
   // ω99-87 (86 主弧的 TUI 接线): the session's live-effort box — the READ
   // seam of the box below's write seam (82 同形复刻, the TUI-lane closing
   // pattern's third application: 79 主弧→82 TUI, 86 主弧→87 here). The

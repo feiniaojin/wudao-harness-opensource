@@ -15,7 +15,7 @@
 // 的「high 判决升级人工」又被 #452 推翻（非回归，census 演进面见
 // omega99-226-report.md + #452 台账）。
 import { describe, it, expect } from "vitest";
-import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, PermissionDecision } from "@wudao-org/core";
 import {
   DEFAULT_ASK_TOOLS,
   PLAN_DENY_REASON,

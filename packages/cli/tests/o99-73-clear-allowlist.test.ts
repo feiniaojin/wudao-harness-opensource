@@ -25,9 +25,9 @@ import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
 import { createDriverSession } from "../src/driver/session-engine.js";
 import type { DriverSession } from "../src/driver/session-engine.js";
-import { createScriptedModel } from "@wudao/core";
-import type { AgentMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createScriptedModel } from "@wudao-org/core";
+import type { AgentMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 

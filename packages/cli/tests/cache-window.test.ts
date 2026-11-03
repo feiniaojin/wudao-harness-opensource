@@ -4,10 +4,10 @@
 // seam), the session-engine-shaped JSONL entry write, and the
 // projection-channel reservation (the id NEVER rides a ModelInput).
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
 import { createCacheTrackingModel, type ContextWindowInfo, type WindowAdvance } from "../src/cache.js";
 import { appendSessionEntry, buildContextWindowEntry, CONTEXT_WINDOW_TYPE } from "../src/session-entry.js";
-import type { GenericSessionEntry } from "@wudao/core";
+import type { GenericSessionEntry } from "@wudao-org/core";
 
 function fakeModel(usages: readonly ModelUsage[]): { model: ModelClient; inputs: ModelInput[] } {
   const inputs: ModelInput[] = [];

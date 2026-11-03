@@ -5,8 +5,8 @@
 // 加强点：source 三态（derived/manual/llm）保证手动 /rename 永不被覆盖；
 // 标题净化按码点截断（CJK 安全）；querySource:"title" 走后台调用退让阶梯
 //（容量故障立即放弃、不重试 —— 静默回退派生名）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import type { AgentMessage } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import type { AgentMessage } from "@wudao-org/core";
 
 /** Rides ModelInput.querySource — must stay in the provider retry ladder's
  *  background allowlist (bail-on-overload, no retries). */

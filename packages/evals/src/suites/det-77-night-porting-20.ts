@@ -7,7 +7,7 @@
 // baseline/current algebra, created-vs-modified classification, resetRun's
 // fresh baseline, path-sorted determinism, and the preview line's shape.
 import type { EvalDefinition } from "../runner.js";
-import { createTurnDiffTracker, formatTurnDiffPreview } from "@wudao/core";
+import { createTurnDiffTracker, formatTurnDiffPreview } from "@wudao-org/core";
 
 export interface NightPorting20Evidence {
   // ① first write's pre-state is the baseline; later writes advance only

@@ -7,8 +7,8 @@
 // abortAll. The tool vocabulary below is the user-facing one — `done`/
 // `aborted` surface as `completed`/`cancelled`, matching what the tool set
 // has always promised.
-import { truncateSafe } from "@wudao/core"; // 113-A4
-import { buildTool } from "@wudao/core";
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
+import { buildTool } from "@wudao-org/core";
 import type { AgentRunStatus, AgentRegistry, RegistryResult } from "./core-bind.js";
 
 /** Reports are capped in the await/status payloads — the registry keeps the
@@ -54,7 +54,7 @@ function knownIds(registry: AgentRegistry): string {
   return registry.status().map((s) => s.id).join(", ") || "(none spawned)";
 }
 
-export function createAgentAwaitTool(registry: AgentRegistry): import("@wudao/core").Tool {
+export function createAgentAwaitTool(registry: AgentRegistry): import("@wudao-org/core").Tool {
   return buildTool({
     name: "agent_await",
     description:
@@ -99,7 +99,7 @@ export function createAgentAwaitTool(registry: AgentRegistry): import("@wudao/co
   });
 }
 
-export function createAgentStatusTool(registry: AgentRegistry): import("@wudao/core").Tool {
+export function createAgentStatusTool(registry: AgentRegistry): import("@wudao-org/core").Tool {
   return buildTool({
     name: "agent_status",
     description:
@@ -123,7 +123,7 @@ export function createAgentStatusTool(registry: AgentRegistry): import("@wudao/c
   });
 }
 
-export function createAgentCancelTool(registry: AgentRegistry): import("@wudao/core").Tool {
+export function createAgentCancelTool(registry: AgentRegistry): import("@wudao-org/core").Tool {
   return buildTool({
     name: "agent_cancel",
     description:
@@ -149,6 +149,6 @@ export function createAgentCancelTool(registry: AgentRegistry): import("@wudao/c
 }
 
 /** The registry tool triple, in registration order (after `task`). */
-export function createRegistryTools(registry: AgentRegistry): readonly import("@wudao/core").Tool[] {
+export function createRegistryTools(registry: AgentRegistry): readonly import("@wudao-org/core").Tool[] {
   return [createAgentAwaitTool(registry), createAgentStatusTool(registry), createAgentCancelTool(registry)];
 }

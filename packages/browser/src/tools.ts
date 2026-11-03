@@ -42,7 +42,7 @@
 // no page touch): the isReadOnly:true + isOpenWorld:false pair is the
 // sidecar's no-audit shape, and the permission tiers auto-allow it — zero
 // ask surface, permission.ts untouched this arc.
-import type { ImageBlock, Tool, ToolResult } from "@wudao/core";
+import type { ImageBlock, Tool, ToolResult } from "@wudao-org/core";
 import type { PageHandle } from "./port.js";
 import type { BrowserRuntime, PageSnapshotRefs, SnapshotRefEntry } from "./runtime.js";
 import { COLLECT_SCRIPT, formatSnapshot, validRef } from "./snapshot.js";

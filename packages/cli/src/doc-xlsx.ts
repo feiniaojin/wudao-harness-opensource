@@ -13,8 +13,8 @@
 //   模型可自修的原因）；唯一例外=列宽越界钳到 8..80（宽是排版非数据）；
 // - cell 四形：string→inlineStr、number→<v>、boolean→t="b"、null→整 cell
 //   省略（保 r 引用跳号正确）。
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { storedZip } from "./doc-zip.js";

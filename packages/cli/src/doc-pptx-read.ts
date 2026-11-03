@@ -22,8 +22,8 @@ import { unzipEntries } from "./doc-zip.js";
 // 行。无备注的 slide notes 键缺席 → 输出零加行（无备注 deck 的 read_pptx
 // 输出逐字节不变——零演进锚，升级前输出已抓取落盘对照）。
 import { parsePptxNotes } from "./doc-notes.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 

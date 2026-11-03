@@ -6,7 +6,7 @@
 // single-shot per mount, owns the keyboard while mounted.
 import React, { useRef, useState } from "react";
 import { Box, Text, useInput } from "ink";
-import type { AskUserOption } from "@wudao/core";
+import type { AskUserOption } from "@wudao-org/core";
 
 const CONTROL_CHARS = /[\x00-\x1f\x7f]/g;
 

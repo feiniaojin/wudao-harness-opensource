@@ -11,17 +11,17 @@
 // and the second write CLOBBERS the first; the lock serializes the
 // read+append+write cycle. Stale locks age out at 10s (a crashed holder
 // cannot wedge an inbox forever).
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { mkdir, readFile, rename, rmdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { randomInt } from "node:crypto";
-import { MAIL_CONTENT_MAX_CHARS } from "@wudao/core";
+import { MAIL_CONTENT_MAX_CHARS } from "@wudao-org/core";
 
 /** The entry cap per inbox (a chatty teammate must not balloon the file). */
 export const TEAM_INBOX_CAP = 100;
 /** One entry's text bound (same shape as §A's peer text cap). Single-sourced
  *  from the mail constitution (ω99-67): the value is MAIL_CONTENT_MAX_CHARS
- *  via @wudao/core — the name stays (export ABI), the local 8k literal is
+ *  via @wudao-org/core — the name stays (export ABI), the local 8k literal is
  *  gone. */
 export const TEAM_MESSAGE_MAX_CHARS = MAIL_CONTENT_MAX_CHARS;
 

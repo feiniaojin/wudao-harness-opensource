@@ -15,9 +15,9 @@
 //     骑 subscribe，驱动本身无状态变化不会自发 emit）。
 // M24：澄清问答进历史的形状沿用 ask_user 既有契约（tool_use + tool_result，
 // 轮界追加、纯后缀）——零新历史形状、零 system prompt 变更、零前缀代价。
-import type { UiDriverPort } from "@wudao/server";
+import type { UiDriverPort } from "@wudao-org/server";
 import type { AgentDriver } from "./contract.js";
-import { ASK_USER_TIMEOUT_MS, type AskUserOption } from "@wudao/core";
+import { ASK_USER_TIMEOUT_MS, type AskUserOption } from "@wudao-org/core";
 
 /** The state-frame face of a parked clarification (JSON-serializable; the
  *  web protocol mirrors this shape). */

@@ -8,14 +8,14 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
-import { buildTool, toModelToolDefinition } from "@wudao/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { buildTool, toModelToolDefinition } from "@wudao-org/core";
 import {
   createParentMessageTool,
   PARENT_MESSAGE_TOOL_NAME,
   CHILD_MESSAGE_TOOL_NAME,
   STEER_FROM_PARENT_PREFIX,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { createAgentsTaskTool, createSessionRegistry } from "../src/agents/index.js";
 import { createChildMailLane } from "../src/agents/child-mail.js";
 import { buildToolSet } from "../src/tools.js";
@@ -33,7 +33,7 @@ async function until(cond: () => boolean): Promise<void> {
 /** A model whose every call PARKS until released — the background child is
  *  observably running while the test drives the steer tool. `served` counts
  *  returned responses (completion signal for a fire-and-forget child). */
-function gated(responses: readonly import("@wudao/core").AssistantMessage[]): {
+function gated(responses: readonly import("@wudao-org/core").AssistantMessage[]): {
   model: ModelClient;
   inputs: ModelInput[];
   served: () => number;
@@ -59,7 +59,7 @@ function gated(responses: readonly import("@wudao/core").AssistantMessage[]): {
 
 /** Immediate scripted model — for foreground children (the task tool AWAITS
  *  them, so parking would deadlock; only background children can park). */
-function script(responses: readonly import("@wudao/core").AssistantMessage[]): { model: ModelClient; inputs: ModelInput[] } {
+function script(responses: readonly import("@wudao-org/core").AssistantMessage[]): { model: ModelClient; inputs: ModelInput[] } {
   const inputs: ModelInput[] = [];
   let call = 0;
   const model: ModelClient = {

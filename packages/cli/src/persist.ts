@@ -3,7 +3,7 @@
 // shorter array — so an index captured before the run (the old
 // slice(preRunCount)) selects nothing or the wrong elements. Selection here is
 // identity-based against the loaded history instead.
-import { SUMMARY_MARKER, COMPACTION_STUB_PREFIX, CLEARED_MARKER, EMERGENCY_DROP_PREFIX, SKILL_PRUNED_PREFIX, type AgentMessage } from "@wudao/core";
+import { SUMMARY_MARKER, COMPACTION_STUB_PREFIX, CLEARED_MARKER, EMERGENCY_DROP_PREFIX, SKILL_PRUNED_PREFIX, type AgentMessage } from "@wudao-org/core";
 
 /** Messages to append after a run: NOT identity-in the loaded history (already
  *  persisted), NOT a summary marker (persisted at event time), NOT a microcompact

@@ -1,8 +1,8 @@
-import type { ModelChangeEntry, SessionEntry, ThinkingLevelChangeEntry } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
-import { resolveProviderConfigResult, NO_KEY_REASON } from "@wudao/providers";
+import type { ModelChangeEntry, SessionEntry, ThinkingLevelChangeEntry } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
+import { resolveProviderConfigResult, NO_KEY_REASON } from "@wudao-org/providers";
 import { modelLabel } from "./log.js";
-// M63 §B: the credentials-file fallback (env wins — see @wudao/providers
+// M63 §B: the credentials-file fallback (env wins — see @wudao-org/providers
 // config.ts). The sync read keeps buildRunPlan synchronous; the home comes
 // from the PROCESS env so tests isolate via WUDAO_GLOBAL_HOME exactly like
 // every other global-tier reader.

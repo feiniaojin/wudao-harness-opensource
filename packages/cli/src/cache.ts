@@ -1,7 +1,7 @@
 // M24 cache observability + miss attribution (B3).
 //
 // The tracking model wraps a real ModelClient: it serializes every request
-// with the ONE canonical serializer (@wudao/providers serializePrompt — the
+// with the ONE canonical serializer (@wudao-org/providers serializePrompt — the
 // same bytes det-06 and the fork tests pin), accumulates session-wide usage,
 // and, when a call's cache MISS spikes (miss > 2× the rolling 3-call mean
 // AND > 4k), diffs the two serialized prompts to name the first divergent
@@ -10,8 +10,8 @@
 // Pure helpers (formatting, detection) are exported for tests; the CLI
 // frontends inject their own renderers.
 import { randomUUID } from "node:crypto";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao/core";
-import { serializePrompt } from "@wudao/providers";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
+import { serializePrompt } from "@wudao-org/providers";
 
 /** Below this many cumulative prompt tokens the hit rate is noise → hidden. */
 export const CACHE_FLOOR_TOKENS = 1024;

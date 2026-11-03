@@ -26,7 +26,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 import { buildToolSet } from "../src/tools.js";
 import {
   createDocSuiteTools,

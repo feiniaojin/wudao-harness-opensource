@@ -5,8 +5,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentMessage, AgentState } from "@wudao/core";
-import { openMemoryStore } from "@wudao/core";
+import type { AgentMessage, AgentState } from "@wudao-org/core";
+import { openMemoryStore } from "@wudao-org/core";
 import {
   createLongtermMemoryRuntime,
   openLongtermMemoryStore,

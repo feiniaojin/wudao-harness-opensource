@@ -10,7 +10,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdtemp, rm, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tool, ModelClient, AgentMessage, PermissionDecision } from "@wudao/core";
+import type { Tool, ModelClient, AgentMessage, PermissionDecision } from "@wudao-org/core";
 import { buildToolSet } from "../src/tools.js";
 import { READ_TOOLS, WORKSPACE_TOOLS, META_TOOLS, decidePermission } from "../src/permission.js";
 

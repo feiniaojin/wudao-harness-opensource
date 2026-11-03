@@ -6,18 +6,18 @@
 import "./react-prod.js";
 import { stdin, stdout } from "node:process";
 import { join, dirname, relative } from "node:path";
-import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, cumulativeModifiedFiles, activeToolsOf, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao/core";
-import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao/providers";
-import { createFileAttachmentStore, type ImageBlock } from "@wudao/core";
+import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, cumulativeModifiedFiles, activeToolsOf, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao-org/core";
+import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao-org/providers";
+import { createFileAttachmentStore, type ImageBlock } from "@wudao-org/core";
 // 夜移 035 (codex turn_timing): the one-shot run's phase recorder (debug tier).
-import { createTurnProfileRecorder } from "@wudao/core";
+import { createTurnProfileRecorder } from "@wudao-org/core";
 // 夜移 032 stage-2 (codex turn_diff_tracker): the one-shot run's net-change
 // tracker — one instance for the whole command, shared by the tool set and
 // both passes (reset per pass), rendered once at settle.
-import { createTurnDiffTracker } from "@wudao/core";
+import { createTurnDiffTracker } from "@wudao-org/core";
 // ω99-46: the process egress policy — installed once at boot so every
 // default-fetch outbound path (providers, web_fetch) routes through it.
-import { resolveEgressPolicy, installEgressProxy } from "@wudao/core";
+import { resolveEgressPolicy, installEgressProxy } from "@wudao-org/core";
 import { readEgressSettings } from "./egress-config.js";
 import { renderTurnDiff } from "./turn-diff-render.js";
 import { buildRunPlan, buildUiBootPlan, formatOneShotResumeLine, lastModelState, recordModelState, type LastModelState } from "./run.js";
@@ -41,7 +41,7 @@ import { formatRunStats } from "./driver/agent-driver.js";
 import { createCronRuntime } from "./cron.js";
 // ω99-112: the controlled-browser runtime (six browser_* tools; zero-IO at
 // construction, playwright-core loads only at first launch).
-import { createBrowserRuntime } from "@wudao/browser";
+import { createBrowserRuntime } from "@wudao-org/browser";
 // ω-4a: the monitor runtime (monitor tools + steering-lane event delivery).
 import { createMonitorRuntime } from "./monitor.js";
 import { createGoalController, buildEvaluatorModel, goalEvaluatorAvailable, parseGoalCommand, routeHeadlessGoalCommand, type GoalController } from "./goal.js";
@@ -58,7 +58,7 @@ import { selectMessagesToPersist } from "./persist.js";
 import { buildToolSet, resolveDeferMode } from "./tools.js";
 import { historySearchCorpus } from "./history-search.js";
 import { maybeLoginShellEnv } from "./shell-snapshot.js";
-import type { LongOutputConfig, WriteVerifyConfig } from "@wudao/core";
+import type { LongOutputConfig, WriteVerifyConfig } from "@wudao-org/core";
 import { createExternalChangeProber } from "./file-changes.js";
 import { createGitStatusProber } from "./git-status-note.js";
 import { getCompactInstructionsRider } from "./project-context.js";
@@ -805,13 +805,13 @@ async function main(): Promise<void> {
   // install degrades to guidance instead of a crash.
   if (argv[2] === "slack") {
     type SlackModule = { slackMain: (props: Record<string, unknown> & { readonly argv: readonly string[] }) => Promise<number> };
-    const spec = "@wudao/slack";
+    const spec = "@wudao-org/slack";
     let mod: SlackModule;
     try {
       mod = (await import(spec)) as SlackModule;
     } catch (err) {
       stdoutGuard.writeRawStdout(
-        `@wudao/slack could not be loaded (${err instanceof Error ? err.message : String(err)}) — ` +
+        `@wudao-org/slack could not be loaded (${err instanceof Error ? err.message : String(err)}) — ` +
           `it ships as its own package; build/install packages/slack first\n`,
       );
       await stdoutGuard.flushRawStdout();
@@ -1250,7 +1250,7 @@ async function main(): Promise<void> {
           // session's JSONL (newest-first; sidechains not searched).
           sessionResult: {
             load: async (toolCallId) =>
-              (await replStore.load(replSidLive.current)).filter((m): m is import("@wudao/core").ToolResultMessage => m.role === "tool" && m.toolCallId === toolCallId),
+              (await replStore.load(replSidLive.current)).filter((m): m is import("@wudao-org/core").ToolResultMessage => m.role === "tool" && m.toolCallId === toolCallId),
           },
           // 121 挖掘 TOP5 #1: the conversation-history search over the LIVE
           // REPL session's JSONL (beside session_result — same family, same
@@ -1611,7 +1611,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     const oneShotChildMail = createChildMailLane();
     // 125 项 1（codex new_context 形）：模型侧轮转端口盒——headless 同样
     // 接线（session-engine 同款；compaction 关=不注册工具）。
-    const oneShotContextRotationBox: import("@wudao/core").NewContextPortBox = {};
+    const oneShotContextRotationBox: import("@wudao-org/core").NewContextPortBox = {};
     const tools = buildToolSet({
       workspaceRoot,
       model,
@@ -1643,7 +1643,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       // JSONL (newest-first candidate scan; sidechains are not searched).
       sessionResult: {
         load: async (toolCallId) =>
-          (await store.load(sessionId)).filter((m): m is import("@wudao/core").ToolResultMessage => m.role === "tool" && m.toolCallId === toolCallId),
+          (await store.load(sessionId)).filter((m): m is import("@wudao-org/core").ToolResultMessage => m.role === "tool" && m.toolCallId === toolCallId),
       },
       // 121 挖掘 TOP5 #1: the conversation-history search over THIS one-shot
       // session's JSONL (beside session_result — same family, same pure
@@ -1934,7 +1934,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
         ? {
             ...hooks,
             onRunStop: async (stopState) => {
-              let user: import("@wudao/core").StopHookDecision = "allow";
+              let user: import("@wudao-org/core").StopHookDecision = "allow";
               try { user = (await hooks?.onRunStop?.(stopState)) ?? "allow"; } catch { user = "allow"; }
               if (typeof user === "object") return user;
               return headlessGoal.onStop(stopState);
@@ -1975,7 +1975,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     const toolNamesById = new Map<string, string>();
     // ω-4b: the fork's usage row (reflectionTokens-stamped), parked for the
     // reflection_fork entry (core emits the usage event first).
-    let lastReflectionUsage: import("@wudao/core").ModelUsage | undefined;
+    let lastReflectionUsage: import("@wudao-org/core").ModelUsage | undefined;
     for await (const event of gen) {
       if (event.type === "reasoning_delta") {
         if (ge("info") && !answerOnly) { const chunk = `\x1b[2m${event.text}\x1b[0m`; stdoutGuard.writeRawStdout(chunk); breakGuard.feed(chunk); }

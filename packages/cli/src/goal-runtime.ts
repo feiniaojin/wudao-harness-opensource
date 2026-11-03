@@ -34,7 +34,7 @@
 // REPL's readline lane stays unwired in v1 (honest boundary — see the arc
 // report).
 import { randomInt } from "node:crypto";
-import { buildTool, type Tool } from "@wudao/core";
+import { buildTool, type Tool } from "@wudao-org/core";
 import {
   applyGoalSettlement,
   buildGoalStateEntry,
@@ -51,7 +51,7 @@ import {
   type GenericSessionEntry,
   type GoalStateData,
   type SessionEntry,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import type { MissionState, MissionTask } from "./mission.js";
 
 /** 121 §4（a reference harness budget death salvage）— the ONE system-authored wrap-up

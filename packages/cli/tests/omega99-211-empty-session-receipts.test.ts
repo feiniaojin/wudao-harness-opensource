@@ -16,9 +16,9 @@ import { mkdtempSync, rmSync, readdirSync, readFileSync, existsSync } from "node
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createJsonlSessionStore, createScriptedModel } from "@wudao/core";
-import type { ModelClient, ModelInput } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createJsonlSessionStore, createScriptedModel } from "@wudao-org/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { startUiSession } from "../src/ui.js";
 import type { UiSession } from "../src/ui.js";
 

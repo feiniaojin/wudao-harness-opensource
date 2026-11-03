@@ -21,8 +21,8 @@ import { fileURLToPath } from "node:url";
 import { PassThrough } from "node:stream";
 import React from "react";
 import { render } from "ink-testing-library";
-import { createScriptedModel, createTurnDiffTracker, createWriteFileTool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import { createScriptedModel, createTurnDiffTracker, createWriteFileTool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { runRepl } from "../src/repl.js";
 import { WudaoApp } from "../src/tui/app.js";
 

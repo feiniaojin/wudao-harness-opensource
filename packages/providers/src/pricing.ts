@@ -13,7 +13,7 @@
 // 重建前缀按 write 计价）；DeepSeek 语义下无独立 write 价、重建按 miss=input
 // 计价（usageCostUsd 的 write=0 形）。cacheRead ≤ 0（免费缓存或坏行）推不出
 // 比值——回落下一档，绝不除零。
-import { DEFAULT_CACHE_WRITE_READ_RATIO, type CachePricing } from "@wudao/core";
+import { DEFAULT_CACHE_WRITE_READ_RATIO, type CachePricing } from "@wudao-org/core";
 
 /** 一条目录价格（per-M-USD）。input/cacheRead 是 ratio 的必需面；output/
  * cacheWrite 可选（/cost 全账面用，缺省按 0 计）。 */

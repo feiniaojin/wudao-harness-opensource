@@ -15,8 +15,8 @@ import {
   createTodoTool,
   createParentMessageTool,
   DEFAULT_MAX_IMAGES,
-} from "@wudao/core";
-import type { LoopEvent, LoopOptions, ModelClient, ModelUsage, Tool, ForkContext, ChildSessionOptions, ImageBlock } from "@wudao/core";
+} from "@wudao-org/core";
+import type { LoopEvent, LoopOptions, ModelClient, ModelUsage, Tool, ForkContext, ChildSessionOptions, ImageBlock } from "@wudao-org/core";
 import type { AgentRoleProfile } from "./core-bind.js";
 import { BUILTIN_ROLES } from "./core-bind.js";
 import type { ModelOverrides } from "./contract.js";
@@ -139,7 +139,7 @@ export interface AgentsTaskToolOptions {
   /** M63-B: the session's hook object — the SubagentStart/Stop faces are
    *  derived from it and threaded to EVERY child (foreground and registry
    *  background spawns alike). */
-  readonly hooks?: import("@wudao/core").AgentHooks;
+  readonly hooks?: import("@wudao-org/core").AgentHooks;
   /** M63-C R1: the fire-runtime view — the subagent-position compile gets
    *  the full contract (common fields / `if` / mcp / rewake). */
   readonly hookRuntime?: import("../hooks-config.js").NonNeverRuntime;
@@ -161,7 +161,7 @@ export interface AgentsTaskToolOptions {
    * the stop tree; background registry spawns do NOT (they return
    *  immediately — their lifecycle belongs to agent_cancel). Absent/unarmed
    *  slots → no bookkeeping, every dispatch byte-identical. */
-  readonly stopTree?: import("@wudao/core").StopTreeDispatchPort;
+  readonly stopTree?: import("@wudao-org/core").StopTreeDispatchPort;
 }
 
 export const PILOT_NUDGE =

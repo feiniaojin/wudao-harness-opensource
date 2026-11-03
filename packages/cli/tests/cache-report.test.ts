@@ -9,8 +9,8 @@ import { describe, it, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput, ModelUsage } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ModelClient, ModelInput, ModelUsage } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { createCacheTrackingModel } from "../src/cache.js";
 import {
   CACHE_TTL_MS,

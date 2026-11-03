@@ -28,7 +28,7 @@ import { runMemoryCommand } from "../src/memory/commands.js";
 import { buildDreamPrompt } from "../src/memory/dream.js";
 import { planRefinement } from "../src/memory/refine.js";
 import { freezeToolsForSideLane } from "../src/side-question.js";
-import type { ModelClient, AgentMessage } from "@wudao/core";
+import type { ModelClient, AgentMessage } from "@wudao-org/core";
 
 let dir: string;
 beforeEach(async () => {

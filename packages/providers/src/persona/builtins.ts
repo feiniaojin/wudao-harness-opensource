@@ -173,7 +173,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     confidence: "byte-verified",
     headers: {
       "openai-chat": {
-        "user-agent": "wudao-harness/0.4.15 (+https://github.com/feiniaojin/wudao-harness-opensource)", // doc90 §3.1: attribution 恒发不可关闭; 版本=本 harness 版本
+        "user-agent": "wudao-harness/0.4.20 (+https://github.com/feiniaojin/wudao-harness-opensource)", // doc90 §3.1: attribution 恒发不可关闭; 版本=本 harness 版本
         "x-a reference harness-session-id": "{{sessionId}}", // doc90 §3.1: adapter.ts:526-528 (sessionId 存在时; v1 槽位语义=必须提供,见 task-4 report)
         // Omitted: authorization (auth — schema 拒绝), content-type/accept (传输机械头,
         // 适配器自管), x-a reference harness-user-id (稳定匿名用户 id,无忠实槽位 — {{uuid}}

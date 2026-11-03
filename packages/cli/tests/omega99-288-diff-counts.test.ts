@@ -6,7 +6,7 @@
 import { describe, it, expect } from "vitest";
 import { renderTurnDiff } from "../src/turn-diff-render.js";
 import { receiptNoticesFromEntries } from "../src/tui/resume.js";
-import type { SessionEntry, TurnDiffFile } from "@wudao/core";
+import type { SessionEntry, TurnDiffFile } from "@wudao-org/core";
 
 const WS = "/w";
 const rel = (p: string): string => p.slice(WS.length + 1);

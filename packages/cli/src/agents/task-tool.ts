@@ -38,9 +38,9 @@ import {
   narrowWriteScope,
   DEFAULT_MAX_IMAGES,
   newSessionId,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { buildConfiguredHooks } from "../hooks-config.js";
-import type { LoopEvent, LoopOptions, ModelClient, ModelUsage, Tool, ForkContext, ChildSessionOptions, WriteScopeDeclaration, ImageBlock } from "@wudao/core";
+import type { LoopEvent, LoopOptions, ModelClient, ModelUsage, Tool, ForkContext, ChildSessionOptions, WriteScopeDeclaration, ImageBlock } from "@wudao-org/core";
 import type { AgentRoleProfile } from "./core-bind.js";
 import { BUILTIN_ROLES, loadRoleProfiles } from "./core-bind.js";
 import type { ModelOverrides } from "./contract.js";
@@ -71,7 +71,7 @@ import type { AgentBudgetSample } from "./budget.js";
 // delivers formatted child→parent messages onto).
 import { laneAsParentMail } from "./child-mail.js";
 import type { ChildMailLane } from "./child-mail.js";
-import { PARENT_MESSAGE_TOOL_NAME, CHILD_MESSAGE_TOOL_NAME } from "@wudao/core";
+import { PARENT_MESSAGE_TOOL_NAME, CHILD_MESSAGE_TOOL_NAME } from "@wudao-org/core";
 import type { JsonSchemaSubset } from "../workflow/structured-output.js";
 // ω99-5b §A: canonical schema bytes for the report-contract line (sorted keys
 // — deterministic, assertable, identical for JSON-equal schemas).
@@ -183,7 +183,7 @@ export function createAgentsTaskTool(options: AgentsTaskToolOptions): Tool {
             ? {
                 subagentHooks: {
                   onStart: (t: string, i: { sessionId?: string }) => options.hooks!.onSubagentStart?.(t, i),
-                  onStop: (t: string, st: import("@wudao/core").AgentState) => options.hooks!.onSubagentStop?.(t, st) ?? ("allow" as const),
+                  onStop: (t: string, st: import("@wudao-org/core").AgentState) => options.hooks!.onSubagentStop?.(t, st) ?? ("allow" as const),
                 } as NonNullable<Parameters<typeof executeTask>[1]["subagentHooks"]>,
               }
             : {}),
@@ -250,12 +250,12 @@ export async function executeTask(
     readonly pilotProbe?: () => boolean;
     /** M63-C §3: compile a role profile's hooks node into child-run hooks
      *  (the subagent position). Undefined for roles without hooks. */
-    readonly compileRoleHooks?: (role: { readonly hooks?: Readonly<Record<string, readonly unknown[]>> }) => import("@wudao/core").AgentHooks | undefined;
+    readonly compileRoleHooks?: (role: { readonly hooks?: Readonly<Record<string, readonly unknown[]>> }) => import("@wudao-org/core").AgentHooks | undefined;
     /** M63-B: the SubagentStart/Stop faces — derived from the session's
      *  AgentHooks at the execute seam (children stay otherwise hookless). */
     readonly subagentHooks?: {
       readonly onStart?: (agentType: string, info: { readonly sessionId?: string }) => void | Promise<void>;
-      readonly onStop?: (agentType: string, state: import("@wudao/core").AgentState) => import("@wudao/core").SubagentStopDecision | Promise<import("@wudao/core").SubagentStopDecision>;
+      readonly onStop?: (agentType: string, state: import("@wudao-org/core").AgentState) => import("@wudao-org/core").SubagentStopDecision | Promise<import("@wudao-org/core").SubagentStopDecision>;
     };
     readonly resolveModel?: AgentsTaskToolOptions["resolveModel"];
     readonly defaultEffort?: string;

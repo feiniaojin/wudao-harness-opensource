@@ -11,7 +11,7 @@
 // .wudao/memory.jsonl 冻结为只读历史（store 本体零改动——回滚线；回滚=
 // 还原本文件+去 guard 接线）。dream 动词随调度停用（WUDAO_M49_LEGACY=1
 // 可回滚启用）。
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { openSessionMemoryStore, openMemoryStore } from "./store.js";
 // 永续 v6 弧 A（reef C3）：被拦学习输入的可见面——list 尾行报「已拦 N 条」，
 // 绝不静默丢（台账 .wudao/memory-blocked.jsonl 全文可查）。
@@ -25,7 +25,7 @@ import {
   readLongtermMemorySurfaced,
 } from "../longterm-memory.js";
 import type { LongtermMemoryAuditRow } from "../longterm-memory.js";
-import type { ModelClient } from "@wudao/core";
+import type { ModelClient } from "@wudao-org/core";
 import type { AgentRegistry } from "../agents/index.js";
 
 /** ω-4f: the /memory dream verb's context — the session model + registry the

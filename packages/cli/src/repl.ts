@@ -1,4 +1,4 @@
-import { truncateSafe } from "@wudao/core"; // 113-A4
+import { truncateSafe } from "@wudao-org/core"; // 113-A4
 import { join, relative } from "node:path";
 import * as readline from "node:readline/promises";
 import { stdin as defaultStdin, stdout as defaultStdout } from "node:process";
@@ -6,16 +6,16 @@ import { randomUUID } from "node:crypto";
 // ω99-35: the headless (non-TTY) input batcher — the non-TTY rl wiring's
 // bracketed-paste equivalent (blank-line terminator + idle window).
 import { createHeadlessLineBatcher } from "./headless-batch.js";
-import { runAgentLoop, createJsonlSessionStore, createTaskTool, createAskUserTool, createCronTools, createMonitorTools, repairOrphanedToolCalls, manualCompact, compactionRetentionFor, resolveWorkspacePath, toModelToolDefinition, nodeKey, renderBranchTree, replaceSystemPrompt, newSessionId, type AgentHooks, type AgentMessage, type AgentState, type LoopEvent, type LoopGates, type ModelClient, type ReadStateTable } from "@wudao/core";
+import { runAgentLoop, createJsonlSessionStore, createTaskTool, createAskUserTool, createCronTools, createMonitorTools, repairOrphanedToolCalls, manualCompact, compactionRetentionFor, resolveWorkspacePath, toModelToolDefinition, nodeKey, renderBranchTree, replaceSystemPrompt, newSessionId, type AgentHooks, type AgentMessage, type AgentState, type LoopEvent, type LoopGates, type ModelClient, type ReadStateTable } from "@wudao-org/core";
 import { buildContextReport, formatContextReport } from "./context-report.js";
 import { formatProbeReport, parseProbeArgs, getDefaultProbeBus } from "./probe.js";
-import type { ProviderConfig, ProtocolId, ResolvedPersona } from "@wudao/providers";
-import { createProvider, createLiveKeyPool, loadPersonaRegistry, createPersonaRuntime, withPersona, applyWirePersona } from "@wudao/providers";
-import { createFileAttachmentStore } from "@wudao/core";
+import type { ProviderConfig, ProtocolId, ResolvedPersona } from "@wudao-org/providers";
+import { createProvider, createLiveKeyPool, loadPersonaRegistry, createPersonaRuntime, withPersona, applyWirePersona } from "@wudao-org/providers";
+import { createFileAttachmentStore } from "@wudao-org/core";
 import { CostRegistry } from "./commands/cost.js";
 import { parseLogLevel, summarizeToolCall, truncate, truncateMultiline, formatCompactedLine, modelLabel, LEVEL_ORDER, RESULT_PREVIEW_CHARS, type LogLevel } from "./log.js";
 import { renderTurnDiff } from "./turn-diff-render.js";
-import type { PermissionDecision } from "@wudao/core";
+import type { PermissionDecision } from "@wudao-org/core";
 import { decideRichPermission, modeFromArgv, modeLabel, cycleMode, parseAskAnswer, createSessionAllowlist, createPermissionSettingsWatcher, applyAskAnswer, recordAskRules, protectedSettingsFile, withSidecarLayer, livePermissionRequestHook, toolMetaResolverFor, immuneAskCeiling } from "./permission.js";
 import { SESSION_END_BUDGET_MS } from "./hooks-config.js";
 import { composeReflectHooks, reflectRuntimeFor } from "./reflect-config.js";
@@ -284,7 +284,7 @@ export {
 export async function runRepl(opts: {
   readonly config: ProviderConfig;
   readonly workspaceRoot: string;
-  readonly buildTools: (model: ModelClient, stateHandle: ReplStateHandle) => readonly import("@wudao/core").Tool[];
+  readonly buildTools: (model: ModelClient, stateHandle: ReplStateHandle) => readonly import("@wudao-org/core").Tool[];
   readonly contextWindowTokens: number;
   /** Provider management §7: the per-model window resolver (registry
    *  contextLength → provider default → env; settings-knob-aware when the
@@ -313,7 +313,7 @@ export async function runRepl(opts: {
   readonly hooks?: AgentHooks;
   /** M63-A: the startup SessionStart source ("fork" for --fork-session;
    *  absent → derived from resumeHistory: present = "resume", empty = "startup"). */
-  readonly sessionStartSource?: import("@wudao/core").SessionStartSource;
+  readonly sessionStartSource?: import("@wudao-org/core").SessionStartSource;
   /** M63-C §3: the asyncRewake sink holder — the REPL drives the loop directly (no steering lane); wakes render as notices. */
   readonly rewakeSink?: { current?: (message: string) => void };
   /** M63-C R1: the fire-runtime view (the REPL's own hook compiles are
@@ -344,7 +344,7 @@ export async function runRepl(opts: {
   };
   /** MCP tools (also threaded through buildTools by the caller); drives the
    *  trailing MCP section of the system prompt. */
-  readonly extraTools?: readonly import("@wudao/core").Tool[];
+  readonly extraTools?: readonly import("@wudao-org/core").Tool[];
   /** M23 long-task stop gates, resolved by the caller from settings + env. */
   readonly gates?: LoopGates;
   /** M23 turn fuse (env/longTask-resolved). Falls back to maxTurns(). */
@@ -379,7 +379,7 @@ export async function runRepl(opts: {
   /** M37 §2: the session's file history (the SAME instance the caller's
    *  buildTools wired into write_file/edit) — drives /rewind. Absent → /rewind
    *  answers that history is unavailable (snapshots were never recorded). */
-  readonly fileHistory?: import("@wudao/core").FileHistory;
+  readonly fileHistory?: import("@wudao-org/core").FileHistory;
   /** M45: the session's sidecar (built by the caller from the resolved
    *  runtime settings). Present → auto-mode write/exec calls classify before
    *  the allow; high verdicts escalate the rl.question ask with the reason;
@@ -389,14 +389,14 @@ export async function runRepl(opts: {
    *  the caller's buildTools wired into write_file/edit). The REPL owns its
    *  own run boundary (it drives the loop directly): reset at each turn
    *  start, preview-line receipt at settle — before the cache summary. */
-  readonly turnDiff?: import("@wudao/core").TurnDiffTracker;
+  readonly turnDiff?: import("@wudao-org/core").TurnDiffTracker;
   /** M49 §2: the session's background-agent registry (the one the caller's
    *  buildTools wired into the task tool). Present → successful ≥3-tool-call
    *  turns spawn the background memory-review fork. */
   readonly agentsRegistry?: import("./agents/index.js").AgentRegistry;
   /** M55 §B12: the plugin agent layer (the task tool's roster middle tier;
    *  /agents lists it with provenance). */
-  readonly pluginAgents?: readonly import("@wudao/core").RosterPluginAgent[];
+  readonly pluginAgents?: readonly import("@wudao-org/core").RosterPluginAgent[];
   /** M55 §C2: paths for /doctor checks (optional — commands work without them). */
   readonly settingsPath?: string;
   /** ω99-8: bind the caller's subagent cost sink to THIS REPL's cost registry
@@ -863,7 +863,7 @@ export async function runRepl(opts: {
   // the startup fire at the bottom of setup can push) — it reaches the next
   // model call, never the persisted history.
   const metaNotes: string[] = [];
-  const fireSessionStart = (source: import("@wudao/core").SessionStartSource): void => {
+  const fireSessionStart = (source: import("@wudao-org/core").SessionStartSource): void => {
     void (async () => {
       try {
         const ctx = await live.hooks?.onSessionStart?.(source, { sessionId: sessionBox.current });
@@ -876,7 +876,7 @@ export async function runRepl(opts: {
   // M63-B R1 fix (6): the SessionEnd counterpart — same isolation, and the
   // SHARED budget deadline created at the firing site (every composed layer
   // consumes the one window).
-  const fireSessionEnd = (source: import("@wudao/core").SessionEndSource): void => {
+  const fireSessionEnd = (source: import("@wudao-org/core").SessionEndSource): void => {
     void (async () => {
       try {
         await live.hooks?.onSessionEnd?.(source, {
@@ -1384,7 +1384,7 @@ export async function runRepl(opts: {
           ? {
               ...live.hooks,
               onRunStop: async (stopState) => {
-                let user: import("@wudao/core").StopHookDecision = "allow";
+                let user: import("@wudao-org/core").StopHookDecision = "allow";
                 try { user = (await live.hooks?.onRunStop?.(stopState)) ?? "allow"; } catch { user = "allow"; }
                 if (typeof user === "object") return user;
                 return replGoal.onStop(stopState);
@@ -2133,7 +2133,7 @@ export async function runRepl(opts: {
           // the PostCompact observer after it lands (the driver's same contract).
           const manualPreHook = live.hooks?.onPreCompact;
           if (manualPreHook !== undefined) {
-            let manualPre: import("@wudao/core").PreCompactDecision = "compact";
+            let manualPre: import("@wudao-org/core").PreCompactDecision = "compact";
             try {
               manualPre = (await manualPreHook(state.messages, "manual")) ?? "compact";
             } catch {

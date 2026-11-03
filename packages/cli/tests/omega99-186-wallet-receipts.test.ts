@@ -8,7 +8,7 @@ import {
   renderWalletReport,
   type CostLedgerRow,
 } from "../src/commands/wallet.js";
-import type { ProviderBalance } from "@wudao/providers";
+import type { ProviderBalance } from "@wudao-org/providers";
 
 const row = (over: Partial<CostLedgerRow> = {}): CostLedgerRow => ({
   ts: "2026-09-04T00:00:00.000Z",

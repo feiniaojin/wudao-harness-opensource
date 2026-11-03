@@ -23,8 +23,8 @@
 //    会话分叉不 invalidate 已落 store 的编辑。
 //  - shouldRefine=false（含解析失败）统一盖章+清零; prime-agent 在 compact 触发
 //    且 turns 已达标时会保留 turn 复审, wudao 从简不保留（更保守, 少花调用）。
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
-import type { AgentHooks, AgentMessage, AgentState, ModelClient, StopHookDecision } from "@wudao/core";
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
+import type { AgentHooks, AgentMessage, AgentState, ModelClient, StopHookDecision } from "@wudao-org/core";
 import { extractProposalJson, planRefinement, applyRefinement, serializeTrajectory } from "./refine.js";
 import { openMemoryStore, openSessionMemoryStore } from "./store.js";
 import type { MemoryStore } from "./store.js";

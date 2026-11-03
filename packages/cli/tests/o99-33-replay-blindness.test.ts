@@ -25,8 +25,8 @@
 // the suite skips when they are absent so CI elsewhere stays green.
 import { describe, it, expect } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
-import { serializePrompt, createOpenAICompatibleProvider } from "@wudao/providers";
-import type { AgentMessage } from "@wudao/core";
+import { serializePrompt, createOpenAICompatibleProvider } from "@wudao-org/providers";
+import type { AgentMessage } from "@wudao-org/core";
 
 const JSONL = "/tmp/o33-ws/.wudao/sessions/e9e276a7.jsonl";
 type Entry = Record<string, unknown>;

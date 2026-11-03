@@ -7,7 +7,7 @@
 // child's identity was applied by core's runSubagent) and hands them out
 // FIFO — the dsh next-step-FIFO + waking accounting is the lane semantics
 // the parent steering channel already owns, not new machinery here.
-import type { ParentMailSink } from "@wudao/core";
+import type { ParentMailSink } from "@wudao-org/core";
 
 /** The lane the driver drains and the task tool feeds. */
 export interface ChildMailLane {

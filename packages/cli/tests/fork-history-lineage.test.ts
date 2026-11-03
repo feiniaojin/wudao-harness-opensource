@@ -14,8 +14,8 @@ import { describe, it, expect } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createFileHistory } from "@wudao/core";
-import type { FileHistory } from "@wudao/core";
+import { createFileHistory } from "@wudao-org/core";
+import type { FileHistory } from "@wudao-org/core";
 import { forkSessionFile } from "../src/fork-session.js";
 import { snapshotIndexFromEntries } from "../src/snapshots.js";
 

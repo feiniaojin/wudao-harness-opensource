@@ -14,7 +14,7 @@
 import { describe, it, expect } from "vitest";
 import { dedupeToolCallIds, restoreToolCallIds, restoreToolCallId } from "../src/tool-call-ids.js";
 import { createOpenAICompatibleProvider } from "../src/index.js";
-import type { ToolCall } from "@wudao/core";
+import type { ToolCall } from "@wudao-org/core";
 
 const call = (id: string, name: string): ToolCall => ({ id, name, arguments: {} });
 

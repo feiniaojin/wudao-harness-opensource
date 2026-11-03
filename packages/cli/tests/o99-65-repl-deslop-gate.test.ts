@@ -20,8 +20,8 @@ import { readFileSync } from "node:fs";
 import { PassThrough } from "node:stream";
 import { runRepl } from "../src/repl.js";
 import { loadSkills } from "../src/skills.js";
-import type { Tool } from "@wudao/core";
-import type { ProviderConfig } from "@wudao/providers";
+import type { Tool } from "@wudao-org/core";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 

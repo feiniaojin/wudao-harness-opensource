@@ -17,8 +17,8 @@
 //
 // 单飞纪律同 LSP：动作自增 inFlight 压住 idle 计时器（动作期间的输出活
 // 跃不会触发回收）；计时器 unref——绝不拽住事件循环（CLI 退出 / vitest）。
-import { truncateSafe, truncateTailSafe } from "@wudao/core"; // 113-A4
-import { scrubChildEnv } from "@wudao/core";
+import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
+import { scrubChildEnv } from "@wudao-org/core";
 import type { PtyProcess, PtySpawnFn } from "./pty.js";
 import { stripTerminalCodes } from "./ansi.js";
 

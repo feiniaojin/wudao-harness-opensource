@@ -30,8 +30,8 @@
 // constraint for this batch — core's already-merged exports are consumed
 // unmodified (the v1 prompt there had no consumer; see 64-omega-4e-report
 // §2.5 for the reserved-evolution note this implements).
-import type { AskerInfo, AuthzExcerpt, ModelClient, ModelInput } from "@wudao/core";
-import { buildAuthzExcerpt, renderAuthzExcerpt } from "@wudao/core";
+import type { AskerInfo, AuthzExcerpt, ModelClient, ModelInput } from "@wudao-org/core";
+import { buildAuthzExcerpt, renderAuthzExcerpt } from "@wudao-org/core";
 import { currentAskContext } from "./ask-evidence.js";
 import type { AskContext } from "./ask-evidence.js";
 import { FILE_EDIT_TOOLS, sidecarGatesTool } from "./permission.js";

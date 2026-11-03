@@ -1,7 +1,7 @@
 // ω99 拆分运动 弧 B：schedules 工具面外提（schedule_add/list/remove——原
 // schedules.ts 模块级段逐字保留；schedules.ts re-export 门面保公共面）。
-import { buildTool } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import type { AddableSchedule, DurableTask } from "./schedules-model.js";
 import { validScheduleOriginSessionId } from "./schedules-model.js";
 import type { ScheduleAddInput } from "./schedules.js";

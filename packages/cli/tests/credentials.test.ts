@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { chmodSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { resolveProviderConfigResult } from "@wudao/providers";
+import { resolveProviderConfigResult } from "@wudao-org/providers";
 import {
   credentialsFileStatus,
   credentialsFileStatusSync,

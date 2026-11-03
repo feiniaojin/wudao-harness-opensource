@@ -152,7 +152,7 @@ export function LiveArea({ live, queued, onRecall, onDetachTool }: { live: LiveS
           <span className="panel-count">{`${events.length} 项`}</span>
         </div>
         <div className="panel-list">
-          {live.reasoning !== "" ? <ReasoningBlock text={live.reasoning} streaming={live.thinking ?? false} /> : null}
+          {live.reasoning !== "" ? <ReasoningBlock text={live.reasoning} streaming={live.thinking ?? false} defaultOpen={true} /> : null}
           {events.map((t, i) => (
             <BusyToolRow key={`${t.name}:${t.summary}:${i}`} tool={t} onDetach={onDetachTool} />
           ))}

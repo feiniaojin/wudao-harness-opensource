@@ -15,8 +15,8 @@
 //   ④ merge         two parked arrivals during one run both land.
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { summarizeToolCall } from "wudao-harness/log";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import type { EvalDefinition } from "../runner.js";
 
 export interface NightPorting7Evidence {

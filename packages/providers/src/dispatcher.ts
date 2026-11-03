@@ -8,7 +8,7 @@
 // 在各适配器 fetch 入口传自己的协议，层3 `withPersona` 协议无关 —— 本函数
 // 对三者零改动。wire 变更必断前缀缓存，冷启动归因沿用
 // PROVIDER_SWITCH_COLD_ATTRIBUTION（§4.2-4，调用方职责）。
-import type { ModelClient } from "@wudao/core";
+import type { ModelClient } from "@wudao-org/core";
 import type { ProtocolId } from "./persona/types.js";
 import { PROTOCOL_IDS } from "./persona/schema.js";
 import type { ProviderConfig } from "./config.js";

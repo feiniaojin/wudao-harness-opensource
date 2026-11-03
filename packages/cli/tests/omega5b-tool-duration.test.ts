@@ -3,8 +3,8 @@
 // execution). The board-result path (todo_write mapped to kind:"board")
 // legitimately omits it — pinned as omitted (design §2 I21 acceptance 5).
 import { describe, it, expect, vi } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";

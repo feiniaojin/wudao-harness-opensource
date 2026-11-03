@@ -13,7 +13,7 @@
 // 本件夹具全内存（零文件系统、零临时目录）——纯层矩阵、驱动 mock 模型、权限
 // 门静态断言均不落盘。
 import { describe, it, expect } from "vitest";
-import type { ModelClient, ModelInput } from "@wudao/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
 import { createAgentDriver, modeSteeringNote, type AgentDriver } from "../src/driver/agent-driver.js";
 import { summarizeToolCall } from "../src/log.js";
 import { decideRichPermission, type Mode } from "../src/permission.js";

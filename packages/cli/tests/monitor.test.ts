@@ -20,7 +20,7 @@ import {
   type MonitorEvent,
   type MonitorStartInput,
   type Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import {
   createMonitorRuntime,
   type MonitorChild,

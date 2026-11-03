@@ -9,7 +9,7 @@
 // The abort funnel is the ONE cancel point (interrupt()) every frontend
 // already reaches — TUI Esc, WS interrupt, headless signals.
 import { describe, it, expect } from "vitest";
-import type { AgentMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
+import type { AgentMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver, AgentDriverOptions } from "../src/driver/agent-driver.js";

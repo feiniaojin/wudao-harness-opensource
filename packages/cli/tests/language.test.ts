@@ -21,8 +21,8 @@ import {
   resolveReasoningLanguageMode,
   transcriptReasoningBlock,
 } from "../src/language.js";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { ModelClient, ModelInput, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { ModelClient, ModelInput, Tool } from "@wudao-org/core";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import { createAgentsTaskTool, createSessionRegistry } from "../src/agents/index.js";
 import { summarizeToolCall } from "../src/log.js";

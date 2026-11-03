@@ -30,8 +30,8 @@ import {
   type ModelClient,
   type ModelInput,
   type Terminal,
-} from "@wudao/core";
-import { serializePrompt } from "@wudao/providers";
+} from "@wudao-org/core";
+import { serializePrompt } from "@wudao-org/providers";
 import { createCronRuntime } from "wudao-harness/cron";
 import { MAINTENANCE_LOOP_PROMPT, parseLoopInterval } from "wudao-harness/commands/loop";
 import { createGoalController } from "wudao-harness/goal";

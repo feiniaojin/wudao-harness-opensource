@@ -2,13 +2,13 @@
 // (sleep tool, Strands vended_tools/sleep ported with the unref repair).
 // The model gets a bounded, permission-free temporal wait instead of paying
 // a shell shell permission round. This suite pins the contract
-// through the PUBLIC export (`@wudao/core`): validation fires BEFORE any
+// through the PUBLIC export (`@wudao-org/core`): validation fires BEFORE any
 // sleep, the cap is named in the refusal, the risk annotations are the
 // explicit safe set (so the permission pipeline auto-allows it), and the
 // description steers file-waits to monitor_read. Zero network, zero
 // filesystem, wall-clock cost ≤ ~20ms per run.
 import type { EvalDefinition } from "../runner.js";
-import { createSleepTool, SLEEP_DEFAULT_MAX_SECONDS } from "@wudao/core";
+import { createSleepTool, SLEEP_DEFAULT_MAX_SECONDS } from "@wudao-org/core";
 
 export interface NightPorting14Evidence {
   // ① a normal sleep resolves with the measured elapsed time

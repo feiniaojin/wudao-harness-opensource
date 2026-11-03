@@ -9,7 +9,7 @@
 // Determinism lives here, not in the model: the script cannot read the clock
 // or roll dice (vm tripwire), and every model-affecting input is part of the
 // journal key.
-import { runAgentLoop, type LoopEvent, type ModelClient, type PermissionDecision, type Terminal } from "@wudao/core";
+import { runAgentLoop, type LoopEvent, type ModelClient, type PermissionDecision, type Terminal } from "@wudao-org/core";
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { buildToolSet } from "../tools.js";

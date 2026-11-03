@@ -1,6 +1,6 @@
 // M-Memory 弧第二半 — 长期记忆的 cli 装配层（docs/specs/memory-system.md）。
 //
-// core 纯库（@wudao/core 的 openMemoryStore）承载存储/检索/注入渲染；本模块
+// core 纯库（@wudao-org/core 的 openMemoryStore）承载存储/检索/注入渲染；本模块
 // 承载四条接线：
 //   ① 工具面 — memory_save / memory_search / memory_forget 三件套（buildTool
 //      fail-closed；模型自进化的机制基础）；
@@ -36,7 +36,7 @@ import {
   replaceSystemPrompt,
   truncateSafe,
   MEMORY_KINDS,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import type {
   AgentHooks,
   AgentMessage,
@@ -46,7 +46,7 @@ import type {
   MemorySaveInput,
   MemoryStore,
   Tool,
-} from "@wudao/core";
+} from "@wudao-org/core";
 import { join } from "node:path";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { loadLayeredSettings, readGlobalSettingsSync, saveGlobalSettings } from "./settings-layer.js";
@@ -102,9 +102,16 @@ export function longtermMemoryEnabledFromNode(
   return true;
 }
 
-/** boot 路径一把读：layered settings → memory.enabled。 */
+/** boot 路径一把读：layered settings → memory.enabled。
+ *
+ *  遗留扁平键 memoryEnabled=false 也算「用户显式关记忆」——M62 裁决「关闭
+ *  记忆 ≠ 只锁面板」：关就是零记忆面（无 memory_save/search 工具、无注入
+ *  块、无沉淀）。记忆两库收敛后新旧两库同属一个「记忆」开关，两键并存时
+ *  任一显式 false 即关（fail-closed——隐私优先：绝不因新键缺省 on 而把
+ *  用户已经关掉的记忆偷偷打开）。 */
 export async function longtermMemoryEnabledFor(workspaceRoot: string): Promise<boolean> {
   const layered = await loadLayeredSettings(workspaceRoot, () => {});
+  if (layered.effective["memoryEnabled"] === false) return false;
   return longtermMemoryEnabledFromNode(layered.effective["memory"]);
 }
 

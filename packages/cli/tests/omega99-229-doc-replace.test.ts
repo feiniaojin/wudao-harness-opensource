@@ -9,7 +9,7 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Tool } from "@wudao/core";
+import type { Tool } from "@wudao-org/core";
 // 写面（夹具底座：buildDocx / buildPptx 造真字节）。
 import { buildDocx } from "../src/doc-docx.js";
 import { buildPptx } from "../src/doc-pptx.js";

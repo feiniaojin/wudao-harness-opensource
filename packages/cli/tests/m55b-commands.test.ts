@@ -7,9 +7,9 @@ import { describe, it, expect } from "vitest";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createScriptedModel, createReadFileTool, createJsonlSessionStore } from "@wudao/core";
-import { createOpenAICompatibleProvider } from "@wudao/providers";
-import type { ProviderConfig } from "@wudao/providers";
+import { createScriptedModel, createReadFileTool, createJsonlSessionStore } from "@wudao-org/core";
+import { createOpenAICompatibleProvider } from "@wudao-org/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import {
   availableModels,
   validateModelChoice,
@@ -54,7 +54,7 @@ import {
 } from "../src/commands/review.js";
 import { mcpToolCounts, buildMcpRows, formatMcpReport, runMcpStatusCommand } from "../src/commands/mcp-status.js";
 import { rosterSources, roleSummary, formatRosterReport, runAgentsCommand } from "../src/commands/agents-roster.js";
-import { BUILTIN_ROLES, loadRoleProfiles } from "@wudao/core";
+import { BUILTIN_ROLES, loadRoleProfiles } from "@wudao-org/core";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 

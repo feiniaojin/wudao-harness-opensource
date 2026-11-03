@@ -17,8 +17,8 @@ import { execFile as execFileCb } from "node:child_process";
 import { hardenedGitArgs } from "../git-hardened.js";
 import { promisify } from "node:util";
 import { join } from "node:path";
-import { createJsonlSessionStore, createChildWorktree, removeChildWorktree } from "@wudao/core";
-import type { WorktreeCleanup } from "@wudao/core";
+import { createJsonlSessionStore, createChildWorktree, removeChildWorktree } from "@wudao-org/core";
+import type { WorktreeCleanup } from "@wudao-org/core";
 
 const execFile = promisify(execFileCb);
 

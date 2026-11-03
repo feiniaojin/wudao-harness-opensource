@@ -5,7 +5,7 @@
 // 失败静默回退派生名（source:"derived"，M33 既有行为）。
 import { describe, it, expect } from "vitest";
 import { sanitizeTitle, buildTitleRequest, TITLE_QUERY_SOURCE, TITLE_MAX_CODEPOINTS } from "../src/session-title.js";
-import type { AgentMessage } from "@wudao/core";
+import type { AgentMessage } from "@wudao-org/core";
 
 describe("sanitizeTitle (夜移 005)", () => {
   it("strips wrapping quotes/backticks, collapses to one line, trims", () => {

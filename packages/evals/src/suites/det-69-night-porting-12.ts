@@ -30,8 +30,8 @@ import {
   runAgentLoop,
   buildTool,
   createScriptedModel,
-} from "@wudao/core";
-import type { AgentState, AssistantMessage, LoopEvent, ModelClient, ModelInput, Terminal, Tool } from "@wudao/core";
+} from "@wudao-org/core";
+import type { AgentState, AssistantMessage, LoopEvent, ModelClient, ModelInput, Terminal, Tool } from "@wudao-org/core";
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { summarizeToolCall } from "wudao-harness/log";
 import type { EvalDefinition } from "../runner.js";

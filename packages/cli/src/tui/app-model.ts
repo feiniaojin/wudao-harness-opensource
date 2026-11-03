@@ -4,8 +4,8 @@
 // 在组件内保持一致）；显式依赖对象，无其它闭包捕获。
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { join } from "node:path";
-import type { ModelClient } from "@wudao/core";
-import { createFileAttachmentStore } from "@wudao/core";
+import type { ModelClient } from "@wudao-org/core";
+import { createFileAttachmentStore } from "@wudao-org/core";
 import {
   createLiveKeyPool,
   createProvider,
@@ -16,7 +16,7 @@ import {
   type PersonaRuntime,
   type ProviderConfig,
   type ResolvedPersona,
-} from "@wudao/providers";
+} from "@wudao-org/providers";
 import { CostRegistry } from "../commands/cost.js";
 import { applyModelSelection, asMutableConfig } from "../commands/model.js";
 import type { ModelSelection, MutableProviderConfig } from "../commands/model.js";

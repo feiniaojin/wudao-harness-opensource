@@ -11,8 +11,8 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createJsonlSessionStore, createScriptedModel, createReadFileTool } from "@wudao/core";
-import type { AgentMessage, ModelClient, ModelInput, ModelUsage, SessionEntry, Tool } from "@wudao/core";
+import { createJsonlSessionStore, createScriptedModel, createReadFileTool } from "@wudao-org/core";
+import type { AgentMessage, ModelClient, ModelInput, ModelUsage, SessionEntry, Tool } from "@wudao-org/core";
 import { createCacheTrackingModel } from "../src/cache.js";
 import { asMutableConfig } from "../src/commands/model.js";
 import type { MutableProviderConfig } from "../src/commands/model.js";
@@ -35,7 +35,7 @@ import { summarizeToolCall } from "../src/log.js";
 import { lastModelState, recordModelState } from "../src/run.js";
 import { WIZARD_PLACEHOLDER_KEY } from "../src/credentials.js";
 import { readNewestSessionSummary } from "../src/statusline.js";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 
@@ -464,7 +464,7 @@ function makeDriver(model: ModelClient, opts: Partial<Parameters<typeof createAg
 // ModelClient so the assertions see exactly what the next run uses.
 function seamFor(current: ProviderConfig, buildClient: (config: ProviderConfig) => ModelClient, log: { resolve: string[]; builds: string[] }) {
   return {
-    resolve: (target: import("@wudao/providers").ProviderName) => {
+    resolve: (target: import("@wudao-org/providers").ProviderName) => {
       log.resolve.push(target);
       return resolveProviderSwitch({ target, env: HERMETIC_ENV, current });
     },
@@ -1067,7 +1067,7 @@ function wizardSeam(
   log: { resolve: string[]; builds: string[] },
 ) {
   return {
-    resolve: (target: import("@wudao/providers").ProviderName) => {
+    resolve: (target: import("@wudao-org/providers").ProviderName) => {
       log.resolve.push(target);
       let r = resolveProviderSwitch({ target, env: HERMETIC_ENV, current: live.current });
       if (!r.ok && r.reason === "missing-key") {

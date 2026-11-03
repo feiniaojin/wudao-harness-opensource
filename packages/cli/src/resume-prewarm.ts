@@ -19,7 +19,7 @@
 // 边界（诚实）：只挂交互 resume（用户读历史的时间窗）；continue 车道
 // （交棒后立即起跑）与 origin spawn 车道（子进程首动作就是真实请求）无
 // 空闲窗可利用，不挂。失败静默（.catch 吞——预热失败绝不断会话）。
-import type { ModelClient } from "@wudao/core";
+import type { ModelClient } from "@wudao-org/core";
 
 /** The prewarm lane's query-source marker（title 车道同族）。 */
 export const RESUME_PREWARM_QUERY_SOURCE = "prewarm";
@@ -38,8 +38,8 @@ export function fireResumePrewarm(
   model: ModelClient,
   input: {
     readonly systemPrompt: string;
-    readonly tools: readonly import("@wudao/core").Tool[];
-    readonly messages: readonly import("@wudao/core").AgentMessage[];
+    readonly tools: readonly import("@wudao-org/core").Tool[];
+    readonly messages: readonly import("@wudao-org/core").AgentMessage[];
   },
   env: NodeJS.ProcessEnv = process.env,
 ): void {

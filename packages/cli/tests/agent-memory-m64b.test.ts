@@ -11,8 +11,8 @@ import { mkdtemp, rm, mkdir, writeFile, stat, utimes } from "node:fs/promises";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao/core";
-import { createEditTool, createReadFileTool, createWriteFileTool } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, Tool } from "@wudao-org/core";
+import { createEditTool, createReadFileTool, createWriteFileTool } from "@wudao-org/core";
 import { createAgentsTaskTool, createSessionRegistry } from "../src/agents/index.js";
 import {
   MEMORY_INJECTION_MAX_LINES,

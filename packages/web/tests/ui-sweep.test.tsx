@@ -300,13 +300,13 @@ describe("ui-sweep A — topbar economy per shell", () => {
     expect(h.container.querySelector(".tb-run")).not.toBeNull();
   });
 
-  it("advanced is unchanged: 4 icobtns + the badge when ctx exists", async () => {
+  it("advanced is unchanged: 5 icobtns (+ 139 监控) + the badge when ctx exists", async () => {
     const h = mountedApp();
     await act(async () => {
       authOk(h.server.socket, { ctxTokens: CTX });
     });
     await replySettings(h, "advanced");
-    expect(h.container.querySelectorAll(".topbar button.icobtn")).toHaveLength(5);
+    expect(h.container.querySelectorAll(".topbar button.icobtn")).toHaveLength(6); // 139：+监控
     expect(h.container.querySelector(".tb-run")).not.toBeNull();
     expect(h.container.textContent).toContain("ctx");
   });

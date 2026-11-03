@@ -16,8 +16,8 @@
 // - cell 规与 doc-xlsx/doc-pptx 同款（对照测试钉两侧一致）；本层未改 123/124
 //   文件，cell 检查本地实现，收/拒矩阵由 tests/omega99-126 逐值对照钉死。
 import { storedZip } from "./doc-zip.js";
-import { buildTool, resolveWorkspacePath } from "@wudao/core";
-import type { Tool } from "@wudao/core";
+import { buildTool, resolveWorkspacePath } from "@wudao-org/core";
+import type { Tool } from "@wudao-org/core";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 

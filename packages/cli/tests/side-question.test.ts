@@ -9,8 +9,8 @@
 // 旁路 run = detached loop：克隆投影构造独立 State 跑 core loop()，maxTurns=3，
 // 绝不触碰 session AgentState/JSONL/store；超轮帽给诚实尾注。
 import { describe, it, expect, vi } from "vitest";
-import { buildTool, toModelToolDefinition } from "@wudao/core";
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, SessionStore, Tool } from "@wudao/core";
+import { buildTool, toModelToolDefinition } from "@wudao-org/core";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput, SessionStore, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import {

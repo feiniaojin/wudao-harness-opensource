@@ -6,7 +6,7 @@
 // ——git 缺席/非仓库/无改动/已暂存/无归因、apply 的显式 add+pathspec commit、
 // 失败即停、绝不 force）。
 import { describe, it, expect } from "vitest";
-import type { SessionEntry } from "@wudao/core";
+import type { SessionEntry } from "@wudao-org/core";
 import {
   parseRestackCommand,
   parseGitStatusZ,

@@ -9,7 +9,7 @@
 // edges — a missing completion count and an unknown window both keep the
 // ordinary 013 nudge path.
 import type { EvalDefinition } from "../runner.js";
-import { isZeroOutputOverflow } from "@wudao/core";
+import { isZeroOutputOverflow } from "@wudao-org/core";
 
 export interface NightPorting21Evidence {
   // ① at/above floor(0.99×window) with zero output → true (the disguise)

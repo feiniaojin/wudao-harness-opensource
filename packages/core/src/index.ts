@@ -1,4 +1,4 @@
-// @wudao/core — agent harness runtime.
+// @wudao-org/core — agent harness runtime.
 // Public API surface for M1. Subsystems (hooks, events bus, context compiler,
 // session, providers) are added in later milestones and re-exported here.
 
@@ -678,6 +678,12 @@ export type {
 export type { ProbeEvent, ProbeCategory, ProbeBus } from "./probe.js";
 export type { ProbeBusStatsEntry } from "./probe.js";
 export { createProbeBus, probeBus, probeEnabled, probeModelClient, probeModelRetry, PROBE_ENV } from "./probe.js";
+// 135 — 可观测投影层（LoopEvent → span 树 → OTLP）。缺省不启用：未调用
+// observeRun / 未设 WUDAO_OTEL_ENDPOINT 时代码路径与今天完全相同。
+// 只放**消费方真正需要**的窄面（PB-1 探针先例：挂载件不进 barrel）；
+// 投影/编码/导出器的完整面走子路径 `@wudao-org/core/trace`。
+export { observeRun, createOtlpExporterFromEnv } from "./trace/index.js";
+export type { ObserveRunOptions, OtlpExporter } from "./trace/index.js";
 
 // 113-A4 — UTF-16 代理对安全截断原语（全仓唯一文本截断入口，dsh 4ef97b92a9
 // 引进裁决）。barrel 放出两件（头帽/尾帽）供 cli/slack/providers 收编位点
@@ -735,4 +741,4 @@ export type {
 export { openMemoryStore, readMemoryFile, memoryId, MEMORY_KINDS } from "./memory.js";
 export type { MemoryEntry, MemoryKind, MemoryStore, MemorySaveInput, MemorySearchOptions } from "./memory.js";
 
-export const PACKAGE_NAME = "@wudao/core";
+export const PACKAGE_NAME = "@wudao-org/core";

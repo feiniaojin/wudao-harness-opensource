@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { ModelClient, ModelInput } from "@wudao/core";
+import type { ModelClient, ModelInput } from "@wudao-org/core";
 import { openMemoryStore, HELDOUT_MEMORY_TAG, isHeldOutEntry } from "../src/memory/index.js";
 import { buildDreamPrompt, dreamUnprocessedCount, renderDreamLedgerEmbed } from "../src/memory/dream.js";
 import { planRefinement, renderRefineOverview } from "../src/memory/index.js";

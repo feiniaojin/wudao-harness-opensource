@@ -22,10 +22,10 @@
 import { createAgentDriver } from "wudao-harness/driver/agent-driver";
 import { createMonitorRuntime } from "wudao-harness/monitor";
 import { summarizeToolCall } from "wudao-harness/log";
-import { createMonitorTools } from "@wudao/core";
+import { createMonitorTools } from "@wudao-org/core";
 import type { AgentDriver } from "wudao-harness/driver/agent-driver";
 import type { MonitorRuntimeOptions, MonitorChild } from "wudao-harness/monitor";
-import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "@wudao/core";
+import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "@wudao-org/core";
 import type { EvalDefinition } from "../runner.js";
 
 export interface NightPorting8Evidence {

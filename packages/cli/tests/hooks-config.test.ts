@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadHooksSettings, buildConfiguredHooks, resetSettingsWarnMemoForTests } from "../src/hooks-config.js";
-import type { AgentState } from "@wudao/core";
+import type { AgentState } from "@wudao-org/core";
 
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
 

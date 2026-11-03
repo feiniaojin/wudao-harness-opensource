@@ -3,8 +3,8 @@
 // (🛡 检查中 while the classifier is in flight), the per-run breaker reset
 // at submit time, and the sidecar reason riding a parked permission ask.
 import { describe, it, expect, vi } from "vitest";
-import { buildTool, createScriptedModel } from "@wudao/core";
-import type { ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao/core";
+import { buildTool, createScriptedModel } from "@wudao-org/core";
+import type { ModelClient, ModelInput, PermissionDecision, Tool } from "@wudao-org/core";
 import { summarizeToolCall } from "../src/log.js";
 import { createAgentDriver } from "../src/driver/agent-driver.js";
 import type { AgentDriver } from "../src/driver/agent-driver.js";

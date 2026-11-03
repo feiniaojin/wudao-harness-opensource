@@ -19,7 +19,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import type { ProviderConfig } from "@wudao/providers";
+import type { ProviderConfig } from "@wudao-org/providers";
 import { resetProviderRegistryCacheForTests } from "../src/provider-registry.js";
 import { createDriverSession } from "../src/driver/session-engine.js";
 import { TITLE_SYSTEM_FIRST_LINE } from "../src/session-title.js";

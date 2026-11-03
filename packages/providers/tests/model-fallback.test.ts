@@ -3,7 +3,7 @@
 // 语义逐字段照 openai 工厂抽出前的行为：sticky streak=2、eligible 判据、
 // usage receipt 标注（fallbackModel/fallbackFrom）、流式 produced 守卫。
 import { describe, it, expect } from "vitest";
-import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao/core";
+import type { AssistantMessage, ModelClient, ModelInput, ModelStreamEvent, ModelUsage } from "@wudao-org/core";
 import { withModelFallback } from "../src/model-fallback.js";
 import { ContextLengthError, ProviderHttpError, createOpenAICompatibleProvider } from "../src/openai-compatible.js";
 import { createAnthropicProvider } from "../src/anthropic.js";

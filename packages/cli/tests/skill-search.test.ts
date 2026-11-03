@@ -20,7 +20,7 @@ import {
 } from "../src/skill-search.js";
 import type { LoadedSkill } from "../src/skills.js";
 import { buildToolSet } from "../src/tools.js";
-import type { ModelClient, ModelInput, AssistantMessage, PermissionDecision, Tool } from "@wudao/core";
+import type { ModelClient, ModelInput, AssistantMessage, PermissionDecision, Tool } from "@wudao-org/core";
 
 function skill(partial: Partial<LoadedSkill> & { name: string }): LoadedSkill {
   return {
