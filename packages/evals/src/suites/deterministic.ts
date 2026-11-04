@@ -2948,7 +2948,11 @@ const deferredToolsEval: EvalDefinition<{ workspaceRoot: string }, DeferToolsEvi
     // stays task/agent_*); the focused kernel arcs never ran this battery, and
     // the 0.4.3 gate's rebuild exposed the un-updated pin — exactly as the
     // seven instalments before it.
-    const wantFirst = ["read_file", "glob", "grep", "write_file", "edit", "shell", "todo_write", "sleep", "notebook", "message_parent", "message_child", "run_script", "python_kernel", "web_fetch", "constitution_suggest", "make_xlsx", "make_pptx", "make_docx", "screen_capture", "computer_type", "computer_key", "computer_click", "app_activate", "app_list", "computer_scroll", "computer_drag", "screen_observe", "computer_wait", "read_xlsx", "read_docx", "read_pptx", "append_docx", "append_pptx", "append_xlsx", "replace_docx", "replace_pptx", "replace_xlsx", "set_docx_header", "set_pptx_notes", "clear_docx_header", "set_docx_first_page", "set_docx_even_pages", "load_tools"];
+    // 0.4.15（持久 shell 弧）：第九期同族欠账——shell_start/read/stop 三件套
+    //（长程任务的持久 shell 车道，top-level ZERO-CONFIG，doc-suite 铬件之后、
+    // load_tools 之前的 append-only 尾位）。非 defer 候选；弧未跑本电池，
+    // 0.4.21 发版 gate 的重建暴露未随迁的钉——与前八期完全同型。
+    const wantFirst = ["read_file", "glob", "grep", "write_file", "edit", "shell", "todo_write", "sleep", "notebook", "message_parent", "message_child", "run_script", "python_kernel", "web_fetch", "constitution_suggest", "make_xlsx", "make_pptx", "make_docx", "screen_capture", "computer_type", "computer_key", "computer_click", "app_activate", "app_list", "computer_scroll", "computer_drag", "screen_observe", "computer_wait", "read_xlsx", "read_docx", "read_pptx", "append_docx", "append_pptx", "append_xlsx", "replace_docx", "replace_pptx", "replace_xlsx", "set_docx_header", "set_pptx_notes", "clear_docx_header", "set_docx_first_page", "set_docx_even_pages", "shell_start", "shell_read", "shell_stop", "load_tools"];
     if (JSON.stringify(evidence.firstNames) !== JSON.stringify(wantFirst)) {
       errors.push(`defer-on first request tools wrong: ${evidence.firstNames.join(", ")}`);
     }
@@ -7703,6 +7707,14 @@ const det54Eval: EvalDefinition<{ dir: string }, DreamEvidence> = {
     return { dir };
   },
   async run(ctx) {
+    // 记忆两库收敛（722df55e）后 dream 调度缺省停用（spawnDreamRun 直接
+    // undefined；WUDAO_M49_LEGACY=1 回滚态原样可跑）。本套件钉的就是这条
+    // 回滚线——必须在套件内挂回滚环境并在离场还原，否则 lane2/3 拿不到
+    // dream.jsonl（ENOENT，0.4.21 gate 揭发）。
+    const prevLegacy = process.env.WUDAO_M49_LEGACY;
+    process.env.WUDAO_M49_LEGACY = "1";
+    try {
+    // ---- Lane 1 (T1 shape): seq mechanics at the store level --------------
     // ---- Lane 1 (T1 shape): seq mechanics at the store level --------------
     const l1 = join(ctx.dir, "lane1");
     await mkdir(join(l1, ".wudao"), { recursive: true });
@@ -7801,6 +7813,10 @@ const det54Eval: EvalDefinition<{ dir: string }, DreamEvidence> = {
     };
 
     return { seq, completion, diffGrounded, replay };
+    } finally {
+      if (prevLegacy === undefined) delete process.env.WUDAO_M49_LEGACY;
+      else process.env.WUDAO_M49_LEGACY = prevLegacy;
+    }
   },
   assertions(evidence) {
     const errors: string[] = [];

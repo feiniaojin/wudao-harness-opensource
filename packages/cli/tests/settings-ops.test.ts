@@ -843,12 +843,16 @@ describe("cc-plugins C1: plugin ops over the marketplace engine", () => {
       if (uninstall === undefined) throw new Error("plugin ops not mounted on the port");
 
       driver.submit("go");
-      await new Promise((r) => setTimeout(r, 30));
+      // ω99-197 同款纪律：固定 sleep 换成条件轮询——负载下 30ms 可能还没
+      // 进 run（CI 偶发红）。等 busy 真正置位。
+      await until(() => driver.getStatus().busy, "run start");
       // Workspace mode auto-allows read_file, but the guard stays: whatever
       // parks a permission ask gets answered so the tool is genuinely IN
       // FLIGHT (awaiting the gate inside execute).
-      if (driver.getStatus().pendingPermission !== null) driver.answerPermission(true);
-      await new Promise((r) => setTimeout(r, 30));
+      if (driver.getStatus().pendingPermission !== null) {
+        driver.answerPermission(true);
+        await until(() => driver.getStatus().pendingPermission === null, "ask answered");
+      }
       expect(driver.getStatus().busy).toBe(true);
       // Mid-run: the mounted port refuses BEFORE any engine call — the dir
       // and the registry record are intact (the op-layer busy law, probed
@@ -860,7 +864,10 @@ describe("cc-plugins C1: plugin ops over the marketplace engine", () => {
       release();
       // The run needs its final model turn to settle — poll for idle.
       // ω99-197: #1 内联 until（ablation 同款）——固定 2s for-轮询改 4s 带名超时（预算不足形：负载下 final turn 沉降可超 2s）
-      await until(() => driver.getStatus().busy === false, "uninstall run settle");
+      // 15s（非 4s）：并行跑套件时 model final turn 的沉降可远超 4s——
+      // 这是负载预算，不是行为断言（CI 偶发「timeout waiting for uninstall
+      // run settle」揭发）。
+      await until(() => driver.getStatus().busy === false, "uninstall run settle", 15_000);
       expect(driver.getStatus().busy).toBe(false);
       const done = await uninstall("alpha");
       expect(done).toMatchObject({ id: "alpha" });

@@ -189,7 +189,12 @@ async function det47Wire(args: {
       const session = await createDriverSession({
         config: DET47_CONFIG,
         workspaceRoot: args.workspace,
-        contextWindowTokens: 32_000,
+        // 128k（非 32k）：0.4.21 时工具面已 ~25.7k tokens，0.8×32k=25.6k 的
+        // 压缩触发线在轮界即被工具 schema 单独越过——对话体缩无可缩（压缩
+        // 只缩消息），「越压越大」→ 立即回填 → 抖动断路器（正确行为）在第
+        // 5 次调用后终止 run，本套件的 Slack 钉（第 6/7 次调用）永远到不了。
+        // 本套件钉 Slack 流程不钉压缩：窗口抬到生产典型值，压缩不进场。
+        contextWindowTokens: 128_000,
         modelOverride: args.model,
         ...(sessionId !== undefined ? { sessionId } : {}),
         askRelay,

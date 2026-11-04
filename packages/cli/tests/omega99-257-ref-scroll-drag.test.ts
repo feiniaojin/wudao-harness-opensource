@@ -443,5 +443,5 @@ describe("ω99-257 R10 — helper 源自检（源级 grep 亲证）", () => {
     expect(code).toBe(0); // exit 0（-parse 只做语法检查）
     const after = (await readdir(dir)).sort().join(",");
     expect(after).toBe(before); // 零产物：目录无新增文件
-  });
+  }, 30_000); // 30s：xcrun+swiftc 冷启动在并行负载下常超默认 5s（CI 揭发）
 });

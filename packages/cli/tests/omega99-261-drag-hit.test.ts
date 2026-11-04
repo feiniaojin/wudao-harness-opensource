@@ -158,7 +158,7 @@ describe("ω99-261 R1 — helper hit 子命令源钉（只读 AX 命中）", () 
     expect(code).toBe(0); // exit 0（-parse 只做语法检查）
     const after = (await readdir(dir)).sort().join(",");
     expect(after).toBe(before); // 零产物：目录无新增文件
-  });
+  }, 30_000); // 30s：xcrun+swiftc 冷启动在并行负载下常超默认 5s（CI 揭发）
 });
 
 // ---------------------------------------------------------------------------
