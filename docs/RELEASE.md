@@ -11,9 +11,9 @@ The CLI depends on the other five via `workspace:*`, which pnpm rewrites to real
 - [ ] `npm config get registry` points at the registry you intend to publish to (a mirror here receives the real publish too — see step 3).
 - [ ] Node ≥ 22 and pnpm 11 (`packageManager` pins `pnpm@11.21.0`).
 
-## 1. Version bump (one release, nine places)
+## 1. Version bump (one release, ten places)
 
-The version lives in **nine** files and must match everywhere:
+The version lives in **ten** files and must match everywhere:
 
 | File | Field |
 | --- | --- |
@@ -24,6 +24,7 @@ The version lives in **nine** files and must match everywhere:
 | `packages/browser/package.json` | `version` |
 | `packages/web/package.json` | `version` |
 | `packages/cli/package.json` | `version` |
+| `apps/desktop/package.json` | `version` (the desktop app's own line — dmg/deb/exe carry it; missed at 0.4.21 and the artifacts shipped labeled 0.4.20) |
 | `packages/evals/package.json` | `version` (private, never publishes — bumped for line consistency) |
 | `packages/cli/src/version.ts` | `VERSION` const (CLI banner, REPL header, MCP clientInfo) |
 

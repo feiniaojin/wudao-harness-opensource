@@ -182,9 +182,13 @@ jobs:
         run: pnpm --filter @wudao-org/web build
       - name: Build desktop app (SEA sidecar + tauri NSIS bundle)
         run: pnpm --filter @wudao-org/desktop run desktop:build
-        continue-on-error: true  # Windows desktop is best-effort until first verified ship
+        # 0.4.21 首航曾用 continue-on-error 掩盖真实失败：构建步红、job 绿、
+        # 无 exe、Release 页缺 Windows 包而无人知。Windows 包是发布的一等
+        # 公民（用户令）——失败必须红得可见。
+      - name: List bundle dir (diagnostics)
+        if: always()
+        run: dir /s /b "apps\desktop\src-tauri\target\release\bundle" || dir "apps\desktop\src-tauri\target\release\bundle" || echo "no bundle dir"
       - name: Upload Windows installer
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer

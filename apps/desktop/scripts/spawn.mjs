@@ -71,18 +71,28 @@ export function resolveCommand(cmd, { cwd } = {}) {
     }
   }
 
-  // Global npm shim (pnpm itself lives in %APPDATA%\npm, not the workspace):
-  // scan PATH for <cmd>.cmd / <cmd>.CMD and use its %dp0%-style entry.
+  // PATH shims — TWO shapes must parse (0.4.21 Windows CI 首航揭发):
+  //  - global npm (%APPDATA%\npm): "%_prog%"  "%dp0%\node_modules\..."
+  //  - 工具链装的 bin 目录（actions 的 setup-pnpm 落 PNPM_HOME=…\node_modules\.bin，
+  //    即仓库本地形状）: node "%~dp0\..\pnpm\bin\pnpm.cjs" — 此前只认前者，
+  //    pnpm 解析不到 → 裸 spawn .CMD → status null（build-sea: command failed (null)）。
   const pathDirs = String(process.env.PATH ?? "").split(";");
   for (const dir of pathDirs) {
     if (!dir) continue;
-    const shim = join(dir, `${cmd}.cmd`);
-    if (!existsSync(shim)) continue;
-    const text = readFileSync(shim, "utf8");
-    const m = text.match(/"%_prog%"\s+"(%dp0%[^"]+)"/i);
-    if (!m) continue;
-    const entry = m[1].replace(/%dp0%/gi, dir);
-    if (existsSync(entry)) return { exe: process.execPath, prefix: [entry], env: {} };
+    for (const shimName of [`${cmd}.CMD`, `${cmd}.cmd`]) {
+      const shim = join(dir, shimName);
+      if (!existsSync(shim)) continue;
+      const text = readFileSync(shim, "utf8");
+      // resolve() 在 win32 上折叠 .. 段（%~dp0\.. 型目标）；别处无害。
+      const raw = entryFromShimText(text, dir);
+      const entry = raw === null ? null : resolve(raw);
+      if (entry && isAbsolute(entry) && existsSync(entry)) {
+        const resolved = { exe: process.execPath, prefix: [entry], env: {} };
+        const nodePath = nodePathFromCmd(text);
+        if (nodePath) resolved.env.NODE_PATH = nodePath;
+        return resolved;
+      }
+    }
   }
 
   return null; // a real .exe on PATH (cargo, tar, ...) — spawn as-is
