@@ -240,6 +240,10 @@ describe("ω99-313 C — 连败熔断", () => {
       // Full settle per fire: the advance's nextRunAt is the durable marker.
       await poll(async () => (await storedTasks())[0]!.nextRunAt === T0 + (k + 1) * 10 * MIN);
     }
+    // 复位是 fire 内的第二次写、落在 nextRunAt 之后（慢盘上两写之间有可见
+    // 窗口——CI 揭发 expected 2 to be 0）：轮询复位本身，不以 nextRunAt 当
+    // 复位的代理标记（与第一个测试的熔断 persist 注释同族）。
+    await poll(async () => (await storedTasks())[0]!.consecutiveFailures === 0);
     const tasks = await storedTasks();
     expect(tasks[0]!.consecutiveFailures).toBe(0); // 2 fails then a success → reset
     expect(tasks[0]!.enabled).toBeUndefined();
