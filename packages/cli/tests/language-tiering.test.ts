@@ -170,7 +170,7 @@ describe("settingsSaveProvider — effort binding persistence", () => {
     const r = await ops.settingsSaveProvider("my-gw", {
       baseUrl: "https://gw.example.com/v1",
       defaultModel: "m-x",
-      persona: "a reference harness:headers",
+      persona: "my-gw:headers",
       effort: "high",
     });
     expect(r).toEqual({ ok: true, provider: "my-gw" });
@@ -182,7 +182,7 @@ describe("settingsSaveProvider — effort binding persistence", () => {
     await ops.settingsSaveProvider("my-gw", {
       baseUrl: "https://gw.example.com/v1",
       defaultModel: "m-x",
-      persona: "a reference harness:headers",
+      persona: "my-gw:headers",
       effort: null,
     });
     row = JSON.parse(readFileSync(registryPath(), "utf8")) as { providers: Record<string, { effort?: unknown }> };
@@ -194,7 +194,7 @@ describe("settingsSaveProvider — effort binding persistence", () => {
     await ops.settingsSaveProvider("my-gw", {
       baseUrl: "https://gw.example.com/v1",
       defaultModel: "m-x",
-      persona: "a reference harness:headers",
+      persona: "my-gw:headers",
     });
     row = JSON.parse(readFileSync(registryPath(), "utf8")) as { providers: Record<string, { effort?: unknown }> };
     expect("effort" in (row.providers["my-gw"] ?? {})).toBe(false);

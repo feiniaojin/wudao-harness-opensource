@@ -4,7 +4,7 @@
 // root-level test home (per-package tests/ is the convention). The final
 // block runs both gates against the repository's own corpus.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync , existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -318,7 +318,8 @@ describe("M73 §2-3 — the CLIs against fixture trees and the repo corpus", () 
     expect(run("verify-agent-notes.ts", ["--bogus"]).status).toBe(2);
   });
 
-  it("the repository's own corpus passes both gates", () => {
+  // 开源仓不携带 .agents/notes（内部开发流程档案）——公开树 skip，内部树全钉。
+  it.skipIf(!existsSync(repoNotes))("the repository's own corpus passes both gates", () => {
     const active = run("verify-agent-notes.ts", ["--root", repoNotes]);
     expect(active.status).toBe(0);
     expect(active.output).toMatch(/Agent Note\(s\) checked/);
