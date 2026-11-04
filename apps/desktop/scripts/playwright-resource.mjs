@@ -29,7 +29,9 @@
  *           <8sp>version: 1.63.0
  */
 export function parsePlaywrightPin(lockText, importer = "packages/browser", dep = "playwright-core") {
-  const lines = lockText.split("\n");
+  // 容 CRLF：Windows checkout 的 autocrlf 会把行尾变成 \r\n（0.4.21 首航
+  // 揭发），逐行精确比对随之全灭——无论 .gitattributes 是否已锁 LF。
+  const lines = lockText.split(/\r?\n/);
   const header = `  ${importer}:`;
   const start = lines.findIndex((line) => line === header);
   if (start === -1) return null;

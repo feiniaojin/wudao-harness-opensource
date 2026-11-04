@@ -1,0 +1,5 @@
+# 全仓锁 LF——Windows checkout 的 autocrlf 会把文本文件转成 CRLF，
+# 行尾敏感的解析（lockfile pin 比对、逐行 diff 断言）随之全灭（0.4.21
+# Windows 首航揭发：PLAYWRIGHT_PIN_UNREADABLE）。二进制由 git 自动识别，
+# 不受影响；仓内无 .bat/.cmd 等必须 CRLF 的文件。
+* text=auto eol=lf
