@@ -32,7 +32,7 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
         "anthropic-version": "2023-06-01", // doc90 §1.1: 恒发, codeSessionApi.ts:16 等
         "x-app": "cli", // doc90 §1.1: client.ts:106, 恒发
         "X-Claude-Code-Session-Id": "{{sessionId}}", // doc90 §1.1: client.ts:108, 会话 UUID 恒发
-        "anthropic-beta": "a reference harness-20250219", // doc90 §1.1 beta 表: 非 haiku 模型恒发 (betas.ts:3); 其余 beta 均条件发,不编码
+        "anthropic-beta": "claude-code-20250219", // doc90 §1.1 beta 表: 非 haiku 模型恒发 (betas.ts:3); 其余 beta 均条件发,不编码
       },
       // Conditional rows omitted: x-claude-remote-container-id / -remote-session-id /
       // x-client-app / x-anthropic-additional-protection / x-client-request-id, and the
@@ -174,10 +174,10 @@ export const BUILTIN_PERSONAS: readonly PersonaDefinition[] = [
     headers: {
       "openai-chat": {
         "user-agent": "wudao-harness/0.4.20 (+https://github.com/feiniaojin/wudao-harness-opensource)", // doc90 §3.1: attribution 恒发不可关闭; 版本=本 harness 版本
-        "x-a reference harness-session-id": "{{sessionId}}", // doc90 §3.1: adapter.ts:526-528 (sessionId 存在时; v1 槽位语义=必须提供,见 task-4 report)
+        "x-deepseek-harness-session-id": "{{sessionId}}", // doc90 §3.1: adapter.ts:526-528 (sessionId 存在时; v1 槽位语义=必须提供,见 task-4 report)
         // Omitted: authorization (auth — schema 拒绝), content-type/accept (传输机械头,
-        // 适配器自管), x-a reference harness-user-id (稳定匿名用户 id,无忠实槽位 — {{uuid}}
-        // 为逐请求随机,语义不符), x-a reference harness-compact (仅 compaction)。
+        // 适配器自管), x-deepseek-harness-user-id (稳定匿名用户 id,无忠实槽位 — {{uuid}}
+        // 为逐请求随机,语义不符), x-deepseek-harness-compact (仅 compaction)。
       },
     },
     // no body: thinking (§3.2 该参考的签名开关) 不在 v1 openai-chat 白名单 — 冲突已披露,
