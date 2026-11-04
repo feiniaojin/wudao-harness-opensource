@@ -843,16 +843,14 @@ describe("cc-plugins C1: plugin ops over the marketplace engine", () => {
       if (uninstall === undefined) throw new Error("plugin ops not mounted on the port");
 
       driver.submit("go");
-      // ω99-197 同款纪律：固定 sleep 换成条件轮询——负载下 30ms 可能还没
-      // 进 run（CI 偶发红）。等 busy 真正置位。
+      // ask 在 busy 置位之后才 park（boot 工作先于工具）——必须轮询等 ask
+      // 本身，绝不能「看一眼不是就跳过」：满载下早一拍检查 → ask 永远没人
+      // 应答 → run 永不沉降。这是此前四轮「uninstall run settle 超时」的
+      // 真根因（探针实证：超时瞬间 pending=read_file、无人应答、工具悬空）。
       await until(() => driver.getStatus().busy, "run start");
-      // Workspace mode auto-allows read_file, but the guard stays: whatever
-      // parks a permission ask gets answered so the tool is genuinely IN
-      // FLIGHT (awaiting the gate inside execute).
-      if (driver.getStatus().pendingPermission !== null) {
-        driver.answerPermission(true);
-        await until(() => driver.getStatus().pendingPermission === null, "ask answered");
-      }
+      await until(() => driver.getStatus().pendingPermission !== null, "permission ask parked");
+      driver.answerPermission(true);
+      await until(() => driver.getStatus().pendingPermission === null, "ask answered");
       expect(driver.getStatus().busy).toBe(true);
       // Mid-run: the mounted port refuses BEFORE any engine call — the dir
       // and the registry record are intact (the op-layer busy law, probed
