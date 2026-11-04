@@ -101,15 +101,30 @@ export function resolveCommand(cmd, { cwd } = {}) {
 /** spawnSync that understands pnpm-installed .CMD shims on Windows. */
 export function runSync(cmd, args, opts = {}) {
   const resolved = resolveCommand(cmd, { cwd: opts.cwd });
-  if (!resolved) return spawnSync(cmd, args, opts);
-  const { exe, prefix, env } = resolved;
-  return spawnSync(exe, [...prefix, ...args], { ...opts, env: { ...opts.env, ...env } });
+  if (resolved) {
+    const { exe, prefix, env } = resolved;
+    return spawnSync(exe, [...prefix, ...args], { ...opts, env: { ...opts.env, ...env } });
+  }
+  // 兜底：win32 上解析不出的裸命令（.CMD shim 形状超出上面两种——
+  // 0.4.21 两轮 CI 实证 setup-pnpm 的 pnpm.CMD 两种都不匹配）交给
+  // shell 生成：cmd.exe 自己解析 .CMD，与 npm script 的运行方式一致。
+  // DEP0190 只对含 shell 元字符的参数报警——本管线的参数（filter 名/
+  // build/静态路径）均不含。
+  if (process.platform === "win32" && !/[\\/]/.test(cmd)) {
+    return spawnSync(cmd, args, { ...opts, shell: true });
+  }
+  return spawnSync(cmd, args, opts);
 }
 
 /** Async spawn with the same shim resolution. */
 export function runAsync(cmd, args, opts = {}) {
   const resolved = resolveCommand(cmd, { cwd: opts.cwd });
-  if (!resolved) return spawn(cmd, args, opts);
-  const { exe, prefix, env } = resolved;
-  return spawn(exe, [...prefix, ...args], { ...opts, env: { ...opts.env, ...env } });
+  if (resolved) {
+    const { exe, prefix, env } = resolved;
+    return spawn(exe, [...prefix, ...args], { ...opts, env: { ...opts.env, ...env } });
+  }
+  if (process.platform === "win32" && !/[\\/]/.test(cmd)) {
+    return spawn(cmd, args, { ...opts, shell: true });
+  }
+  return spawn(cmd, args, opts);
 }

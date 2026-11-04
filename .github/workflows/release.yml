@@ -185,9 +185,14 @@ jobs:
         # 0.4.21 首航曾用 continue-on-error 掩盖真实失败：构建步红、job 绿、
         # 无 exe、Release 页缺 Windows 包而无人知。Windows 包是发布的一等
         # 公民（用户令）——失败必须红得可见。
-      - name: List bundle dir (diagnostics)
+      - name: Diagnostics (pwsh) — bundle dir + pnpm shim 原文
         if: always()
-        run: dir /s /b "apps\desktop\src-tauri\target\release\bundle" || dir "apps\desktop\src-tauri\target\release\bundle" || echo "no bundle dir"
+        shell: pwsh
+        run: |
+          if (Test-Path "apps\desktop\src-tauri\target\release\bundle") { Get-ChildItem -Recurse "apps\desktop\src-tauri\target\release\bundle" | Select-Object -ExpandProperty FullName } else { "no bundle dir" }
+          "--- PNPM_HOME ($env:PNPM_HOME) ---"
+          if (Test-Path $env:PNPM_HOME) { Get-ChildItem $env:PNPM_HOME | Select-Object -ExpandProperty Name }
+          if (Test-Path "$env:PNPM_HOME\pnpm.CMD") { "--- pnpm.CMD ---"; Get-Content "$env:PNPM_HOME\pnpm.CMD" }
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
