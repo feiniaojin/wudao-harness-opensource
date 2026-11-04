@@ -179,13 +179,16 @@ describe("LspManager (lazy start · idle reap · crash rebuild)", () => {
     }
   });
 
-  it("a request timeout errors the caller but does NOT kill the server", async () => {
+  it("a request timeout errors the caller but does NOT kill the server", { timeout: 20_000 }, async () => {
     const ws = await makeWorkspace();
     // m 提到 try 外：finally 里要 dispose（构造是懒的，不 spawn，提前无副作用）。
     const m = track(new LspManager({
       workspaceRoot: ws.root,
-      provider: fakeSpec(ws.log, { FAKE_LSP_DELAY_MS: "600", FAKE_LSP_DELAY_ONCE: "1" }),
-      requestTimeoutMs: 120,
+      // 1000/3000（非 120/600）：并行负载下 spawn+initialize 常超 120ms——
+      // 预算放大、关系不变（延迟≫超时→首请求超时不杀服务器；第二条快请求
+      // 仍即时）。it 显式 20s 容纳 3s 延迟。
+      provider: fakeSpec(ws.log, { FAKE_LSP_DELAY_MS: "3000", FAKE_LSP_DELAY_ONCE: "1" }),
+      requestTimeoutMs: 1000,
     }));
     try {
       const doc = { path: ws.docPath, languageId: "typescript", text: "let a = 1;\n" };

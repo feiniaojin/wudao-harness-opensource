@@ -813,7 +813,7 @@ describe("cc-plugins C1: plugin ops over the marketplace engine", () => {
     }
   });
 
-  it("the MOUNTED port probes the live driver for busy (withSettingsOps wiring): refusal mid-run, proceeds at idle", async () => {
+  it("the MOUNTED port probes the live driver for busy (withSettingsOps wiring): refusal mid-run, proceeds at idle", { timeout: 30_000 }, async () => {
     const b = c1Bed();
     try {
       const ops = b.ops();

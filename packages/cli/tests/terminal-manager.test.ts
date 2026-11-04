@@ -44,8 +44,11 @@ function makeManager(spawn: PtySpawnFn, opts: Partial<ConstructorParameters<type
     cwd: process.cwd(),
     spawnFn: spawn,
     shell: TEST_SHELL,
-    settleSilenceMs: 150,
-    settleMaxMs: 8_000,
+    // 900ms 静默窗（非 150）：并行满载下 shell 子进程可在 pty 回显与命令
+    // 输出之间被饿出 >150ms 空隙——早 settle 丢输出（状态存活语义没变，
+    // 变的只是观察预算；预检满载红揭发）。
+    settleSilenceMs: 900,
+    settleMaxMs: 20_000,
     idleTimeoutMs: 10 * 60_000,
     ...opts,
   }));

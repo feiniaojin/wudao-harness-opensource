@@ -20,7 +20,7 @@ const SKIP_DIRS = new Set(["node_modules", "dist", "target", "bundle", "coverage
 
 /** 白名单：路径（仓相对）→ 行数帽（=收录时实测）。按行数降序。 */
 const WHITELIST: Readonly<Record<string, number>> = {
-  "packages/evals/src/suites/deterministic.ts": 7922, // 名册数据表——注册表性质，独立拆分运动项。7902→7922=0.4.3 gate 随源演进（det-25 第八期 python_kernel 钉注 + det-41 model_change 轮询读——套件源自身的钉演进，非产品面增行）
+  "packages/evals/src/suites/deterministic.ts": 7938, // 名册数据表——注册表性质，独立拆分运动项。7902→7938=0.4.21 evals 三套件根治（det-25 第九期工具面随迁 + det-54 回滚环境包装的根因注释 +16）。7922=0.4.3 gate 随源演进（det-25 第八期 python_kernel 钉注 + det-41 model_change 轮询读——套件源自身的钉演进，非产品面增行）
   "packages/cli/src/driver/agent-driver.ts": 7450, // 7145→7450=0.4.20 gate 显式改帽（136-140 弧：流式思考落历史 / agent_root 落盘+恢复继承 / 探针 sessionId 接线 +78；此前 0.4.8 后的存量漂移未显式改帽，本次一并补帽—— 7103→7145=0.4.8 批（133 top1 缓存时钟 resume 挂载：mtime 时钟+registry 价+offer 协同预热跳过——纯决策层薄挂载）。 ω99-326a 已外提类型/纯函数；闭包体分解=后续子弧（326b+）。6765→7055=0.4.3 gate 随源演进（0.4.2 后长程弧批 +290）；拆分压力仍指向 326b+ 闭包体分解
   "packages/web/src/components/App.tsx": 3374, // 3305→3374=0.4.20 gate 显式改帽（139/140 仪表盘入口 + 会话解剖接线 +28； ω99-327a：app-consts/app-panels 外提 1242 行；组件闭包分解=后续子弧
   "packages/cli/src/repl.ts": 3023, // 2994→3023=0.4.20 gate 显式改帽（0.4.5 之后的存量漂移补帽； ω99 拆分运动 batch2：repl-commands.ts 外提 474 行。2971→2994=0.4.3 gate 随源演进（125 轮转接线补缝 + 长程弧零星中文警语行）

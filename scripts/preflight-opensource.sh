@@ -15,7 +15,7 @@
 #   - OS：本地 macOS vs CI ubuntu（dash/bash、大小写敏感 FS、swiftc 缺席
 #     自跳——历史三类平台红已分别在 0.4.21 gate 修掉）
 #   - 已知负载竞速族在并行全量下仍偶发（solo 复跑即绿；CI 遇到同款）
-set -e
+set -e -o pipefail
 
 INTERNAL=/Users/qinyujie/xdev/github/wudao-harness-project/wudao-harness
 OS=/Users/qinyujie/xdev/github/wudao-harness-opensource
