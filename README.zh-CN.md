@@ -6,7 +6,7 @@
 
 wudao-harness 让大模型真正动手干活：它能读写你的代码、跑命令、查网页、操作电脑，把一个任务从开头做到结尾——而不只是陪聊。
 
-支持 DeepSeek / GLM / Qwen / Kimi / MiniMax，配一个 API 密钥就能用。
+配一个 API 密钥就能跑全程。DeepSeek、GLM、Qwen、Kimi、MiniMax 均为原生适配——不是套层兼容皮：模型的思考过程实时可见，长任务不失控、不烧钱。
 
 ## 安装
 

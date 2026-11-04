@@ -6,7 +6,7 @@ English | [简体中文](README.zh-CN.md)
 
 wudao-harness puts a large language model to work: it reads and writes your code, runs commands, searches the web, and drives your computer to carry a task from start to finish — not just chat about it.
 
-Works with DeepSeek / GLM / Qwen / Kimi / MiniMax. One API key and you're running.
+One API key and you're running the whole thing. DeepSeek, GLM, Qwen, Kimi, and MiniMax are supported natively — not through a compatibility shim: their reasoning streams in real time, and long tasks stay on budget.
 
 ## Install
 
