@@ -401,7 +401,13 @@ async function main() {
   const args = process.argv.slice(2);
   const started = Date.now();
   let strategy;
-  if (supportsNodeCompile()) strategy = "node-compile";
+  if (process.platform === "win32") {
+    // Windows 首航对齐出货配方：macOS dmg 一直走 bundled-runtime（node +
+    // bundle + web 资源，每日打包验证）；SEA 探针在 Windows runner 上碰巧
+    // 通过就会走 postject-into-node.exe 的从未验证路径（0.4.21 揭发：探针
+    // 绿≠产物可跑）。等产品面在 Windows 真机验证后再开 SEA 实验。
+    strategy = "bundled-runtime";
+  } else if (supportsNodeCompile()) strategy = "node-compile";
   else if (await seaHealthy()) strategy = "sea";
   else strategy = "bundled-runtime";
   log(
