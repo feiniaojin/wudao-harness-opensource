@@ -2346,5 +2346,11 @@ main().catch((err) => {
   // model bytes): the schedules daemon arms its bounded miss-retry on THIS
   // typed line only. Never parsed prose — a machine chapter.
   if (modelUnreachedStampDue(err)) process.stderr.write(`${SCHEDULE_MODEL_UNREACHED_MARKER}\n`);
+  // vitest 工人进程里绝不 process.exit：m80 一类的接线测试会 module-eval 本
+  // 入口钉构造点，晚到的异步清理拒绝可能在测试收卷后才落入此 catch——
+  // 退进程被 vitest 记为「process.exit unexpectedly called」，全绿变红
+  //（0.4.21 预检满载揭发）。测试环境只写 stderr，不夺 worker 的生存权；
+  // 生产路径不变。
+  if (process.env.VITEST) return;
   process.exit(1);
 });

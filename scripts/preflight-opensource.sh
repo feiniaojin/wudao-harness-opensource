@@ -24,6 +24,10 @@ cd "$INTERNAL"
 echo "=== ① 同步清洗快照到开源仓 ==="
 echo y | ./scripts/sync-opensource.sh push | tail -2
 
+# macOS 缺省 fd 限额会被并行测试文件的 watcher 打穿（EMFILE 警告；ubuntu
+# CI 天生更高）。CI 的本地镜像就该有 CI 的环境。
+ulimit -n 10240 2>/dev/null || true
+
 echo "=== ② 开源仓离线安装 + 全量构建 ==="
 cd "$OS"
 pnpm install --frozen-lockfile --offline --ignore-scripts >/dev/null
