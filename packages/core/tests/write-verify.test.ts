@@ -140,7 +140,9 @@ describe("write-verify: verifier matrix", () => {
     const out = await verifyWrittenFile({ absPath: bad, content: "", workspaceRoot: root, config: ON });
     expect(out.status).toBe("fail");
     if (out.status !== "fail") return;
-    expect(out.errors[0]).toMatch(/^bad\.sh:1: syntax error near unexpected token/);
+    // bash 与 dash 措辞不同（`syntax error near unexpected token …` vs
+    // `Syntax error: "(" unexpected`）——钉的是 file:line 前缀 + 语法错误语义。
+    expect(out.errors[0]).toMatch(/^bad\.sh:1: .*syntax error/i);
   });
   it("silently skips unknown extensions and the enabled:false switch", async () => {
     const file = join(root, "note.md");

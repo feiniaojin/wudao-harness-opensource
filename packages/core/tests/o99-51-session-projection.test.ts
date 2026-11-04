@@ -12,7 +12,7 @@
 // equivalence below is by-construction against a reference backscan whose
 // predicate is copied verbatim from lastTodoBoard.
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync , existsSync } from "node:fs";
 import { join } from "node:path";
 import { parseTodoBoard } from "../src/tools/todo.js";
 import { createProjectionDriver, defineProjection } from "../src/session/projection.js";
@@ -247,12 +247,13 @@ describe("ω99-51 projection base (generic driver, acceptance 6)", () => {
 
 // ---- acceptance 5: the constitution line -----------------------------------
 
+const CONSTITUTION_106 = join(__dirname, "../../../docs/research/106-session-projection-constitution.md");
+
 describe("ω99-51 constitution line (acceptance 5)", () => {
-  it("docs/research/106 exists with the three-domain census, the 4th-domain trigger, and the deferral rationale", () => {
-    const doc = readFileSync(
-      join(__dirname, "../../../docs/research/106-session-projection-constitution.md"),
-      "utf8",
-    );
+  // 开源仓不带 docs/research（内部研究档案，同步脚本有意不拷）——公开树上
+  // 此钉如实显示 skipped；内部树继续全钉。
+  it.skipIf(!existsSync(CONSTITUTION_106))("docs/research/106 exists with the three-domain census, the 4th-domain trigger, and the deferral rationale", () => {
+    const doc = readFileSync(CONSTITUTION_106, "utf8");
     expect(doc).toContain("todo");
     expect(doc).toContain("session_name");
     expect(doc).toContain("goal");

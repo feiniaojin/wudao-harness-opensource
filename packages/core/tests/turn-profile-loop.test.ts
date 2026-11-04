@@ -20,7 +20,9 @@ function slowModel(steps: readonly { content: string; toolCalls?: { id: string; 
       const step = steps[calls];
       calls += 1;
       if (step === undefined) throw new Error("scripted responses exhausted");
-      await sleep(20);
+      // 60ms（非 20）：CI 计时器粒度可吃掉 1-2ms——睡眠越长相对容差越大，
+      // 「桶 ≥ 注入睡眠」的语义在慢计时器上才站得住（0.4.21 CI 揭发：19 vs 20）。
+      await sleep(60);
       return {
         role: "assistant",
         content: step.content,
@@ -66,7 +68,7 @@ describe("夜移 035 — loop wiring: the threaded recorder sees the run's real 
     const p = recorder.complete();
     expect(p.samplingRequestCount).toBe(1);
     expect(p.samplingRetryCount).toBe(0);
-    expect(p.samplingMs).toBeGreaterThanOrEqual(20); // the injected request sleep
+    expect(p.samplingMs).toBeGreaterThanOrEqual(50); // the injected request sleep (60ms − timer-coarseness margin)
     expect(p.compactionMs).toBe(0);
     expect(p.toolBlockingMs).toBe(0);
     expect(p.betweenSamplingOverheadMs).toBe(0); // no second sampling round

@@ -29,7 +29,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync , existsSync } from "node:fs";
 import {
   MAIL_CONTENT_MAX_CHARS, createParentMessageTool, PARENT_MESSAGE_TOOL_NAME,
   MAIL_NO_EDGE_ERROR, formatMailText, createMessageChildTool, createSteerMailbox,
@@ -266,7 +266,9 @@ describe("ω99-66 message-plane conformance — shared invariants", () => {
     expect(imports.every((s) => s === 'from "./mail.js"')).toBe(true);
   });
 
-  it("docs/research/107 exists with the six dimensions, the name double-occupancy record, and the three-step roadmap", () => {
+  // 开源仓不带 docs/research（内部研究档案，同步脚本有意不拷）——公开树上
+  // 此钉如实显示 skipped；内部树继续全钉。
+  it.skipIf(!existsSync(join(import.meta.dirname, "../../../docs/research/107-message-plane-constitution.md")))("docs/research/107 exists with the six dimensions, the name double-occupancy record, and the three-step roadmap", () => {
     const doc = readFileSync(join(import.meta.dirname, "../../../docs/research/107-message-plane-constitution.md"), "utf8");
     expect(doc).toContain("寻址");
     expect(doc).toContain("送达");

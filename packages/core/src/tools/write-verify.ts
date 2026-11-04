@@ -231,10 +231,14 @@ function parsePython(stderr: string): { file: string; line: string; msg: string 
   return out;
 }
 
-/** sh -n: `path: line 3: message` (the repeat echo line is the same error). */
+/** sh -n (the repeat echo line is the same error):
+ *  bash — `path: line 3: message`；dash（Debian 系 /bin/sh）— `path: 3: Syntax error: "(" unexpected`
+ *  （无 "line" 词，消息以 Syntax error 起——只认这个形状，避免把任意 `path: n: …`
+ *  输出误当诊断）。 */
 function parseSh(stderr: string): { file: string; line: string; msg: string }[] {
   for (const line of stderr.split("\n")) {
-    const m = /^(.+?): line (\d+): (.*)$/.exec(line.trim());
+    const t = line.trim();
+    const m = /^(.+?): line (\d+): (.*)$/.exec(t) ?? /^(.+?): (\d+): (Syntax [Ee]rror.*)$/.exec(t);
     if (m !== null) return [{ file: m[1] ?? "", line: m[2] ?? "1", msg: m[3] ?? "" }];
   }
   return [];
