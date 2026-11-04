@@ -30,13 +30,24 @@ const ENTRIES = [
   { id: "b2", kind: "lesson", text: "压缩前先跑测试", tags: [], createdAt: new Date().toISOString(), useCount: 1 },
 ];
 
+/** 满载稳健的元素等待：反复 act 刷直到选择器命中或超时（返回 null 交给断言报红）。 */
+async function untilEl(c: HTMLElement, sel: string, ms = 5000): Promise<Element | null> {
+  const t0 = Date.now();
+  for (;;) {
+    await flush();
+    const el = c.querySelector(sel);
+    if (el !== null || Date.now() - t0 > ms) return el;
+  }
+}
+
 describe("PreferencesTab: 长期记忆段", () => {
   beforeEach(() => { document.body.innerHTML = ""; });
 
   it("条目渲染：kind·用过 N 次 + 文本 + 忘掉按钮", async () => {
     const c = mount(baseClient({ longtermMemoryList: vi.fn().mockResolvedValue({ entries: ENTRIES }) }));
-    await flush(); await flush(); await flush();
-    const sec = c.querySelector("[data-lt-memory]");
+    // 条件轮询（非固定 3 次 flush）：满载下挂载→拉取→setState 的异步链可跨
+    // 宏任务，固定次数的 act 刷不够（0.4.21 预检满载揭发：5 轮全绿后偶发）。
+    const sec = await untilEl(c, "[data-lt-memory]");
     expect(sec).not.toBeNull();
     expect(sec!.textContent).toContain("长期记忆");
     expect(sec!.textContent).toContain("preference · 用过 3 次");
