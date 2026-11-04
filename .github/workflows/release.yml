@@ -58,6 +58,11 @@ jobs:
     runs-on: macos-latest
     needs: build
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    # 0.4.21：账号 macOS runner 分钟两次被 15:00 精确截杀（10 倍费率先被
+    # 私有期烧穿的特征；ubuntu/windows 不受影响）。job 级 continue-on-error
+    # = 取消不再挡 release——dmg 缺席时由发版人从本地验证线构建并经 API
+    # 附上。macOS 预算恢复后此开关保持无害（job 绿则照常出 artifact）。
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
