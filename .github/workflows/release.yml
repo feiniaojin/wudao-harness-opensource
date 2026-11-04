@@ -235,7 +235,11 @@ jobs:
   # ── Create GitHub Release with all artifacts ──────────────────
   release:
     runs-on: ubuntu-latest
-    needs: [build, desktop-macos, desktop-linux, desktop-windows]
+    # macOS 不在依赖表里（0.4.21）：账号 macOS runner 分钟耗尽时 job 卡
+    # queued/被取消，continue-on-error 只保护「失败」不保护这两种态——
+    # needs 等不到就 skip release（dispatched run 实证）。dmg 由本地验证
+    # 线产出 + API 附加；mac 预算恢复后其 artifact 照常出（只是不等它）。
+    needs: [build, desktop-linux, desktop-windows]
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     # Even if desktop builds fail, still create a release
     continue-on-error: true
