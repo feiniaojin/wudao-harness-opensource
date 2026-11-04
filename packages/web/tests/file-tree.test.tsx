@@ -75,7 +75,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-const ROOT = "~/xdev/github/wudao-harness";
+const ROOT = "/w/wudao-harness"; // 清洗稳定：不含个人路径段——开源同步的 /Users 清洗规则不会改写它（reveal 的 absPathFor 依赖 / 开头）
 
 /** A mock FileOpsClient over a mutable path→entries table: later edits are
  *  what the refresh assertions read (the tree must re-fetch, not reuse).

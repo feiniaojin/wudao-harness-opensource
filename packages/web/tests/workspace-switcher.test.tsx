@@ -55,7 +55,7 @@ afterEach(() => {
   delete (window as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
 });
 
-const ROOT = "~/xdev/github/wudao-harness";
+const ROOT = "/w/wudao-harness"; // 清洗稳定：不含个人路径段——开源同步的 /Users 清洗规则不会改写它（reveal 的 absPathFor 依赖 / 开头）
 
 /** A FileOpsClient with the recents op scripted (the structural port: the
  *  two file methods as plain vi.fn's, recentWorkspaces optional). */
