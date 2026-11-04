@@ -178,7 +178,7 @@ describe("ω99-313 B — 缺火补跑只补一次（boot）", () => {
 });
 
 describe("ω99-313 C — 连败熔断", () => {
-  it("3 consecutive cron failures disable the task + ONE notification; no 4th run; success resets; unpause re-opens", async () => {
+  it("3 consecutive cron failures disable the task + ONE notification; no 4th run; success resets; unpause re-opens", { timeout: 60_000 }, async () => {
     let clock = T0;
     const lines: string[] = [];
     let runs = 0;
@@ -197,6 +197,9 @@ describe("ω99-313 C — 连败熔断", () => {
       // Wait for the fire to FULLY settle (the breaker's persist is the last
       // write before the in-flight guard clears — polling `runs` alone races
       // the guard and the next tick would skip).
+      // 60s 测试预算（缺省 20s 在 CI 共享跑机上不够——三轮 fire+persist 的
+      // 真实 fs 轮询在慢盘上每轮可吃数秒；同一提交在另一跑机上全绿，纯
+      // 跑机速度抖动，0.4.21 公开仓首轮 CI 揭发）。
       await poll(async () => (await storedTasks())[0]!.consecutiveFailures === i);
     }
     await poll(() => lines.some((l) => l.includes("连续 3 次没跑成")));
@@ -217,7 +220,7 @@ describe("ω99-313 C — 连败熔断", () => {
     daemon.stop();
   });
 
-  it("a success after failures resets the counter (no trip)", async () => {
+  it("a success after failures resets the counter (no trip)", { timeout: 60_000 }, async () => {
     let clock = T0;
     const results: boolean[] = [false, false, true];
     let i = 0;
