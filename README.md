@@ -8,6 +8,8 @@ wudao-harness puts a large language model to work: it reads and writes your code
 
 One API key and you're running the whole thing. The major Chinese reasoning models are supported natively — not through a compatibility shim: their reasoning streams in real time, and long tasks stay on budget.
 
+<p align="center"><img src="assets/pet.png" alt="The wudao-harness desktop pet" width="190"/> <img src="assets/power-figure.png" alt="its grown-up form" width="120"/></p>
+
 ## Install
 
 ### Desktop app (recommended)

@@ -11,7 +11,14 @@
 // 形象从单张 <img> 换成 2 帧 sheet 的 background-div（steps(1) 换帧需要
 // background-position，img 做不到）；assets 由 scripts/make-logo-sprite.py
 // 产出为 public/pet/skin-<id>.png（logo-sprite.png 退役）。
+// 2026-11-05 用户令「换肤能够切换小精灵或者 power.png 这两种展示，直接改变
+// 形象」——第五肤 power（力量形态=小精灵长大之后的成年形象）：不同形象同一
+// 工厂同一 DOM 契约；帧 1:1（slime 族 390/238），pet.css 只覆写 aspect-ratio
+// （几何契约钉见下方 power 专属 describe）；资产 scripts/make-power-sprite.py。
 import { describe, expect, it, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { PET_SKINS, normalizePetSkinId } from "../src/pet/skins/index.js";
 import { PetSprite, sheetSkin } from "../src/pet/PetSprite.js";
 import type { PetDisplayState } from "../src/pet/pet-state.js";
@@ -28,17 +35,17 @@ const ALL_STATES: readonly PetDisplayState[] = [
   "done",
   "drag",
 ];
-const ALL_SKINS = ["default", "sakura", "lake", "honey"] as const;
+const ALL_SKINS = ["default", "sakura", "lake", "honey", "power"] as const;
 
 afterEach(unmount);
 
-describe("ω99-111 pet 皮肤注册表（四肤）", () => {
-  it("注册表恰为四肤：default/sakura/lake/honey，每肤 component 可渲染且 states 覆盖七值", () => {
+describe("ω99-111 pet 皮肤注册表（五肤：四色 + 力量形态）", () => {
+  it("注册表恰为五肤：default/sakura/lake/honey/power，每肤 component 可渲染且 states 覆盖七值", () => {
     expect(Object.keys(PET_SKINS).sort()).toEqual([...ALL_SKINS].sort());
     for (const id of ALL_SKINS) {
       const skin = PET_SKINS[id];
       expect(typeof skin.component, `skin=${id}`).toBe("function");
-      // 既有钉（ω99-98）四肤同钉：default 必须全覆盖七态 → 每肤都必须。
+      // 既有钉（ω99-98）逐肤同钉：default 必须全覆盖七态 → 每肤都必须。
       expect([...skin.states].sort(), `skin=${id}`).toEqual([...ALL_STATES].sort());
     }
   });
@@ -92,6 +99,37 @@ describe("ω99-111 pet 皮肤注册表（四肤）", () => {
     unmount();
     const c2 = mount(<PetSprite display="idle" />);
     expect(c2.querySelector<HTMLElement>("[data-pet-root]")?.hasAttribute("data-paused")).toBe(false);
+  });
+});
+
+describe("力量形态（power）几何契约钉（0.3.78 教训：DOM 形断言≠几何，逐消费面钉）", () => {
+  const read = (rel: string) =>
+    readFileSync(join(dirname(fileURLToPath(import.meta.url)), rel), "utf8");
+
+  it("pet.css：[data-skin=power] 覆写 aspect-ratio 1/1（成年形态帧 1:1，slime 390/238）", () => {
+    const petCss = read("../src/pet/pet.css");
+    expect(petCss).toContain('[data-skin="power"] .pet-sprite-img');
+    expect(petCss).toContain("aspect-ratio: 1 / 1");
+    // 基线几何不因第五肤漂移：slime 帧比仍是 390/238（既有族契约原样钉）
+    expect(petCss).toContain("aspect-ratio: 390 / 238");
+  });
+
+  it("00-base.css：power 的 sig-avatar 与 hero/connect logo 规则在（URL 同 PET_SKIN_SHEETS）", () => {
+    const base = read("../src/styles/00-base.css");
+    expect(base).toContain('[data-pet-skin="power"] .sig-avatar { background-image: url("/pet/skin-power.png"); }');
+    // hero 盒 64×40 容不下 1:1 帧：power 收窄 width 40px（200% auto 下帧恰合盒高）
+    expect(base).toContain('[data-pet-skin="power"] .hero .logo, [data-pet-skin="power"] .connect-card .logo {');
+    expect(base).toMatch(/\[data-pet-skin="power"\] \.hero \.logo[^}]*width: 40px;/s);
+    expect(base).toContain('url("/pet/skin-power.png")');
+  });
+
+  it("sheet 资产在场：public/pet/skin-power.png（2 帧 1:1，两帧同图）", async () => {
+    const png = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../public/pet/skin-power.png"));
+    expect(png.length, "资产存在且非空").toBeGreaterThan(1000);
+    // PNG IHDR: 宽=高×2（两帧并排，帧 1:1）——字节级几何钉，防再生成时比例漂移
+    const w = png.readUInt32BE(16);
+    const h = png.readUInt32BE(20);
+    expect(w).toBe(h * 2);
   });
 });
 

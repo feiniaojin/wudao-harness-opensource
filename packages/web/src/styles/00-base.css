@@ -267,7 +267,7 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
 .sig-glyph { width: 16px; height: 16px; border-radius: var(--radius-sm); background: var(--surface-2); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-size: var(--fs-caption); font-weight: var(--fw-strong); }
 /* ω99-275: #2 — 助手署名头像=小精灵当前肤（用户令 09-10）：肤由入口在
    <html data-pet-skin> stamp（与 data-theme/data-accent 同一 dataset 开关
-   范式），四条规则按肤取 sheet；16px 单帧裁切同 .pet-avatar 范式
+   范式），五条规则按肤取 sheet；16px 单帧裁切同 .pet-avatar 范式
    （200% auto=单帧恰盒宽零形变，左帧=睁眼）。规则 URL 与
    PET_SKIN_SHEETS（pet/skin-ids.ts 单一事实源）的一致性由
    omega99-275 测试钉。
@@ -285,6 +285,8 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
 [data-pet-skin="sakura"] .sig-avatar { background-image: url("/pet/skin-sakura.png"); }
 [data-pet-skin="lake"] .sig-avatar { background-image: url("/pet/skin-lake.png"); }
 [data-pet-skin="honey"] .sig-avatar { background-image: url("/pet/skin-honey.png"); }
+/* power（力量形态）帧 1:1：16×16 方盒零形变直出，无需几何覆写 */
+[data-pet-skin="power"] .sig-avatar { background-image: url("/pet/skin-power.png"); }
 
 /* 悟道品牌弧（09-15 用户令：悟文字图标→透明底小精灵）——欢迎/断连卡 logo
    换精灵帧，复用 275 单帧裁切家族（200% auto 取左帧、肤随 data-pet-skin、
@@ -301,6 +303,12 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
 [data-pet-skin="sakura"] .hero .logo, [data-pet-skin="sakura"] .connect-card .logo { background-image: url("/pet/skin-sakura.png"); }
 [data-pet-skin="lake"] .hero .logo, [data-pet-skin="lake"] .connect-card .logo { background-image: url("/pet/skin-lake.png"); }
 [data-pet-skin="honey"] .hero .logo, [data-pet-skin="honey"] .connect-card .logo { background-image: url("/pet/skin-honey.png"); }
+/* power（力量形态）帧 1:1：64 宽盒下 200% auto 会给 61px 高帧→竖向裁切；
+   收窄到 40px 方盒（200% auto→帧 40×38.3 恰合 40px 高，4px 栅格不破） */
+[data-pet-skin="power"] .hero .logo, [data-pet-skin="power"] .connect-card .logo {
+  width: 40px;
+  background-image: url("/pet/skin-power.png");
+}
 /* 助手回复正文容器（2026-08-26 spec §3.1 → 116 弧 B 去框化）：surface 底 +
    1px 边线 + radius-md 的卡壳退役——assistant 回复平铺裸底（dsh「90% 面积
    无框」，116 报告廉价感来源 #1 的对话面），只承排版职责（fs-body/1.55/

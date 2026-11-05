@@ -1045,7 +1045,8 @@ fn restore_pet_position(app: &AppHandle, window: &tauri::WebviewWindow) {
 //
 // The pet is the product's face, and the user asked to dress it: four hue
 // variants of the SAME logo slime (the look the user explicitly likes — no
-// redesign), switched from the tray with zero restart: click → persist to
+// redesign) plus the grown form (power — a figure swap, not a hue swap),
+// switched from the tray with zero restart: click → persist to
 // pet-skin.json → broadcast wudao-pet-skin → the live webview re-skins.
 //
 
@@ -1053,10 +1054,13 @@ fn restore_pet_position(app: &AppHandle, window: &tauri::WebviewWindow) {
 /// PET_SKINS (packages/web/src/pet/skins/index.ts). Both sides pin their own
 /// copy and their own tests; a drift is not normalized away at runtime, it
 /// shows up as a review-time diff against either pin (the brief's trade).
-const PET_SKIN_IDS: [&str; 4] = ["default", "sakura", "lake", "honey"];
+/// power (2026-11-05 用户令「换肤能切换小精灵或 power 两种展示，直接改变
+/// 形象」)：小精灵长大之后的成年形态——不是色变是形象变，与四色肤并列第
+/// 五项；sheet 两帧同图（单姿势无眨眼），资产 scripts/make-power-sprite.py。
+const PET_SKIN_IDS: [&str; 5] = ["default", "sakura", "lake", "honey", "power"];
 
 /// Tray display names, one per PET_SKIN_IDS entry, same order.
-const PET_SKIN_NAMES: [&str; 4] = ["经典绿", "樱花粉", "湖水蓝", "蜜橙金"];
+const PET_SKIN_NAMES: [&str; 5] = ["经典绿", "樱花粉", "湖水蓝", "蜜橙金", "力量形态"];
 
 fn pet_skin_display_name(id: &str) -> Option<&'static str> {
     PET_SKIN_IDS
@@ -2269,14 +2273,15 @@ mod pet_skin_tests {
 
     #[test]
     fn skin_list_is_pinned_and_matches_display_names() {
-        // The four ids are pinned ON PURPOSE against the TS side's PET_SKINS
+        // The five ids are pinned ON PURPOSE against the TS side's PET_SKINS
         // (packages/web/src/pet/skins/index.ts): a drift is not silently
         // normalized away at runtime — it reads as a review-time diff here.
-        assert_eq!(PET_SKIN_IDS, ["default", "sakura", "lake", "honey"]);
+        assert_eq!(PET_SKIN_IDS, ["default", "sakura", "lake", "honey", "power"]);
         assert_eq!(pet_skin_display_name("default"), Some("经典绿"));
         assert_eq!(pet_skin_display_name("sakura"), Some("樱花粉"));
         assert_eq!(pet_skin_display_name("lake"), Some("湖水蓝"));
         assert_eq!(pet_skin_display_name("honey"), Some("蜜橙金"));
+        assert_eq!(pet_skin_display_name("power"), Some("力量形态"));
         assert_eq!(pet_skin_display_name("wow"), None);
     }
 

@@ -4,7 +4,9 @@
 // the machine (pet-state.ts), the entry (pet/main.tsx), or the tests'
 // [data-pet-root] contract. ω99-111 fills the registry with four hue
 // variants of the SAME logo slime (default/sakura/lake/honey — sheets from
-// scripts/make-logo-sprite.py) plus the id normalization both wire edges
+// scripts/make-logo-sprite.py) plus the grown form power (力量形态——
+// figure swap, sheet from scripts/make-power-sprite.py), plus the id
+// normalization both wire edges
 // (get_pet_skin command + wudao-pet-skin event) funnel through.
 // ω99-275: #5 — 标识层（id 表 / sheet 路径表 / 换肤事件名 / id 归一）拆到
 // 零依赖的 ./skin-ids.ts：主壳入口（main.tsx stamp html[data-pet-skin]）
@@ -52,10 +54,14 @@ const ALL_STATES: readonly PetDisplayState[] = [
 const SakuraPetSkin = sheetSkin(PET_SKIN_SHEETS.sakura);
 const LakePetSkin = sheetSkin(PET_SKIN_SHEETS.lake);
 const HoneyPetSkin = sheetSkin(PET_SKIN_SHEETS.honey);
+// power = the grown form (成年形态)：a DIFFERENT figure, same factory — the
+// 形象 swap is still just a sheet url, the DOM contract holds for it too.
+const PowerPetSkin = sheetSkin(PET_SKIN_SHEETS.power);
 
 export const PET_SKINS = {
   default: { component: sheetSkin(PET_SKIN_SHEETS.default), states: ALL_STATES },
   sakura: { component: SakuraPetSkin, states: ALL_STATES },
   lake: { component: LakePetSkin, states: ALL_STATES },
   honey: { component: HoneyPetSkin, states: ALL_STATES },
+  power: { component: PowerPetSkin, states: ALL_STATES },
 } as const satisfies Record<PetSkinId, PetSkin>;

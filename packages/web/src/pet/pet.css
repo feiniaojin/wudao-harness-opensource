@@ -69,6 +69,15 @@
   transform-origin: 50% 100%;
 }
 
+/* 力量形态（power，2026-11-05 用户令「换肤直接改变形象」）：小精灵长大之后
+   的成年形态，帧 1:1（make-power-sprite.py 的整幅画布帧）——比 slime 的
+   390/238 方。唯一覆写是 aspect-ratio：width 96 不变 → 96px 高恰满 96×96
+   root（slime 58.6px），成年=更大的存在感；其余几何/运动/眨眼规则全共享
+   （sheet 仍两帧——两帧同图，眨眼翻帧零视觉差，非断帧）。 */
+[data-skin="power"] .pet-sprite-img {
+  aspect-ratio: 1 / 1;
+}
+
 /* ω99-111 — the blink: swap to the closed-eye frame, steps(1,end)
    hard-cut — sprite-sheet convention, no crossfade. Rides EVERY state as
    the second animation in the state's shorthand (transform ≠
