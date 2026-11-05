@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo-256.png" alt="wudao-harness" width="120"/></p>
+<p align="center"><img src="assets/pet.png" alt="wudao-harness 桌面小精灵" width="120"/> <img src="assets/power-figure.png" alt="小精灵长大之后" width="120"/></p>
 
 # wudao-harness
 
@@ -7,8 +7,6 @@
 wudao-harness 让大模型真正动手干活：它能读写你的代码、跑命令、查网页、操作电脑，把一个任务从开头做到结尾——而不只是陪聊。
 
 配一个 API 密钥就能跑全程。主流国产推理模型均为原生适配——不是套层兼容皮：思考过程实时可见，长任务不失控、不烧钱。
-
-<p align="center"><img src="assets/pet.png" alt="wudao-harness 桌面小精灵" width="190"/> <img src="assets/power-figure.png" alt="小精灵长大之后" width="120"/></p>
 
 ## 安装
 
