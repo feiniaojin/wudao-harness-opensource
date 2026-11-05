@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/logo-256.png" alt="wudao-harness" width="120"/></p>
+
 # wudao-harness
 
 English | [简体中文](README.zh-CN.md)
@@ -5,8 +7,6 @@ English | [简体中文](README.zh-CN.md)
 wudao-harness puts a large language model to work: it reads and writes your code, runs commands, searches the web, and drives your computer to carry a task from start to finish — not just chat about it.
 
 One API key and you're running the whole thing. The major Chinese reasoning models are supported natively — not through a compatibility shim: their reasoning streams in real time, and long tasks stay on budget.
-
-<p align="center"><img src="assets/pet.png" alt="The wudao-harness desktop pet" width="220"/></p>
 
 ## Install
 
