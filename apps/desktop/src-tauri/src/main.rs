@@ -910,9 +910,14 @@ fn clamp_to_work_area(pos: PetWindowPosition, area: WorkArea) -> PetWindowPositi
 /// 84 覆盖全谱+2px 余量（死区代价 +1352px² 仍 ≈1/8 原窗）。bubble = the conf size (the 204px
 /// input/ask/hint forms need it). answer = the widened reading form (the
 /// 344px stream bubble + scroll headroom). Unknown modes never guess.
-fn pet_layout_size(mode: &str) -> Result<(f64, f64), String> {
+/// 力量形态（power，2026-11-05）随肤增高：compact 84→120——1:1 帧 88px 高
+/// （pet.css power 块缩小后的宽度）+ 峰值动画 ×1.07 + hop 5px + 头部余量；
+/// 四色 slime 族 58.6px 高维持既有 84 零变。宽度 104 两肤同值（root 96 +
+/// 边距）。换肤即时重应用由 web 侧 usePetLayoutSync 的 skinId 依赖驱动
+/// （Rust 本函数读 pet-skin.json 的持久肤），底中心锚定精灵视觉位置不动。
+fn pet_layout_size(mode: &str, skin: &str) -> Result<(f64, f64), String> {
     match mode {
-        "compact" => Ok((104.0, 84.0)), // ω99-196 走查修正：71→84，动作峰值 headroom（见上 doc）
+        "compact" => Ok((104.0, if skin == "power" { 120.0 } else { 84.0 })), // ω99-196 走查修正：71→84，动作峰值 headroom（见上 doc）
         "bubble" => Ok((f64::from(PET_WINDOW_WIDTH), f64::from(PET_WINDOW_HEIGHT))),
         // ω99-271: #15 — 360×440 → 420×560（用户令 09-10「渲染要更美观」+完整
         // 史）：回答窗从「一屏 344px 流」升为可读的阅读面——史轮进来后 30 轮
@@ -1625,7 +1630,7 @@ fn open_url(url: String) -> Result<(), String> {
 /// String errors; the two callers decide (startup: best-effort; command:
 /// propagate to the web side).
 fn apply_pet_layout(window: &tauri::WebviewWindow, mode: &str) -> Result<(), String> {
-    let (lw, lh) = pet_layout_size(mode)?;
+    let (lw, lh) = pet_layout_size(mode, load_pet_skin(window.app_handle()))?;
     let (Ok(origin), Ok(size)) = (window.outer_position(), window.outer_size()) else {
         return Err("set_pet_layout: pet window rect unreadable".to_string());
     };
@@ -1898,10 +1903,15 @@ mod pet_layout_tests {
         // compact hugs the sprite (96 + 4/侧, 12 底距 + ~59 精灵高 + 13 动作
         // headroom——走查裁定 71→84，done-hop 峰值 81.8 不裁切), bubble =
         // the conf size, answer = the widened reading form; unknown → Err.
-        assert_eq!(pet_layout_size("compact").unwrap(), (104.0, 84.0));
-        assert_eq!(pet_layout_size("bubble").unwrap(), (220.0, 320.0));
-        assert_eq!(pet_layout_size("answer").unwrap(), (420.0, 560.0)); // ω99-271: 阅读面
-        assert!(pet_layout_size("expanded").is_err());
+        assert_eq!(pet_layout_size("compact", "default").unwrap(), (104.0, 84.0));
+        // 力量形态随肤增高：88px 1:1 帧 + 峰值动画/hop + 余量 → 120；
+        // 其余肤维持 84（slime 58.6px 族不变）。
+        assert_eq!(pet_layout_size("compact", "power").unwrap(), (104.0, 120.0));
+        assert_eq!(pet_layout_size("compact", "sakura").unwrap(), (104.0, 84.0));
+        // bubble/answer 不随肤（两形态窗高均远超 88px 帧峰值）
+        assert_eq!(pet_layout_size("bubble", "power").unwrap(), (220.0, 320.0));
+        assert_eq!(pet_layout_size("answer", "default").unwrap(), (420.0, 560.0)); // ω99-271: 阅读面
+        assert!(pet_layout_size("expanded", "default").is_err());
     }
 }
 

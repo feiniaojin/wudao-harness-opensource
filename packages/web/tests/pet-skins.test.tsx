@@ -106,12 +106,22 @@ describe("力量形态（power）几何契约钉（0.3.78 教训：DOM 形断言
   const read = (rel: string) =>
     readFileSync(join(dirname(fileURLToPath(import.meta.url)), rel), "utf8");
 
-  it("pet.css：[data-skin=power] 覆写 aspect-ratio 1/1（成年形态帧 1:1，slime 390/238）", () => {
+  it("pet.css：[data-skin=power] 三件覆写——aspect 1/1 + width 88 + left 4（compact 随肤窗 120 不裁头）", () => {
     const petCss = read("../src/pet/pet.css");
     expect(petCss).toContain('[data-skin="power"] .pet-sprite-img');
     expect(petCss).toContain("aspect-ratio: 1 / 1");
+    expect(petCss).toMatch(/\[data-skin="power"\] \.pet-sprite-img[^}]*width: 88px;/s);
+    expect(petCss).toMatch(/\[data-skin="power"\] \.pet-sprite-img[^}]*left: 4px;/s);
     // 基线几何不因第五肤漂移：slime 帧比仍是 390/238（既有族契约原样钉）
     expect(petCss).toContain("aspect-ratio: 390 / 238");
+  });
+
+  it("换肤即时重应用布局：usePetLayoutSync(mode, skinId) 双依赖（Rust 按肤解析 compact 高度）", () => {
+    const signals = read("../src/pet/signals.ts");
+    expect(signals).toContain("export function usePetLayoutSync(mode: PetLayoutMode, skinId: PetSkinId)");
+    expect(signals).toMatch(/\}, \[mode, skinId\]\);/);
+    const petApp = read("../src/pet/PetApp.tsx");
+    expect(petApp).toContain("usePetLayoutSync(layoutMode, skinId)");
   });
 
   it("00-base.css：power 的 sig-avatar 与 hero/connect logo 规则在（URL 同 PET_SKIN_SHEETS）", () => {

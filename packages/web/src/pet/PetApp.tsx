@@ -45,10 +45,15 @@ export function PetApp() {
   const [awaiting, setAwaiting] = useState(false);
 
   // --- 信号层（hook 调用序=总线注册序；state 帧殿后——pet-root 契约） -------
-  usePetLayoutSync(layoutMode);
   const { delivery, clearDelivery } = usePetDeliverySignal();
   const { selection, clearSelection } = usePetSelectionSignal();
   const skinId = usePetSkinSignal();
+  // ω99-196 — 窗口形态机（layoutSync 无总线注册，插位不占信号序）：Bubble
+  // 上抛 mode → set_pet_layout。挂载首帧 compact（幂等：Rust 启动已预收缩，
+  // 此处兜住「窗口曾在 bubble/answer 形态下被杀」的恢复边角）。
+  // 力量形态（2026-11-05）：skinId 进依赖——换肤即时重应用当前 mode，Rust
+  // 按新肤解析 compact 高度（power 120 / 其余 84），窗随形象长高。
+  usePetLayoutSync(layoutMode, skinId);
   // ω99-237 — toast 的被拒轮回滚（stable setter only——首渲染捕获即安全）：
   // 弹掉末位 live 活格 + 清 awaiting（被拒的轮永无来帧，不回滚就是一行
   // 永久的假「思考中…」）。

@@ -72,11 +72,14 @@ function readFrame(p: unknown): PetFrame | null {
 /** ω99-196 — 窗口形态机：Bubble 上抛 mode → set_pet_layout（Rust 把宠物窗
  *  在 compact/bubble/answer 三态间收缩/扩张，底中心锚定——精灵视觉位置全
  *  态不变，点击死区随无显示归零）。挂载首帧 compact（幂等：Rust 启动已预
- *  收缩，此处兜住「窗口曾在 bubble/answer 形态下被杀」的恢复边角）。 */
-export function usePetLayoutSync(mode: PetLayoutMode): void {
+ *  收缩，此处兜住「窗口曾在 bubble/answer 形态下被杀」的恢复边角）。
+ *  力量形态（2026-11-05）：skinId 进依赖——换肤即时重应用当前 mode（Rust
+ *  pet_layout_size 按持久肤解析 compact 高度：power 120，其余 84；切肤时
+ *  托盘已先持久化再广播，此处读到的一定是新肤）。 */
+export function usePetLayoutSync(mode: PetLayoutMode, skinId: PetSkinId): void {
   useEffect(() => {
     void tauriInvokeCommand("set_pet_layout", { mode });
-  }, [mode]);
+  }, [mode, skinId]);
 }
 
 export interface PetDeliveryHandle {
