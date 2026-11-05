@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """make-power-sprite.py — the pet's fifth skin: 力量形态 (the grown form).
 
-Source      : assets/power.png (用户 2026-11-05 提供——小精灵「长大之后」的
-              形象，1254×1254 RGB 白底)。这份原稿保持原样作为唯一输入源。
+Source      : assets/power.png (用户 2026-11-05 提供、同日换稿——小精灵
+              「长大之后」的形象，1254×1254 RGB 白底，银缘绿身全幅构图：
+              银色轮廓/翼撑到画布边缘，白底只剩缝隙与四角)。原稿原样入库
+              作为唯一输入源；换稿直接覆盖本文件重跑即可。
 Outputs     : packages/web/public/pet/skin-power.png — 2-frame sheet
               (BOTH FRAMES IDENTICAL: the grown form is a single pose; the
               sheet keeps the 2-frame DOM contract so pet-blink simply
@@ -28,7 +30,7 @@ deface the character. Duplicate-frame is the honest fallback):
      clamps to the canvas here — the bbox + margin overruns it), i.e. a
      clean 1:1 frame with the figure's own ~2.6% air. 1:1 keeps every
      consumer box square math exact (pet 96×96 root, hero 40×40 box).
-  3. Downscale to 352×352 (3.7× the pet's 96px display — retina headroom,
+  3. Downscale to 272×272 (2.8× the pet's 96px display — retina headroom,
      same budget band as the slime sheets) with LANCZOS.
   4. Sheet: frame|frame side by side; the README figure at 512×512.
 
@@ -53,7 +55,7 @@ FLOOR = 16   # alpha below this = invisible rim → drop
 ERODE = 2    # px shaved off the silhouette to kill the AA halo
 
 # frame geometry: full-canvas 1:1 (see docstring step 2)
-FRAME = 352          # the sheet frame (3.7× the 96px pet display — 384 overran the budget by 819B)
+FRAME = 272          # the sheet frame (2.8× the 96px pet display — the v2 art is far denser than v1; 352→247KB, 288→174KB)
 FIGURE = 512         # the README figure
 MAX_BYTES = 160 * 1024  # the slime budget ×2 — the grown figure carries
                         # ~2.6× a slime frame's pixels at the same 4× headroom
@@ -149,8 +151,12 @@ def main() -> int:
         return 1
     print(f"figure bbox: {bw}x{bh} at ({left},{top}); frame = full {w}x{h} canvas (bbox+8% overruns)")
 
-    # step 2: the frame IS the canvas (1:1); step 3: downscale
-    frame = knocked.resize((FRAME, FRAME), Image.LANCZOS)
+    # step 2+3: scale the knocked-out figure onto the 1:1 frame at 96%
+    # (full-bleed source has no air — the rim is synthesized here)
+    inner = round(FRAME * 0.96)
+    scaled = knocked.resize((inner, inner), Image.LANCZOS)
+    frame = Image.new("RGBA", (FRAME, FRAME), (0, 0, 0, 0))
+    frame.paste(scaled, ((FRAME - inner) // 2, (FRAME - inner) // 2))
     if not corners_transparent(frame):
         print("FAIL: frame corners not transparent", file=sys.stderr)
         return 1
@@ -163,7 +169,10 @@ def main() -> int:
     os.makedirs(PET_DIR, exist_ok=True)
     sheet_dst = os.path.join(PET_DIR, "skin-power.png")
     sheet.save(sheet_dst, optimize=True)
-    figure = knocked.resize((FIGURE, FIGURE), Image.LANCZOS)
+    fig_inner = round(FIGURE * 0.96)
+    figure = Image.new("RGBA", (FIGURE, FIGURE), (0, 0, 0, 0))
+    figure.paste(knocked.resize((fig_inner, fig_inner), Image.LANCZOS),
+                 ((FIGURE - fig_inner) // 2, (FIGURE - fig_inner) // 2))
     os.makedirs(ASSETS_DIR, exist_ok=True)
     figure_dst = os.path.join(ASSETS_DIR, "power-figure.png")
     figure.save(figure_dst, optimize=True)
