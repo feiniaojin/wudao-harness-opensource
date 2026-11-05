@@ -30,9 +30,9 @@ deface the character. Duplicate-frame is the honest fallback):
      clamps to the canvas here — the bbox + margin overruns it), i.e. a
      clean 1:1 frame with the figure's own ~2.6% air. 1:1 keeps every
      consumer box square math exact (pet 96×96 root, hero 40×40 box).
-  3. Downscale to 272×272 (2.8× the pet's 96px display — retina headroom,
+  4. Downscale to 272×272 (2.8× the pet's 96px display — retina headroom,
      same budget band as the slime sheets) with LANCZOS.
-  4. Sheet: frame|frame side by side; the README figure at 512×512.
+  5. Sheet: frame|frame side by side; the README figure at 512×512.
 
 Self-checks (exit non-zero on any failure): the sheet is exactly two
 frames; the two frames are pixel-identical (the no-blink contract); every
@@ -54,7 +54,12 @@ TOL = 30     # flood tolerance: near-white = channel >= 255-TOL
 FLOOR = 16   # alpha below this = invisible rim → drop
 ERODE = 2    # px shaved off the silhouette to kill the AA halo
 
-# frame geometry: full-canvas 1:1 (see docstring step 2)
+# despeckle: v2 source background texture — blobs smaller than this (at
+# the 1254×1254 source scale) are noise, not art. The main figure is ~1M
+# px; nothing hand-drawn lives under 2k.
+DESPECKLE_MIN = 2000
+
+# frame geometry: full-canvas 1:1 (see docstring step 3)
 FRAME = 272          # the sheet frame (2.8× the 96px pet display — the v2 art is far denser than v1; 352→247KB, 288→174KB)
 FIGURE = 512         # the README figure
 MAX_BYTES = 160 * 1024  # the slime budget ×2 — the grown figure carries
@@ -128,6 +133,39 @@ def knockout(im: Image.Image) -> Image.Image:
     return out
 
 
+def despeckle(im: Image.Image) -> Image.Image:
+    """Zero every connected opaque component under DESPECKLE_MIN px (the
+    v2 background's off-white texture — step 2). 4-connectivity, source
+    resolution; the figure is one component orders of magnitude larger."""
+    w, h = im.size
+    px = im.load()
+    op = bytearray(w * h)
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] > 0:
+                op[y * w + x] = 1
+    seen = bytearray(w * h)
+    from collections import deque as _dq
+    for y0 in range(h):
+        for x0 in range(w):
+            if not op[y0 * w + x0] or seen[y0 * w + x0]:
+                continue
+            comp: list[tuple[int, int]] = []
+            q = _dq([(x0, y0)])
+            seen[y0 * w + x0] = 1
+            while q:
+                cx, cy = q.popleft()
+                comp.append((cx, cy))
+                for nx, ny in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                    if 0 <= nx < w and 0 <= ny < h and op[ny * w + nx] and not seen[ny * w + nx]:
+                        seen[ny * w + nx] = 1
+                        q.append((nx, ny))
+            if len(comp) < DESPECKLE_MIN:
+                for cx, cy in comp:
+                    px[cx, cy] = (0, 0, 0, 0)
+    return im
+
+
 def corners_transparent(frame: Image.Image) -> bool:
     w, h = frame.size
     px = frame.load()
@@ -139,7 +177,7 @@ def main() -> int:
     w, h = im.size
     print(f"source: {w}x{h}")
 
-    knocked = knockout(im)
+    knocked = despeckle(knockout(im))
     bbox = knocked.getbbox()
     if bbox is None:
         print("FAIL: nothing survived the knockout (tolerance too wide?)", file=sys.stderr)
@@ -186,6 +224,43 @@ def main() -> int:
     sw, sh = loaded.size
     if (sw, sh) != (FRAME * 2, FRAME):
         print(f"FAIL: sheet {sw}x{sh} is not two {FRAME}x{FRAME} frames", file=sys.stderr)
+        ok = False
+    # despeckle 自检：背景必须空——任何离主形体 bbox >6px 的不透明连通域
+    # 都是漏网噪点（v2 修前：1,972 个 ≤76px 浮点）。贴着形体的碎片不算：
+    # 羽丝尖端在 ÷4.6 缩放后从主体断开，是艺术细节不是噪声（实测 200 个
+    # 全部贴合主形体 bbox ±1px）。
+    f_check = loaded.crop((0, 0, FRAME, FRAME))
+    fp = f_check.load()
+    seen_b = bytearray(FRAME * FRAME)
+    boxes: list[tuple[int, int, int, int, int]] = []  # (n, x0, y0, x1, y1)
+    for yy in range(FRAME):
+        for xx in range(FRAME):
+            if fp[xx, yy][3] > 0 and not seen_b[yy * FRAME + xx]:
+                from collections import deque as _dq2
+                q = _dq2([(xx, yy)])
+                seen_b[yy * FRAME + xx] = 1
+                n = 0
+                x0 = x1 = xx
+                y0 = y1 = yy
+                while q:
+                    cx, cy = q.popleft()
+                    n += 1
+                    x0, x1 = min(x0, cx), max(x1, cx)
+                    y0, y1 = min(y0, cy), max(y1, cy)
+                    for nx, ny in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                        if 0 <= nx < FRAME and 0 <= ny < FRAME and fp[nx, ny][3] > 0 and not seen_b[ny * FRAME + nx]:
+                            seen_b[ny * FRAME + nx] = 1
+                            q.append((nx, ny))
+                boxes.append((n, x0, y0, x1, y1))
+    main = max(boxes, key=lambda b: b[0])
+    floaters = []
+    for n, x0, y0, x1, y1 in boxes:
+        dx = max(main[1] - x1, x0 - main[3], 0)
+        dy = max(main[2] - y1, y0 - main[4], 0)
+        if max(dx, dy) > 6:
+            floaters.append((n, x0, y0, x1, y1))
+    if floaters:
+        print(f"FAIL: {len(floaters)} isolated opaque blobs (noise) far from the figure: {floaters[:5]}", file=sys.stderr)
         ok = False
     f_open = loaded.crop((0, 0, FRAME, FRAME))
     f_closed = loaded.crop((FRAME, 0, FRAME * 2, sh))
