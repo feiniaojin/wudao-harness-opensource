@@ -1,5 +1,7 @@
 <p align="center"><img src="assets/pet.png" alt="wudao-harness 桌面小精灵" width="120"/> → <img src="assets/power-figure.png" alt="小精灵长大之后" width="120"/></p>
 
+<p align="center"><em>愿景：从史莱姆，长成克苏鲁。</em></p>
+
 # wudao-harness
 
 [English](README.md) | 简体中文

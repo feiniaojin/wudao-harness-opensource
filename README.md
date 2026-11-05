@@ -1,5 +1,7 @@
 <p align="center"><img src="assets/pet.png" alt="The wudao-harness desktop pet" width="120"/> → <img src="assets/power-figure.png" alt="its grown-up form" width="120"/></p>
 
+<p align="center"><em>Vision: from a slime, into a Cthulhu.</em></p>
+
 # wudao-harness
 
 English | [简体中文](README.zh-CN.md)
