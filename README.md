@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/pet.png" alt="The wudao-harness desktop pet" width="120"/> <img src="assets/power-figure.png" alt="its grown-up form" width="120"/></p>
+<p align="center"><img src="assets/pet.png" alt="The wudao-harness desktop pet" width="120"/> → <img src="assets/power-figure.png" alt="its grown-up form" width="120"/></p>
 
 # wudao-harness
 
