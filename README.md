@@ -1,5 +1,3 @@
-<p align="center"><img src="assets/logo-256.png" alt="wudao-harness" width="120"/></p>
-
 # wudao-harness
 
 English | [简体中文](README.zh-CN.md)
