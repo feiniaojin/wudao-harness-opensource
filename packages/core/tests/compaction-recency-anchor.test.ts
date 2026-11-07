@@ -17,11 +17,13 @@ import {
   SUMMARY_AUTHORITY_LINE,
   RECENCY_ANCHOR_CAP_CHARS,
 } from "../src/compaction.js";
+import { SUMMARY_BASE_INSTRUCTION } from "../src/compaction-summarizer.js";
 import type { ModelClient, ModelInput } from "../src/model-client.js";
 import type { AgentMessage } from "../src/types.js";
 
-const STATUS_QUO_INSTRUCTION =
-  "Summarize the conversation above for continuation (max 300 words, preserving key facts, decisions, file paths, and open tasks). Always mention: the current in-progress todo item and the files currently being edited.";
+// 模板已改为结构化 8 段（2026-11-06 质量弧）——这里直接引用源常量，
+// 不再手抄一份会漂移的副本。
+const STATUS_QUO_INSTRUCTION = SUMMARY_BASE_INSTRUCTION;
 
 /** A model that records every ModelInput and answers one fixed body. */
 function recordingModel(answer = "SUMMARY-BODY"): { model: ModelClient; inputs: ModelInput[] } {

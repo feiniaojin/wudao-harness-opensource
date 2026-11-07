@@ -355,6 +355,10 @@ export function createEditTool(options: {
 }) {
   return buildTool({
     name: "edit",
+    promptSnippet: "exact string replacement in a file",
+    promptGuidelines: [
+      "old_string must be unique; copy it from a read_file result, never from memory.",
+    ],
     description:
       "Replace text in a file. old_string must match the file exactly and be unique; smart quotes are normalized and leading/trailing whitespace tolerated when that yields exactly ONE match. Extra blank lines around old_string and whole-block indentation-level differences are tolerated (again only on a unique match). Fails with 'file changed since your last read' when the file changed externally after your last read_file — re-read it first. Pass replace_all: true to replace every exact occurrence instead of requiring uniqueness. " +
       "Example: {path: 'src/api.ts', old_string: 'const TIMEOUT = 30;', new_string: 'const TIMEOUT = 60;'}. " +

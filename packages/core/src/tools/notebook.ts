@@ -56,6 +56,7 @@ export function createNotebookTool(options: { readonly workspaceRoot?: string; r
 
   return buildTool({
     name: "notebook",
+    promptSnippet: "read or edit a Jupyter notebook's cells",
     description: NOTEBOOK_DESCRIPTION,
     parameters: {
       type: "object",

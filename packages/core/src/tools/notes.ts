@@ -235,6 +235,11 @@ export function createNotesTools(options: NotesToolOptions): Tool[] {
 
   const noteWrite: Tool = buildTool({
     name: "note_write",
+    promptSnippet: "record a task decision/convention/pitfall/checklist worth keeping",
+    promptGuidelines: [
+      "Write the WHY, not the what — the code already records what it does.",
+      "These survive compaction and are visible to later work on the same mission.",
+    ],
     description:
       "长任务中的重要发现、决策、中间数据——写下笔记确保压缩后仍可查回。每条笔记是一个独立 markdown 文件（本会话目录 .wudao/notes/ 下，时间戳命名，只增不改），自动记录时间与会话归属；可选 tag 供 note_read 分类检索。上下文压缩不会碰这些文件。写给「未来的自己」：一条笔记一个要点，先结论后细节。",
     parameters: WRITE_PARAMETERS,
@@ -283,6 +288,7 @@ export function createNotesTools(options: NotesToolOptions): Tool[] {
 
   const noteRead: Tool = buildTool({
     name: "note_read",
+    promptSnippet: "read back the task notes recorded earlier",
     description:
       "读取本会话已保存的笔记（note_write 写下的），时间倒序、带 tag 与全文。长任务被上下文压缩后，用这个工具查回之前主动保存的发现/决策/中间数据——比 search_history 更准：笔记是当时提炼过的结论，不是原始对话。按 tag 过滤可缩小范围；上限由 limit 控制。",
     parameters: READ_PARAMETERS,

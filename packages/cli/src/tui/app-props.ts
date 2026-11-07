@@ -85,6 +85,9 @@ export interface WudaoAppProps {
   readonly gates?: import("@wudao-org/core").LoopGates;
   /** M23 turn fuse (env/longTask-resolved). Falls back to maxTurns(). */
   readonly maxTurns?: number;
+  /** ω-long-2 budget-window resets (弧 C). Absent → defaultMaxSlices()
+   *  (unlimited); 0 disables slicing (maxTurns becomes a hard stop again). */
+  readonly maxSlices?: number;
   /** M27 skills (loaded by the caller): drive the prompt tail manifest (only
    *  when a read tool is present) and `/skill:name` resolution. */
   readonly skills?: readonly LoadedSkill[];

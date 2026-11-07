@@ -101,6 +101,11 @@ export function criticPrompt(snap: CriticBoardSnapshot, taskStatement: string, r
 export function createCriticReviewTool(opts: CriticReviewOptions): Tool {
   return buildTool({
     name: "critic_review",
+    promptSnippet: "adversarial review of the finished board before you report done",
+    promptGuidelines: [
+      "Run it before declaring a long task complete: it checks the done items against the task's own acceptance words.",
+      "It returns reopen suggestions; acting on them stays your decision.",
+    ],
     description:
       "Adversarial completion review — an INDEPENDENT review pass over your todo board's done items against the task statement. Call it before declaring a long task (≥3 steps) done: it returns pass, or per-item reopen gaps you then fix (flip the item back via todo_write, do the work, review again). Read-only. The verdict lands in the transcript — an honest audit of what you claimed done.",
     parameters: {

@@ -130,6 +130,7 @@ function receiptPreview(text: string): string {
 export function createSetDocxHeaderTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "set_docx_header",
+    promptSnippet: "set a Word document's header or footer",
     description:
       "设置 Word 文档的页眉或页脚（每页相同；已有则替换）。适合「帮这份 Word 加个页眉」「给这份文档加个页脚」类请求；与读取的 read_docx、追加内容的 append_docx 配套。" +
       " path 是文档相对工作区的路径。which 选页眉（header）还是页脚（footer）。text 是要设置的内容（1–4000 字，可换行）。" +
@@ -226,6 +227,7 @@ export function summarizeSetDocxHeader(input: Record<string, unknown>): string {
 export function createClearDocxHeaderTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "clear_docx_header",
+    promptSnippet: "remove a Word document's header or footer",
     description:
       "删除 Word 文档的页眉或页脚（从文件里彻底移除，不是留空）。适合「帮我把这份简历的页眉去掉」「这个文档不要页脚」「首页那页的页码去掉」「左页那栏页眉不要了」类请求；与设置页眉的 set_docx_header、设置首页不同的 set_docx_first_page 配套。" +
       " path 是文档相对工作区的路径。which 选删除页眉（header，默认）还是页脚（footer）。refType 选删哪一档：default（每页都有的普通页眉/页脚，不填默认）、first（首页专属那档——删掉后首页跟随全篇样式）或 even（偶数页专属那档——只删偶数页的引用与部件，不动「奇偶页不同」开关本身，要整个关掉开关用 set_docx_even_pages）。" +
@@ -318,6 +320,7 @@ export function createClearDocxHeaderTool(workspaceRoot: string): Tool {
 export function createSetDocxFirstPageTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "set_docx_first_page",
+    promptSnippet: "make a Word document's first page differ from the rest",
     description:
       "设置 Word 文档的首页是否与其他页不同（典型：「首页不要页眉」「封面不带页眉」「首页不要页码」）。与每页设置页眉的 set_docx_header、删除页眉的 clear_docx_header 配套。" +
       " path 是文档相对工作区的路径。firstDifferent 为 true 时首页与其他页分开：不填 headerText 就是首页无页眉（最常用）；填 headerText 则首页单独用这段页眉（1–4000 字，可换行）；footerText 同理给首页专属页脚（不填=首页无页脚，填了=首页单独用这段页脚）。firstDifferent 为 false 时回到全篇相同（首页专属页眉/页脚会被移除，每页的普通页眉页脚保留）。" +
@@ -424,6 +427,7 @@ export function createSetDocxFirstPageTool(workspaceRoot: string): Tool {
 export function createSetDocxEvenPagesTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "set_docx_even_pages",
+    promptSnippet: "make a Word document's odd and even pages differ",
     description:
       "设置 Word 文档的奇偶页是否不同（对应 Word 的「奇偶页不同」：左右页可用不同页眉页脚——书籍、双面打印的报告常用，典型「偶数页页眉放书名、奇数页放章节名」「左页右页的页码位置分开」）。与每页设置页眉的 set_docx_header、首页不同的 set_docx_first_page 配套。" +
       " path 是文档相对工作区的路径。evenOddDifferent 为 true 时开启：不填 evenHeaderText/evenFooterText 就是偶数页不另设内容；填了则偶数页单独用这段页眉/页脚（1–4000 字，可换行）。evenOddDifferent 为 false 时关闭：偶数页专属页眉/页脚被移除，文档回到全篇相同（每页的普通页眉页脚保留）。" +

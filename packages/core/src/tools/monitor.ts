@@ -412,6 +412,11 @@ export function createMonitorTools(deps: MonitorToolDeps): Tool[] {
 
   const monitorStart = buildTool({
     name: "monitor_start",
+    promptSnippet: "start a background watch that wakes you on output or exit",
+    promptGuidelines: [
+      "This is the alternative to polling: never loop sleep + re-check on a long command.",
+      "Collect what the watch produced with monitor_read.",
+    ],
     description:
       "Start a non-blocking watch and return immediately. kind=command spawns the shell command in the workspace and watches its output; kind=tail watches a workspace file for appended lines (for servers started outside the harness). Optional once-only wake conditions (composable): keyword (a new line contains the literal substring), lines (that many new lines accumulated), silenceMs (no new output for that long — the hang detector). Every watch also fires exactly one terminal event (exit/deleted/ttl/error). Events arrive between turns as [monitor <id>] user messages. ttlMs defaults to 30m, max 2h.",
     parameters: {
@@ -533,6 +538,7 @@ export function createMonitorTools(deps: MonitorToolDeps): Tool[] {
 
   const monitorList = buildTool({
     name: "monitor_list",
+    promptSnippet: "list the watches currently running",
     description: "List this session's monitor watches (id, kind, target, armed conditions, age, which wakes already fired, buffered bytes).",
     parameters: { type: "object", properties: {}, additionalProperties: false },
     isReadOnly: () => true,
@@ -552,6 +558,7 @@ export function createMonitorTools(deps: MonitorToolDeps): Tool[] {
 
   const monitorStop = buildTool({
     name: "monitor_stop",
+    promptSnippet: "stop a watch you no longer need",
     description: "Stop one of this session's monitor watches by its 8-character id (see monitor_list). For a command watch this terminates the watched process (SIGTERM, then SIGKILL after 5s).",
     parameters: {
       type: "object",
@@ -576,6 +583,10 @@ export function createMonitorTools(deps: MonitorToolDeps): Tool[] {
 
   const monitorRead = buildTool({
     name: "monitor_read",
+    promptSnippet: "collect what a running watch has produced so far",
+    promptGuidelines: [
+      "Drain it before deciding the watch is done — events arrive between turns.",
+    ],
     description:
       "Read new output from one of this session's live monitor watches — everything buffered since your last read of it (the first read returns everything still in the ring). This is the on-demand lane BETWEEN event wakes: conditions fire once each, so when you want to see what a watched command is printing right now, read it. Oversized increments are tail-shaped like event payloads.",
     parameters: {

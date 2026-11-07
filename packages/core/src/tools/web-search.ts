@@ -128,6 +128,10 @@ export function createWebSearchTool(config: WebSearchConfig) {
 
   return buildTool({
     name: "web_search",
+    promptSnippet: "search the web",
+    promptGuidelines: [
+      "For anything time-sensitive or newer than your training data — do not answer those from memory.",
+    ],
     description: "Search the web (configured provider: searxng or brave) and return a numbered list of results " +
       "(title — url + snippet, up to the configured count). Zero-result queries say so plainly. " +
       "Example: {query: 'node dns.lookup all option'} finds current docs. " +

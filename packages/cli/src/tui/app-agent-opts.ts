@@ -1,7 +1,7 @@
 // 拆分运动弧 C：从 app.tsx 原样外提的 useAgent opts 构造器（buildAgentOptions）——
 // 纯对象装配（零 hook）；函数体与原内联字面量逐字节同源（头部一次性解构注入
 // 局部名，props 整体随依赖传入）。
-import { maxTurns, VERSION } from "../version.js";
+import { defaultMaxSlices, maxTurns, VERSION } from "../version.js";
 import { modelLabel, summarizeToolCall } from "../log.js";
 import type { AgentHooks, AgentMessage, AgentState, IdentifiedOutputDelta } from "@wudao-org/core";
 import type { KeyPool } from "@wudao-org/providers";
@@ -97,6 +97,8 @@ export function buildAgentOptions(d: AgentOptsDeps): UseAgentOptions {
     systemPrompt,
     canUseTool: modeGate,
     maxTurns: props.maxTurns ?? maxTurns(),
+    // ω-long-2：撞轮次上限只重置预算窗续跑，不结束 run（与 REPL 同一默认）。
+    maxSlices: props.maxSlices ?? defaultMaxSlices(),
     gates: props.gates,
     initialMessages: loadedRef.current,
     sessionId,

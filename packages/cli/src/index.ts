@@ -157,6 +157,8 @@ import {
 } from "./lifecycle.js";
 import { VERSION } from "./version.js";
 import { stdoutGuard } from "./output-guard.js";
+import { diagLine } from "./answer-only-channel.js";
+import { installSigtermExit } from "./signal-exit.js";
 
 // Auto-load a .env file (from cwd, walking up to 5 parents) so the API key /
 // baseURL / model don't need to be exported manually. Existing process.env wins.
@@ -625,11 +627,9 @@ async function main(): Promise<void> {
   // Best-effort MCP shutdown on hard exits (SIGINT paths call process.exit):
   // close()'s synchronous stdin-EOF still runs; the 2s wait/SIGTERM may not.
   // P2-9: the language server gets the same hard-exit sweep.
-  process.once("exit", () => {
-    bestEffortCloseMcpTools();
-    bestEffortCloseLspTools();
-    bestEffortCloseTerminalTools(); // P2-12: the PTY sessions get the same hard-exit sweep
-  });
+  const closeSidecars = (): void => { bestEffortCloseMcpTools(); bestEffortCloseLspTools(); bestEffortCloseTerminalTools(); }; // P2-12: PTY 同款 hard-exit sweep
+  process.once("exit", closeSidecars);
+  installSigtermExit({ cleanup: closeSidecars });
 
   if (parseSessionFlags(argv).list) {
     // M33 §3: the table — id · mtime · messages · first user message (50) ·
@@ -1462,11 +1462,13 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     // ω99-315: subagent children run under the same idle watchdog budget.
     ...(streamIdle !== undefined ? { streamIdle } : {}),
   });
-  process.stdout.write(`模型：${modelLabel(config)}\n`); // ω99-199: #6
-  process.stdout.write(`session: ${sessionId}\n`);
+  // 134：answer-only 只让**终答**走 stdout，诊断换到 stderr（见 answer-only-channel.ts）。
+  const answerOnly = argv.includes("--answer-only");
+  diagLine(`模型：${modelLabel(config)}\n`, answerOnly); // ω99-199: #6
+  diagLine(`session: ${sessionId}\n`, answerOnly);
   // M25 §A3: announce a resumed session in one line (never replay the log).
   // M28: sessions with model-state entries show the last model + effort.
-  if (history.length > 0) process.stdout.write(`${formatOneShotResumeLine(sessionId, history.length, lastModel)}\n`);
+  if (history.length > 0) diagLine(`${formatOneShotResumeLine(sessionId, history.length, lastModel)}\n`, answerOnly);
   // M49 §4: the one-shot's taint tracker — read_file / MCP results get the
   // WeakMap taint bit; the sidecar layer classifies args embedding tracked
   // content as [untrusted].
@@ -1731,7 +1733,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       // one-shot tool set carries the computer octet (computer_click probes
       // it — mounts as a unit; same gate family as the read-tool skills
       // probe above).
-      systemPrompt: buildSystemPrompt(workspaceRoot, mcpTools.length > 0, tools.some((t) => t.name === "read_file") ? (skills ?? []) : [], peerRuntime.refusal === undefined, tools.some((t) => t.name === "computer_click")),
+      systemPrompt: buildSystemPrompt(workspaceRoot, mcpTools.length > 0, tools.some((t) => t.name === "read_file") ? (skills ?? []) : [], peerRuntime.refusal === undefined, tools.some((t) => t.name === "computer_click"), tools),
       messages: [...history, {
         role: "user",
         content: planMode
@@ -1967,8 +1969,6 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       headlessGoal?.onRunEnd({});
     };
     let streamed = false;
-    // 134（马拉松基建+产品改进）——answer-only：抑制流式/元数据，仅输出终答。
-    const answerOnly = argv.includes("--answer-only");
     // ω99-134: one stream per runPass — started/finished pair inside the same
     // pass's event stream (132's runTurn scope rule), so the card's NAME
     // lookup can neither leak ids across passes nor alias a reused id.
@@ -2193,7 +2193,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     // 打印仍 info 档门（数据层不受详略门）。
     {
       await appendRunStatsReceipt(store, sessionId, { runStartMs, llmMs, toolMs, toolCalls, idleReconnects, cacheDebtTokens }).catch(() => { /* ω99-217 同款：收据落盘失败绝不破坏 run 的收尾 */ });
-      if (ge("info")) stdoutGuard.writeRawStdout(`\x1b[2m${formatRunStats(performance.now() - runStartMs, llmMs, toolMs, toolCalls, idleReconnects, 0, cacheDebtTokens)}\x1b[0m\n`);
+      if (ge("info")) diagLine(`\x1b[2m${formatRunStats(performance.now() - runStartMs, llmMs, toolMs, toolCalls, idleReconnects, 0, cacheDebtTokens)}\x1b[0m\n`, answerOnly);
       // M-Memory 弧第二半：one-shot 的会话终了沉淀（确定性提炼，静默；AWAIT
       // ——one-shot 此后就是 process exit，fire-and-forget 会跟退出竞速丢条）。
       await oneShotLtsMemory.captureAtSessionEnd({ sessionId, messages: state.messages }).catch(() => {});

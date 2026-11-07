@@ -194,6 +194,11 @@ const PARAMETERS: ToolParameterSchema = {
 export function createNewContextTool(getPort: () => NewContextPort | undefined): Tool {
   return buildTool({
     name: NEW_CONTEXT_TOOL_NAME,
+    promptSnippet: "rotate to a fresh context window when this one has become baggage",
+    promptGuidelines: [
+      "Use it when a sub-task just finished and the old exploration is now dead weight — not as a substitute for finishing the current step.",
+      "Pass the facts that must survive (conclusions, file paths, decisions); anything you leave out is gone.",
+    ],
     description:
       "主动轮转上下文：把当前历史冻结为一份摘要，开一个干净的新窗口继续（session 不变、环境状态不变）。在【一个子任务刚完成且旧上下文不再需要】时使用；不要在任务中途使用——未完成的活跃状态（刚读的文件内容、进行中的推理链）会被压缩掉。先写 note_write 想保留的细节，再用本工具轮转。每会话上限 10 次；工具结果会告知新窗口号。",
     parameters: PARAMETERS,

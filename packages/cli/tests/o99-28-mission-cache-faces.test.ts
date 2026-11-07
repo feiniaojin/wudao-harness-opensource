@@ -122,22 +122,23 @@ describe("ω99-28 T1 — mission lifecycle header faces ride the seam byte-stabl
     expect(takePendingBundleColdAttribution()).toBeUndefined(); // no bytes moved — nothing to declare
   });
 
-  it("② the mount changes bytes EXACTLY ONCE (manifest tail only) and the break lands named", async () => {
+  it("② the mount does NOT touch the prompt — the change rides a persisted tail message", async () => {
     const ws = mkdtempSync(join(tmpdir(), "o28-ws-"));
     roots.push(ws);
     const session = await bootSession(ws, { withBundleSkills: true });
     await session.missionBox.current!.start("campaign");
     const before = session.driver.state.systemPrompt;
+    const msgCountBefore = session.driver.state.messages.length;
     makeBundle(ws, "demo", ["alpha"]);
     await session.missionBox.current!.bundle("demo");
-    const after = session.driver.state.systemPrompt;
-    expect(after).not.toBe(before); // the ONE byte change…
-    expect(stripSkillsTail(after)).toBe(stripSkillsTail(before)); // …is the manifest tail ONLY (peer tail intact)
-    expect(manifestNames(after)).toEqual(["alpha"]);
-    expect(takePendingBundleColdAttribution()).toBe("mission-bundle:mount demo"); // the named declaration
-    // idempotence: a no-op rescan moves nothing further — exactly one change total
-    await rescanExtensionsAt(ws);
-    expect(session.driver.state.systemPrompt).toBe(after);
+    // 2026-11-06 KV 缓存红线：会话内提示词冻结——挂载不再改任何前缀字节。
+    expect(session.driver.state.systemPrompt).toBe(before);
+    // 变化改走持久化的尾消息（skills_changed 增量），模型照样知道 alpha 上线。
+    const tail = session.driver.state.messages.at(-1);
+    expect(session.driver.state.messages.length).toBeGreaterThan(msgCountBefore);
+    expect(tail?.role).toBe("user");
+    expect(String(tail?.content)).toContain("alpha");
+    expect(String(tail?.content)).toContain("skills_changed");
   });
 
   it("③ start over a STALE-MOUNTED dead ledger (terminal mission left skills live) drops them in ONE named move", async () => {
@@ -156,11 +157,12 @@ describe("ω99-28 T1 — mission lifecycle header faces ride the seam byte-stabl
     expect(session.driver.state.systemPrompt).toBe(before);
     // …the NEXT start is the single named move: the dead packs' skills die now
     await c.start("next campaign");
-    const after = session.driver.state.systemPrompt;
-    expect(after).not.toBe(before);
-    expect(stripSkillsTail(after)).toBe(stripSkillsTail(before)); // tail-only again
-    expect(manifestNames(after)).not.toContain("sx");
-    expect(takePendingBundleColdAttribution()).toBe("mission-bundle:unmount bx");
+    // 2026-11-06 KV 缓存红线：提示词冻结，卸载同样不动前缀；死包的 skill 走
+    // 持久化尾消息告知下线。
+    expect(session.driver.state.systemPrompt).toBe(before);
+    const tail = session.driver.state.messages.at(-1);
+    expect(String(tail?.content)).toContain("sx");
+    expect(String(tail?.content)).toContain("Removed");
   });
 
   it("④ mount seam regression: the ω99-24 chain still parks + names exactly as before (zero-change pin)", async () => {

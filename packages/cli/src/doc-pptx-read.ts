@@ -174,6 +174,7 @@ function fmtCount(n: number): string {
 export function createReadPptxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "read_pptx",
+    promptSnippet: "read a presentation's slide text",
     description:
       "读取工作区里现有的演示文稿（.pptx），把每一页的文字内容变成文本，用于查看、核对、摘录、总结和再加工——「帮我看下 / 总结 / 提取这个 PPT 都写了什么」类请求都用它；与生成演示文稿的 make_pptx 相对，两者合起来可完成「读现有 PPT → 整理 → 给出新 PPT」。" +
       " path 是文件相对工作区的路径。offset / limit 可选：按「张」翻页——从第几张开始读（1 起）与这次最多读多少张；缺省从第 1 张读到结尾（单次最多 100 张，更多分次读）。" +

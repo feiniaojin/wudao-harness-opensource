@@ -198,6 +198,11 @@ export function createTodoTool(options: { workspaceRoot?: string; planFilePath?:
 
   return buildTool({
     name: "todo_write",
+    promptSnippet: "the task board — create it the moment work starts",
+    promptGuidelines: [
+      "Exactly one item in_progress at a time; update immediately after each step.",
+      "Never mark an item done before its tests pass.",
+    ],
     description: TODO_DESCRIPTION,
     parameters: {
       type: "object",

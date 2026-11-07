@@ -112,6 +112,11 @@ export function createAgentsTaskTool(options: AgentsTaskToolOptions): Tool {
 
   const built: Tool = buildTool({
     name: "task",
+    promptSnippet: "spawn a focused subagent — its report is the only thing that returns",
+    promptGuidelines: [
+      "Give it a complete, self-contained brief; a child cannot see this conversation.",
+      "Use it to keep bulky exploration out of your context — do not redo its work yourself.",
+    ],
     description:
       "Launch a sub-agent for a focused task. Returns its final report (child transcripts never enter this conversation). " +
       "role: a roster role — builtins general-purpose (read-only, default), coder (full tools), fork (shares THIS conversation — warm-cache), manager (dispatch/aggregation), adversarial-reviewer (attack the change), consultant (high-effort advisory); workspace profiles from .wudao/agents/<role>.json shadow builtins and may be frozen (no provider/model/reasoningEffort overrides) or worktree-isolated. " +

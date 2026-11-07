@@ -69,6 +69,10 @@ export interface SteerRegistry {
 export function createMessageChildTool(registry?: SteerRegistry): Tool {
   return buildTool({
     name: CHILD_MESSAGE_TOOL_NAME,
+    promptSnippet: "steer a still-running background child with a course correction",
+    promptGuidelines: [
+      "Address it by its bg-N id; the steer lands on the child's next model call.",
+    ],
     description:
       "Steer a background child that is still running — deliver a course correction that lands on its next model call as a [steer from parent] user turn. " +
       "Address the child by its bg-N id (from the task receipt or agent_status); an unknown or already-finished id fails with a typed error. " +

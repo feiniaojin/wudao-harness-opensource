@@ -307,6 +307,7 @@ function selectSheet(
 export function createReadXlsxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "read_xlsx",
+    promptSnippet: "read one sheet of an Excel workbook as a text table",
     description:
       "读取工作区里现有的 Excel 文件（.xlsx），把其中一张工作表的内容变成文本表格，用于查看、核对、分析和再加工——「帮我看下 / 分析 / 汇总这个 Excel」类请求都用它；与生成 Excel 的 make_xlsx 相对，两者合起来可完成「读现有表 → 整理 → 给出新表」。" +
       " path 是文件相对工作区的路径。sheet 可选：工作表名字或序号（1 起），缺省读第一张。offset / limit 可选：从第几行开始读（1 起）与这次最多读多少行——大表分几次读，文件开头会先列出全部工作表名字和行列数，方便决定读哪张、读多少。" +

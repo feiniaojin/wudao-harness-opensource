@@ -303,7 +303,7 @@ async function driveAgentRun(ctx: EngineCtx, prompt: string, opts: TaskOptions, 
       )
     : undefined;
   const systemPrompt =
-    buildSystemPrompt(ctx.workspaceRoot) +
+    buildSystemPrompt(ctx.workspaceRoot, false, [], false, false, tools) +
     taskSystemSection(label, ctx.workflowName, tools.map((t) => t.name), opts.responseSchema, advisory);
 
   const state = {

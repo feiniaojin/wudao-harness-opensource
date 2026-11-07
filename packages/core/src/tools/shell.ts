@@ -438,6 +438,15 @@ export function createShellTool(options: {
 
   return buildTool({
     name: "shell",
+    promptSnippet: "run shell commands (build/test/install/git) — this is how you verify work",
+    promptGuidelines: [
+      "Capture and report the real output; never claim success without it.",
+      "Waiting on a long command: start it as a background watch with monitor_start instead of looping sleep + re-check (each wait costs a full model turn).",
+      // 2026-11-06 Terminal-Bench 取证：agent 把一条要跑十几分钟的包安装
+      // 写成 `apt-get install ... 2>&1 | tail -3`——管道把输出全缓冲住，整个
+      // 调用期间**零反馈**，既看不出进度也看不出卡住。模型只能干等。
+      "Never pipe a LONG-RUNNING command through tail/head — the pipe buffers everything and you get zero feedback until it exits. Let it stream, or run it under monitor_start and poll with monitor_read.",
+    ],
     description: "Run a shell command in the workspace. Returns combined stdout+stderr and the exit code.",
     // M51 §3: open-world (a shell can reach the network); destructive per
     // command — the conservative first-token/pattern scan below. false is NOT

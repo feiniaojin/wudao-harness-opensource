@@ -21,6 +21,7 @@ function literalDotSegments(pattern: string): ReadonlySet<string> {
 export function createGlobTool(options: { workspaceRoot: string }) {
   return buildTool({
     name: "glob",
+    promptSnippet: "find files by path pattern",
     description: "Find files whose path matches a glob pattern ('**/' matches recursively). Returns up to 200 matches, relative to the workspace (output capped at 2000 lines / 50KB). " +
     "Example: {pattern: 'src/**/*.test.ts'} lists the test files under src. " +
     "Do NOT use glob to search file CONTENTS (grep) or to fetch a file you already know the path of (read_file it directly). " +

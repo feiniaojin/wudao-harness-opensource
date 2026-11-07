@@ -233,6 +233,7 @@ function fmtCount(n: number): string {
 export function createReadDocxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "read_docx",
+    promptSnippet: "read a Word document as structured text",
     description:
       "读取工作区里现有的 Word 文档（.docx），把里面的段落和表格变成带结构的文本，用于查看、核对、摘录、总结和再加工——「帮我看下 / 总结 / 提取这个 Word 里写了什么」类请求都用它；与生成 Word 的 make_docx 相对，两者合起来可完成「读现有文档 → 整理 → 给出新文档」。" +
       " path 是文件相对工作区的路径。offset / limit 可选：按「块」翻页（一个段落或一张表格各算一块），从第几块开始（1 起）与这次最多读多少块——长文档分几次读，文件开头会先给出段落总数和表格总数，方便决定读多少。" +

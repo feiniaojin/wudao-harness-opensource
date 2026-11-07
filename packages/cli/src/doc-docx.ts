@@ -343,6 +343,7 @@ export function defaultDocxFilename(now: Date): string {
 export function createMakeDocxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "make_docx",
+    promptSnippet: "create a new Word document from content",
     description:
       "把内容写成能直接用的 Word 文档（.docx）：标题、小节、正文、列表、表格，双击就能打开，存到工作区里，并把文件路径告诉用户。适合任何「帮我写份文档 / 写份报告 / 整理成 Word 文件」的请求。" +
       ` 参数 blocks：内容块数组（1 到 ${DOCX_MAX_BLOCKS} 块），每块是五种之一：标题 {kind: "title", text: "文档大标题"}；` +

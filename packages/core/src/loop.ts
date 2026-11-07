@@ -7,6 +7,7 @@ import type { AgentState } from "./state.js";
 import type { MicrocompactOptions, SkillReadMap, Tier2Result } from "./compaction.js";
 import { tier2Compact, dualTier2Compact, messageEntryId } from "./compaction.js";
 import { alignedCutoff, emergencyDrop, clearTier, microcompact } from "./compaction-tiers.js";
+import { planCompaction } from "./compaction-plan.js";
 import { SUMMARY_MARKER, CompactionThrashError } from "./compaction-markers.js";
 import { compactableSpan, staticTier2Compact, countSummaryMarkers } from "./compaction-tier2-static.js";
 import { VERIFIED_WORK_CAP, verifiedRunHead } from "./compaction-riders.js";
@@ -43,7 +44,8 @@ export {
   TURN_RECOVERY_NOTE, MAX_TURN_RECOVERY_ATTEMPTS, ContextOverflowHardError,
 } from "./loop-synthetics.js";
 export type { TurnRetryClass } from "./loop-synthetics.js";
-import { detectLoop, advanceNoProgress, NO_PROGRESS_CLEAN } from "./loop-safety.js";
+import { detectLoop, advanceNoProgress, NO_PROGRESS_CLEAN, resultFingerprint } from "./loop-safety.js";
+import { newTurnBudgetState, nextTurnBudgetMilestone, formatTurnBudgetNote } from "./turn-budget.js";
 import type { LoopSafetyCall, LoopSafetyTurn, NoProgressState } from "./loop-safety.js";
 // 弧 C（research-import-2026-10，nanobot turn_continuation）— 预算切片续跑：
 // maxTurns 从 run 终点变为切片边界（判定/构造纯函数在 turn-slicing.ts，
@@ -659,6 +661,17 @@ export interface LoopOptions {
   // never persisted); the timestamp string is hand-formatted so it is
   // deterministic (no locale dependency). Absent = zero behavior change.
   readonly timeReminder?: { intervalMs: number };
+  // ω-long-1 (114 §4.2-3, P5e 截止盲视) — turn-budget watermark: tell the
+  // model how many turns of the CURRENT slice remain, at two milestones
+  // (50% and 20% left), so it can change pace while a change is still
+  // possible. The fuses (maxTurns / maxRunMs) are silent until they kill;
+  // sessionBudget watches TOKENS, not turns — a run with a comfortable
+  // token budget and a nearly-spent turn fuse died with zero warning in
+  // 4 of 7 real timeouts (114). Rides the MetaNote channel (projection-only,
+  // never persisted, prefix-cache safe). Milestones fire at most once per
+  // slice; a continuation slice re-arms them. Absent = zero behavior change
+  // (byte-identical loop, pinned by tests).
+  readonly turnBudget?: boolean;
   // M23 stop gates: checked where the model produces a no-tool-call final
   // answer, BEFORE onRunStop. A firing gate injects one [system note: …] user
   // message and continues the loop WITHOUT consuming turn quota. Each gate
@@ -1260,10 +1273,18 @@ async function* runAgentLoopBody(
     // is microcompact's own work, never the clear's (attribution the tier
     // label promises — and the trigger for falling through to tier 2).
     const beforeMicro = estimateTokens(state.systemPrompt, toolDefsNow, state.messages);
+    // KV 缓存弧（2026-11-07）：tier-1 也保前段。桩化改写中段字节会打断前缀缓存
+    // ——E2E 实测 tier-1 触发后冷轮命中率掉到 7%。headKeep 来自 planCompaction
+    // 的相对预算（随窗口缩放；小对话为 0 = 历史行为，逐字节不变）。
+    const microPlan = planCompaction(state.messages, {
+      targetTokens: Math.floor(baseWindow * 0.8),
+      keepRecent: options.compaction?.keepRecent,
+    });
     const compacted = microcompact(state.messages, {
       keepRecent: options.compaction?.keepRecent,
       minChars: options.compaction?.minChars,
       skillReads: skillReadMap,
+      headKeep: microPlan.headKeep,
       // ω-2b (I2-a): per-tool retention rides the cheap tier.
       ...(options.compaction?.retention !== undefined ? { retention: options.compaction.retention } : {}),
     });
@@ -1323,6 +1344,9 @@ async function* runAgentLoopBody(
       try {
         t2 = await tier2Compact(state.messages, model, {
           keepRecent: options.compaction?.keepRecent ?? 6,
+          // 2026-11-06 KV 缓存弧：目标水位 = 触发线本身；扣掉视野预估后余下的
+          // 余额里划出保前段的预算（见 compaction-plan.ts）。
+          targetTokens: Math.floor(baseWindow * 0.8),
           systemPrompt: state.systemPrompt,
           tools: toolDefsNow,
           skillReads: skillReadMap,
@@ -1689,6 +1713,9 @@ async function* runAgentLoopBody(
   // 夜移 003: wall-clock anchor of the last time-reminder injection (null =
   // never injected this run → the next boundary always injects).
   let lastTimeNoteAt: number | null = null;
+  // ω-long-1: the turn-budget watermark state (milestone bookkeeping only —
+  // no timers, no allocation when the option is absent).
+  const turnBudgetState = options.turnBudget === true ? newTurnBudgetState() : null;
 
   // The final-answer seam: returns the [system note: …] text to inject, or
   // undefined when the stop is legitimate (board complete or absent, changes
@@ -1818,9 +1845,28 @@ async function* runAgentLoopBody(
   // 今天的绝对 maxTurns 语义（字节不变）。
   const continuationCfg = options.continuation;
   const sliceCap = continuationCfg?.maxSlices ?? CONTINUATION_SLICE_CAP;
+  // ω-long-2: the progress brake exists for the UNBOUNDED fuse only. A finite
+  // slice cap is already a bound — arc C's semantics stay exactly as they
+  // were (a cap of 12 slices never needed a "is it stalling?" judgment).
+  const unboundedSlices = !Number.isFinite(sliceCap);
   let continuationsUsed = 0;
   let sliceTurnBase = 0;
   let sliceBoundaryPending = false;
+  // ω-long-2 — per-slice progress evidence for the unlimited-continuation
+  // brake. A slice counts as making progress the moment ONE turn produces a
+  // result fingerprint different from the previous turn's (the same signal
+  // loop-safety's no-progress ledger uses). A slice that never changes its
+  // result shape finalizes instead of resetting — unlimited must not
+  // bankroll stasis.
+  let sliceFingerprint: string | undefined;
+  let sliceMadeProgress = false;
+  // "No evidence of progress" and "evidence of no progress" are different
+  // claims. Until a second turn has produced a fingerprint there is nothing
+  // to compare, so the brake stays out of the way (a maxTurns=1 window has
+  // exactly one turn per slice — braking on it would kill every such run at
+  // its first boundary). Real runaway stasis is still caught one boundary
+  // later, and loop-safety's identical_calls stays armed throughout.
+  let sliceComparable = false;
   // 夜移 035: the run's wall clock starts here (queueing/projection/first-
   // prompt overhead lands in beforeFirstSamplingMs until the first model
   // call begins). Guarded by markTurnStarted's own started-at gate.
@@ -1835,13 +1881,25 @@ async function* runAgentLoopBody(
     if (turn - sliceTurnBase >= maxTurns) {
       const sliceCandidate = continuationCfg !== undefined
         && continuationsUsed < sliceCap
-        && shouldFinalizeOnLimit({ lastStopReason: lastStopReasonOf(state.messages), pendingSteers: false }).slice;
+        && shouldFinalizeOnLimit({
+          lastStopReason: lastStopReasonOf(state.messages),
+          pendingSteers: false,
+          // Only the unbounded fuse consults the brake (see unboundedSlices).
+          madeProgress: unboundedSlices ? (sliceMadeProgress || !sliceComparable) : true,
+        }).slice;
       if (!sliceCandidate) return { reason: "max_turns" };
       // 预算窗重置：本片从当前 turn 起重新计 maxTurns。注意此刻还没决定
       // 注入续跑消息——若本轮 drain 有 steer 落地，则由 steer 接管这个新
       // 窗（C3：永不切片、不占切片名额）。
       sliceTurnBase = turn;
       sliceBoundaryPending = true;
+      // sliceFingerprint deliberately CARRIES OVER: with a short budget window
+      // (maxTurns=1) a slice has only one turn, so a per-slice fingerprint
+      // could never be compared against anything and every slice would look
+      // like stasis. Carrying it over compares each turn to the previous one
+      // regardless of where the boundary fell — the question is "is this run
+      // still producing varied results?", not "was this slice long enough?".
+      sliceMadeProgress = false;
     }
     if (options.signal?.aborted) return { reason: "aborted" };
     // run-budget (2026-08-24): the cooperative wall-clock fuse, top of turn,
@@ -2064,6 +2122,17 @@ async function* runAgentLoopBody(
       if (reminder !== undefined) {
         notes.push(`You have ${reminder.remainingTokens} weighted tokens left in the shared session token budget.`);
         sb.budget.markReminderDelivered(sb.threadId, `w${windowSeq}`, reminder);
+      }
+    }
+    // ω-long-1: the turn-budget watermark (see the option's comment). The
+    // remainder is computed against the CURRENT SLICE (弧 C) — a continued
+    // run's sliceTurnBase moves, so the milestones re-arm per slice instead
+    // of going negative and silent.
+    if (turnBudgetState !== null) {
+      const milestone = nextTurnBudgetMilestone(turnBudgetState, turn, sliceTurnBase, maxTurns);
+      if (milestone !== undefined) {
+        const remaining = maxTurns - (turn - sliceTurnBase);
+        notes.push(formatTurnBudgetNote(remaining, milestone));
       }
     }
     const notesPayload = notes.length > 0 ? notes.map((t) => `<system_note>\n${t}\n</system_note>`).join("\n") : undefined;
@@ -3462,6 +3531,16 @@ async function* runAgentLoopBody(
       }
       const step = advanceNoProgress(noProgressState, { calls: stampedCalls, results });
       noProgressState = step.state;
+      // ω-long-2 — the per-slice progress signal (see sliceFingerprint):
+      // a result shape different from the previous turn's IS progress.
+      {
+        const fp = resultFingerprint(results);
+        if (sliceFingerprint !== undefined) {
+          sliceComparable = true;
+          if (fp !== sliceFingerprint) sliceMadeProgress = true;
+        }
+        sliceFingerprint = fp;
+      }
       if (step.note !== undefined) pendingSafetyNotes.push(step.note);
     }
     {

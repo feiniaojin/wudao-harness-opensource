@@ -34,6 +34,7 @@ import { formatLanguageStatus, resolveLanguageArgument, resolveLanguagePreferenc
 // shared module, never a second gate logic.
 import { approvalGatedCall, approvalReceiptMatches, createApprovalGateState, markHumanSettled, humanSettledThisCall, recordApprovalReceipt } from "./approval-gate.js";
 import { buildSystemPrompt } from "./prompt.js";
+import { skillsDeltaNote } from "./skills.js";
 import { buildExpandedSkillMessage, createSkillReadClassifier, findNonPluginSkill, findPluginSkill, findSkill, formatSkillError, isSkillPruned } from "./skills.js";
 import type { LoadedSkill } from "./skills.js";
 import { getContextRules, createContextRuleMatcher } from "./rules.js";
@@ -761,7 +762,7 @@ export async function runRepl(opts: {
   tools.push(...createMissionTools(() => replMissionBox.current));
 
   const state: AgentState = {
-    systemPrompt: buildSystemPrompt(opts.workspaceRoot, hasMcpTools, live.skills, peerRuntime.refusal === undefined, hasComputerTools),
+    systemPrompt: buildSystemPrompt(opts.workspaceRoot, hasMcpTools, live.skills, peerRuntime.refusal === undefined, hasComputerTools, tools),
     messages: opts.resumeHistory ? [...opts.resumeHistory] : [],
     tools,
     status: "idle",
@@ -836,6 +837,7 @@ export async function runRepl(opts: {
   // cache invariant: only the trailing <available_skills> manifest moves
   // (hasMcpTools/hasReadTool are session-static tool-set facts).
   const unregisterExtensionSwap = registerExtensionSwapSink((fresh) => {
+    const previousSkills = live.skills; // 冻结提示词前先留住旧值，用于算增量
     live.skills = hasReadTool ? fresh.skills : [];
     live.pluginCommands = fresh.pluginCommands;
     live.hooks = fresh.hooks;
@@ -844,15 +846,13 @@ export async function runRepl(opts: {
       pluginCommands: live.pluginCommands,
       extensionCommands: opts.extensionCommands ?? [],
     });
-    // ω99-28 T1 — the rebuild passes the SAME session-static peer flag the
-    // boot prompt used (the state's construction above); the default-false
-    // 3-arg call dropped the "# Peer messaging" tail on every rescan — the
-    // campaign's undeclared turn-3 header break (18.4k).
-    // M-Memory 弧第二半：appendTo 保尾——rescan 重建后的 prompt 尾部仍带冻结
-    // 的 <long-term-memory> 块（boot 注入与 rescan 两位点字节一致）。
-    const lts = longtermMemoryRuntimeFor();
-    const rebuiltPrompt = buildSystemPrompt(opts.workspaceRoot, hasMcpTools, live.skills, peerRuntime.refusal === undefined, hasComputerTools);
-    replaceSystemPrompt(state, lts === undefined ? rebuiltPrompt : lts.appendTo(rebuiltPrompt));
+    // 2026-11-06 KV 缓存红线：rescan 不重建系统提示词（重建 = 整段历史重算）。
+    const skillsDelta = skillsDeltaNote(previousSkills, live.skills);
+    if (skillsDelta !== null) {
+      // 持久化的轮尾追加（与 driver 同一条纪律：早先字节不动，前缀缓存继续命中）
+      const tail = state.messages.at(-1);
+      state.messages.push({ role: "user", content: skillsDelta, uuid: randomUUID(), ...(tail?.uuid !== undefined ? { parentUuid: tail.uuid } : {}) });
+    }
   });
 
   // M63-A: the REPL drives the loop directly (no AgentDriver), so it fires
@@ -1326,6 +1326,10 @@ export async function runRepl(opts: {
       });
       const gen = runAgentLoop(state, modelRef.current, {
         maxTurns: opts.maxTurns ?? maxTurns(),
+        // ω-long-2：撞轮次上限只重置预算窗续跑，不结束 run（用户令
+        // 「希望可以无限跑下去，可以无限重置而不会退出」）。切片无上限；
+        // 真停止仍由 end_turn / abort / steer / 预算耗尽四处决定。
+        continuation: { maxSlices: Number.POSITIVE_INFINITY },
         gates: plan ? { ...(opts.gates ?? {}), plan: true } : opts.gates,
         // M53 §5: the --no-loop-safety ablation seam.
         ...(isFeatureAblated("loop-safety") ? { loopSafety: false } : {}),

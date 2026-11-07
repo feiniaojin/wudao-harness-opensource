@@ -17,8 +17,11 @@ import {
   buildSystemPrompt,
   SYSTEM_PREAMBLE,
   CORE_PRINCIPLES_SECTION,
-  TOOL_USAGE_SECTION,
+  OUTPUT_CHANNEL_SECTION,
+  ACTIONS_SECTION,
   TASK_DISCIPLINE_SECTION,
+  CODE_CHANGES_SECTION,
+  FINISHING_JOB_SECTION,
   LONG_TASKS_SECTION,
   BEHAVIORAL_CONTRACTS_SECTION,
   environmentSection,
@@ -33,15 +36,21 @@ function workspace(): string {
   return dir;
 }
 
-/** The pre-M54 prompt assembly — the byte-identity baseline. */
+/** The no-tools prompt assembly — the byte-identity baseline. It tracks the
+ *  CURRENT static section list on purpose: these tests pin "an empty
+ *  workspace / a disabled loader adds no bytes", not "the section list is
+ *  frozen at M54". A new section means updating this list once (the
+ *  prompt.test.ts factory test is the other half of that pin). */
 function baselinePrompt(root: string): string {
   return [
     SYSTEM_PREAMBLE,
     CORE_PRINCIPLES_SECTION,
-    TOOL_USAGE_SECTION,
+      OUTPUT_CHANNEL_SECTION,
     TASK_DISCIPLINE_SECTION,
+    FINISHING_JOB_SECTION,
     LONG_TASKS_SECTION,
     BEHAVIORAL_CONTRACTS_SECTION,
+    ACTIONS_SECTION,
     environmentSection(root),
   ].join("\n\n");
 }

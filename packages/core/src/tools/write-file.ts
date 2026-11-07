@@ -31,6 +31,10 @@ export function createWriteFileTool(options: {
 }) {
   return buildTool({
     name: "write_file",
+    promptSnippet: "create or fully rewrite a file",
+    promptGuidelines: [
+      "For a partial change prefer edit — a full rewrite loses unrelated content.",
+    ],
     description:
       "Create or overwrite a file with the given UTF-8 content. Path must be inside the workspace. Fails with 'file changed since your last read' when the target changed externally after your last read_file — re-read it first.",
     // M51 §3: overwrites disk (destructive: true) but never leaves the local

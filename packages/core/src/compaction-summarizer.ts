@@ -105,6 +105,35 @@ export function throwIfAborted(signal: AbortSignal | undefined): void {
   }
 }
 
+/** 摘要模板（2026-11-06 质量弧）。
+ *
+ *  对照三家开源实现：Claude Code 是 9 段固定结构 + <analysis> 草稿区 + 示例；
+ *  a reference harness 是 8 段（Request/Concepts/Files/Errors/Pending/Current/
+ *  Next/Context）；pi 是 6 段 + "Use this EXACT format"。我们此前只有一句话
+ *  加 300 词上限——摘要质量完全取决于模型的即兴水平。
+ *
+ *  这里取 CC 的骨架（先 <analysis> 梳理、再 <summary> 产出）+ deepseek 的
+ *  分类粒度（Files and Code / Errors and Fixes 分开，贴编码场景），并保留
+ *  「逐字保留路径/函数名/错误信息」这条最关键的抗漂移约束。
+ *
+ *  开头那句不能动：summary-prefix-freeze 与 det 的 startsWith 断言都盯着它。 */
+export const SUMMARY_BASE_INSTRUCTION = [
+  "Summarize the conversation above so another agent can continue this work without re-reading it.",
+  "Think first inside <analysis></analysis>: walk the user's requests in order, every file you touched, what failed and why.",
+  "Then write the summary inside <summary></summary> using EXACTLY these sections:",
+  "",
+  "1. Primary Request and Intent — every explicit request, in detail; note anything the user changed or corrected.",
+  "2. Key Technical Concepts — technologies, invariants and constraints that shaped the work.",
+  "3. Files and Code Sections — for EVERY file examined, modified or created: why it matters, what changed, and the important code verbatim.",
+  "4. Errors and Fixes — what broke, the fix, and any user correction that redirected the approach.",
+  "5. Pending Tasks — what the user asked for that is not finished.",
+  "6. Current Work — precisely what was in flight when this summary was requested, naming files.",
+  "7. Next Step — the single next action, directly in line with the most recent work; quote the user's most recent instruction verbatim so intent cannot drift.",
+  "8. Critical Context — data, paths, constants and environment facts needed to continue.",
+  "",
+  "Preserve exact file paths, function names, command lines and error messages — never paraphrase them. Keep each section concise; write '(none)' for a section that is genuinely empty.",
+].join("\n");
+
 /** Ask the model to summarize the span — as a byte-level warm replay of the
  *  conversation it summarizes: the SAME system prompt + tool array + the
  *  span's messages, with one trailing user instruction. The compacted span
@@ -181,7 +210,34 @@ function summaryInstruction(
   agentRotation?: { readonly rationale: string; readonly preserve?: string },
   outstandingWork?: readonly OutstandingWorkItem[],
 ): string {
-  const base = "Summarize the conversation above for continuation (max 300 words, preserving key facts, decisions, file paths, and open tasks). Always mention: the current in-progress todo item and the files currently being edited.";
+  // 2026-11-06 质量弧：模板由「一句话 + 300 词上限」换成结构化 8 段。
+  //
+  // 对照三家开源实现：Claude Code 是 9 段固定结构 + <analysis> 草稿区 + 示例；
+  // a reference harness 是 8 段（Request/Concepts/Files/Errors/Pending/Current/
+  // Next/Context）；pi 是 6 段 + "Use this EXACT format"。而我们此前只有一句话
+  // ——摘要质量全靠模型临场发挥，实测同一份编码会话，产出的详略完全取决于
+  // 模型的即兴水平。
+  //
+  // 这里取 CC 的骨架（先 <analysis> 梳理、再 <summary> 产出）+ deepseek 的
+  // 分类粒度（Files and Code / Errors and Fixes 分开，贴编码场景），并保留
+  // 「逐字保留路径/函数名/错误信息」这条最关键的抗漂移约束。
+  // 开头那句保持不变：summary-prefix-freeze 与 det 的 startsWith 断言都盯着它。
+  const base = SUMMARY_BASE_INSTRUCTION;
+  const _unusedBase = [
+    "Think first inside <analysis></analysis>: walk the user's requests in order, every file you touched, what failed and why.",
+    "Then write the summary inside <summary></summary> using EXACTLY these sections:",
+    "",
+    "1. Primary Request and Intent — every explicit request, in detail; note anything the user changed or corrected.",
+    "2. Key Technical Concepts — technologies, invariants and constraints that shaped the work.",
+    "3. Files and Code Sections — for EVERY file examined, modified or created: why it matters, what changed, and the important code verbatim.",
+    "4. Errors and Fixes — what broke, the fix, and any user correction that redirected the approach.",
+    "5. Pending Tasks — what the user asked for that is not finished.",
+    "6. Current Work — precisely what was in flight when this summary was requested, naming files.",
+    "7. Next Step — the single next action, directly in line with the most recent work; quote the user's most recent instruction verbatim so intent cannot drift.",
+    "8. Critical Context — data, paths, constants and environment facts needed to continue.",
+    "",
+    "Preserve exact file paths, function names, command lines and error messages — never paraphrase them. Keep each section concise; write \"(none)\" for a section that is genuinely empty.",
+  ].join("\n");
   const focusLine = focus !== undefined && focus !== "" ? `\nFocus on: ${focus}` : "";
   const instructionsLine = compactInstructions !== undefined && compactInstructions !== "" ? `\nCompact instructions: ${compactInstructions}` : "";
   const flatRationale = agentRotation?.rationale.replace(/\s+/g, " ").trim() ?? "";

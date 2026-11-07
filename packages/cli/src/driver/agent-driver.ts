@@ -10,7 +10,7 @@ import { truncateSafe, truncateTailSafe } from "@wudao-org/core"; // 113-A4
 import { open, readFile, readdir, realpath, rename, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, sep } from "node:path";
 import { randomUUID } from "node:crypto";
-import { runAgentLoop, observeRun, createOtlpExporterFromEnv, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, compactionOpportunity, resolveCompactionThresholdTokens, classifyCacheClock, usagePrefixFingerprint, shouldTrustUsage, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput, isValidImageBlock, isValidFileBlock, clearTier, isQuotaParkError, createStreamPreemptChannel, microcompact, cumulativeModifiedFiles, activeToolsOf, worldStateDiff, goalTokensTotal, StopCoordinator, persistentShellRuntime } from "@wudao-org/core"
+import { runAgentLoop, observeRun, createOtlpExporterFromEnv, resolveWorkspacePath, repairOrphanedToolCalls, parseTodoBoard, estimateTokens, estimateTokensBreakdown, toModelToolDefinition, createJsonlSessionStore, applySummaryMarkers, manualCompact, compactionRetentionFor, compactionOpportunity, resolveCompactionThresholdTokens, planCompaction, classifyCacheClock, usagePrefixFingerprint, shouldTrustUsage, branchSummaryNote, chainForTurn, commonPrefixLength, forkPredatesCompaction, listBranchLeaves, nodeKey, renderBranchTree, activeBranchLeafKey, resumeChain, SUMMARY_MARKER, replaceSystemPrompt, sessionLeaseBoxFor, SESSION_ID_RE, readStateEntry, inspectToolInput, isValidImageBlock, isValidFileBlock, clearTier, isQuotaParkError, createStreamPreemptChannel, microcompact, cumulativeModifiedFiles, activeToolsOf, worldStateDiff, goalTokensTotal, StopCoordinator, persistentShellRuntime } from "@wudao-org/core"
 import type { AgentHooks, AgentMessage, AgentState, FileHistory, IdentifiedOutputDelta, LoopEvent, LoopOptions, ModelClient, NotificationKind, PermissionDecision, ReadStateTable, SessionLeaseBox, SessionStartSource, Terminal, Tool, ImageBlock, FileBlock, SpoofInspection, RosterPluginAgent, StreamPreemptChannel, WorldState } from "@wudao-org/core";
 import { renderTurnDiff } from "../turn-diff-render.js";
 import { truncate, formatCompactedLine, modelLabel, RESULT_PREVIEW_CHARS } from "../log.js";
@@ -627,6 +627,11 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
     // the ONE seam that may rewrite it (idle, or at run settle) — through
     // core's sanctioned rewriter, which documents the tail-only contract.
     if (ext.systemPrompt !== undefined) replaceSystemPrompt(state, ext.systemPrompt);
+    // 提示词冻结后的中途变化：尾追加（早先字节不动）+ 进持久历史（不是一次性投影）。
+    if (ext.systemMessage !== undefined && ext.systemMessage !== "") {
+      const tail = state.messages.at(-1);
+      state.messages.push({ role: "user", content: ext.systemMessage, uuid: randomUUID(), ...(tail?.uuid !== undefined ? { parentUuid: tail.uuid } : {}) });
+    }
   };
   // workspace-ux B2: an agent-root switch parked behind a busy run — the
   // validated path awaits the run's settle seam (the same turn boundary the
@@ -1455,10 +1460,11 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       // 旧 60 分钟臂原样保留；新臂的一切缺省面（无窗口知识 / 时钟 warm /
       // 读不到钟 age_unknown / 未过软线）都 return——字节等于现状。
       let opportunityReason: "usage_over" | "cache_dying" | undefined;
+      let threshold: number | undefined;
       if (idleMs < IDLE_MICROCOMPACT_AFTER_MS) {
         const windowTokens = o.compaction?.contextWindowTokens;
         if (windowTokens === undefined || !(windowTokens > 0)) return; // 无窗口知识 → 现状
-        const threshold = resolveCompactionThresholdTokens({
+        threshold = resolveCompactionThresholdTokens({
           windowTokens,
           thresholdRatio: o.compaction?.thresholdRatio,
           headroomTokens: o.compaction?.headroomTokens,
@@ -1492,7 +1498,15 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       }
       const toolDefs = state.tools.map(toModelToolDefinition);
       const before = estimateTokens(state.systemPrompt, toolDefs, state.messages);
-      const compacted = microcompact(state.messages, { retention: compactionRetentionFor(o.tools) });
+      // KV 缓存弧（2026-11-07）：与 loop 的 tier-1 同一条纪律——桩化保前段，
+      // 改写点之后的缓存才不会从第一个桩字节起全灭。预算同源（planCompaction）。
+      const compacted = microcompact(state.messages, {
+        retention: compactionRetentionFor(o.tools),
+        headKeep: planCompaction(state.messages, {
+          targetTokens: threshold ?? estimateTokens(state.systemPrompt, toolDefs, state.messages),
+          ...(o.compaction?.keepRecent !== undefined ? { keepRecent: o.compaction.keepRecent } : {}),
+        }).headKeep,
+      });
       if (compacted.length === state.messages.length && compacted.every((m, i) => m === state.messages[i])) {
         lastSettleAt = Date.now(); // nothing aged past the bar — quiet, re-arm the window
         return;
@@ -2058,6 +2072,17 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       const run = runAgentLoop(state, o.model, {
         sessionId,
         maxTurns: o.maxTurns,
+        // ω-long-2 (用户令 2026-11-05「希望可以无限跑下去，可以无限重置而
+        // 不会退出」): 切片续跑接线。此前 core 的弧 C 续跑从未被 CLI 装备
+        // ——maxTurns 是纯终点，200 轮一到整个 run 直接死。装备后到达上限
+        // 只重置预算窗续跑；maxSlices 是「一个 run 允许几次重置」，缺省
+        // 无限（Infinity）⇒ 真正跑不完的任务可以一直跑。
+        // 停止出口仍然存在且必须存在：模型自己 end_turn（收工）即停；
+        // 用户 abort / steer 接管即停；预算（sessionBudget/maxRunMs）耗尽
+        // 即停。切片只是「撞轮次上限」不再等于「死」。
+        ...(o.maxSlices !== undefined && o.maxSlices > 0
+          ? { continuation: { sessionId, maxSlices: o.maxSlices } }
+          : {}),
         // 取证弧 0921（polyglot 三败题根因）: the output-limit ladder ran
         // nudge-only in the product path — escalateTo existed in core, was
         // passed by nothing, so a length-stop retried at the SAME 4096 cap
@@ -2265,6 +2290,13 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         // 轮必注入、其后墙钟漂移 ≥30min 再注入；走 MetaNote 投影（前缀缓存
         // 安全、不落盘）。纯模型侧信息，人类侧 notice 过滤（见 meta_note）。
         timeReminder: { intervalMs: 30 * 60_000 },
+        // ω-long-1 (114 §4.2-3, P5e 截止盲视 4/7 真实超时): turn-budget
+        // watermark — the model learns how many turns of the current slice
+        // remain at the 50%/20% milestones, so it can stop opening new
+        // fronts while a pace change is still possible. The fuses
+        // (maxTurns/maxRunMs) are silent until they kill and sessionBudget
+        // watches TOKENS, not turns; this is the missing third signal.
+        turnBudget: true,
         // 夜移 035 (codex turn_timing): the run's phase recorder, threaded
         // verbatim (consumer-owned — created before the run, completed+read
         // at the consumer's settle; complete is idempotent).

@@ -417,6 +417,7 @@ function receiptPreview(text: string): string {
 export function createSetPptxNotesTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "set_pptx_notes",
+    promptSnippet: "set one slide's speaker notes",
     description:
       "设置 PPT 某一页的演讲备注（已有则替换）。适合「给 PPT 第 3 页加演讲备注」「这页要讲的重点帮我记上」类请求；与读取的 read_pptx 配套（备注会随读面一起读出来）。" +
       " path 是演示文稿相对工作区的路径。slide 是第几页（1 起）。text 是备注内容（1–4000 字，可换行）。" +

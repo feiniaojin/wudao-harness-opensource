@@ -363,6 +363,7 @@ export function defaultXlsxFilename(now: Date): string {
 export function createMakeXlsxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "make_xlsx",
+    promptSnippet: "create a new Excel workbook from rows",
     description:
       "把清单、盘点结果、数据整理成真正的 Excel 文件（.xlsx，表头加粗、列宽合适），存到工作区里，并把文件路径告诉用户。适合任何「做成表格 / 整理成 Excel / 导出清单」的请求。" +
       ` 参数 table：{columns: [{header: "列名", width: 列宽数字}, …], rows: [[单元格, …], …]}（最多 ${DOC_MAX_COLUMNS} 列 × ${DOC_MAX_ROWS} 行，单元格是字符串 / 数字 / 布尔 / null；可选 sheetName 给工作表命名）。` +

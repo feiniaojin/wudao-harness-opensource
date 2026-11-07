@@ -407,6 +407,11 @@ export function createPythonKernelTool(options: PythonKernelOptions = {}): Pytho
 
   const base = buildTool({
     name: "python_kernel",
+    promptSnippet: "run Python in a persistent kernel — state survives between cells",
+    promptGuidelines: [
+      "Use it for multi-step computation instead of re-deriving the same state in shell one-liners.",
+      "Re-decoding or reloading the same data repeatedly is the anti-pattern it exists to prevent.",
+    ],
     description:
       "Run a Python cell in the session's PERSISTENT python3 kernel — imports, loaded data and variables stay alive across calls " +
       "(import torch / parse the big file ONCE, then iterate on the results; no re-import tax per probe). " +

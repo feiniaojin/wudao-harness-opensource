@@ -215,6 +215,10 @@ const PARAMETERS: ToolParameterSchema = {
 export function createSearchHistoryTool(load: HistorySearchLoader): Tool {
   return buildTool({
     name: "search_history",
+    promptSnippet: "search this session's earlier conversation and tool output",
+    promptGuidelines: [
+      "Use it before asking the user to repeat something, and after compaction to recover exact earlier bytes.",
+    ],
     description:
       "Search THIS session's full conversation ledger (user and assistant messages, assistant reasoning included) by keyword — including everything context compaction summarized away. " +
       'After a long session compacts, use this to look up earlier conclusions, decisions, reasoning, or intermediate data instead of guessing from memory. ' +

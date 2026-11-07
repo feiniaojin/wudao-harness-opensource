@@ -1,4 +1,5 @@
 import type { AgentMessage } from "./types.js";
+import { planCompaction } from "./compaction-plan.js";
 import type { ModelToolDefinition } from "./tool.js";
 import type { ModelClient } from "./model-client.js";
 // 拆分运动 C：域文件外提后本模块保留 tier-2 LLM lane 的编排
@@ -142,12 +143,26 @@ export async function tier2Compact(
   // spends its summarizer call.
   throwIfAborted(signal);
   const keepRecent = options.keepRecent ?? 6;
-  const split = compactableSpan(messages, keepRecent);
+  // 2026-11-06：给了目标水位就启用保留策略——保前段（把改写点往后挪，缓存多
+  // 命中一截 + 任务原话不被摘要吃掉），并按「撑完未来 N 轮」定压缩深度。
+  const plan = options.targetTokens !== undefined
+    ? planCompaction(messages, { targetTokens: options.targetTokens, keepRecent })
+    : undefined;
+  const split = compactableSpan(messages, keepRecent, plan);
   if (split === null) return null;
   const { span, rest, prior } = split;
   // ω-5b (I22): the effective focus — explicit (manual /compact) wins over
   // the derived task anchor; both halves below read this ONE seam.
-  const focus = effectiveFocus(options.focus, span);
+  // 2026-11-06：保前段会把开头那段移进 prior，摘要器若只看 span 就丢了任务
+  // 锚点（摘要不再聚焦于用户的原始请求）。用「被替换的全部内容」推导锚点。
+  // 2026-11-06：保前段会把开头那段移进 prior，摘要器若只看 span 就丢了任务
+  // 锚点。用「被替换的全部内容」推导，但**跳过摘要条目**——否则链式压缩时
+  // 上一条摘要把自己变成新的「任务原话」，锚点退化成一堆摘要文本。
+  const focusSource = [
+    ...prior.filter((m) => !(m.role === "user" && m.content.startsWith(SUMMARY_MARKER))),
+    ...span,
+  ];
+  const focus = effectiveFocus(options.focus, focusSource);
   // 113-B1 (prime-agent #2385 形): the recency anchor — the LATEST kept-tail
   // assistant text. The summarizer only sees `span`; without the anchor its
   // output describes the world BEFORE `rest`. Derived here (deterministic,
@@ -162,7 +177,14 @@ export async function tier2Compact(
   // rides the message either way; the digest path just cannot also fold it
   // into the summary body). Rationale-only rotations keep the digest gate.
   const rotation = options.agentRotation;
-  const digestEligible = (options.zeroLlmDigest ?? true) && digestibleSpan(span)
+  // 2026-11-06：显式 zeroLlmDigest 优先——true = 无条件走确定性摘要（调用方
+  // 明确要求，比如没有摘要模型、或测试要可复现）；false = 绝不用；
+  // 未指定 = 由内容判定（digestibleSpan，含工具内容上限这条质量红线）。
+  const digestAllowed =
+    options.zeroLlmDigest === true ? true
+      : options.zeroLlmDigest === false ? false
+        : digestibleSpan(span);
+  const digestEligible = digestAllowed
     && !(rotation?.preserve !== undefined && rotation.preserve.trim() !== "");
   // 波次 7 #38 (OH C2): the zero-LLM front stage — a digestible span (thin
   // narrative) skips the summarizer call entirely; the deterministic digest

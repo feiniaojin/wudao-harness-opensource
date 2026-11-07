@@ -185,6 +185,8 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const screenCapture: Tool = buildTool({
     name: "screen_capture",
+    promptSnippet: "screenshot the whole screen as an image",
+    promptGuidelines: ["Locate a target on this image first; the coordinates you then click are THIS image's pixels."],
     description:
       "截取整个屏幕的画面并作为图片查看。用于「看看屏幕上现在是什么」：确认操作结果、找到要点击的位置（配合 computer_click 的坐标）、读取别的软件里模型 otherwise 看不到的内容。需要系统「屏幕录制」权限（首次使用会弹授权；被拒时会把引导给用户）。坐标点击前先截一张，点哪看哪。截图统一缩到长边不超过 1280，回执会标注尺寸——后续点击/滚动/拖拽的坐标都以这张图的像素为准，无需自行换算。",
     parameters: { type: "object", properties: {}, additionalProperties: false },
@@ -311,6 +313,7 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const computerType: Tool = buildTool({
     name: "computer_type",
+    promptSnippet: "type text into the focused field",
     description:
       "往输入框里打字（替用户输入文字，比如在 Excel 单元格、备忘录、聊天框里写字）。两条路：① ref 参数——按 screen_observe 元素表的 [eN] 编号直接写入该输入框，无需先聚焦；② 无 ref——写进当前焦点输入框（先确认目标已聚焦，必要时先 computer_click 点进去）。长文本会自动分块逐段输入、段间稍停，防止一次输入过长丢字。换行/Tab 不要塞进文本——用 computer_key 的 return/tab。",
     parameters: {
@@ -404,6 +407,10 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const computerKey: Tool = buildTool({
     name: "computer_key",
+    promptSnippet: "press a key or a shortcut (e.g. cmd+s)",
+    promptGuidelines: [
+      "Press the shortcut instead of hunting through menus.",
+    ],
     description:
       "按一个键或组合键（回车、Tab、删除、方向键、cmd+c / cmd+shift+t 等）。可按键：字母 a-z、数字 0-9、return/tab/space/delete/forwarddelete/escape、上下左右方向键、home/end/pageup/pagedown、f1-f12；修饰键 cmd/ctrl/alt/shift 可组合。白名单之外的键名会被拒绝。",
     parameters: {
@@ -441,6 +448,8 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const computerClick: Tool = buildTool({
     name: "computer_click",
+    promptSnippet: "click a screen position or an element ref",
+    promptGuidelines: ["Prefer an element ref from screen_observe over guessed coordinates."],
     description:
       "点击屏幕上的一个元素或位置。两条路：① ref 参数——按 screen_observe 元素表的 [eN] 编号直达（优先，更快更准，不受分辨率影响）；② 坐标 (x, y)——最近一次 screen_capture 输出图的像素空间，截图上量到哪里就填哪里，系统会自动换算到实际屏幕，不要自行按比例折算（ref 与坐标同给时按 ref 点选、坐标忽略）。先 screen_observe 看元素表或 screen_capture 看屏幕再点。左键单击为默认；button:\"right\" 出右键菜单，double:true 双击。按 ref 单击时，点完会自动核对落点上实际是什么元素并把结论写进回执（已确认/与预期不符/未命中），不必再截一张图确认有没有点中；按坐标单击时，回执同样会写明落点处是什么元素；双击/右键不回报落点。",
     parameters: {
@@ -611,6 +620,7 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const appActivate: Tool = buildTool({
     name: "app_activate",
+    promptSnippet: "bring an app to the front, launching it if needed",
     description:
       "切换到（并前置）某个已安装的应用——比如替用户打开计算器、把访达调到最前。按应用名（\"计算器\"/\"Safari\"）或 bundle id（\"com.apple.Calculator\"）都行；不确定应用叫什么名时先用 app_list 看当前打开的，或用名字试。",
     parameters: {
@@ -654,6 +664,7 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const appList: Tool = buildTool({
     name: "app_list",
+    promptSnippet: "list the running apps",
     description:
       "列出当前打开着窗口的应用名（不含纯后台进程）。想知道「现在屏幕上有什么软件」、确认 app_activate 该用哪个名字时先调这个。",
     parameters: { type: "object", properties: {}, additionalProperties: false },
@@ -690,6 +701,7 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const computerScroll: Tool = buildTool({
     name: "computer_scroll",
+    promptSnippet: "scroll at a position or element",
     description:
       "滚动鼠标滚轮——把屏幕上的长页面/长列表往下（或往上）翻，用来读超出首屏的内容。两条路：① ref 参数——按 screen_observe 元素表的 [eN] 编号直达（滚轮直接发生在该元素中心，无需先把鼠标移过去，「翻那个列表」一步到位）；② 无 ref——滚动发生在「当前鼠标指针所在的窗口」：先用 computer_click 把光标点到目标窗口里再滚。dy 正数=往下滚（继续往后读）、负数=往上（回页首）；dx 可选，正数=向右、负数=向左（横向内容）。距离量纲 = 最近一次 screen_capture 输出图的像素空间（系统自动换算，不要自行按比例折算）。量纲参考：一屏约 800-1000 像素，单次 200-600 像素较稳，读长文可连续多次调用。给 ref 时，滚完回执也会写明滚轮实际作用在什么元素上，滚错地方一眼可辨。",
     parameters: {
@@ -840,6 +852,7 @@ export function createComputerTools(opts: ComputerToolOptions = {}): Tool[] {
 
   const computerDrag: Tool = buildTool({
     name: "computer_drag",
+    promptSnippet: "drag from one point to another",
     description:
       "把屏幕上的一个东西从一处拖到另一处（按住鼠标移动再松开）——把文件/图标拖进文件夹、拖动滑块、调整列表顺序。起点/终点各走两条路之一：① startRef/endRef——按 screen_observe 元素表的 [eN] 编号直达（该端=元素中心，对应坐标可省；两端可混搭，如 startRef+endX/endY=「把这个元素拖到屏幕某处」）；② 坐标——先用 screen_capture 看清屏幕，从最近一次 screen_capture 输出图的像素空间取坐标（系统自动换算，不要自行按比例折算）。给 endRef 时，拖完会自动核对落点上实际是什么元素并把结论写进回执（已确认/与预期不符/未命中），不必再截一张图确认有没有拖到位。button:\"right\" 为右键拖（少用）。拖拽对节奏敏感：内部已按小步移动放慢，若目标应用没接住（文件没挪过去），截屏确认后重试或改用其他办法。",
     parameters: {

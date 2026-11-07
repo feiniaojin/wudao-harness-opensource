@@ -418,11 +418,8 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
     ],
     [skills, pluginCommands, props.extensions],
   );
-  const systemPrompt = useMemo(
-    () => buildSystemPrompt(workspaceRoot, (props.extraTools ?? []).some((t) => t.name.startsWith("mcp__")), hasReadTool ? skills : [], props.peer !== undefined && props.peer.refusal === undefined, hasComputerTools),
-    [workspaceRoot, props.extraTools, hasReadTool, skills, hasComputerTools],
-  );
 
+  const toolsRef = useRef<readonly Tool[]>([]);
   // cc-plugins A3: the rescanExtensions() swap sink. Two halves on purpose:
   // React state (above) re-derives the menus/prompt/opts the next render
   // feeds setOptions, and driver.replaceExtensions lands the rebuilt prompt
@@ -442,7 +439,7 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
           pluginCommands: fresh.pluginCommands,
           ...(fresh.pluginAgents.length > 0 ? { pluginAgents: fresh.pluginAgents } : {}),
           ...(fresh.hooks !== undefined ? { hooks: fresh.hooks } : {}),
-          systemPrompt: buildSystemPrompt(workspaceRoot, (props.extraTools ?? []).some((t) => t.name.startsWith("mcp__")), hasReadTool ? fresh.skills : [], props.peer !== undefined && props.peer.refusal === undefined, hasComputerTools),
+          systemPrompt: buildSystemPrompt(workspaceRoot, (props.extraTools ?? []).some((t) => t.name.startsWith("mcp__")), hasReadTool ? fresh.skills : [], props.peer !== undefined && props.peer.refusal === undefined, hasComputerTools, toolsRef.current),
         });
       }),
     // The session-static facts (workspaceRoot, hasMcpTools, hasReadTool) are
@@ -564,7 +561,6 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
     setTeam(created); // schedules a re-render; the panel mounts the next tick
     return created;
   }, [workspaceRoot, teamName, sessionId, model, subagentGate, resolveModel, config.reasoningEffort, hooks]);
-  const toolsRef = useRef<readonly Tool[]>([]);
   // The panel's clock: a slow tick re-renders so idle rows can hide (the
   // panel itself is derived state, not animated). Started when (and only
   // when) the team runtime exists — a fresh mount has no team yet.
@@ -649,6 +645,10 @@ export function WudaoApp(props: WudaoAppProps): React.JSX.Element {
     [props.tools, props.extraTools, pluginAgents, workspaceRoot, model, subagentGate, liveWindowTokens, onSubagentEvent, props.sandbox, spillDir, loginShellEnv, fileHistory, turnDiff, agentsRegistry, sessionId, resolveModel, config.reasoningEffort, props.readState, onAskUser, memoryStore, getTeam, skills],
   );
   toolsRef.current = tools;
+  const systemPrompt = useMemo(
+    () => buildSystemPrompt(workspaceRoot, (props.extraTools ?? []).some((t) => t.name.startsWith("mcp__")), hasReadTool ? skills : [], props.peer !== undefined && props.peer.refusal === undefined, hasComputerTools, tools),
+    [workspaceRoot, props.extraTools, hasReadTool, skills, hasComputerTools, tools],
+  );
 
   // 拆分运动 C：持久化回调簇外提至 app-persist.ts（usePersistCallbacks）。
   const { onCompacted, onCompactBoundary, onUserTurn, onRunComplete, onBeforeToolDispatch, onDeferLoaded, onHistoryReplaced, onSessionCleared } = usePersistCallbacks({

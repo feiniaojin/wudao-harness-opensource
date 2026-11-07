@@ -51,7 +51,6 @@ import {
   buildSystemPrompt,
   SYSTEM_PREAMBLE,
   CORE_PRINCIPLES_SECTION,
-  TOOL_USAGE_SECTION,
   TASK_DISCIPLINE_SECTION,
   LONG_TASKS_SECTION,
   BEHAVIORAL_CONTRACTS_SECTION,
@@ -5300,8 +5299,7 @@ const m54ProjectContextEval: EvalDefinition<
       const expectedBaseline = [
         SYSTEM_PREAMBLE,
         CORE_PRINCIPLES_SECTION,
-        TOOL_USAGE_SECTION,
-        TASK_DISCIPLINE_SECTION,
+              TASK_DISCIPLINE_SECTION,
         LONG_TASKS_SECTION,
         BEHAVIORAL_CONTRACTS_SECTION,
         environmentSection(ctx.emptyRoot),

@@ -106,6 +106,7 @@ const OLE_MAGIC = [0xd0, 0xcf, 0x11, 0xe0] as const;
 export function createAppendDocxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "append_docx",
+    promptSnippet: "append sections or tables to an existing Word document",
     description:
       "往工作区里现有的 Word 文档（.docx）末尾追加内容：标题、小节、正文、列表、表格都能接着写，文档里已有的内容原样保留。适合「在这份报告后面再补一节」「往这个文档里加几段 / 加张表」类请求；与读文档的 read_docx、生成整份新文档的 make_docx 配套——先读现有内容，再把要补的部分追加进去。" +
       " path 是文档相对工作区的路径。blocks 是要追加的内容块数组（形状与 make_docx 相同：标题 / 小节 / 正文 / 列表项 / 表格五种）。" +

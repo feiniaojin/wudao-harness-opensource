@@ -108,9 +108,15 @@ async function main(): Promise<number> {
   // M51 §1: `--runs N` — run every suite N times; the report gains across-run
   // statistics (mean/SE/95% CI/Pass^k) and det suites that flip status across
   // runs are flagged NON-DETERMINISTIC. Fail-closed on a bad value.
+  // `--only <substr>` — run just the suites whose name contains it. Added for
+  // the live suites: a full live pass costs several minutes and real tokens,
+  // and verifying ONE mechanism should not require re-running everything.
+  const onlyIdx = args.indexOf("--only");
+  const only = onlyIdx >= 0 ? args[onlyIdx + 1] : undefined;
   const runsParsed = parseRunsArg(args);
+
   if (typeof runsParsed !== "number") {
-    process.stderr.write(`usage: pnpm eval [--runs N (1..20)] — ${runsParsed.reason}\n`);
+    process.stderr.write(`usage: pnpm eval [--runs N (1..20)] [--only <name-substr>] — ${runsParsed.reason}\n`);
     return 1;
   }
   const runs = runsParsed;
@@ -123,11 +129,18 @@ async function main(): Promise<number> {
   process.stdout.write("wudao-harness evals\n===================\n");
   for (let r = 0; r < runs; r += 1) {
     if (runs > 1) process.stdout.write(`\n-- run ${r + 1}/${runs} --\n`);
-    process.stdout.write("\n-- deterministic (scripted model, no network) --\n");
+    const match = (d: { name: string }): boolean => only === undefined || d.name.includes(only);
+    const detDefs = deterministicSuites.filter(match);
+    const liveDefs = liveSuites.filter(match);
     const results: EvalResult[] = [];
-    results.push(...await runAllEvals(deterministicSuites, { trial: r + 1, receipts }));
-    process.stdout.write("\n-- live (real model via .env; skipped without a key) --\n");
-    results.push(...await runAllEvals(liveSuites, { trial: r + 1, receipts }));
+    if (detDefs.length > 0) {
+      process.stdout.write("\n-- deterministic (scripted model, no network) --\n");
+      results.push(...await runAllEvals(detDefs, { trial: r + 1, receipts }));
+    }
+    if (liveDefs.length > 0) {
+      process.stdout.write("\n-- live (real model via .env; skipped without a key) --\n");
+      results.push(...await runAllEvals(liveDefs, { trial: r + 1, receipts }));
+    }
     perRun.push(results);
   }
   const results: EvalResult[] = perRun.flat();

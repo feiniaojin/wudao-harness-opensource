@@ -57,6 +57,10 @@ function knownIds(registry: AgentRegistry): string {
 export function createAgentAwaitTool(registry: AgentRegistry): import("@wudao-org/core").Tool {
   return buildTool({
     name: "agent_await",
+    promptSnippet: "wait for background agents and collect their reports",
+    promptGuidelines: [
+      "This is the only place their work enters this conversation — collect before relying on it.",
+    ],
     description:
       "Wait for background agents spawned via task({background:true}) and return their reports. mode: \"all\" (every id completed; error if any failed), \"allSettled\" (every id settled, failures included as state), \"any\" (first success), \"race\" (first to settle, whatever the state). Reports are the agents' final answers — the only thing the children's work reduces to in this conversation.",
     parameters: {
@@ -102,6 +106,7 @@ export function createAgentAwaitTool(registry: AgentRegistry): import("@wudao-or
 export function createAgentStatusTool(registry: AgentRegistry): import("@wudao-org/core").Tool {
   return buildTool({
     name: "agent_status",
+    promptSnippet: "check background agents' state without waiting",
     description:
       "Snapshot every background agent spawned in this session: id, callId (t-N), role, state (queued|running|completed|failed|cancelled), writeScope when scoped, parentCallId when it resumes an earlier task — without waiting. Use it to decide what to await or cancel.",
     parameters: { type: "object", properties: {}, additionalProperties: false },
@@ -126,6 +131,7 @@ export function createAgentStatusTool(registry: AgentRegistry): import("@wudao-o
 export function createAgentCancelTool(registry: AgentRegistry): import("@wudao-org/core").Tool {
   return buildTool({
     name: "agent_cancel",
+    promptSnippet: "stop a background agent",
     description:
       "Cancel one background agent (queued agents are dequeued; running agents get an abort signal and stop at their next checkpoint). The agent's partial report is NOT collected — cancel means discard.",
     parameters: {

@@ -50,13 +50,22 @@ export interface Tier2Result {
  *  (prior summaries and their covered prefixes stay byte-identical in place —
  *  no summary-of-summary drift, no rewriting of already-cached bytes). The
  *  returned `prior` is the frozen chain head the caller must re-prepend. */
+/** 2026-11-06 KV 缓存弧：可选的保留策略。absent = 历史行为（逐字节不变）。 */
+export interface SpanPlan {
+  /** 从可压区间起点再往前冻结多少条（保前段：把改写点往后挪，保住缓存前缀）。 */
+  readonly headKeep: number;
+  /** 尾部保留条数（近轮占用过大时会比调用方的 keepRecent 更小）。 */
+  readonly tailKeep: number;
+}
+
 export function compactableSpan(
   messages: readonly AgentMessage[],
   keepRecent: number,
+  plan?: SpanPlan,
 ): { span: AgentMessage[]; rest: AgentMessage[]; prior: AgentMessage[] } | null {
   // ω-3b: floored — the summary span may not replace the active turn's own
   // (unanswered) batch; the clamp only ever shrinks the span.
-  const cutoff = floorCutoff(messages, keepRecent);
+  const cutoff = floorCutoff(messages, plan?.tailKeep ?? keepRecent);
   // Everything fits in the keep-recent window — nothing to compact. Checked
   // BEFORE the pairing loop: an orphaned leading tool message could otherwise
   // advance cutoff from 0 to 1 and compact despite the fit.
@@ -70,6 +79,21 @@ export function compactableSpan(
       break;
     }
   }
+  // 保前段：把可压区间的起点往后挪，前段整段进入 prior（原样冻结）。
+  // 夹逼保证至少留一条可压消息——否则压缩就退化成空操作。
+  //
+  // 配对对齐（关键）：起点绝不能落在一条 tool 消息上。否则 assistant 的
+  // tool_use 留在 prior、它的 tool_result 进了 span，整轮被劈成两半——
+  // 实测会直接丢掉那一轮的证据（arc128：12 条 emit 只剩 11 条）。
+  // 向后回退到最近的一条非 tool 消息，是这里唯一安全的切法。
+  // 改写点必须落在一轮的起点（user 消息）上。落在 assistant/tool 之间会把
+  // 同一轮的 tool_use 与 tool_result 劈进 prior/span 两侧，整轮被拆散——
+  // 实测 arc128 就这样丢掉了一条 emit 证据（12 → 11）。
+  if (plan !== undefined && plan.headKeep > 0) {
+    let headEnd = Math.min(start + plan.headKeep, cutoff - 1);
+    while (headEnd < cutoff && messages[headEnd]?.role !== "user") headEnd += 1;
+    start = headEnd >= cutoff ? start : headEnd; // 找不到安全边界：不保前段
+  }
   const span = messages.slice(start, cutoff);
   if (span.length === 0) return null;
   const compactable = span.some((m) => !(m.role === "user" && m.content.startsWith(SUMMARY_MARKER)));
@@ -79,6 +103,9 @@ export function compactableSpan(
 
 export interface Tier2Options {
   readonly keepRecent?: number; // default 6
+  /** 2026-11-06 KV 缓存弧：压缩后的目标水位。给了才启用「保前段 + 按未来占用
+   *  定深度」策略；不给 = 历史行为（逐字节不变，评估/工具路径仍走老路）。 */
+  readonly targetTokens?: number;
   /** M24 warm replay: the parent conversation's system prompt — the summary
    *  call reuses it VERBATIM so the replayed prefix stays byte-identical. */
   readonly systemPrompt?: string;
@@ -189,6 +216,13 @@ export function staticFallbackSummary(span: readonly AgentMessage[], recentN: nu
 /** Digest cap on the span's total ASSISTANT text (the "key facts and
  *  decisions" the LLM summary exists to preserve). */
 export const DIGEST_ASSISTANT_TEXT_CAP_CHARS = 1200;
+/** 工具内容上限。**这条是质量红线**：编码会话的实质全在工具结果里（文件内容、
+ *  编辑回执、测试输出）。此前的判据只看 user/assistant 的文字，于是「assistant
+ *  话很少 + 工具很多」的典型编码会话被判成「薄叙事」，摘要退化成
+ *  「9 user, 16 assistant, 16 tool」——工作记忆全丢。实测同一份 46 条消息的
+ *  会话：digest 路径产出角色统计，LLM 路径产出「Goal / 已改文件清单 / 当前
+ *  进行项 / 剩余任务 / 约束」。工具内容一多就必须走 LLM。 */
+export const DIGEST_TOOL_TEXT_CAP_CHARS = 2000;
 /** Digest cap on the span's total USER text — the digest quotes only the
  *  first user message (capped), so a talkative span must go the LLM way. */
 export const DIGEST_USER_TEXT_CAP_CHARS = 800;
@@ -200,6 +234,7 @@ export const DIGEST_USER_TEXT_CAP_CHARS = 800;
 export function digestibleSpan(span: readonly AgentMessage[]): boolean {
   let assistantChars = 0;
   let userChars = 0;
+  let toolChars = 0;
   let hasAnchor = false;
   for (const m of span) {
     if (m.role === "user") {
@@ -207,9 +242,17 @@ export function digestibleSpan(span: readonly AgentMessage[]): boolean {
       if (m.content.trim() !== "") hasAnchor = true;
     } else if (m.role === "assistant") {
       assistantChars += m.content.length;
+    } else if (m.role === "tool") {
+      toolChars += m.content.length;
     }
   }
-  return hasAnchor && userChars <= DIGEST_USER_TEXT_CAP_CHARS && assistantChars <= DIGEST_ASSISTANT_TEXT_CAP_CHARS;
+  return (
+    hasAnchor &&
+    userChars <= DIGEST_USER_TEXT_CAP_CHARS &&
+    assistantChars <= DIGEST_ASSISTANT_TEXT_CAP_CHARS &&
+    // 工具结果是编码会话的工作记忆——内容一多就不是「薄叙事」，必须走 LLM。
+    toolChars <= DIGEST_TOOL_TEXT_CAP_CHARS
+  );
 }
 
 /** 波次 7 #38: the deterministic digest body — span size, the original

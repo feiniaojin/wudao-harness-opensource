@@ -109,8 +109,12 @@ export function microcompact(messages: readonly AgentMessage[], options: Microco
   const minChars = options.minChars ?? 1000;
   // ω-3b: floored — an unseen result (no assistant after it) is never stubbed.
   const cutoff = floorCutoff(messages, keepRecent); // indices < cutoff are candidates
+  // KV 缓存弧：头部冻结——index < headKeep 的不桩化（保前缀）。桩化是**原地**
+  // 换内容（tool 消息仍在原位），配对天然安全，无需 tier-2 那种轮边界对齐。
+  const headKeep = Math.max(0, options.headKeep ?? 0);
   return messages.map((m, i) => {
     if (i >= cutoff) return m;
+    if (i < headKeep) return m;
     if (m.role !== "tool") return m;
     // ω-2b (I2-a): retention-ineligible tools' results are never stubbed.
     if (!matchesRetention(m.name, options.retention)) return m;

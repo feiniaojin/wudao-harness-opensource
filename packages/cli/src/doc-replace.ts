@@ -522,6 +522,7 @@ function spansRefusal(tool: string, find: string, paragraphs: readonly SpanningP
 export function createReplaceDocxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "replace_docx",
+    promptSnippet: "replace exact text inside an existing Word document",
     description:
       "把工作区里现有 Word 文档（.docx）中出现的某段文字就地换成新文字，文档里其他内容和排版原样保留。适合「把这份文档里的旧公司名换成新的」「把报告里的日期改了」类请求；与读文档的 read_docx 配套——先读确认原文，再把要改的文字就地换掉。" +
       " path 是文档相对工作区的路径。find 是要找的原文字（不能为空），replace 是换成什么（可以给空串表示删除），maxCount 可选：一次最多替换多少处（缺省 50，最大 200，命中更多会拒并告知总数，可缩小范围或分批）。" +
@@ -632,6 +633,7 @@ export function createReplaceDocxTool(workspaceRoot: string): Tool {
 export function createReplacePptxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "replace_pptx",
+    promptSnippet: "replace exact text on every slide",
     description:
       "把工作区里现有演示文稿（.pptx）里每一页上的某段文字就地换成新文字，页面里其他内容和排版原样保留。适合「把这个 PPT 里的旧公司名换成新的」「把这页 PPT 的日期改了」类请求；与读演示文稿的 read_pptx 配套——先读确认每一页写了什么，再把要改的文字就地换掉。" +
       " path 是演示文稿相对工作区的路径。find 是要找的原文字（不能为空），replace 是换成什么（可以给空串表示删除），maxCount 可选：一次最多替换多少处（缺省 50，最大 200，命中更多会拒并告知总数，可缩小范围或分批——上限按全部页面合计算）。" +

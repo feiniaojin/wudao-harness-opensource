@@ -75,6 +75,11 @@ export function createReadFileTool(options?: {
   const readState = options?.readState;
   return buildTool({
     name: "read_file",
+    promptSnippet: "read a file's exact content",
+    promptGuidelines: [
+      "Read a file before editing it, or when you need its exact bytes.",
+      "Page large files with offset/limit instead of re-reading from the top.",
+    ],
     description:
       "Read a file as UTF-8 text. By default returns the first 2000 lines (or 50KB) — when the result is truncated it ends with a hint like '… (N more lines / M more KB — call again with offset=<next>)'. Use offset (1-based line number) and limit (line count) to page through larger files. Re-reading content you already have returns a short '[elided]' stub — pass force=true to re-read it anyway (e.g. when the file changed). " +
       "Example: {path: 'src/config.ts'} for a first look; {path: 'debug.log', offset: 1200, limit: 100} to page deep into a long file. " +

@@ -83,6 +83,10 @@ export function createObserveTools(ctx: ObserveToolsCtx): { screenObserve: Tool;
 
   const screenObserve: Tool = buildTool({
     name: "screen_observe",
+    promptSnippet: "list the frontmost window's on-screen elements as refs",
+    promptGuidelines: [
+      "Prefer an element ref over guessed coordinates when one is available.",
+    ],
     description:
       "列出前台应用（或指定 app）最前窗口里的可操作元素——按钮、输入框、菜单项等，每行带 [eN] 编号。之后用 computer_click / computer_type 的 ref 参数按编号直达，比截图量坐标更快更准、也不受分辨率影响。编号只在下一次 screen_observe 之前有效；元素表为空或找不到编号时，改用 screen_capture 截图 + 坐标。可选 app 填应用名（如 \"Safari\"）或 bundle id。",
     parameters: {
@@ -164,6 +168,10 @@ export function createObserveTools(ctx: ObserveToolsCtx): { screenObserve: Tool;
 
   const computerWait: Tool = buildTool({
     name: "computer_wait",
+    promptSnippet: "wait until the screen changes or a deadline passes",
+    promptGuidelines: [
+      "Use it instead of guessing how long an action takes.",
+    ],
     description:
       "等待屏幕上出现某个状态再继续——很多操作的效果要过一会儿才到位（页面加载、导出完成、弹窗出现），与其反复截图看，不如指定要等的结果。两种等法：① 等某个元素就绪：给 ref（最近一次 screen_observe 元素表的 [eN] 编号）并说明期望——value（它的内容变成什么，如 \"已完成\"）或 title（它的标题变成什么），元素到位且匹配即返回；② 等整个界面停稳：stable=true，画面连续几次采样不再变化（加载/动画结束）即返回。超时缺省 5000 毫秒、上限 30000；超时会说明哪个元素没到什么状态、当前是什么，并给出重试、重新 screen_observe、或 screen_capture 直接查看的出路。批内多个动作连发时，末尾用一次本工具等结果，无需逐动作截图。",
     parameters: {

@@ -1,22 +1,22 @@
 {"kind":"meta","version":1,"scenario":"snap-02-tool-chain"}
 {"kind":"message","phase":1,"message":{"role":"user","content":"Find the markdown files in this workspace with glob, locate the one containing the word COBALT with grep, read that file with read_file, and tell me the full codeword it contains."}}
-{"kind":"message","phase":1,"message":{"role":"assistant","content":"I'll run the glob and grep steps now.","toolCalls":[{"id":"call_00_ET_DHBd1lLiHXzNAhHEix827420","name":"glob","arguments":{"pattern":"**/*.md"}},{"id":"call_01_ET_fG8JsmYifxUTnMGqF4K68472","name":"grep","arguments":{"pattern":"COBALT"}}],"stopReason":"tool_calls"}}
-{"kind":"message","phase":1,"message":{"role":"tool","toolCallId":"call_00_ET_DHBd1lLiHXzNAhHEix827420","name":"glob","content":"docs/alpha.md\ndocs/beta.md"}}
-{"kind":"message","phase":1,"message":{"role":"tool","toolCallId":"call_01_ET_fG8JsmYifxUTnMGqF4K68472","name":"grep","content":"docs/beta.md:2: The access codeword is COBALT-OTTER-19."}}
-{"kind":"message","phase":1,"message":{"role":"assistant","content":"","toolCalls":[{"id":"call_00_7wIy8NVbR3KL36ZQmpMQ5075","name":"read_file","arguments":{"path":"docs/beta.md"}}],"reasoning":"Read the file.","stopReason":"tool_calls"}}
-{"kind":"message","phase":1,"message":{"role":"tool","toolCallId":"call_00_7wIy8NVbR3KL36ZQmpMQ5075","name":"read_file","content":"# beta\nThe access codeword is COBALT-OTTER-19.\n"}}
-{"kind":"message","phase":1,"message":{"role":"assistant","content":"**Codeword: `COBALT-OTTER-19`**\n\n- `glob **/*.md` → `docs/alpha.md`, `docs/beta.md`\n- `grep COBALT` → match only in `docs/beta.md:2`\n- `read_file docs/beta.md` → content: `# beta` / `The access codeword is COBALT-OTTER-19.`","stopReason":"stop"}}
+{"kind":"message","phase":1,"message":{"role":"assistant","content":"I'll run the glob and grep steps now.","toolCalls":[{"id":"call_00_ET_KmVcjMNGy3QwGlvgjtel5220","name":"glob","arguments":{"pattern":"**/*.md"}},{"id":"call_01_ET_EHwTrQSKNkcgSHQdWJAD7405","name":"grep","arguments":{"pattern":"COBALT"}}],"stopReason":"tool_calls"}}
+{"kind":"message","phase":1,"message":{"role":"tool","toolCallId":"call_00_ET_KmVcjMNGy3QwGlvgjtel5220","name":"glob","content":"docs/alpha.md\ndocs/beta.md"}}
+{"kind":"message","phase":1,"message":{"role":"tool","toolCallId":"call_01_ET_EHwTrQSKNkcgSHQdWJAD7405","name":"grep","content":"docs/beta.md:2: The access codeword is COBALT-OTTER-19."}}
+{"kind":"message","phase":1,"message":{"role":"assistant","content":"","toolCalls":[{"id":"call_00_ET_AfSudzEvo6tvkq5GdL6q0092","name":"read_file","arguments":{"path":"docs/beta.md"}}],"stopReason":"tool_calls"}}
+{"kind":"message","phase":1,"message":{"role":"tool","toolCallId":"call_00_ET_AfSudzEvo6tvkq5GdL6q0092","name":"read_file","content":"# beta\nThe access codeword is COBALT-OTTER-19.\n"}}
+{"kind":"message","phase":1,"message":{"role":"assistant","content":"The codeword is **COBALT-OTTER-19**.\n\nHow I got there:\n- `glob **/*.md` → two markdown files: `docs/alpha.md`, `docs/beta.md`\n- `grep COBALT` → single hit at `docs/beta.md:2`\n- read `docs/beta.md` to confirm the full line: `The access codeword is COBALT-OTTER-19.`","stopReason":"stop"}}
 {"kind":"terminal","phase":1,"reason":"completed"}
 {"kind":"message","phase":2,"message":{"role":"user","content":"In one word: what tool did you use to find the file?"}}
-{"kind":"message","phase":2,"message":{"role":"assistant","content":"glob","stopReason":"stop"}}
+{"kind":"message","phase":2,"message":{"role":"assistant","content":"grep","stopReason":"stop"}}
 {"kind":"terminal","phase":2,"reason":"completed"}
 {"kind":"session","entry":{"role":"user","content":"Find the markdown files in this workspace with glob, locate the one containing the word COBALT with grep, read that file with read_file, and tell me the full codeword it contains."}}
-{"kind":"session","entry":{"role":"assistant","content":"I'll run the glob and grep steps now.","toolCalls":[{"id":"call_00_ET_DHBd1lLiHXzNAhHEix827420","name":"glob","arguments":{"pattern":"**/*.md"}},{"id":"call_01_ET_fG8JsmYifxUTnMGqF4K68472","name":"grep","arguments":{"pattern":"COBALT"}}],"stopReason":"tool_calls"}}
-{"kind":"session","entry":{"role":"tool","toolCallId":"call_00_ET_DHBd1lLiHXzNAhHEix827420","name":"glob","content":"docs/alpha.md\ndocs/beta.md"}}
-{"kind":"session","entry":{"role":"tool","toolCallId":"call_01_ET_fG8JsmYifxUTnMGqF4K68472","name":"grep","content":"docs/beta.md:2: The access codeword is COBALT-OTTER-19."}}
-{"kind":"session","entry":{"role":"assistant","content":"","toolCalls":[{"id":"call_00_7wIy8NVbR3KL36ZQmpMQ5075","name":"read_file","arguments":{"path":"docs/beta.md"}}],"reasoning":"Read the file.","stopReason":"tool_calls"}}
-{"kind":"session","entry":{"role":"tool","toolCallId":"call_00_7wIy8NVbR3KL36ZQmpMQ5075","name":"read_file","content":"# beta\nThe access codeword is COBALT-OTTER-19.\n"}}
-{"kind":"session","entry":{"role":"assistant","content":"**Codeword: `COBALT-OTTER-19`**\n\n- `glob **/*.md` → `docs/alpha.md`, `docs/beta.md`\n- `grep COBALT` → match only in `docs/beta.md:2`\n- `read_file docs/beta.md` → content: `# beta` / `The access codeword is COBALT-OTTER-19.`","stopReason":"stop"}}
+{"kind":"session","entry":{"role":"assistant","content":"I'll run the glob and grep steps now.","toolCalls":[{"id":"call_00_ET_KmVcjMNGy3QwGlvgjtel5220","name":"glob","arguments":{"pattern":"**/*.md"}},{"id":"call_01_ET_EHwTrQSKNkcgSHQdWJAD7405","name":"grep","arguments":{"pattern":"COBALT"}}],"stopReason":"tool_calls"}}
+{"kind":"session","entry":{"role":"tool","toolCallId":"call_00_ET_KmVcjMNGy3QwGlvgjtel5220","name":"glob","content":"docs/alpha.md\ndocs/beta.md"}}
+{"kind":"session","entry":{"role":"tool","toolCallId":"call_01_ET_EHwTrQSKNkcgSHQdWJAD7405","name":"grep","content":"docs/beta.md:2: The access codeword is COBALT-OTTER-19."}}
+{"kind":"session","entry":{"role":"assistant","content":"","toolCalls":[{"id":"call_00_ET_AfSudzEvo6tvkq5GdL6q0092","name":"read_file","arguments":{"path":"docs/beta.md"}}],"stopReason":"tool_calls"}}
+{"kind":"session","entry":{"role":"tool","toolCallId":"call_00_ET_AfSudzEvo6tvkq5GdL6q0092","name":"read_file","content":"# beta\nThe access codeword is COBALT-OTTER-19.\n"}}
+{"kind":"session","entry":{"role":"assistant","content":"The codeword is **COBALT-OTTER-19**.\n\nHow I got there:\n- `glob **/*.md` → two markdown files: `docs/alpha.md`, `docs/beta.md`\n- `grep COBALT` → single hit at `docs/beta.md:2`\n- read `docs/beta.md` to confirm the full line: `The access codeword is COBALT-OTTER-19.`","stopReason":"stop"}}
 {"kind":"session","entry":{"type":"local_notice","data":{"text":"THIS MARKER MUST NOT REACH THE MODEL","note":"M71 §2 negative prompt-injection canary — must never reach the model"}}}
 {"kind":"session","entry":{"role":"user","content":"In one word: what tool did you use to find the file?"}}
-{"kind":"session","entry":{"role":"assistant","content":"glob","stopReason":"stop"}}
+{"kind":"session","entry":{"role":"assistant","content":"grep","stopReason":"stop"}}

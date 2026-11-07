@@ -6,6 +6,7 @@
 // invariant under test: a rescan changes ONLY the trailing <available_skills>
 // manifest — the prompt prefix (everything before the tail) stays byte-equal.
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { skillsDeltaNote } from "../src/skills.js";
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -184,29 +185,36 @@ describe("A3: rescanExtensions — counts + live swap", () => {
       summarize: summarizeToolCall,
       canUseTool: async () => ({ behavior: "allow" as const }),
     });
-    // the frontend sink, wired exactly like the real ones: swap skills and the
-    // rebuilt prompt into the live driver
-    registerExtensionSwapSink((fresh) =>
-      driver.replaceExtensions({ skills: fresh.skills, systemPrompt: buildSystemPrompt(f.ws, false, fresh.skills) }),
-    );
+    // the frontend sink, wired exactly like the real ones: swap skills, keep
+    // the prompt FROZEN, and deliver the change as one persisted tail message.
+    registerExtensionSwapSink((fresh) => {
+      const delta = skillsDeltaNote(boot.skills, fresh.skills);
+      driver.replaceExtensions({ skills: fresh.skills, ...(delta !== null ? { systemMessage: delta } : {}) });
+    });
 
     writeSkill(f.ws, "two");
     const counts = await rescanExtensions();
     expect(counts.skills).toBe(2);
 
     const promptAfter = driver.state.systemPrompt;
-    // THE cache invariant: only the trailing manifest changed
-    expect(stripSkillsTail(promptBefore)).toBe(stripSkillsTail(promptAfter));
+    // THE cache invariant: the system prompt does not move AT ALL.
+    expect(promptAfter).toBe(promptBefore);
+    // …and the change is delivered as a persisted tail message instead.
+    const tail = driver.state.messages.at(-1);
+    expect(tail?.role).toBe("user");
+    expect(String(tail?.content)).toContain("<skills_changed>");
+    expect(String(tail?.content)).toContain("two");
     // A3-review fold: pin the prefix against the canonical NO-SKILLS baseline
     // too — a systematic strip error (the regex eating prompt bytes when the
     // section is absent/misplaced) would cancel out in strip-vs-strip alone.
     const noSkills = buildSystemPrompt(f.ws, false, []);
     expect(stripSkillsTail(promptBefore)).toBe(noSkills);
     expect(stripSkillsTail(promptAfter)).toBe(noSkills);
-    expect(promptAfter.startsWith(stripSkillsTail(promptBefore))).toBe(true);
-    expect(manifestLines(promptAfter)).toBe(manifestLines(promptBefore) + 1);
-    expect(promptAfter).toContain("- name: two");
-    expect(promptBefore).not.toContain("- name: two");
+    // 2026-11-06: the manifest does NOT grow any more — the prompt is frozen at
+    // boot, and the new skill arrives only through the persisted tail message
+    // (asserted above). A growing manifest here would mean the prompt moved,
+    // i.e. the exact cache break this change exists to prevent.
+    expect(promptAfter).not.toContain("- name: two");
     driver.dispose();
   });
 

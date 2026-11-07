@@ -26,6 +26,10 @@ export interface CtxInspectSnapshot {
 export function createCtxInspectTool(getSnapshot: () => CtxInspectSnapshot): Tool {
   return buildTool({
     name: "ctx_inspect",
+    promptSnippet: "inspect what is actually in the current context",
+    promptGuidelines: [
+      "Use it when you are unsure whether something is still visible after a compaction.",
+    ],
     description:
       "Inspect the current context occupancy: token breakdown by segment (system prompt, tool definitions, messages by role, images), compaction state (summaries/stubs/cleared markers), the context window, and remaining headroom. Read-only; use it before planning large reads or when a compaction just happened.",
     parameters: { type: "object", properties: {} },

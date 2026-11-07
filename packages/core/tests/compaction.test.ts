@@ -453,7 +453,10 @@ describe("tier2Compact — deterministic todo-board re-injection (M23 §2)", () 
     };
     await summarizeSpan({ systemPrompt: "s", tools: [], messages: [{ role: "user", content: "history" }] }, model);
     const prompt = JSON.stringify(seen[0]?.messages);
-    expect(prompt).toContain("Always mention: the current in-progress todo item and the files currently being edited.");
+    // 2026-11-06 质量弧：模板换成结构化 8 段后，「当前进行项 / 正在改的文件」
+    // 由第 5、6 段承载（原来的单句要求已并入模板）。
+    expect(prompt).toContain("5. Pending Tasks");
+    expect(prompt).toContain("6. Current Work");
   });
 });
 

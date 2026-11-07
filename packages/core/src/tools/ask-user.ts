@@ -42,6 +42,11 @@ export function createAskUserTool(options?: {
   const timeoutMs = options?.timeoutMs ?? ASK_USER_TIMEOUT_MS;
   return buildTool({
     name: "ask_user",
+    promptSnippet: "ask the user a question",
+    promptGuidelines: [
+      "For decisions that are genuinely theirs — not for anything you can determine yourself.",
+      "State what you already found so the question is answerable in one line.",
+    ],
     description:
       "Ask the user ONE question and wait for their answer. Use when a decision genuinely needs the user (ambiguity, preference between approaches, missing credentials context). " +
       "requiresUserInteraction: yes — available ONLY in the interactive top-level session; subagents and non-interactive runs get an error result instead. " +

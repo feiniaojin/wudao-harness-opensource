@@ -85,6 +85,10 @@ export function formatMailText(childId: string, role: string, content: string): 
 export function createParentMessageTool(): Tool {
   return buildTool({
     name: PARENT_MESSAGE_TOOL_NAME,
+    promptSnippet: "send an early finding to the session that spawned you",
+    promptGuidelines: [
+      "Send as soon as it changes what the parent should do next — not only in the final report.",
+    ],
     description:
       "Send a message to the parent of the current agent loop — a mid-run finding that changes what the parent should do next. " +
       "Only a subagent dispatched by this session's task tool has a live parent edge; anywhere else the call fails with a typed error. " +

@@ -19,6 +19,7 @@ import {
 export function createConstitutionSuggestTool(env?: NodeJS.ProcessEnv): Tool {
   return buildTool({
     name: "constitution_suggest",
+    promptSnippet: "propose a constitution clause for the user to ratify",
     description:
       `Suggest ONE clause for the user's constitution. Suggestions ONLY queue into a pending inbox — the user reviews and approves them with /constitution; this tool NEVER edits the active constitution. One self-contained rule per call, ≤${CONSTITUTION_CLAUSE_MAX_CHARS} chars.`,
     parameters: {

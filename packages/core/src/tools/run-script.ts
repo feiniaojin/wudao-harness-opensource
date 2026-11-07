@@ -262,6 +262,7 @@ export function createRunScriptTool(options: RunScriptOptions) {
 
   return buildTool({
     name: "run_script",
+    promptSnippet: "run a saved script by name",
     description:
       "Run a batch of tool calls as ONE program instead of one turn per call — language: js (default) or python. " +
       "Single injected API: call(tool, args) → {ok, content, isError} on success, {ok:false, error} on failure (denied, unknown tool, timeout) — " +

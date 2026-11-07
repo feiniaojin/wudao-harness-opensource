@@ -15,3 +15,25 @@ export function maxTurns(fuse = 200): number {
   }
   return fuse;
 }
+
+// Turn slicing (弧 C) default — how many budget-window resets ONE run may take
+// before the fuse finally ends it. Unlimited is the product intent (ユーザー令
+// 2026-11-05「希望可以无限跑下去，可以无限重置而不会退出」): hitting maxTurns resets
+// the window instead of killing the run, and the run still ends on its own
+// terms (model end_turn, user abort/steer, or an exhausted wall/token budget).
+// `WUDAO_MAX_SLICES` overrides (0 = no slicing at all, i.e. the pre-ω-long-2
+// "maxTurns is a death date" behavior).
+//
+// Why this lives in the CLI and not in the driver: the driver is a library —
+// a caller that says nothing gets the conservative behavior, never an
+// unbounded loop. The product decides what the product does, and every
+// interactive frontend (REPL, TUI, web/pet) resolves its default HERE so they
+// cannot drift apart again.
+export function defaultMaxSlices(fallback = Number.POSITIVE_INFINITY): number {
+  const raw = process.env.WUDAO_MAX_SLICES;
+  if (raw !== undefined && raw !== "") {
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0) return n === 0 ? 0 : Math.floor(n);
+  }
+  return fallback;
+}

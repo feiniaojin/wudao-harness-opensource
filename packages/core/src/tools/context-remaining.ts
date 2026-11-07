@@ -39,6 +39,10 @@ export interface ContextRemainingSnapshot {
 export function createContextRemainingTool(getSnapshot: () => ContextRemainingSnapshot): Tool {
   return buildTool({
     name: "context_remaining",
+    promptSnippet: "check how much context window is left",
+    promptGuidelines: [
+      "Call it before starting a large exploration, so you can delegate instead of running out.",
+    ],
     description:
       "查询当前上下文水位线（只读）：窗口总量、已用 promptTokens、剩余 remainingTokens 与剩余比例 remainingRatio、压缩触发线 compressionThreshold（已扣除输出预留——长输出配置下会早于 80% 平比）、距触发线还有多少 tokensUntilThreshold。在长任务中定期调用本工具检查水位：remainingRatio 低于 20% 时，把重要状态（结论/决定/未竟事项）用 note_write 外化保存，并考虑提前收尾——压缩会丢细节，外化不丢。无参数调用即可。",
     parameters: { type: "object", properties: {}, additionalProperties: false },

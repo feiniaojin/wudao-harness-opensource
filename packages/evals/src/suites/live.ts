@@ -16,6 +16,8 @@ import {
   type LoopEvent,
   type Terminal,
   type AgentState,
+  type Tool,
+  buildTool,
 } from "@wudao-org/core";
 import { resolveProviderConfigResult, createOpenAICompatibleProvider, NO_KEY_REASON } from "@wudao-org/providers";
 import { buildSystemPrompt } from "wudao-harness/prompt";
@@ -58,34 +60,48 @@ function toolResults(events: readonly LoopEvent[], name: string): string[] {
     .map((e) => e.result);
 }
 
+interface RunLiveOptions {
+  readonly systemPrompt?: string;
+  /** ω-long-2: arm the arc-C continuation (budget-window resets). */
+  readonly continuation?: { sessionId: string; maxSlices: number };
+  /** Turn fuse for this run (default LIVE_MAX_TURNS). The slicing eval lowers
+   *  it deliberately: slicing only happens at a boundary. */
+  readonly maxTurns?: number;
+  /** Overrides the default six-tool set (the slicing eval needs a tool whose
+   *  result VARIES per call — a constant result is indistinguishable from
+   *  stasis by the progress brake, by design). */
+  readonly toolsOverride?: readonly Tool[];
+}
+
 async function runLive(
   ctx: LiveCtx,
   prompt: string,
   extra: Record<string, () => Promise<string | undefined>> = {},
-  systemPrompt?: string,
+  options: RunLiveOptions = {},
 ): Promise<LiveEvidence> {
   const resolved = resolveProviderConfigResult(process.env);
   if (!resolved.ok) throw new Error(`live run without provider config: ${resolved.reason}`);
   const model = createOpenAICompatibleProvider(resolved.config);
-  const tools = [
+  const tools: Tool[] = [...(options.toolsOverride ?? [
     createReadFileTool({ workspaceRoot: ctx.workspaceRoot }),
     createWriteFileTool({ workspaceRoot: ctx.workspaceRoot }),
     createEditTool({ workspaceRoot: ctx.workspaceRoot }),
     createShellTool({ workspaceRoot: ctx.workspaceRoot }),
     createGlobTool({ workspaceRoot: ctx.workspaceRoot }),
     createGrepTool({ workspaceRoot: ctx.workspaceRoot }),
-  ];
+  ])];
   const state: AgentState = {
-    systemPrompt: systemPrompt ?? "You are a coding agent working in the current workspace. Use the tools to accomplish the task, then answer concisely.",
+    systemPrompt: options.systemPrompt ?? "You are a coding agent working in the current workspace. Use the tools to accomplish the task, then answer concisely.",
     messages: [{ role: "user", content: prompt }],
     tools,
     status: "running",
   };
   const { events, terminal } = await drain(runAgentLoop(state, model, {
-    maxTurns: LIVE_MAX_TURNS,
+    maxTurns: options.maxTurns ?? LIVE_MAX_TURNS,
     // Headless eval: the workspace is a throwaway tmp dir, so auto-allow.
     canUseTool: () => ({ behavior: "allow" as const }),
     signal: AbortSignal.timeout(LIVE_TIMEOUT_MS),
+    ...(options.continuation !== undefined ? { continuation: options.continuation } : {}),
   }));
   // Deferred extras: the thunks only run AFTER the loop, so they observe the
   // final on-disk state (not a race with the model's writes).
@@ -357,7 +373,7 @@ const projectContextEval: EvalDefinition<LiveCtx, LiveEvidence & { systemPrompt:
       ctx,
       "Without reading any files: what package manager and test command is this project supposed to use, and what is its release codename?",
       {},
-      systemPrompt,
+      { systemPrompt },
     );
     return { ...evidence, systemPrompt };
   },
@@ -376,10 +392,140 @@ const projectContextEval: EvalDefinition<LiveCtx, LiveEvidence & { systemPrompt:
   },
 };
 
+
+// ---------------------------------------------------------------------------
+// live-05 (ω-long-2): 长程续跑在真模型下真的管用吗？
+//
+// 这条用例存在的唯一目的，是回答「deterministic 测试绿了，但是不是真管用」。
+// scripted model 不会累、不会跑偏、不会在第 N 轮开始敷衍，而长程任务真实的
+// 失败模式全都在那里。所以这里用真模型跑一个**必须撞上限才能完成**的任务：
+//
+//   - maxTurns = 3（远小于任务所需轮数），装备 continuation；
+//   - 任务是「往计数器文件里追加到 9 条」；每次只能看一眼、写一条；
+//   - 如果续跑失效，run 会在第 3 轮以 max_turns 死掉，文件不满 9 条；
+//   - 成功 = 文件真的到了 9 条 + 至少注入过一次续跑消息 + 终态不是
+//     max_turns（模型自己收工）。
+//
+// 关键设计：工具是「读-写-读」形状，每轮结果都不同（进度刹车要的正是这个），
+// 同时任务本身有明确的完成判据，模型能自己判断何时该 end_turn。
+const LONG_TASK_TARGET = 9;
+
+/** Build the long-task eval with slicing ON or OFF. The OFF variant is the
+ *  control: same task, same fuse, no continuation — it MUST die at the fuse.
+ *  Without that control a green ON result would only prove the task is
+ *  doable, not that slicing is what made it doable. */
+function longRunEval(slicing: boolean): EvalDefinition<LiveCtx, LiveEvidence & { finalCount: number; continuations: number }> {
+  return {
+  name: slicing ? "live-05-long-run-slicing" : "live-06-long-run-control",
+  kind: "live",
+  skip: () => {
+    const r = resolveProviderConfigResult(process.env);
+    return r.ok ? undefined : (r.reason || NO_KEY_REASON);
+  },
+  async setup(dir) {
+    await writeFile(join(dir, "counter.txt"), "0\n", "utf8");
+    return { workspaceRoot: dir };
+  },
+  async run(ctx) {
+    const counterPath = join(ctx.workspaceRoot, "counter.txt");
+    // ONE tool doing read-then-write: every call changes the file, so each
+    // turn's result differs (a constant result would be indistinguishable
+    // from stasis and the progress brake would — correctly — stop the run).
+    const step = buildTool({
+      name: "bump_counter",
+      description:
+        "Read counter.txt, then write back its current integer + 1. Returns the NEW value. " +
+        "Call it repeatedly; when the reported value reaches the target, stop and say you are done.",
+      parameters: { type: "object", properties: {}, additionalProperties: false },
+      // This tool is DESIGNED to be called over and over with identical
+      // arguments — that is exactly the polling/increment cadence the
+      // loopExempt annotation exists for. Without it the identical_calls
+      // detector (name+args fingerprint, W=6 window) reads six identical
+      // calls as a stall and aborts a run that is making real progress.
+      // Found the hard way on the first live run of this eval.
+      loopExempt: () => true,
+      async execute() {
+        const raw = await readFile(counterPath, "utf8").catch(() => "0");
+        const next = (Number.parseInt(raw.trim(), 10) || 0) + 1;
+        await writeFile(counterPath, `${next}\n`, "utf8");
+        return { content: `counter is now ${next}` };
+      },
+    }) as Tool;
+    const evidence = await runLive(
+      ctx,
+      `Call bump_counter repeatedly until counter.txt reaches ${LONG_TASK_TARGET}, then report the final value. ` +
+        "You must call the tool at least once per step — do not guess the value.",
+      {},
+      {
+        toolsOverride: [step],
+        // The whole point: a fuse far short of what the task needs. Without
+        // slicing this run is dead at turn 3.
+        maxTurns: 3,
+        ...(slicing ? { continuation: { sessionId: "live-long-run", maxSlices: Number.POSITIVE_INFINITY } } : {}),
+      },
+    );
+    const raw = await readFile(counterPath, "utf8").catch(() => "0");
+    return {
+      ...evidence,
+      finalCount: Number.parseInt(raw.trim(), 10) || 0,
+      continuations: evidence.events.filter((e) => e.type === "continuation_injected").length,
+    };
+  },
+  assertions(evidence) {
+    const errors: string[] = [];
+    if (!slicing) {
+      // The CONTROL asserts the MECHANISM, not the model's mood.
+      //
+      // An earlier version demanded terminal === "max_turns" and went red
+      // because the model answered on its own at turn 3 without ever
+      // reaching the fuse — that assertion was measuring model variance,
+      // not slicing. What the control actually has to prove is narrower and
+      // model-independent: with continuation absent, the run injects ZERO
+      // continuation messages. Combined with the sliced twin's 4, that is
+      // the contrast the eval exists to establish.
+      //
+      // The task outcome (finalCount) is recorded as a metric rather than
+      // asserted: a model that quits early makes the control weaker
+      // evidence, but it must never make it RED.
+      if (evidence.continuations !== 0) {
+        errors.push(`control run injected ${evidence.continuations} continuations — slicing was armed when it should not be`);
+      }
+      if (evidence.terminal?.reason === "max_turns" && evidence.finalCount >= LONG_TASK_TARGET) {
+        // Reached the fuse AND finished: then the fuse is not a bound at all
+        // and the sliced twin proves nothing.
+        errors.push("control hit max_turns yet still finished the task — the fuse never actually bounded this run, so the sliced twin is not evidence");
+      }
+      return errors;
+    }
+    // 1) 撞了上限还活着：max_turns 是「续跑彻底失效」的直接证据。
+    if (evidence.terminal?.reason === "max_turns") {
+      errors.push("run ended on max_turns — the continuation never took over");
+    }
+    // 2) 确实发生了切片（3 轮上限跑不完 9 次自增）。
+    if (evidence.continuations < 1) {
+      errors.push(`no continuation_injected event (got ${evidence.continuations}) — slicing never armed`);
+    }
+    // 3) 真把活干完了，而不是「活着但没进展」。
+    if (evidence.finalCount < LONG_TASK_TARGET) {
+      errors.push(`counter reached ${evidence.finalCount}, target ${LONG_TASK_TARGET} — the run stayed alive but did not finish the task`);
+    }
+    return errors;
+  },
+  metrics(evidence) {
+    return { continuations: evidence.continuations, finalCount: evidence.finalCount };
+  },
+  };
+}
+
+const longRunSlicingEval = longRunEval(true);
+const longRunControlEval = { ...longRunEval(false), name: "live-06-long-run-control" };
+
 export const liveSuites: readonly EvalDefinition<unknown, unknown>[] = [
   readSummaryEval,
   writeCalcEval,
   toolChainEval,
   cacheHitGateEval,
   projectContextEval,
+  longRunSlicingEval,
+  longRunControlEval,
 ];

@@ -23,6 +23,11 @@ export const CONTINUATION_SLICE_CAP = 12;
 export interface FinalizeOnLimitInput {
   readonly lastStopReason: string;
   readonly pendingSteers: boolean;
+  /** ω-long-2 — 本片是否留下了「实质进展」的证据。UNLIMITED 切片下这是
+   *  唯一的刹车：没有它，一个永远带 toolCalls 但从不产出可验证进展的
+   *  模型可以无限重置下去（每个 tick 换个时间戳就绕开了 identical_calls
+   *  的指纹，loop-safety 永远不触发）。缺席 = 不设此项检查（旧语义）。 */
+  readonly madeProgress?: boolean;
 }
 
 /** 判定结果：恰好一真（slice ⇔ !finalize）。
@@ -39,6 +44,13 @@ export interface FinalizeOnLimitVerdict {
  *  · tool_use 且无 pending steer → slice（不 finalize）；
  *  · 其余一切（end_turn、或 steer 在场）→ finalize（不 slice）。 */
 export function shouldFinalizeOnLimit(input: FinalizeOnLimitInput): FinalizeOnLimitVerdict {
+  // ω-long-2 — a slice with NO progress evidence finalizes instead of
+  // resetting: unlimited continuation must never bankroll stasis. The check
+  // is opt-in (madeProgress === false is the only blocking value, so the
+  // absent case keeps the pre-ω-long-2 verdict byte-for-byte).
+  if (input.madeProgress === false) {
+    return { finalize: true, slice: false };
+  }
   if (input.lastStopReason === "tool_use" && !input.pendingSteers) {
     return { finalize: false, slice: true };
   }

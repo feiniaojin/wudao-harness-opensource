@@ -69,6 +69,10 @@ export { MAX_TOKENS_THINKING_BUDGET_CONFLICT_CODE } from "./model-client.js";
 export { hasConfigCapConflict, CONFIG_CAP_ALSO_CONFLICTS_FIELD } from "./model-client.js";
 
 export { buildTool, validateToolArguments, toModelToolDefinition } from "./tool.js";
+export {
+  collectToolPromptEntries, renderToolGuideSection, TOOL_GUIDE_HEADING,
+} from "./tool-prompt.js";
+export type { ToolPromptEntry } from "./tool-prompt.js";
 // M52 §3 — the model-visible context occupancy tool.
 export { createCtxInspectTool } from "./tools/ctx-inspect.js";
 // 125 项 2（codex get_context_remaining 形）— 上下文水位线查询工具（只读；
@@ -532,6 +536,8 @@ export {
   degradePendingReads, formatPendingReadDowngrade,
   DEFAULT_CACHE_DYING_SOFT_RATIO, PENDING_READ_DOWNGRADE_PREFIX, DEFAULT_PENDING_READ_TOOL_NAMES,
 } from "./compaction-usage.js";
+export { planCompaction, worthCompacting } from "./compaction-plan.js";
+export type { CompactionPlan, CompactionPlanInput } from "./compaction-plan.js";
 export type {
   UsageEvidence, ThresholdDecision, CompactionOpportunityDecision, PendingReadDowngrade,
 } from "./compaction-usage.js";

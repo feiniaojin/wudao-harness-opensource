@@ -263,6 +263,48 @@ describe("resolveProviderConfig — provider selection", () => {
     ).toThrow(/from OPENAI_MODEL/);
   });
 
+  // 2026-11-06 Terminal-Bench 取证：自定义 provider 自带的 baseUrl 曾被 env
+  // 静默盖掉。实测形态：providers.json 里一档本地 shim 带
+  // baseUrl=127.0.0.1:8790，仓库树某层 .env 的 WUDAO_BASE_URL=api.deepseek.com
+  // 仍然生效——请求打到了完全不相干的上游，而 CLI 只表现为「很慢」。
+  // 自定义档存在的意义就是「指向我指定的端点」，它必须赢。
+  it("a CUSTOM provider's own baseUrl beats a stale env baseUrl", () => {
+    const providers = new Map([
+      ["local-shim", {
+        label: "local-shim",
+        defaultBaseUrl: "http://127.0.0.1:8790/v1",
+        defaultModel: "glm-5.3",
+        models: [{ name: "glm-5.3" }],
+        custom: true,
+        requiresBaseUrl: true,
+        reasoningFormat: "none" as const,
+      }],
+    ]) as never;
+    const c = resolveProviderConfigResult(
+      {
+        WUDAO_API_KEY: "k",
+        WUDAO_PROVIDER: "local-shim",
+        WUDAO_BASE_URL: "https://api.deepseek.com", // 父目录 .env 的历史残留
+      },
+      {},
+      undefined,
+      providers,
+    );
+    expect(c.ok).toBe(true);
+    if (!c.ok) return;
+    expect(c.config.baseURL).toBe("http://127.0.0.1:8790/v1");
+  });
+
+  it("a BUILTIN provider still lets env override its baseUrl (gateway usage)", () => {
+    // 内置档的 env 覆盖是既有合法用法，本次修复不能动它。
+    const c = resolveProviderConfig({
+      WUDAO_API_KEY: "k",
+      WUDAO_PROVIDER: "glm",
+      WUDAO_BASE_URL: "https://proxy.example/v1",
+    });
+    expect(c?.baseURL).toBe("https://proxy.example/v1");
+  });
+
   it("gateway base URL exempts the catalog guard (any model name routable)", () => {
     const c = resolveProviderConfig({
       WUDAO_API_KEY: "k",

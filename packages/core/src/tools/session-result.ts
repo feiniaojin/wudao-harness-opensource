@@ -127,6 +127,10 @@ const PARAMETERS: ToolParameterSchema = {
 export function createSessionResultTool(load: SessionResultLoader): Tool {
   return buildTool({
     name: "session_result",
+    promptSnippet: "retrieve a stored full result by its handle",
+    promptGuidelines: [
+      "Large tool results are stored and summarized; use this to pull the full bytes back.",
+    ],
     description:
       "Recover the full bytes of an old tool result that compaction stubbed or cleared (the stub marker names the tool_call_id and result_ref to use). " +
       "Pages through the retained original: each call returns one JSON header line (result_ref, offset, next_offset, total, sha256, complete) plus up to 16KB of body. " +

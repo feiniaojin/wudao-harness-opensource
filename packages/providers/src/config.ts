@@ -62,7 +62,13 @@ export interface ProviderProfile {
   /** Profile default; absent for `wudao` (OpenAI-compatible endpoint, must be configured). */
   readonly defaultBaseUrl?: string;
   readonly defaultModel: string;
-  /** When true, resolution fails (with a friendly reason) unless an explicit baseUrl is set. */
+  /** When true, resolution fails (with a friendly reason) unless an explicit baseUrl is set.
+   *
+   *  2026-11-06 Terminal-Bench 取证：baseUrl 语义此前是 `WUDAO_BASE_URL` 的
+   *  **整体覆盖**——设了它就改端点，但 wire/persona/reasoningFormat 仍取所选
+   *  profile 的。于是「把 GLM 指向本地 OpenAI 兼容 shim」这种最常见的接入
+   *  形态无法表达：端点变了，仍按 anthropic 线发请求，shim 收到 0 个请求。
+   *  需要的是「换端点 + 换线」，本标记就是那一格。 */
   readonly requiresBaseUrl?: boolean;
   /** Which matrix entry shapes the reasoning fields; defaults to `deepseek`. */
   readonly reasoningFormat?: ReasoningFormat;
@@ -741,7 +747,21 @@ export function resolveProviderConfigResult(
 
   if (!apiKey) return { ok: false, reason: NO_KEY_REASON };
 
-  const baseURL = env.WUDAO_BASE_URL ?? env.OPENAI_BASE_URL;
+  // 2026-11-06 Terminal-Bench 取证：env 的 baseUrl 此前是**无条件最高优先**，
+  // 连自定义 provider 自己写的 baseUrl 都盖掉。实测形态：providers.json 里
+  // 一档 `tb-shim` 带 baseUrl=http://127.0.0.1:8790/v1，但仓库树某层 .env 的
+  // WUDAO_BASE_URL=https://api.deepseek.com 仍然生效，请求打到 deepseek。
+  // 自定义档存在的意义就是「指向我指定的端点」——它的 baseUrl 必须赢过一条
+  // 从父目录自动加载来的历史 env。内置档维持原语义（env 网关覆盖是既有合法
+  // 用法，且有测试钉着）。显式 --provider 也算「用户此刻的选择」，同样让位。
+  const envBaseURL = env.WUDAO_BASE_URL ?? env.OPENAI_BASE_URL;
+  const registryBaseURL = registered?.custom === true ? registered.defaultBaseUrl : undefined;
+  const baseURL = registryBaseURL ?? envBaseURL;
+  // 取证留痕：两种来源都被设、且值不同时，说明该档自带的端点在本次解析里
+  // 没有被采纳——这是历史上最静默的一条改道（本次实测表现为「agent 很慢」
+  // 而不是报错）。不改变行为（自定义档已经赢），只让 /doctor 与日志能看见。
+  const baseURLSource: "registry" | "env" | "profile" =
+    registryBaseURL !== undefined ? "registry" : envBaseURL !== undefined ? "env" : "profile";
   if (baseURL === undefined && profile.requiresBaseUrl) {
     // R-M3 (T1 review): requiresBaseUrl demands an EXPLICIT url — the env
     // override, or one the REGISTRY itself supplied (a custom's baseUrl, an

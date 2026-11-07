@@ -1,7 +1,7 @@
 # wudao core barrel surface snapshot (omega99-96 pin fixture)
 # caliber: comment-stripped export-name parse — see omega99-94 report §4.1;
 # audit-596/coarse-599 historical deltas are comment-position parse artifacts.
-# names: 631 (sorted; one identifier per line)
+# names: 639 (sorted; one identifier per line)
 # regenerate from the repo root:
 #   node scripts/count-barrel-exports.mjs --snapshot packages/core/src/index.ts > packages/core/tests/fixtures/barrel-surface.txt
 ABORTED_NOT_STARTED_TOOL_RESULT
@@ -66,6 +66,8 @@ CompactionEconomicsDecision
 CompactionEconomicsReason
 CompactionEconomicsReport
 CompactionOpportunityDecision
+CompactionPlan
+CompactionPlanInput
 CompactionThrashError
 CompactionThresholdSpec
 CompactionWindowMode
@@ -285,6 +287,7 @@ TASK_CHAIN_ID_RE
 TODO_BOARD_PREFIX
 TODO_GENERATOR_DEFAULT_POLICY
 TODO_LINE_MARKS
+TOOL_GUIDE_HEADING
 TRUNCATED_TOOL_CALL_RESULT
 TURN_RECOVERY_NOTE
 TaskChainBaton
@@ -308,6 +311,7 @@ ToolDetachHub
 ToolDetachPort
 ToolParameter
 ToolParameterSchema
+ToolPromptEntry
 ToolResult
 ToolResultMessage
 ToolUpdateFn
@@ -374,6 +378,7 @@ classifyCacheClock
 classifyTurnRetryError
 clearTier
 coldCacheOffer
+collectToolPromptEntries
 commandLooksDestructive
 commonPrefixLength
 compactionOpportunity
@@ -565,6 +570,7 @@ pendingLedgerOf
 persistentShellDir
 persistentShellRuntime
 pipe
+planCompaction
 probeBus
 probeEnabled
 probeModelClient
@@ -582,6 +588,7 @@ renderAuthzExcerpt
 renderBranchTree
 renderReceipt
 renderTaskChainBaton
+renderToolGuideSection
 repairOrphanedToolCalls
 replaceSystemPrompt
 replayGoalStates
@@ -635,3 +642,4 @@ windowIdentityLine
 windowIdentitySection
 worldDiffSection
 worldStateDiff
+worthCompacting

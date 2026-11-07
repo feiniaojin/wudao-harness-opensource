@@ -233,6 +233,15 @@ export interface DriverExtensionSwap {
   readonly pluginAgents?: readonly RosterPluginAgent[];
   readonly hooks?: AgentHooks;
   readonly systemPrompt?: string;
+  /** 2026-11-06 KV 缓存安全的中途告知：一条**持久化**的模型可见消息，追加在
+   *  会话尾部（`state.messages` 末尾），绝不触碰系统提示词的字节。
+   *
+   *  为什么需要它：提示词在会话启动时冻结（见 prompt.ts 的三层契约），之后
+   *  skills/插件的变化不能再改前缀。但变化也不能只投影一次——那样模型下一轮
+   *  就忘了。这里走「轮尾纯追加」：与 language/reasoning block 同一条路，
+   *  更早的每个字节都保持原位，前缀缓存继续命中，而这条消息本身进持久历史，
+   *  之后每一轮都还在。 */
+  readonly systemMessage?: string;
 }
 
 // ω99-225: #1 — resume 的判决从会撒谎的布尔升级为带因三态：0.3.59 验装回执

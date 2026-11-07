@@ -308,6 +308,11 @@ export function createWebFetchTool(options: WebFetchOptions = {}) {
 
   return buildTool({
     name: "web_fetch",
+    promptSnippet: "fetch a URL and read it as text",
+    promptGuidelines: [
+      "Use after web_search to read a specific result, or when the user gives a URL.",
+      "Fails on authenticated/private pages — those need a real credential, not this tool.",
+    ],
     description: "Fetch an http(s) URL and return it as markdown (HTML) or raw text (plain/JSON/XML). " +
       "Zero-config, SSRF-guarded: private/loopback/link-local targets are refused, ports 80/443 only, text content-types only, 2MB cap, output shaped to ~16k chars. " +
       "Example: {url: 'https://example.com/docs'} retrieves a doc page for reading. " +

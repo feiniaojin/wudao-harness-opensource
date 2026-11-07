@@ -334,6 +334,7 @@ const OLE_MAGIC = [0xd0, 0xcf, 0x11, 0xe0] as const;
 export function createAppendXlsxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "append_xlsx",
+    promptSnippet: "append data rows to an existing sheet",
     description:
       "往工作区里现有的 Excel 文件（.xlsx）的某张工作表末尾追加数据行：字符串、数字、布尔、留空都能进，表里已有的内容原样保留。适合「帮我看下这个表，再把新数据添进去」「往这张表后面补几行」类请求；与读表的 read_xlsx、生成新表的 make_xlsx 配套——先读现有内容，再把新的行追加进去。" +
       " path 是文件相对工作区的路径。rows 是要追加的行数组，每行是一个单元格数组（字符串 / 数字 / 布尔 / null 留空），一次最多 64 列。sheet 可选：要追加到哪张工作表（名字或 1 起序号），缺省第一张。" +

@@ -41,6 +41,7 @@ import { resolveLanguagePreference } from "../language.js";
 // M63 §C: the wizard's just-saved key resolves from the credentials file;
 // WIZARD_PLACEHOLDER_KEY marks the no-key boot's placeholder config.
 import { WIZARD_PLACEHOLDER_KEY } from "../credentials.js";
+import { defaultMaxSlices } from "../version.js";
 import { CostRegistry } from "../commands/cost.js";
 import { persistAllowRule } from "../commands/permissions.js";
 import { createAgentDriver } from "./agent-driver.js";
@@ -56,6 +57,7 @@ import { createMemoryRuntime, surfacePendingReview } from "../memory/index.js";
 // 会话终了沉淀）。
 import { createLongtermMemoryRuntime, setLongtermMemoryRuntime, withFirstRunMemoryInjection } from "../longterm-memory.js";
 import { buildSystemPrompt } from "../prompt.js";
+import { skillsDeltaNote } from "../skills.js";
 import { summarizeToolCall, modelLabel } from "../log.js";
 import { createCacheTrackingModel } from "../cache.js";
 // ω-5a I23: the cold-cache pre-send monitor (one per session).
@@ -879,9 +881,11 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       model: liveConfig.model,
       ...(liveConfig.reasoningEffort !== undefined ? { effort: liveConfig.reasoningEffort } : {}),
     },
-    systemPrompt: buildSystemPrompt(workspaceRoot, hasMcpTools, hasReadTool ? skills : [], peer.refusal === undefined, hasComputerTools),
+    systemPrompt: buildSystemPrompt(workspaceRoot, hasMcpTools, hasReadTool ? skills : [], peer.refusal === undefined, hasComputerTools, tools),
     canUseTool: gate,
     maxTurns: props.maxTurns,
+    // ω-long-2：web/pet 车道同一默认——撞上限只重置预算窗续跑。
+    maxSlices: props.maxSlices ?? defaultMaxSlices(),
     // 夜移 005: interactive sessions auto-title (one-shot paths keep the
     // derived name — a background call racing process exit buys nothing).
     // ω99-235: a caller may opt out (the pet lane — fixed display name).
@@ -1108,7 +1112,9 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
   // (hasMcpTools/hasReadTool are session-static tool-set facts). Busy runs
   // park the swap; it lands at run settle inside the driver.
   const unregisterExtensionSwap = registerExtensionSwapSink((fresh) => {
+    const delta = skillsDeltaNote(hasReadTool ? skills : [], hasReadTool ? fresh.skills : []);
     driverBox.current?.replaceExtensions({
+      ...(delta !== null ? { systemMessage: delta } : {}),
       skills: fresh.skills,
       pluginCommands: fresh.pluginCommands,
       ...(fresh.pluginAgents.length > 0 ? { pluginAgents: fresh.pluginAgents } : {}),
@@ -1116,14 +1122,9 @@ export async function createDriverSession(props: DriverSessionOptions): Promise<
       // hooks 后首轮注入缝仍在（fresh.hooks 缺席时 replaceExtensions 不动
       // hooks 槽，包裹版原样存活）。
       ...(fresh.hooks !== undefined ? { hooks: withFirstRunMemoryInjection(fresh.hooks, ltsMemory) } : {}),
-      // ω99-28 T1 — the rebuild passes the SAME session-static peer flag the
-      // boot prompt was built with (line ~794). Omitting it defaulted the 4th
-      // arg to false: every rescan in a peer-tools session DROPPED the
-      // "# Peer messaging" tail — an undeclared system-header break on any
-      // mission_start/bundle rescan (the ω99-26 campaign's turn 3, 18.4k).
-      // M-Memory 弧第二半：appendTo 保尾——rescan 重建后的 prompt 尾部仍带
-      // 冻结的 <long-term-memory> 块（boot 注入与 rescan 两个位点字节一致）。
-      systemPrompt: ltsMemory.appendTo(buildSystemPrompt(workspaceRoot, hasMcpTools, hasReadTool ? fresh.skills : [], peer.refusal === undefined, hasComputerTools)),
+      // 2026-11-06 KV 缓存红线：rescan 不再重建系统提示词。重建 = 前缀在第 0
+      // 字节分叉 = 系统提示词连同它后面的整段会话历史全部重新计费。提示词冻结在
+      // 会话启动那一刻（不传 systemPrompt = 保持原值），skills 变化走增量 note。
     });
   });
 

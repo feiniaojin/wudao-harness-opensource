@@ -22,6 +22,9 @@ export interface UseAgentOptions {
   systemPrompt: string;
   canUseTool?: RuleGate;
   maxTurns?: number;
+  /** ω-long-2 弧 C 续跑：撞 maxTurns 只重置预算窗。缺省由
+   *  defaultMaxSlices() 给（无上限）；0 = 关掉切片（退化为硬停）。 */
+  maxSlices?: number;
   // Seeds state.messages (resume): identities must match the caller's loaded
   // history so identity-based persistence selection stays correct.
   initialMessages?: AgentMessage[];

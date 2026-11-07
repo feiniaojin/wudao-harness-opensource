@@ -224,6 +224,10 @@ export function createContinueTaskTool(options: ContinueTaskToolOptions): Tool {
   const now = options.now ?? Date.now;
   return buildTool({
     name: "continue_task",
+    promptSnippet: "hand the task to a later session (write a baton, schedule the resume)",
+    promptGuidelines: [
+      "Use it when work must outlive this run — a scheduled resume picks the baton up exactly where you left it.",
+    ],
     description:
       "长任务需要跨会话时使用（quota 窗口 / 上下文极限 / app 要关）：把任务交给一个链——写一份交接档案（.wudao/task-chain/<task_id>.md）并安排一发延迟的接棒排程（默认在原会话 resume 续跑，notes 和历史原样保留）。handoff 要包含足够的上下文让下一次接棒的自己能立刻继续。同一 task_id 已有待接棒的排程时会拒绝（等它接棒后再交下一棒）；任务完成后不再调用即终链（也可把档案 status 改为 done）。",
     parameters: PARAMETERS,

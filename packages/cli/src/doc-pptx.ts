@@ -498,6 +498,7 @@ export function defaultPptxFilename(now: Date): string {
 export function createMakePptxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "make_pptx",
+    promptSnippet: "create a new presentation (cover / bullets / table slides)",
     description:
       "把内容做成能直接用的演示文稿（.pptx）：封面 / 要点 / 表格三种页型，双击就能打开，存到工作区里，并把文件路径告诉用户。适合任何「帮我做个 PPT / 汇报几页 / 做个演示文稿」的请求。" +
       ` 参数 slides：页数组（1 到 ${PPTX_MAX_SLIDES} 页），每页是三种之一：封面页 {kind: "cover", title: "大标题", subtitle: "副标题（可选）"}；` +

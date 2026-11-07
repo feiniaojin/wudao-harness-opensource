@@ -260,6 +260,7 @@ function pptxAppendZipError(error: string): string {
 export function createAppendPptxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "append_pptx",
+    promptSnippet: "append slides to an existing presentation",
     description:
       "往工作区里现有的演示文稿（.pptx）末尾追加几页：封面 / 要点 / 表格三种页型都能接着加，已有的页面原样保留。适合「帮我在这个 PPT 后面再加几页」「往这份演示文稿里补两页要点」类请求；与读演示文稿的 read_pptx、生成整份新演示文稿的 make_pptx 配套——先读现有页面，再把要补的页追加进去。" +
       " path 是文件相对工作区的路径。slides 是要追加的页数组（形状与 make_pptx 相同：封面 / 要点 / 表格三种页型）。" +

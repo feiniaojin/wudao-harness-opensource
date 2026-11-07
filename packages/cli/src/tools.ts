@@ -160,11 +160,33 @@ export interface AgentsTooling {
 // then sees no shouldDefer tools and requests are byte-identical to pre-M35).
 // ---------------------------------------------------------------------------
 
+/**
+ * 2026-11-06 Terminal-Bench 取证：容器任务只挂了一个真正需要的工具，请求里
+ * 却躺着 85 个工具定义 / 114KB schema（实测快照）。模型要在 85 个并列选项里
+ * 挑，两条代价同时发生：单次调用变慢（GLM 带 85 工具时同一 prompt 从 6s
+ * 涨到 10min+ 未返回），且选错/选漏的概率随选项数上升。
+ *
+ * 病根不是「工具太多」——harness 有 85 个工具是合理的；病根是**一次性全给**。
+ * defer 机制本来就是为这个存在的（工具不进请求的 tools 数组，只进
+ * load_tools 的目录，模型要了再展开），此前却只覆盖 4 个 orchestration 工具，
+ * 等于把最占地方的那 80 个（browser/computer/doc 三族）全留在常驻面。
+ *
+ * 现在的候选集合 = 所有「定义大、且多数任务用不上」的族。常驻面只留干活
+ * 必需的那一小撮：文件读写改、shell、搜索、todo、上下文自省、ask_user。
+ * 分类原则按**能力族**而不是单个工具名——同族工具总是一起被需要，拆开只会
+ * 让模型多次 load。
+ */
 export const DEFER_CANDIDATE_TOOL_NAMES: ReadonlySet<string> = new Set([
-  "task",
-  "agent_await",
-  "agent_status",
-  "agent_cancel",
+  // 2026-11-06 用户定调：**只有 docs 家族默认延后**。理由：它一个族就 17 个
+  // 工具、使用频率又低（做文档才需要），却占了近三分之一的自述体积；而
+  // computer/browser/agents/monitor/shell-bg 是产品主线（buddy、桌面自动化、
+  // 后台任务），模型看得见才知道能用——默认进视野。
+  "make_docx", "make_xlsx", "make_pptx",
+  "read_docx", "read_xlsx", "read_pptx",
+  "append_docx", "append_xlsx", "append_pptx",
+  "replace_docx", "replace_xlsx", "replace_pptx",
+  "set_docx_header", "clear_docx_header", "set_docx_first_page",
+  "set_docx_even_pages", "set_pptx_notes",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -215,8 +237,20 @@ export function estimateDeferCandidateBytes(tools: readonly Tool[]): number {
 }
 
 /** The AUTO verdict: defer-candidate schema tokens (bytes / 4) fit within
- *  10% of the context window → eager. Pure. */
+ *  10% of the context window → eager. Pure.
+ *
+ *  2026-11-06 Terminal-Bench 取证：这个判据**只看窗口占比**，于是 100 万
+ *  窗口下 60KB 的候选集只占 1.5%，永远判「装得下」——defer 一次都没触发
+ *  过，实测请求里躺着 85 个工具定义。窗口大不等于应该一次给 85 个并列选项：
+ *  模型要在里面挑，慢和选错的代价与窗口大小无关。
+ *
+ *  所以判据补一条**选择面宽度**上限：候选工具数超过 EAGER_TOOL_COUNT_CEILING
+ *  就一定 defer。窗口占比保留（它抓的是另一种形态：工具少但每个特别大）。 */
+export const EAGER_TOOL_COUNT_CEILING = 24;
+
 export function deferCandidatesFitWindow(tools: readonly Tool[], contextWindowTokens: number): boolean {
+  const candidates = tools.filter((t) => DEFER_CANDIDATE_TOOL_NAMES.has(t.name));
+  if (candidates.length > EAGER_TOOL_COUNT_CEILING) return false;
   return estimateDeferCandidateBytes(tools) / 4 <= 0.1 * contextWindowTokens;
 }
 
@@ -1092,5 +1126,25 @@ export function buildToolSet(opts: {
       );
     }
   }
-  return baseTools;
+  // 2026-11-06 Terminal-Bench 取证（承接 DEFER_CANDIDATE_TOOL_NAMES 的大注释）：
+  // defer 标记此前只在「会话池」那一段内部生效（taskTool + registry），而
+  // computer 八件套、doc 十七件套、持久 shell 三件套、browser 族等全部挂载在
+  // 那段之外——候选集合写多大都是空转。实测：容器任务只需要 1 个工具，请求
+  // 里躺着 85 个定义 / 114KB schema。
+  //
+  // 这里在**全部挂载完成之后**统一打标：按名字挑，与挂载位置彻底解耦。这样
+  // 候选集就是一张纯策略表，新增一个工具族只需在表里加名字，不必再关心它
+  // 被 spread 在哪一段（那正是此前失效的原因）。
+  //
+  // 幂等：已经打过标的（上一段已处理过的 taskTool/registry）保持原样，
+  // shouldDefer 恒为 () => true，重复套不改变语义。
+  // ablation 必须穿透这一层：WUDAO_DEFER_TOOLS=off（或 sessionDeferEnabled
+  // 的 auto 判定为「装得下」）时，一个都不许标——否则这条开关就只是摆设，
+  // 而它正是 evals 用来隔离「defer 到底有没有用」的那一格。
+  if (!sessionDeferEnabled(baseTools, opts.contextWindowTokens)) return baseTools;
+  return baseTools.map((t) =>
+    DEFER_CANDIDATE_TOOL_NAMES.has(t.name) && t.shouldDefer?.() !== true
+      ? { ...t, shouldDefer: () => true }
+      : t,
+  );
 }

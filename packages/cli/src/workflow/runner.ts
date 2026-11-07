@@ -94,7 +94,7 @@ export async function runWorkflow(workflow: Workflow, opts: RunWorkflowOptions):
     // Prompt-cache friendly: the base system prompt stays byte-stable, the
     // step scope is a trailing section.
     const allowedNames = tools.map((t) => t.name);
-    const systemPrompt = buildSystemPrompt(opts.workspaceRoot) + `
+    const systemPrompt = buildSystemPrompt(opts.workspaceRoot, false, [], false, false, tools) + `
 
 # Workflow step
 You are executing step "${step.id}" of deterministic workflow "${opts.workflowName}". Complete exactly this step's task, then finish with a short final answer.

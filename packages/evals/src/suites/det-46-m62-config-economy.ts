@@ -67,7 +67,7 @@ import {
   setProjectContextExcludes,
   resetProjectContextCacheForTests,
 } from "wudao-harness/project-context";
-import { buildSystemPrompt, TOOL_USAGE_SECTION } from "wudao-harness/prompt";
+import { buildSystemPrompt } from "wudao-harness/prompt";
 import { loadLayeredSettings, saveLocalSettings } from "wudao-harness/settings-layer";
 import {
   buildConfiguredHooks,
@@ -555,15 +555,15 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
       const styles9 = loadOutputStyles(ws9, (m) => styleWarns.push(m));
       resetOutputStyleForTests();
       setSessionOutputStyle("verbose");
-      const spVerbose1 = buildSystemPrompt(ws9);
-      const spVerbose2 = buildSystemPrompt(ws9);
+      const styleTools = buildToolSet({ workspaceRoot: ws9, model: "stub" } as never); // 风格评估要看到「coding 那格」——硬编码段已删，只能给真实工具集
+      const spVerbose1 = buildSystemPrompt(ws9, false, [], false, false, styleTools);
+      const spVerbose2 = buildSystemPrompt(ws9, false, [], false, false, styleTools);
       setSessionOutputStyle("concise"); // mid-session flip: sealed → refused
-      const spMidSession = buildSystemPrompt(ws9);
-      resetOutputStyleForTests(); // a RESTART reopens the selection
-      setSessionOutputStyle("swap");
-      const spSwap = buildSystemPrompt(ws9);
+      const spMidSession = buildSystemPrompt(ws9, false, [], false, false, styleTools);
+      resetOutputStyleForTests(); setSessionOutputStyle("swap"); // a RESTART reopens the selection
+      const spSwap = buildSystemPrompt(ws9, false, [], false, false, styleTools);
       resetOutputStyleForTests();
-      const spNone = buildSystemPrompt(ws9);
+      const spNone = buildSystemPrompt(ws9, false, [], false, false, styleTools);
 
       // ================================================================== §5
       // hooks additionalContext — real commands through buildConfiguredHooks.
@@ -845,7 +845,7 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
           projectWinsBody: findOutputStyle(styles9, "concise")?.body ?? "(missing)",
           shadowWarning: styleWarns.find((w) => w.includes("concise") && w.includes("shadows")),
           replaceFlag: findOutputStyle(styles9, "swap")?.replaceCodingInstructions === true,
-          appendedKeepsCoding: spVerbose1.includes("# Output style (verbose)") && spVerbose1.includes("VERBOSE-STYLE body") && spVerbose1.includes(TOOL_USAGE_SECTION),
+          appendedKeepsCoding: spVerbose1.includes("# Output style (verbose)") && spVerbose1.includes("VERBOSE-STYLE body") && spVerbose1.includes("# Tool usage"),
           afterProjectContext: spVerbose1.indexOf("# Output style (verbose)") > spVerbose1.indexOf("# Project context"),
           byteFrozen: spVerbose1 === spVerbose2,
           midSessionRefused: spMidSession === spVerbose1 && !spMidSession.includes("PROJ-CONCISE"),

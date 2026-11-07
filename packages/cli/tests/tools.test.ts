@@ -210,7 +210,9 @@ describe("buildToolSet M24 wiring (probe / spill / fork)", () => {
 // ---------------------------------------------------------------------------
 
 describe("buildToolSet defer marking (M35)", () => {
-  const ORCHESTRATION = ["task", "agent_await", "agent_status", "agent_cancel"];
+  // 2026-11-06 用户定调：延后集收窄为 docs 家族——task/agents 等编排工具
+  // 回到常驻面（模型看得见才知道能用）。
+  const ORCHESTRATION = ["make_docx", "read_xlsx", "append_pptx", "set_pptx_notes"];
 
   it("default: exactly the orchestration tools defer; coding tools stay eager; MCP tools stay eager", async () => {
     const mcpLike: Tool = {
@@ -270,12 +272,17 @@ describe("buildToolSet defer marking (M35)", () => {
         return { content: "" };
       },
     };
-    const task: Tool = { ...eager, name: "task", shouldDefer: () => false }; // buildTool default shape
-    const marked = markDeferCandidates([eager, task]);
+    // 2026-11-06：task 不再延后——用 docs 名字验证同一件事（白名单盖掉
+    // buildTool 的 fail-closed 默认）。
+    const docTool: Tool = { ...eager, name: "make_docx", shouldDefer: () => false };
+    const marked = markDeferCandidates([eager, docTool]);
     expect(marked[1]?.shouldDefer?.()).toBe(true);
     expect(marked[0]?.shouldDefer?.()).toBeUndefined();
     // The original objects are untouched (new objects only).
-    expect(task.shouldDefer?.()).toBe(false);
+    expect(docTool.shouldDefer?.()).toBe(false);
+    // task 现在不在白名单里：保持原样（不被标记）。
+    const task: Tool = { ...eager, name: "task", shouldDefer: () => false };
+    expect(markDeferCandidates([task])[0]?.shouldDefer?.()).toBe(false);
     // Disabled: nothing is marked (objects pass through).
     expect(markDeferCandidates([task], false)[0]?.shouldDefer?.()).toBe(false);
   });

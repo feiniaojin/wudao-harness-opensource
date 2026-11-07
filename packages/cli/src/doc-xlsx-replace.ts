@@ -708,6 +708,7 @@ function numericCellList(cells: readonly { sheet: string; ref: string }[]): stri
 export function createReplaceXlsxTool(workspaceRoot: string): Tool {
   return buildTool({
     name: "replace_xlsx",
+    promptSnippet: "replace exact cell text in an existing sheet",
     description:
       "把工作区里现有 Excel 文件（.xlsx）表里的某段文字就地换成新文字，其他单元格的内容、公式和表格样式原样保留。适合「把表里这格的旧值换成新值」「把旧公司名全表换掉」类请求；与读表的 read_xlsx 配套——先读确认原文，再把要改的文字就地换掉。" +
       " path 是文件相对工作区的路径。find 是要找的原文字（不能为空），replace 是换成什么（可以给空串表示删除），sheet 可选：只改哪张工作表（名字或 1 起序号），缺省全部工作表都改。maxCount 可选：一次最多替换多少处（缺省 50，最大 200，命中更多会拒并告知总数，可缩小范围或分批）。" +

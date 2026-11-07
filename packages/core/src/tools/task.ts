@@ -45,6 +45,11 @@ export function createTaskTool(options: {
 }) {
   return buildTool({
     name: "task",
+    promptSnippet: "spawn a focused subagent",
+    promptGuidelines: [
+      "Give it a complete, self-contained brief — it cannot see this conversation.",
+      "Use it to keep bulky exploration out of your context; do not redo its work yourself.",
+    ],
     description:
       "Launch a sub-agent for a focused task. Returns the sub-agent's final answer. subagent_type: 'general-purpose' (read-only, default), 'coder' (full tools), or 'fork' (shares THIS conversation's context and tools — warm-cache fan-out; pass shareContext:true to select). Default children are isolated; forks see everything you have said and done. " +
       "Example: {description: 'find failing tests', prompt: 'Run pnpm test and report each failing suite with its probable cause', subagent_type: 'coder'}. " +

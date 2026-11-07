@@ -54,6 +54,11 @@ export interface MicrocompactOptions {
   /** ω-2b (I2-a): per-tool retention — only matching tools' results are
    *  stubbed (see matchesRetention). Absent = every tool (status quo). */
   readonly retention?: RetentionTarget;
+  /** 2026-11-07 KV 缓存弧：头部冻结条数。index < headKeep 的消息一律原样保留
+   *  （不桩化）——桩化会改写消息中段的字节，前缀缓存从第一个被改写字节起全部
+   *  失效；保住头部一段，系统提示词 + 任务原话那几条就继续命中。0/未设 = 历史
+   *  行为（从最旧可桩处开始）。由 planCompaction 的相对预算给出，随窗口缩放。 */
+  readonly headKeep?: number;
 }
 
 // ---------------------------------------------------------------------------

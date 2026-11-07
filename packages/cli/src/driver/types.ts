@@ -566,6 +566,18 @@ export interface AgentDriverOptions {
    *  recovery) and never enter the persistent face (车道隔离). */
   persistPermissionAsks?: boolean;
   maxTurns?: number;
+  /** ω-long-2 — turn slicing (弧 C continuation). When armed, hitting
+   *  `maxTurns` no longer ENDS the run: the loop injects one internal
+   *  continuation message and resets the budget window (a new slice), so a
+   *  long task keeps going instead of dying at the fuse. `Infinity` slices
+   *  are unlimited; a finite number caps how many slices one run may take.
+   *  This is what makes `maxTurns` a SLICE SIZE rather than a death date.
+   *  `WUDAO_MAX_TURNS=0` (maxTurns resolves to Infinity) needs no arming —
+   *  an infinite window never hits a boundary. Default: see
+   *  `defaultMaxSlices()` — every interactive frontend gets unlimited
+   *  slicing, and an explicit number still caps it. Absent in the TYPE only
+   *  means "caller did not choose"; the driver's own default is unlimited. */
+  maxSlices?: number;
   /** Seeds state.messages (resume): identities must match the caller's loaded
    *  history so identity-based persistence selection stays correct. */
   initialMessages?: AgentMessage[];

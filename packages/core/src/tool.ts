@@ -145,6 +145,27 @@ export interface Tool {
    *  absent (or returning non-true) = counted exactly as today, and isError
    *  calls are never exempt. */
   loopExempt?(args: Record<string, unknown>): boolean;
+  /** 长程弧 §1（pi「每工具自带 snippet+guidelines」/ dsh「per-tool SECTION」形）
+   *  — 工具的提示词自述：一行做什么 + 若干条使用纪律。系统提示词按可用
+   *  工具集收集这些声明渲染成 Tool usage 节，工具增删时提示词自动跟随，
+   *  不再需要人在 prompt.ts 里同步一份硬写死的清单。
+   *
+   *  两条硬约束（wudao 与 pi/dsh 的差异）：
+   *    1. **必须静态**：snippet/guidelines 是常量，不得含每次 run 变化的值
+   *       （路径、时间、计数）。系统提示词是 memoized 前缀——每轮变一个字节
+   *       就是一次前缀缓存全失效（M24）。需要用运行期值就写进工具 schema 的
+   *       description（那本来每轮都在），不要写这里。
+   *    2. **缺席即静默**：不声明的工具在 Tool usage 节里不出现。内置工具必须
+   *       声明；第三方/MCP 工具可选（它们有 schema description 兜底）。
+   *
+   *  与 `description` 的边界：description 是给模型看的**调用契约**（参数语义、
+   *  返回形状，随 schema 每轮下发）；promptSnippet 是给模型看的**使用策略**
+   *  （什么时候该用它、别拿它做什么）。两者不重复。 */
+  readonly promptSnippet?: string;
+  /** 使用纪律（每条一句，渲染成 Tool usage 节下的缩进列表）。与 snippet
+   *  分开的理由：小模型/长上下文下「一行是什么」和「多条怎么用」分开读
+   *  比挤成一段更好召回；也对齐 pi 的 snippet+guidelines 两段式。 */
+  readonly promptGuidelines?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -306,6 +327,7 @@ export type ValidationResult =
 // are the single source for every message (never hand-build these strings).
 export type ToolArgumentError =
   | { kind: "missing"; toolName?: string; name: string; param: ToolParameter }
+  | { kind: "unparsed"; toolName?: string; raw: string }
   | { kind: "type"; name: string; expected: ToolParameterType; value: unknown }
   | { kind: "unknown"; toolName?: string; name: string; known: readonly string[] }
   | { kind: "not-object"; toolName?: string; received: unknown };
@@ -336,6 +358,15 @@ export function formatToolError(error: ToolArgumentError): string {
     case "not-object": {
       const where = error.toolName !== undefined ? ` for ${error.toolName}` : "";
       return `arguments${where} must be a JSON object — got: ${typeName(error.received)}`;
+    }
+    case "unparsed": {
+      // 2026-11-06 Terminal-Bench 取证（headless-terminal）：上游把工具参数的
+      // JSON 弄坏时（撕裂的 SSE 片段、被截断、字面控制字符），provider 三条线
+      // 统一用 `{ _unparsed: <原文> }` 把它交下来——这是故意的可见约定。校验器
+      // 此前不认识它，报的是 "missing required argument …"，模型据此去补一个
+      // 本来就有的字段。真实原因是那段 JSON 没解析出来，必须直说。
+      const where = error.toolName !== undefined ? ` for ${error.toolName}` : "";
+      return `arguments${where} could not be parsed as JSON — the raw text arrived as ${truncateForError(error.raw)}. Re-send the call with valid JSON (check quoting/escaping).`;
     }
   }
 }
@@ -420,6 +451,13 @@ export function validateToolArguments(
     return { valid: false, error: formatToolError({ kind: "not-object", toolName, received: input }) };
   }
   const args = input as Record<string, unknown>;
+
+  // 兜底形态只在「schema 本身没有 _unparsed 这个参数」时才算数——
+  // 真有一个工具合法地叫这个参数时不得劫持它。
+  const raw = args["_unparsed"];
+  if (typeof raw === "string" && schema.properties["_unparsed"] === undefined && Object.keys(args).length === 1) {
+    return { valid: false, error: formatToolError({ kind: "unparsed", toolName, raw }) };
+  }
 
   for (const key of schema.required ?? []) {
     if (!(key in args)) {

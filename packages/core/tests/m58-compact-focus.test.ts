@@ -4,6 +4,7 @@
 // riding the tier-2 request through ModelInput.reasoningEffort. The CLI-side
 // parsing of `/compact focus …` and of the WUDAO.md `## Compact Instructions`
 // section lands in a later batch — this pack pins the OPTIONS CONTRACT.
+import { SUMMARY_BASE_INSTRUCTION } from "../src/compaction-summarizer.js";
 import { describe, it, expect } from "vitest";
 import { tier2Compact, dualTier2Compact, manualCompact, dualSummaryPartition, SUMMARY_MARKER } from "../src/compaction.js";
 import type { AgentMessage, AssistantMessage, ModelClient, ModelInput } from "../src/index.js";
@@ -35,7 +36,7 @@ const NO_USER_MESSAGES: AgentMessage[] = [
 ];
 
 const STATUS_QUO_INSTRUCTION =
-  "Summarize the conversation above for continuation (max 300 words, preserving key facts, decisions, file paths, and open tasks). Always mention: the current in-progress todo item and the files currently being edited.";
+  SUMMARY_BASE_INSTRUCTION;
 
 // 113-B1: the kept-tail recency anchor block, as the instruction's LAST rider.
 // Byte-pin shape (the pins below stay byte-exact; the anchor is part of the

@@ -102,6 +102,9 @@ export interface DriverSessionOptions {
   readonly gates?: LoopGates;
   /** M23 turn fuse. Falls back to the version default. */
   readonly maxTurns?: number;
+  /** ω-long-2 — budget-window resets one run may take (弧 C continuation).
+   *  Absent → `defaultMaxSlices()` (unlimited). 0 disables slicing. */
+  readonly maxSlices?: number;
   /** M27 skills: /skill: routing + the prompt tail manifest. */
   readonly skills?: readonly LoadedSkill[];
   /** M36 plugin slash commands (parse routing + the data face). */

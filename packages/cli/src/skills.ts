@@ -676,6 +676,43 @@ export function applySkillVisibility(
  *   - name: <name> — <description> — use when: <whenToUse> (path: <relpath>)
  *   </available_skills>
  */
+/** 会话中途 skills 变化时的**增量通知**——KV 缓存安全的那条路。
+ *
+ *  为什么不能重建 system prompt：供应商的前缀缓存按「最长公共字节前缀」命中。
+ *  rescan 一旦重建整段提示词，前缀在第 0 字节就分叉，于是系统提示词**以及它
+ *  后面的整段会话历史**全部重新计费。skills 清单又恰恰挂在系统提示词的最末
+ *  尾，重建等于把会话历史整个推倒重来。
+ *
+ *  行业做法同款：Claude Code 把 MCP 指令改成 `mcp_instructions_delta` 附件，
+ *  源码注释写得很直白——"instead of this per-turn recompute, which busts the
+ *  prompt cache on late MCP connect"。这里对 skills 做同一件事：提示词冻结在
+ *  会话启动的那一刻，之后的变化以一条 projection-only 的 note 进入下一次模型
+ *  调用（不进持久历史，不再动前缀）。
+ *
+ *  返回 null 表示没有变化——调用方据此完全跳过通知，零字节成本。
+ */
+export function skillsDeltaNote(
+  before: readonly LoadedSkill[],
+  after: readonly LoadedSkill[],
+): string | null {
+  const key = (s: LoadedSkill): string => `${s.name}\u0000${s.description}\u0000${s.relPath}`;
+  const beforeKeys = new Set(before.filter((s) => s.disableModelInvocation !== true).map(key));
+  const afterKeys = new Set(after.filter((s) => s.disableModelInvocation !== true).map(key));
+  const added = after.filter((s) => s.disableModelInvocation !== true && !beforeKeys.has(key(s)));
+  const removed = before.filter((s) => s.disableModelInvocation !== true && !afterKeys.has(key(s)));
+  if (added.length === 0 && removed.length === 0) return null;
+  const line = (s: LoadedSkill): string => {
+    const where = isOutsideWorkspace(s.relPath) ? `invoke: /skill:${s.name}` : `path: ${s.relPath}`;
+    const about = [s.description, s.whenToUse ? `use when: ${s.whenToUse}` : ""].filter((p) => p !== "").join(" — ");
+    return `- name: ${s.name}${about ? ` — ${about}` : ""} (${where})`;
+  };
+  const parts = ["<skills_changed>", "The available skills changed during this session."];
+  if (added.length > 0) parts.push("Added:", ...added.map(line));
+  if (removed.length > 0) parts.push(`Removed: ${removed.map((s) => s.name).join(", ")}`);
+  parts.push("Use read_file to load a skill's full instructions when a task matches.", "</skills_changed>");
+  return parts.join("\n");
+}
+
 export function skillsPromptSection(skills: readonly LoadedSkill[]): string {
   const visible = skills.filter((s) => s.disableModelInvocation !== true);
   if (visible.length === 0) return "";

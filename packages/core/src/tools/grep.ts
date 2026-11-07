@@ -8,6 +8,7 @@ import { capOutputLines } from "./output-caps.js";
 export function createGrepTool(options: { workspaceRoot: string }) {
   return buildTool({
     name: "grep",
+    promptSnippet: "search file contents by regex",
     description: "Search file contents for a regular expression. Returns matching lines as 'path:line: text' (up to 100 hits; output capped at 2000 lines / 50KB). Skips node_modules and binary files. " +
     "Example: {pattern: 'TODO\\(\\w+\\):'} finds owner-tagged TODOs across the workspace — always prefer this over reading many files one by one. " +
     "Do NOT use grep to find files by NAME (glob) or to fetch a file's full contents (read_file).",

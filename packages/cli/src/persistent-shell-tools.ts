@@ -55,6 +55,11 @@ export function createPersistentShellTools(opts: {
   return [
     buildTool({
       name: "shell_start",
+      promptSnippet: "start a persistent background shell — no timeout, survives turns",
+      promptGuidelines: [
+        "For long builds, full test suites, dev servers — anything that outlives one tool call.",
+        "It has no stdin: pass every flag and answer explicitly (--yes, -y, CI=1).",
+      ],
       description:
         "Start a PERSISTENT background shell with NO timeout — for long builds, full test suites, dev servers and watch processes that outlive a single tool call. " +
         "Returns a shell id immediately; the shell keeps running while you do other work. " +
@@ -97,6 +102,7 @@ export function createPersistentShellTools(opts: {
     }),
     buildTool({
       name: "shell_read",
+      promptSnippet: "read a persistent shell's new output",
       description:
         "Read the current output window and running state of a persistent shell (started with shell_start). " +
         "The output is a bounded head+tail window — the middle of very long output is a [... N bytes truncated ...] marker; the LATEST output is always at the end. " +
@@ -142,6 +148,7 @@ export function createPersistentShellTools(opts: {
     }),
     buildTool({
       name: "shell_stop",
+      promptSnippet: "stop a persistent shell",
       description:
         "Stop a persistent shell: TERM to its whole process group, escalating to KILL after 2s; reports the exit code. " +
         "The collected output window stays readable afterwards via shell_read. " +

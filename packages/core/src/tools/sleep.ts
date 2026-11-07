@@ -36,6 +36,10 @@ export function createSleepTool(options: { readonly maxSeconds?: number } = {}) 
 
   return buildTool({
     name: "sleep",
+    promptSnippet: "sleep for a fixed time",
+    promptGuidelines: [
+      "Rarely the right tool: prefer a background watch (monitor_start) that wakes you on real progress.",
+    ],
     description: sleepDescription(maxSeconds),
     parameters: {
       type: "object",
