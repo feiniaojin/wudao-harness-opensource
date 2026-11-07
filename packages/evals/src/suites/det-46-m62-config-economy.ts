@@ -657,7 +657,9 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
       const wiredDefaultDeferred = await requestNames(2_000);
       setSessionDeferMode("on");
       const onTools = buildToolSet({ workspaceRoot: ws10, model: quietModel, canUseTool: canUse, contextWindowTokens: 4_000_000 });
-      const explicitOnDefers = onTools.find((t) => t.name === "task")?.shouldDefer?.() === true;
+      // 2026-11-07 docs-only defer：显式 on 的判据盯 docs 家族（make_docx）——
+      // task 等主线编排已回常驻面，盯它永远 false。
+      const explicitOnDefers = onTools.find((t) => t.name === "make_docx")?.shouldDefer?.() === true;
       setSessionDeferMode("off");
       const offTools = buildToolSet({ workspaceRoot: ws10, model: quietModel, canUseTool: canUse, contextWindowTokens: 2_000 });
       const explicitOffEager = offTools.find((t) => t.name === "task")?.shouldDefer?.() !== true;
@@ -1013,21 +1015,26 @@ export const det46Eval: EvalDefinition<string, Det46Evidence> = {
       need(s.out === wantSettings[s.mode], `defer: tools.defer "${s.mode}" must read ${wantSettings[s.mode]} (got ${s.out})`);
     }
     need(e.defer.thresholdFlips, "defer: the auto verdict must flip with the window (schema bytes/4 vs 10%)");
+    // 2026-11-07：defer 集收窄为 docs-only——task/agents 等主线编排能力回到
+    // 常驻面；延后的代表改用 docs 家族的 make_docx。
     need(e.defer.autoEagerNames.includes("task") && !e.defer.autoEagerNames.includes("load_tools"),
       "defer: auto + big window → eager (task present, no load_tools round trip)");
-    need(e.defer.autoDeferredNames.includes("load_tools") && !e.defer.autoDeferredNames.includes("task"),
-      "defer: auto + small window → deferred (load_tools present, task absent)");
-    need(e.defer.wiredDefaultEager.includes("task") && !e.defer.wiredDefaultEager.includes("load_tools"),
-      "defer: NO tools.defer key + big window → eager (the wired default is auto, not legacy on)");
-    need(e.defer.wiredDefaultDeferred.includes("load_tools") && !e.defer.wiredDefaultDeferred.includes("task"),
-      "defer: NO tools.defer key + small window → deferred (the wired default is auto)");
+    need(e.defer.autoDeferredNames.includes("load_tools") && !e.defer.autoDeferredNames.includes("make_docx"),
+      "defer: auto + small window → deferred (load_tools present, make_docx absent)");
+    // 2026-11-07 docs-only：400 万窗口下 17 个 docs 候选 < 24 上限且字节装得下
+    // → auto 不 defer，make_docx eager。真正要钉的是大小窗口的翻转。
+    need(e.defer.wiredDefaultEager.includes("task") && e.defer.wiredDefaultEager.includes("make_docx"),
+      "defer: NO tools.defer key + big window → eager (docs fit, no round trip)");
+    need(e.defer.wiredDefaultDeferred.includes("load_tools") && !e.defer.wiredDefaultDeferred.includes("make_docx"),
+      "defer: NO tools.defer key + small window → deferred (make_docx deferred)");
     need(e.defer.explicitOnDefers, "defer: explicit on must defer even under a big window");
     need(e.defer.explicitOffEager, "defer: explicit off must load eagerly even under a small window");
     need(e.defer.envOffBeatsOn, "defer: WUDAO_DEFER_TOOLS=off must beat an explicit on");
     need(JSON.stringify(e.defer.alwaysLoadLiteral) === JSON.stringify(["alpha:project-replaced", "beta:absent", "normalize:true"]),
       `defer: alwaysLoad must count only literal true + project mcp.json replaces by name (got ${JSON.stringify(e.defer.alwaysLoadLiteral)})`);
-    need(e.defer.mcpEagerWhileTaskDeferred.includes("mcp__alpha_run") && e.defer.mcpEagerWhileTaskDeferred.includes("load_tools") && !e.defer.mcpEagerWhileTaskDeferred.includes("task"),
-      "defer: an alwaysLoad MCP server's tools must ride the prefix eagerly while builtin orchestration defers");
+    // docs-only defer 后 task 常驻——用 make_docx 做被延后的那侧
+    need(e.defer.mcpEagerWhileTaskDeferred.includes("mcp__alpha_run") && e.defer.mcpEagerWhileTaskDeferred.includes("task") && !e.defer.mcpEagerWhileTaskDeferred.includes("make_docx"),
+      "defer: an alwaysLoad MCP server's tools must ride the prefix eagerly while docs defer");
     // ------------------------------------------------------------------ §7
     need(e.misc.compactClampLow === 100_000, `misc: autoCompactWindow must clamp up to 100k (got ${e.misc.compactClampLow})`);
     need(e.misc.compactClampHigh === 1_000_000, `misc: autoCompactWindow must clamp down to 1M (got ${e.misc.compactClampHigh})`);

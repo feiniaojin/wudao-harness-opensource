@@ -52,8 +52,11 @@ import {
   SYSTEM_PREAMBLE,
   CORE_PRINCIPLES_SECTION,
   TASK_DISCIPLINE_SECTION,
+  OUTPUT_CHANNEL_SECTION,
+  FINISHING_JOB_SECTION,
   LONG_TASKS_SECTION,
   BEHAVIORAL_CONTRACTS_SECTION,
+  ACTIONS_SECTION,
   environmentSection,
 } from "wudao-harness/prompt";
 import { runScriptWorkflow, type JsflowRunResult } from "wudao-harness/workflow/engine";
@@ -2839,7 +2842,7 @@ const deferredToolsEval: EvalDefinition<{ workspaceRoot: string }, DeferToolsEvi
   async run(ctx) {
     // (A) Defer ON (the default marking path buildToolSet applies).
     const model = createRecordingModel([
-      toolCallTurn("d1", "load_tools", { names: ["task"] }),
+      toolCallTurn("d1", "load_tools", { names: ["make_docx"] }),
       { role: "assistant", content: "DEFER-DONE" },
     ]);
     const tools = buildToolSet({
@@ -2951,19 +2954,23 @@ const deferredToolsEval: EvalDefinition<{ workspaceRoot: string }, DeferToolsEvi
     //（长程任务的持久 shell 车道，top-level ZERO-CONFIG，doc-suite 铬件之后、
     // load_tools 之前的 append-only 尾位）。非 defer 候选；弧未跑本电池，
     // 0.4.21 发版 gate 的重建暴露未随迁的钉——与前八期完全同型。
-    const wantFirst = ["read_file", "glob", "grep", "write_file", "edit", "shell", "todo_write", "sleep", "notebook", "message_parent", "message_child", "run_script", "python_kernel", "web_fetch", "constitution_suggest", "make_xlsx", "make_pptx", "make_docx", "screen_capture", "computer_type", "computer_key", "computer_click", "app_activate", "app_list", "computer_scroll", "computer_drag", "screen_observe", "computer_wait", "read_xlsx", "read_docx", "read_pptx", "append_docx", "append_pptx", "append_xlsx", "replace_docx", "replace_pptx", "replace_xlsx", "set_docx_header", "set_pptx_notes", "clear_docx_header", "set_docx_first_page", "set_docx_even_pages", "shell_start", "shell_read", "shell_stop", "load_tools"];
+    // 2026-11-07（第十期同族欠账）：defer 集收窄为 docs-only——docs 家族（17 个）
+    // 退出常驻面成为延后候选，task/agents/computer/screen/shell-bg 等产品主线
+    // 能力回到常驻。第一次请求名单 = 旧表减 docs 家族加 task/agent_*。
+    const wantFirst = ["read_file", "glob", "grep", "write_file", "edit", "shell", "todo_write", "sleep", "notebook", "message_parent", "message_child", "run_script", "python_kernel", "web_fetch", "constitution_suggest", "screen_capture", "computer_type", "computer_key", "computer_click", "app_activate", "app_list", "computer_scroll", "computer_drag", "screen_observe", "computer_wait", "task", "agent_await", "agent_status", "agent_cancel", "shell_start", "shell_read", "shell_stop", "load_tools"];
     if (JSON.stringify(evidence.firstNames) !== JSON.stringify(wantFirst)) {
       errors.push(`defer-on first request tools wrong: ${evidence.firstNames.join(", ")}`);
     }
-    // Second request: task appended AFTER load_tools, everything before kept.
-    const wantSecond = [...wantFirst, "task"];
+    // Second request: make_docx appended AFTER load_tools, everything before kept
+    // (场景 load 的是 make_docx——docs 家族的代表）。
+    const wantSecond = [...wantFirst, "make_docx"];
     if (JSON.stringify(evidence.secondNames) !== JSON.stringify(wantSecond)) {
       errors.push(`post-load request tools wrong: ${evidence.secondNames.join(", ")}`);
     }
-    // Exactly one defer_loaded, naming task.
+    // Exactly one defer_loaded, naming make_docx.
     const loaded = evidence.deferEvents as Extract<LoopEvent, { type: "defer_loaded" }>[];
     if (loaded.length !== 1) errors.push(`expected exactly 1 defer_loaded event, got ${loaded.length}`);
-    else if (JSON.stringify(loaded[0]?.names) !== JSON.stringify(["task"])) {
+    else if (JSON.stringify(loaded[0]?.names) !== JSON.stringify(["make_docx"])) {
       errors.push(`defer_loaded names wrong: ${loaded[0]?.names.join(", ")}`);
     }
     if (evidence.terminal?.reason !== "completed") {
@@ -5296,12 +5303,16 @@ const m54ProjectContextEval: EvalDefinition<
       // ---- Lane C: empty workspace (AND empty home) → pre-M54 bytes ----
       process.env.HOME = ctx.emptyHome;
       const emptyPrompt = buildSystemPrompt(ctx.emptyRoot);
+      // 2026-11-07：节清单随提示词弧同步（人设/Code changes 删除/Finishing 新增）。
       const expectedBaseline = [
         SYSTEM_PREAMBLE,
         CORE_PRINCIPLES_SECTION,
-              TASK_DISCIPLINE_SECTION,
+        OUTPUT_CHANNEL_SECTION,
+        TASK_DISCIPLINE_SECTION,
+        FINISHING_JOB_SECTION,
         LONG_TASKS_SECTION,
         BEHAVIORAL_CONTRACTS_SECTION,
+        ACTIONS_SECTION,
         environmentSection(ctx.emptyRoot),
       ].join("\n\n");
       return { systemPrompt, noGitPrompt, emptyPrompt, expectedBaseline, baselineIdentical: emptyPrompt === expectedBaseline };
