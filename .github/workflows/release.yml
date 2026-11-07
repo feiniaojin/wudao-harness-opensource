@@ -286,3 +286,50 @@ jobs:
           prerelease: ${{ contains(github.ref, 'rc') || contains(github.ref, 'beta') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── dmg 补挂（2026-11-07 开源仓 v0.5.0 实证竞态）────────────────
+  # release 的 needs 不含 desktop-macos（0.4.21 mac runner 预算问题），
+  # 于是 macos 慢于 windows 时 release 先跑、dmg 缺席（开源仓实测：
+  # release 10:18 结束、macos 10:23 才完）。此 job 不在依赖表里、永不
+  # 阻塞 release：等 macos 与 release 都结束后，若 dmg 已在资产里则跳过，
+  # 否则从 artifact 下载并 API 附加——正是 release job 注释里「dmg 由
+  # 本地验证线产出 + API 附加」缺的那半句。
+  attach-macos-dmg:
+    runs-on: ubuntu-latest
+    needs: [desktop-macos, release]
+    if: >-
+      (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch') &&
+      needs.desktop-macos.result == 'success' &&
+      needs.release.result == 'success'
+    continue-on-error: true
+    permissions:
+      contents: write
+    steps:
+      - name: Download dmg artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: dmg
+
+      - name: Attach dmg if missing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+        run: |
+          set -euo pipefail
+          dmg=$(find dmg -name '*.dmg' | head -1)
+          [ -n "$dmg" ] || { echo "no dmg in artifact"; exit 1; }
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[].name' | grep -Fx "$(basename "$dmg")"; then
+            echo "dmg already attached"; exit 0
+          fi
+          # SHA256SUMS 若已存在则连同 dmg 一并更新（删旧传新）
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[].name' | grep -Fx SHA256SUMS; then
+            aid=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[] | select(.name=="SHA256SUMS") | .id')
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/assets/$aid" || true
+            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" -D sums -p '*.deb' -p '*.exe' -p '*.tgz' -p '*.AppImage' || true
+            cp "$dmg" sums/ 2>/dev/null || { mkdir -p sums; cp "$dmg" sums/; }
+            (cd sums && shasum -a 256 * > SHA256SUMS)
+            gh release upload "$TAG" sums/SHA256SUMS --clobber --repo "$GITHUB_REPOSITORY"
+          fi
+          gh release upload "$TAG" "$dmg" --repo "$GITHUB_REPOSITORY"
+          echo "dmg attached"
