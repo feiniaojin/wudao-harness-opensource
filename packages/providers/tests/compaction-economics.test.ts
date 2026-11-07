@@ -297,8 +297,9 @@ describe("tier-2 warm replay (dsh-style)", () => {
     const last = s.messages.at(-1);
     expect(last?.role).toBe("user");
     expect(last?.content).toContain("Summarize the conversation above");
-    // The post-compaction request is rebuilt from the summary marker.
-    expect(r1.messages[0]?.content.includes("[compacted summary]")).toBe(true);
+    // 2026-11-07：tier-2 保前段后，摘要不再在 messages[0]——原始头部先原样
+    // 保留，摘要跟在后面。断言改为「摘要在场」而非「摘要在首位」。
+    expect(r1.messages.some((m) => m.role === "user" && m.content.includes("[compacted summary]"))).toBe(true);
   });
 
   it("pairing-safe: the replay never ends on an assistant tool_call whose results were cut", async () => {
@@ -338,7 +339,12 @@ describe("tier-2 warm replay (dsh-style)", () => {
     const s = seen[1];
     expect(s).toBeDefined();
     // No trailing assistant-with-toolCalls in the replay (provider-legal tail).
-    const last = s!.messages.at(-2); // last span message before the instruction
-    expect(last?.role === "assistant" && last.toolCalls && last.toolCalls.length > 0).toBe(false);
+    // 2026-11-07：保前段让 span 边界移动——不再假设恰好 at(-2)，扫指令之前的
+    // 最后一条非指令消息。
+    const beforeInstr = s!.messages.slice(0, -1).filter((m) => !(m.role === "user" && m.content.startsWith("Summarize")));
+    const last = beforeInstr.at(-1);
+    // && 短路返回 undefined 而不是 false——用显式布尔，断言才是可读的。
+    const dangling = last?.role === "assistant" && (last.toolCalls?.length ?? 0) > 0;
+    expect(dangling).toBe(false);
   });
 });
