@@ -12,7 +12,7 @@ import { useRecentWorkspaces } from "../use-recent-workspaces.js";
 import { rootBasename } from "./AgentRootCard.js";
 import { IconChevronDown, IconFolder } from "./icons.js";
 
-export function WorkspaceChip({ client, root, connected, bootRoot, onPick, onOpenOther }: {
+export function WorkspaceChip({ client, root, connected, bootRoot, onPick, onOpenOther, labelName, labelPath }: {
   readonly client: FileOpsClient;
   /** 当前面板根（App 的 panelRoot；连接前即「工作区」占位）。 */
   readonly root: string;
@@ -23,6 +23,12 @@ export function WorkspaceChip({ client, root, connected, bootRoot, onPick, onOpe
   readonly bootRoot?: string;
   /** 任一 recents 目录选定 → App 的 switchPanelRoot（B1+B3）。 */
   readonly onPick: (path: string) => void;
+  /** M85 §4 — 标签锚：AGENT root 的 basename（StatusBar workspaceName 同源）。
+   *  缺省回落 root 派生（面板根）——老挂载点不改也不破。显示与切换语义从此
+   *  分离：pick 走 agent-root 缝（B1 confirm），label 说 agent root 的真话。 */
+  readonly labelName?: string;
+  /** M85 §4 — hover 全路径（agent root；StatusBar workspacePath 同源）。 */
+  readonly labelPath?: string;
   /** 打开其他目录…（tauri 对话框与浏览器降级在 App 层 onOpenOtherWorkspace）。 */
   readonly onOpenOther: () => void;
 }): React.JSX.Element {
@@ -33,13 +39,13 @@ export function WorkspaceChip({ client, root, connected, bootRoot, onPick, onOpe
       <button
         type="button"
         className="chip work"
-        title={root}
+        title={labelPath ?? root}
         aria-haspopup="menu"
         aria-expanded={menu}
         disabled={!connected}
         onClick={() => setMenu((v) => !v)}
       >
-        <IconFolder size={14} /> {rootBasename(root)} <IconChevronDown size={12} />
+        <IconFolder size={14} /> {labelName ?? rootBasename(root)} <IconChevronDown size={12} />
       </button>
       {menu ? (
         <>

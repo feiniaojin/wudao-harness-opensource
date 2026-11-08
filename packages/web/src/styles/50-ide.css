@@ -462,33 +462,4 @@
   text-align: center;
 }
 
-/* ω99-147: the footer's model row (.sb-model / the .pop ModelSelector) is
-   retired with the component branch — only [Buddy 模式 note][⚙ 设置] remain,
-   right-aligned so the 260px column carries no hole where the chip sat. */
-.sb-f {
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sp-1);
-  border-top: 1px solid var(--hair-1);
-  padding: var(--sp-1) var(--sp-2);
-  color: var(--text-3);
-}
-.sb-f .sb-note { flex: none; color: var(--text-3); font-size: var(--fs-caption); }
-.sb-f .settings-link {
-  width: 26px;
-  height: 26px;
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-3);
-  padding: 0;
-  cursor: pointer;
-}
-.sb-f .settings-link:hover { background: var(--surface); color: var(--text-1); }
 

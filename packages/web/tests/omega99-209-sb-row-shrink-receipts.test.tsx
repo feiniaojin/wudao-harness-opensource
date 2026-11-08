@@ -97,7 +97,6 @@ describe("ω99-209 — C jsdom 结构非回归（改前绿=防回归面）", () 
         activeSessionId={null}
         onResume={() => {}}
         onNewChat={() => {}}
-        onOpenSettings={() => {}}
         onOpenSearch={() => {}}
       />,
     );

@@ -70,7 +70,7 @@ describe("ω99-313 — ⏰ 标记 join 面", () => {
         ]),
     };
     const el = mount(
-      <SessionSidebar client={client} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSettings={() => {}} onOpenSearch={() => {}} />,
+      <SessionSidebar client={client} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSearch={() => {}} />,
     );
     await act(async () => {
       await Promise.resolve();
@@ -94,7 +94,7 @@ describe("ω99-313 — ⏰ 标记 join 面", () => {
       schedulesList: () => Promise.resolve([schedRow({ id: "cccccccc", sessionId: "sess-broken", enabled: false })]),
     };
     const el = mount(
-      <SessionSidebar client={client} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSettings={() => {}} onOpenSearch={() => {}} />,
+      <SessionSidebar client={client} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSearch={() => {}} />,
     );
     await act(async () => {
       await Promise.resolve();
@@ -106,7 +106,7 @@ describe("ω99-313 — ⏰ 标记 join 面", () => {
     const rows = [row("sess-a"), row("sess-b")];
     const plain = { sessions: () => Promise.resolve(rows) };
     const el = mount(
-      <SessionSidebar client={plain} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSettings={() => {}} onOpenSearch={() => {}} />,
+      <SessionSidebar client={plain} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSearch={() => {}} />,
     );
     await act(async () => {
       await Promise.resolve();
@@ -119,7 +119,7 @@ describe("ω99-313 — ⏰ 标记 join 面", () => {
       schedulesList: () => Promise.reject(new Error("old server")),
     };
     const el2 = mount(
-      <SessionSidebar client={failing} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSettings={() => {}} onOpenSearch={() => {}} />,
+      <SessionSidebar client={failing} activeSessionId={null} onResume={() => {}} onNewChat={() => {}} onOpenSearch={() => {}} />,
     );
     await act(async () => {
       await Promise.resolve();

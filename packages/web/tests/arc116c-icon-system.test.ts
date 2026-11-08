@@ -270,7 +270,6 @@ describe("116 弧 C ④ — 抽样点位", () => {
         activeSessionId: null,
         onResume: () => {},
         onNewChat: () => {},
-        onOpenSettings: () => {},
         onOpenSearch: () => {},
       }),
     );

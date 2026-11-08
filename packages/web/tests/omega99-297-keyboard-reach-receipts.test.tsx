@@ -58,7 +58,6 @@ function mountSidebar(over: Partial<Parameters<typeof SessionSidebar>[0]> = {}):
     activeSessionId: null,
     onResume: () => {},
     onNewChat: () => {},
-    onOpenSettings: () => {},
     onOpenSearch: () => {},
     ...over,
   };

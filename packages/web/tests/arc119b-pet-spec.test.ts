@@ -113,15 +113,17 @@ describe("119b ④ 投影换血（elev 三件套；重投影退役）", () => {
   it("每条 box-shadow 都是 var(--elev-*)；旧 0 4px 18px 零残留", () => {
     const shadows = [...petCode.matchAll(/box-shadow:\s*([^;]+);/g)].map((m) => m[1]!.trim());
     // 09-27 报障修：textarea focus 加了品牌绿 focus 环（rgb(var(--pet-accent))，
-    // 非 elev）——豁免；elev 三浮层仍全走令牌。
+    // 非 elev）——豁免；elev 浮层仍全走令牌。
+    // M85-pet §2 钉随源演进：工具栏弹层 .pet-menu 是第四个浮层（surface+
+    // elev-2，描边画进影里——框影不同用同款），三浮层收据升为四。
     const elevShadows = shadows.filter((s) => !s.includes("pet-accent"));
-    expect(elevShadows.length).toBe(3); // bubble/toast/expr 三浮层
+    expect(elevShadows.length).toBe(4); // bubble/toast/expr/menu 四浮层
     for (const s of elevShadows) expect(s).toMatch(/^var\(--elev-[123](-soft)?\)$/);
     expect(petCode.includes("4px 18px")).toBe(false);
   });
 
-  it("框影不同用：三个 elev 消费面零 border 声明（描边已在影里）", () => {
-    for (const sel of [".pet-bubble {", ".pet-toast {", ".pet-expr {"]) {
+  it("框影不同用：四个 elev 消费面零 border 声明（描边已在影里）", () => {
+    for (const sel of [".pet-bubble {", ".pet-toast {", ".pet-expr {", ".pet-menu {"]) {
       const body = ruleBody(petCss, sel);
       expect(body.includes("border:")).toBe(false);
     }

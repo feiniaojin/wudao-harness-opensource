@@ -511,6 +511,14 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
       { op: "petSubmit", text: "t" },
       { op: "petInterrupt" },
       { op: "petAnswerPermission", allow: true },
+      // M85-pet §2 — 精灵工具栏四写（pet 车道自己的状态面，server vault.ts
+      // 镜像同动）：newSession 归档落盘（重放恰一次，绝不双归档）；setModel/
+      // setEffort 是 liveConfig 写（setMode 同族）；setWorkspace 镜像已 vault
+      // 的 agentRootSwitch 孪生。
+      { op: "petNewSession" },
+      { op: "petSetModel", provider: "glm" },
+      { op: "petSetEffort", effort: "high" },
+      { op: "petSetWorkspace", path: "/w" },
       // ω99-260（同 #8）: the memory decision is a side effect (confirm flips
       // a line, del removes it) — vaulted; ok/del converge on replay.
       { op: "memoryDecide", id: "m-a", action: "ok" },
@@ -702,7 +710,11 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
     // PB-2 (探针基础设施弧): probeStream + probeRecent + probeStats (reads —
     // the probe telemetry face; a replay re-subscribes/re-scans, never vaulted)
     // joined the reads above → 69 + 3.
-    expect(actions.size).toBe(77); // 140 会话解剖入表（76→77，读）
+    // M85-pet §2: petNewSession + petSetModel + petSetEffort + petSetWorkspace
+    // (mutations — the pet toolbar's four writes, vaulted so a mid-flap replay
+    // archives exactly once and the config/root switches land exactly once)
+    // joined the mutations above → 77 + 4.
+    expect(actions.size).toBe(81); // M85-pet §2 工具栏四 op 入表（77→81，写）
 
     // Report-86 review M1 (report 89 item 1): the count pin above is
     // RUNTIME-only — a new ClientOp action that never enters the lists trips

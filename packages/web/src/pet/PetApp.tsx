@@ -65,7 +65,7 @@ export function PetApp() {
       return { turns: c.turns.slice(0, -1) };
     });
   });
-  const { history, requestHistory } = usePetHistorySignal();
+  const { history, requestHistory, clearHistory } = usePetHistorySignal();
   usePetThemeSignal();
   usePetStateFrames((f) => {
     setFrame(f);
@@ -148,6 +148,25 @@ export function PetApp() {
         onPetTurn={onPetTurn}
         livePending={livePending}
         skinId={skinId}
+        model={frame?.model ?? null}
+        effort={frame?.effort ?? null}
+        workspaceName={frame?.workspaceName ?? null}
+        /* M85-final（终审 M-3/I-3）— workspacePath 只接线不消费（帧契约补
+           齐 spec §2 蒸馏四项）；modelChoices/recentWorkspaces 是 I-3 数据
+           面升级的弹层列表源（null=缺席 → Bubble 回落手输面）。 */
+        workspacePath={frame?.workspacePath ?? null}
+        modelChoices={frame?.modelChoices ?? null}
+        recentWorkspaces={frame?.recentWorkspaces ?? null}
+        onNewSession={() => {
+          // M85-pet §2 — 新会话的本地清屏（点击是本地事实；服务器史由
+          // petNewSession 归档轮换，帧不携带回执——本地三态清空呈现「已开
+          // 新局」，op 失败时下一拉取沿带回真值，诚实收敛）。三态缺一不可：
+          // chat 不清=旧转写残留；awaiting 不清=假「思考中…」；history 不清
+          // =mergeChat 用 stale 史复活刚清掉的旧轮。
+          setChat(emptyPetChat);
+          setAwaiting(false);
+          clearHistory();
+        }}
       />
       {/* ω99-274: #3 — skinId 下传 Bubble：聊天记录头像跟随当前肤（换肤事件
           已驱动本组件重渲，头像随新 sheet 即时换图，与精灵同帧生效）。 */}

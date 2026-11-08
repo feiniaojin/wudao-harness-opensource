@@ -112,7 +112,6 @@ describe("ω99-309 A 类 — 输入自持 Enter/Esc 的组合期守卫", () => {
         activeSessionId={null}
         onResume={() => {}}
         onNewChat={() => {}}
-        onOpenSettings={() => {}}
         onOpenSearch={() => {}}
         onRenameSession={rename}
       />,

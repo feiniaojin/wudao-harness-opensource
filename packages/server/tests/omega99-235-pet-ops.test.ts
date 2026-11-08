@@ -7,7 +7,7 @@
 // 演进：三 pet op 入全集）。
 import { describe, it, expect, afterEach } from "vitest";
 import WebSocket from "ws";
-import { createUiServer, type UiDriverPort, type UiPetDriverPort, type UiServer } from "../src/index.js";
+import { createUiServer, interruptAndWaitPetIdle, type UiDriverPort, type UiPetDriverPort, type UiServer } from "../src/index.js";
 
 const wait = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 
@@ -74,7 +74,7 @@ function petDriverMock(): UiPetDriverPort & { calls: string[]; setStatusBusy: (b
 interface Frame {
   t: string;
   state?: { lane?: string; busy?: boolean };
-  pet?: { lane?: string; busy?: boolean };
+  pet?: { lane?: string; busy?: boolean; workspaceName?: string; workspacePath?: string };
   id?: unknown;
   ok?: unknown;
   err?: string;
@@ -88,10 +88,9 @@ function connect(server: UiServer): { ws: WebSocket; frames: Frame[]; open: Prom
   return { ws, frames, open };
 }
 
-function authed(petDriver?: UiPetDriverPort): Promise<{ c: ReturnType<typeof connect>; server: UiServer; main: ReturnType<typeof mainDriver>; pet: ReturnType<typeof petDriverMock> | undefined }> {
+function authed(pet?: ReturnType<typeof petDriverMock>): Promise<{ c: ReturnType<typeof connect>; server: UiServer; main: ReturnType<typeof mainDriver>; pet: ReturnType<typeof petDriverMock> | undefined }> {
   return (async () => {
     const main = mainDriver();
-    const pet = petDriver !== undefined ? petDriverMock() : undefined;
     const server = await createUiServer({ driver: main, ...(pet !== undefined ? { petDriver: pet } : {}) });
     servers.push(server);
     const c = connect(server);
@@ -230,6 +229,221 @@ describe("ω99-235 sessions 行 lane 标记", () => {
     const mainRow = rows.find((r) => r.id === "wudao-main-1");
     expect(petRow?.lane).toBe("pet");
     expect(mainRow && "lane" in mainRow).toBe(false);
+    c.ws.close();
+  });
+});
+
+// M85-pet §2 / Task 3 —— 精灵工具栏四 op（NewSession/SetModel/SetEffort/
+// SetWorkspace）+ 状态帧 pet 的 workspace 对。路由钉沿 235 既有：全部只碰
+// petDriver（主 driver 零调用）；老驱动（缺可选面）与无 petDriver 同句干净
+// 拒 "pet ops not supported by this driver"。busy 稳定化是 Task 2 转来的
+// 遗留收口：busy===false 可先于最后一条史落盘，仅靠 UI idle 门控不充分——
+// server 侧 petNewSession 先 interrupt 等离 busy（10s 上限，超时仍执行）。
+describe("M85-pet 工具栏四 op", () => {
+  const res = (frames: Frame[], id: number): Frame | undefined =>
+    frames.find((f) => f.t === "result" && f.id === id);
+
+  it("(e) petNewSession：归档 id 回执 + null 空会话回执；缺面老驱动/无 petDriver 干净拒", async () => {
+    const pet = petDriverMock();
+    pet.newPetSession = async () => { pet.calls.push("newPetSession"); return "pet-20261108-210000"; };
+    const { c, main } = await authed(pet);
+    op(c.ws, 51, { op: "petNewSession" });
+    await until(() => res(c.frames, 51) !== undefined, "archived id reply");
+    expect(res(c.frames, 51)?.ok).toBe("pet-20261108-210000");
+
+    pet.newPetSession = async () => null; // 零轮次空会话：跳过归档
+    op(c.ws, 52, { op: "petNewSession" });
+    await until(() => res(c.frames, 52) !== undefined, "null reply");
+    expect(res(c.frames, 52)?.ok).toBeNull();
+
+    delete pet.newPetSession; // 老驱动：可选面缺席
+    op(c.ws, 53, { op: "petNewSession" });
+    await until(() => res(c.frames, 53) !== undefined, "old-driver reject");
+    expect(res(c.frames, 53)?.err).toBe("pet ops not supported by this driver");
+
+    const bare = await authed(); // 无 petDriver 的宿主
+    op(bare.c.ws, 54, { op: "petNewSession" });
+    await until(() => res(bare.c.frames, 54) !== undefined, "no-driver reject");
+    expect(res(bare.c.frames, 54)?.err).toBe("pet ops not supported by this driver");
+    expect(main.calls).toEqual([]); // 车道隔离钉：轮换全程零主车道调用
+    c.ws.close();
+    bare.c.ws.close();
+  });
+
+  it("(f) busy 稳定化：运行中 → 先 interrupt 等离 busy 再轮换（emit 解除等待）", async () => {
+    const pet = petDriverMock();
+    let busyAtRotation: boolean | undefined;
+    pet.newPetSession = async () => {
+      busyAtRotation = (pet.getStatus() as { busy?: boolean }).busy === true;
+      pet.calls.push("newPetSession");
+      return "pet-arch-busy";
+    };
+    const { c, main } = await authed(pet);
+    pet.setStatusBusy(true);
+    await until(() => c.frames.some((f) => f.t === "state" && f.pet?.busy === true), "busy frame");
+    op(c.ws, 55, { op: "petNewSession" });
+    await wait(80); // 稳定化等待中：interrupt 已发，轮换未动（无 emit 不解除）
+    expect(pet.calls).toEqual(["petInterrupt"]);
+    pet.setStatusBusy(false); // 运行收束 emit → 等待解除 → 轮换执行
+    await until(() => res(c.frames, 55) !== undefined, "rotation reply");
+    expect(res(c.frames, 55)?.ok).toBe("pet-arch-busy");
+    expect(pet.calls).toEqual(["petInterrupt", "newPetSession"]); // 顺序钉：先停后转
+    expect(busyAtRotation).toBe(false); // 轮换发生在离开 busy 之后
+    expect(main.calls).toEqual([]);
+    c.ws.close();
+  });
+
+  it("(g) interruptAndWaitPetIdle 单元：idle 进门零动作；卡 busy 走上限；emit 提前解除", async () => {
+    const idle = petDriverMock();
+    await interruptAndWaitPetIdle(idle, 5000);
+    expect(idle.calls).toEqual([]); // 不忙绝不 interrupt
+
+    const stuck = petDriverMock();
+    stuck.getStatus = () => ({ live: { reasoning: "", answer: "", busyTools: [] }, busy: true, mode: "workspace", sessionId: "pet", lane: "pet" });
+    const t0 = Date.now();
+    await interruptAndWaitPetIdle(stuck, 40); // 无 emit：只有上限能解除
+    expect(Date.now() - t0).toBeGreaterThanOrEqual(35);
+    expect(stuck.calls).toEqual(["petInterrupt"]); // 超时仍放行前的停跑照发
+
+    const settle = petDriverMock();
+    settle.setStatusBusy(true);
+    setTimeout(() => settle.setStatusBusy(false), 30); // 30ms 后收束 emit
+    const t1 = Date.now();
+    await interruptAndWaitPetIdle(settle, 5000);
+    expect(Date.now() - t1).toBeLessThan(2000); // emit 解除：远早于上限
+    expect(settle.calls).toEqual(["petInterrupt"]);
+  });
+
+  it("(h) petSetModel/petSetEffort 路由到 configureModel；坏形状 typed 拒；缺面老驱动干净拒", async () => {
+    const pet = petDriverMock();
+    const cfgs: unknown[] = [];
+    pet.configureModel = (cfg: { provider?: string; model?: string; effort?: string }) => {
+      cfgs.push(cfg);
+      pet.calls.push("configureModel");
+    };
+    const { c, main } = await authed(pet);
+    op(c.ws, 61, { op: "petSetModel", provider: "deepseek", model: "m2", effort: "high" });
+    op(c.ws, 62, { op: "petSetEffort", effort: "medium" });
+    op(c.ws, 63, { op: "petSetModel", provider: 42 });
+    op(c.ws, 64, { op: "petSetModel", model: "m" });
+    op(c.ws, 65, { op: "petSetModel", provider: "glm", model: 7 });
+    op(c.ws, 66, { op: "petSetModel", provider: "glm", effort: 9 });
+    op(c.ws, 67, { op: "petSetEffort" });
+    op(c.ws, 68, { op: "petSetEffort", effort: 9 });
+    await until(() => [61, 62, 63, 64, 65, 66, 67, 68].every((id) => res(c.frames, id) !== undefined), "eight results");
+    expect(res(c.frames, 61)?.ok).toBe(true);
+    expect(res(c.frames, 62)?.ok).toBe(true);
+    expect(cfgs).toEqual([{ provider: "deepseek", model: "m2", effort: "high" }, { effort: "medium" }]);
+    expect(res(c.frames, 63)?.err).toBe("petSetModel provider must be a non-empty string");
+    expect(res(c.frames, 64)?.err).toBe("petSetModel provider must be a non-empty string");
+    expect(res(c.frames, 65)?.err).toBe("petSetModel model must be a string");
+    expect(res(c.frames, 66)?.err).toBe("petSetModel effort must be a string");
+    expect(res(c.frames, 67)?.err).toBe("petSetEffort needs an effort string");
+    expect(res(c.frames, 68)?.err).toBe("petSetEffort needs an effort string");
+    expect(pet.calls.filter((s) => s === "configureModel")).toHaveLength(2); // 坏形状到不了 driver
+    expect(main.calls).toEqual([]);
+
+    const oldDrv = petDriverMock(); // 老驱动：可选面缺席
+    const o = await authed(oldDrv);
+    op(o.c.ws, 69, { op: "petSetModel", provider: "glm" });
+    op(o.c.ws, 70, { op: "petSetEffort", effort: "high" });
+    await until(() => res(o.c.frames, 69) !== undefined && res(o.c.frames, 70) !== undefined, "old-driver rejects");
+    expect(res(o.c.frames, 69)?.err).toBe("pet ops not supported by this driver");
+    expect(res(o.c.frames, 70)?.err).toBe("pet ops not supported by this driver");
+    c.ws.close();
+    o.c.ws.close();
+  });
+
+  it("(i) petSetWorkspace 镜像 agentRootSwitch：AgentRootSwitchResult 同形回执；path 校验；缺面干净拒", async () => {
+    const pet = petDriverMock();
+    pet.agentRootSwitch = async (path: string) => {
+      pet.calls.push(`agentRootSwitch:${path}`);
+      return { applied: true, queued: false };
+    };
+    const { c, main } = await authed(pet);
+    op(c.ws, 71, { op: "petSetWorkspace", path: "/w/space-b" });
+    op(c.ws, 72, { op: "petSetWorkspace", path: "" });
+    op(c.ws, 73, { op: "petSetWorkspace", path: 42 });
+    await until(() => [71, 72, 73].every((id) => res(c.frames, id) !== undefined), "three results");
+    expect(res(c.frames, 71)?.ok).toEqual({ applied: true, queued: false });
+    expect(res(c.frames, 72)?.err).toBe("petSetWorkspace path must be a non-empty string");
+    expect(res(c.frames, 73)?.err).toBe("petSetWorkspace path must be a non-empty string");
+    expect(pet.calls.filter((s) => s.startsWith("agentRootSwitch"))).toEqual(["agentRootSwitch:/w/space-b"]);
+    expect(main.calls).toEqual([]);
+
+    const oldDrv = petDriverMock();
+    const o = await authed(oldDrv);
+    op(o.c.ws, 74, { op: "petSetWorkspace", path: "/w" });
+    await until(() => res(o.c.frames, 74) !== undefined, "old-driver reject");
+    expect(res(o.c.frames, 74)?.err).toBe("pet ops not supported by this driver");
+    c.ws.close();
+    o.c.ws.close();
+  });
+});
+
+// M85-pet §2 —— 状态帧 pet 字段的 workspace 对（agentRootStatus 派生：
+// workspaceName=basename、workspacePath=全路径，spec §4「chip 与 StatusBar
+// 同源」的数据面）。异步读的帧序钉：auth 首帧行序 state→history 不得因链式
+// 构建翻转；坏读/缺面降级为基础快照，状态信道绝不阻塞。
+describe("M85-pet 状态帧 workspace 对", () => {
+  it("(j) agentRootStatus 在场 → pet 帧带 workspaceName/workspacePath；auth 行序 state→history 不翻；随帧重读", async () => {
+    const pet = petDriverMock();
+    pet.agentRootStatus = async () => ({ panelRoot: "/w", agentRoot: "/w/精灵空间", aligned: true });
+    const { c, main } = await authed(pet);
+    const first = c.frames.find((f) => f.t === "state");
+    expect(first?.pet?.workspaceName).toBe("精灵空间");
+    expect(first?.pet?.workspacePath).toBe("/w/精灵空间");
+    expect(first?.pet?.lane).toBe("pet"); // 既有字段不动
+    expect(first?.pet?.busy).toBe(false);
+    expect(c.frames.findIndex((f) => f.t === "state")).toBeLessThan(c.frames.findIndex((f) => f.t === "history")); // 行序钉
+    expect(main.calls).toEqual([]);
+
+    const before = c.frames.filter((f) => f.t === "state").length;
+    pet.setStatusBusy(true); // pet 自己的 emit → 新帧，workspace 对随帧重读
+    await until(() => c.frames.filter((f) => f.t === "state").length > before, "pushed frame");
+    const pushed = c.frames.filter((f) => f.t === "state").at(-1);
+    expect(pushed?.pet?.busy).toBe(true);
+    expect(pushed?.pet?.workspacePath).toBe("/w/精灵空间");
+    c.ws.close();
+  });
+
+  it("(k) 缺面老驱动 → pet 帧无 workspace 两键（旧形状钉）；agentRootStatus 抛错 → 基础快照照发、信道不阻塞", async () => {
+    const { c } = await authed(petDriverMock()); // 无 agentRootStatus 面
+    const first = c.frames.find((f) => f.t === "state");
+    expect(first?.pet && "workspaceName" in first.pet).toBe(false);
+    expect(first?.pet && "workspacePath" in first.pet).toBe(false);
+    c.ws.close();
+
+    const boom = petDriverMock();
+    boom.agentRootStatus = async () => { throw new Error("realpath 失败"); };
+    const b = await authed(boom);
+    const f2 = b.c.frames.find((f) => f.t === "state");
+    expect(f2?.pet?.lane).toBe("pet"); // 坏读降级：基础快照原样在场
+    expect(f2?.pet && "workspacePath" in f2.pet).toBe(false);
+    boom.setStatusBusy(true); // 后续推送不受坏读拖累
+    await until(() => b.c.frames.some((f) => f.t === "state" && f.pet?.busy === true), "frames keep flowing");
+    b.c.ws.close();
+  });
+
+  // I-1（评审修复轮）—— 链失败隔离（监听器失败隔离 DNA 在帧链上的同构）：
+  // 一次瞬态读取抛错不得毒化 frameChain（无 .catch 的链步 rejection 会让
+  // 后续帧全部停发 + unhandled rejection 可崩进程）。断言：吃了抛错之后，
+  // 下一个 emit 照发新帧（链回 resolved）。
+  it("(l) 链失败隔离：一次状态读取瞬态抛错不毒化帧链（后续帧照发）", async () => {
+    const pet = petDriverMock();
+    pet.agentRootStatus = async () => ({ panelRoot: "/w", agentRoot: "/w/精灵空间", aligned: true });
+    const realGetStatus = pet.getStatus.bind(pet);
+    let throwOnce = true;
+    pet.getStatus = () => {
+      if (throwOnce) {
+        throwOnce = false;
+        throw new Error("瞬态读取失败");
+      }
+      return realGetStatus();
+    };
+    const { c } = await authed(pet); // 首帧构建吃到那次抛错（链步 rejected）
+    pet.setStatusBusy(true); // 下一个 emit：修复后链仍活着，新帧照发
+    await until(() => c.frames.some((f) => f.t === "state" && f.pet?.busy === true), "chain survives the transient throw");
     c.ws.close();
   });
 });

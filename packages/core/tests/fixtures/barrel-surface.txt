@@ -1,7 +1,7 @@
 # wudao core barrel surface snapshot (omega99-96 pin fixture)
 # caliber: comment-stripped export-name parse — see omega99-94 report §4.1;
 # audit-596/coarse-599 historical deltas are comment-position parse artifacts.
-# names: 639 (sorted; one identifier per line)
+# names: 644 (sorted; one identifier per line)
 # regenerate from the repo root:
 #   node scripts/count-barrel-exports.mjs --snapshot packages/core/src/index.ts > packages/core/tests/fixtures/barrel-surface.txt
 ABORTED_NOT_STARTED_TOOL_RESULT
@@ -294,6 +294,8 @@ TaskChainBaton
 TaskChainHeader
 TaskChainStatus
 TaskHookDecision
+TaskWallBudget
+TaskWallBudgetReminder
 TeammateIdleDecision
 Terminal
 TerminalRepairKind
@@ -427,6 +429,7 @@ createSleepTool
 createSteerMailbox
 createStreamPreemptChannel
 createTaskTool
+createTaskWallBudget
 createTodoTool
 createToolDetachHub
 createTurnDiffTracker
@@ -467,6 +470,8 @@ formatSearchResults
 formatSkillPrunedMarker
 formatSpoofLine
 formatSteerText
+formatTaskContextMessage
+formatTaskWallBudgetNote
 formatTurnDiffPreview
 formatVerifiedWork
 formatWriteScope

@@ -6,7 +6,7 @@
 import "./react-prod.js";
 import { stdin, stdout } from "node:process";
 import { join, dirname, relative } from "node:path";
-import { runAgentLoop, createJsonlSessionStore, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, cumulativeModifiedFiles, activeToolsOf, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao-org/core";
+import { runAgentLoop, createJsonlSessionStore, createTaskWallBudget, formatTaskContextMessage, createReadStateTable, createFileHistory, createAskUserTool, applySummaryMarkers, repairOrphanedToolCalls, activeBranchLeafKey, resumeChain, compactionRetentionFor, newSessionId, cumulativeModifiedFiles, activeToolsOf, type AgentHooks, type AgentState, type AgentMessage, type AskUserOption, type PermissionDecision, type LoopEvent, type ModelClient, type Tool, sessionLeaseBoxFor } from "@wudao-org/core";
 import { createProvider, modelAcceptsImages, type ProviderConfig } from "@wudao-org/providers";
 import { createFileAttachmentStore, type ImageBlock } from "@wudao-org/core";
 // 夜移 035 (codex turn_timing): the one-shot run's phase recorder (debug tier).
@@ -1464,6 +1464,24 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
   });
   // 134：answer-only 只让**终答**走 stdout，诊断换到 stderr（见 answer-only-channel.ts）。
   const answerOnly = argv.includes("--answer-only");
+  // 任务墙钟预算（task-wall-budget.ts）：数字走运行期通道——旗标/环境
+  // 变量给定后，启动注入 <task_context> 消息 + clock 工具 + 50%/80% 阈值
+  // 提醒；系统提示词只含通用配速启发（原则与数字分层）。bench 的
+  // agent.py 用 --task-budget 传任务帽。
+  const taskBudgetFlagIdx = argv.indexOf("--task-budget");
+  const taskBudgetSec = taskBudgetFlagIdx >= 0
+    ? Number(argv[taskBudgetFlagIdx + 1])
+    : Number(process.env.WUDAO_TASK_BUDGET_SECONDS ?? "");
+  const taskWallBudget = Number.isFinite(taskBudgetSec) && taskBudgetSec > 0
+    ? createTaskWallBudget(taskBudgetSec * 1000, Date.now())
+    : undefined;
+  // 计划检查点（loop.planCheckpoints）：--plan-checkpoints <N> 每 N 轮
+  // 强制一次「路线还成立吗」重估（进度触发的动态重规划）。
+  const planCheckIdx = argv.indexOf("--plan-checkpoints");
+  const planCheckEvery = planCheckIdx >= 0 ? Number(argv[planCheckIdx + 1]) : Number(process.env.WUDAO_PLAN_CHECKPOINTS_EVERY ?? "");
+  const planCheckpoints = Number.isFinite(planCheckEvery) && planCheckEvery > 1
+    ? { everyTurns: Math.floor(planCheckEvery) }
+    : undefined;
   diagLine(`模型：${modelLabel(config)}\n`, answerOnly); // ω99-199: #6
   diagLine(`session: ${sessionId}\n`, answerOnly);
   // M25 §A3: announce a resumed session in one line (never replay the log).
@@ -1519,6 +1537,26 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
   // extension tools join after the MCP tail of the tool array.
   extensions?.bindSession(store, sessionId);
   const extTools = extensions?.tools ?? [];
+  // clock：任务墙钟的拉模式面。有预算的会话才常驻（预算会话内恒定 →
+  // 工具面冻结不破；无预算不占 M62 的常驻椅）。条件常驻 = shouldDefer
+  // 的对面：不是懒加载，是按会话特征裁剪常驻面。
+  const extToolsWithClock = taskWallBudget === undefined ? extTools : [...extTools, {
+    name: "clock",
+    description: "Report the task's wall-clock budget: elapsed, remaining, and total seconds. Call it at phase boundaries to pace the work.",
+    parameters: { type: "object" as const, properties: {} },
+    isReadOnly: () => true,
+    isConcurrencySafe: () => true,
+    isDestructive: () => false,
+    isOpenWorld: () => false,
+    shouldDefer: () => false,
+    promptSnippet: "clock — reports the task's remaining wall-clock budget; check it at phase boundaries.",
+    promptGuidelines: ["When a task budget is active, verify remaining time before starting a long build or a large sweep."],
+    async execute() {
+      return {
+        content: `budget_seconds=${Math.round(taskWallBudget.budgetMs / 1000)} elapsed_seconds=${Math.round(taskWallBudget.elapsedMs() / 1000)} remaining_seconds=${Math.round(taskWallBudget.remainingMs() / 1000)}`,
+      };
+    },
+  }];
   // P1-5: the one-shot has no frontend history channel — the trust-gate
   // notice goes to stdout (the lifecycle-sweep precedent).
   if (trustGateBoot.notice !== undefined) process.stdout.write(`${trustGateBoot.notice}\n`);
@@ -1628,7 +1666,7 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       onSubagentEvent: subagentEventHandler(ge),
       // P2-9: the settings-gated lsp tool appends after the MCP tail.
       // P2-12: the terminal tool appends after the MCP/lsp tail.
-      extraTools: [...mcpTools, ...extTools, ...lspToolsFor(workspaceRoot), ...terminalToolsFor(workspaceRoot)],
+      extraTools: [...mcpTools, ...extToolsWithClock, ...lspToolsFor(workspaceRoot), ...terminalToolsFor(workspaceRoot)],
       cron: { table: cronRuntime.table(), sessionId, env: process.env, runtime: cronRuntime },
       // ω-4a: the monitor trio (fixed position beside the cron trio; the
       // inert runtime keeps the trio for the fail-closed refusal).
@@ -1734,7 +1772,13 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
       // it — mounts as a unit; same gate family as the read-tool skills
       // probe above).
       systemPrompt: buildSystemPrompt(workspaceRoot, mcpTools.length > 0, tools.some((t) => t.name === "read_file") ? (skills ?? []) : [], peerRuntime.refusal === undefined, tools.some((t) => t.name === "computer_click"), tools),
-      messages: [...history, {
+      messages: [
+        // 任务墙钟预算的启动注入（消息层事实，前缀字节不动）：持久化
+        // user 消息，位于历史与任务消息之前。与 bench 模板注入同层。
+        ...(taskWallBudget !== undefined
+          ? [{ role: "user" as const, content: formatTaskContextMessage(taskWallBudget.budgetMs, taskWallBudget.startedAtMs, taskBudgetFlagIdx >= 0 ? "cli-flag" : "env") }]
+          : []),
+        ...history, {
         role: "user",
         content: planMode
           ? buildPlanPrompt(mention.text)
@@ -1870,6 +1914,8 @@ async function runReal(prompt: string, config: ProviderConfig, argv: string[], s
     };
     const gen = runAgentLoop(state, model, {
       maxTurns: longTask?.maxTurns,
+      ...(taskWallBudget !== undefined ? { taskWallBudget } : {}),
+      ...(planCheckpoints !== undefined ? { planCheckpoints } : {}),
       gates: plan ? { ...(longTask?.gates ?? {}), plan: true } : longTask?.gates,
       // M53 §5: the --no-loop-safety ablation seam.
       ...(isFeatureAblated("loop-safety") ? { loopSafety: false } : {}),

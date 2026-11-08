@@ -158,6 +158,15 @@ export interface RunUiProps {
   readonly petModelOverride?: ModelClient;
 }
 
+/** M85-pet §3: the pet lane's driver face + 车道轮换编排。newPetSession 由
+ * startUiSession 在装配后 Object.assign 钉上（鸭子型扩展：driver 是既有对象、
+ * server 端口按结构型消费，比包一层新对象少一处全表面代理；agent-driver 不为
+ * 车道特性带通用面）——Task 3 的 server pet 端口按本类型消费。 */
+export type PetLaneDriver = AgentDriver & {
+  /** 归档活 pet 会话（零轮次 → 跳过）+ 空史重开。返回归档 id 或 null（空跳过）。 */
+  newPetSession(): Promise<string | null>;
+};
+
 export interface UiSession {
   readonly driver: AgentDriver;
   readonly server: UiServer;
@@ -166,8 +175,9 @@ export interface UiSession {
   readonly schedules: ScheduleDaemon;
   /** ω99-235: the pet lane's driver — present iff petLane:true AND the lane
    *  lock was acquirable (occupied → absent: the pet ops degrade to a clean
-   *  "unsupported" and the web relay falls back to the main lane). */
-  readonly petDriver?: AgentDriver;
+   *  "unsupported" and the web relay falls back to the main lane). M85-pet §3:
+   *  恒带车道轮换面 newPetSession（装配处钉上，见 PetLaneDriver）。 */
+  readonly petDriver?: PetLaneDriver;
   close(): Promise<void>;
 }
 
@@ -259,6 +269,20 @@ const PET_LANE_LEASE_BOX: SessionLeaseBox = {
   heldNow: () => undefined,
   release: async () => {},
 };
+
+// M85-pet §3 — 车道轮换的两个本地时区时间格式（归档 id 戳 + 归档行显示名）。
+// 仓内无共享时间工具（doc-*/loop-synthetics 各自本地 pad），照此范式。
+const pad2 = (n: number): string => String(n).padStart(2, "0");
+
+/** 归档 id 的时间戳：YYYYMMDD-HHMMSS（本地时区；SESSION_ID_RE 放行字母数字连字符）。 */
+function formatPetStamp(d: Date): string {
+  return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}${pad2(d.getSeconds())}`;
+}
+
+/** 归档行 session_name 的显示名：YYYY-MM-DD HH:MM（本地时区，分钟粒度够回看定位）。 */
+function formatPetTitle(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
 
 /** --ui-port <n>: 1-65535. Absent → undefined (ephemeral); malformed → throw. */
 export function parseUiPort(argv: readonly string[]): number | undefined {
@@ -424,6 +448,7 @@ export async function startUiSession(props: RunUiProps): Promise<UiSession> {
   // 隔离的有意行为变化）。历史可见免费：store.list() 收一切非 side- 的
   // *.jsonl，pet.jsonl 自动进主窗会话列表。
   let petSession: DriverSession | undefined;
+  let petPort: PetLaneDriver | undefined;
   if (props.petLane === true) {
     const laneLock = await acquirePetLaneLock(join(workspaceRoot, ".wudao", "sessions"));
     if (!laneLock.ok) {
@@ -511,6 +536,34 @@ export async function startUiSession(props: RunUiProps): Promise<UiSession> {
         // 排除 pet——持久面也不写，纪律两侧都成立）。
         persistPermissionAsks: false,
       });
+      // M85-pet §3: 车道轮换编排——归档（rename + session_name）+ Task1 重置面。
+      // 归档行 id≠"pet" → server 的 lane 派生标记自动失效（普通行，主窗可恢复）。
+      // 顺序即 brief 原文：先 rename 原子迁史、再补归档名、最后 resetSessionKeepId
+      // （interrupt+清史+回钉 id；rename 后 pet.jsonl 不存在 = fresh 语义，下一问
+      // 懒物化回归——211 纪律）。零轮次 → 无史可归，仍 reset（点新会话=明确停跑
+      // 清态的意图）后返回 null。
+      const petDrv = petSession.driver;
+      petPort = Object.assign(petDrv, {
+        async newPetSession(): Promise<string | null> {
+          if (petDrv.getHistory().length === 0) {
+            petDrv.resetSessionKeepId();
+            return null; // 空会话边界
+          }
+          const now = new Date();
+          const archived = `pet-${formatPetStamp(now)}`;
+          await rename(
+            join(workspaceRoot, ".wudao", "sessions", `${PET_SESSION_ID}.jsonl`),
+            join(workspaceRoot, ".wudao", "sessions", `${archived}.jsonl`),
+          );
+          await petStore.appendEntry(archived, {
+            type: "session_name",
+            name: `精灵 · ${formatPetTitle(now)}`,
+            source: "derived",
+          });
+          petDrv.resetSessionKeepId();
+          return archived;
+        },
+      });
     }
   }
 
@@ -539,7 +592,7 @@ export async function startUiSession(props: RunUiProps): Promise<UiSession> {
   const probeAuditPath = await setupProbeAudit({ workspaceRoot, out: () => {} });
   const server = await createUiServer({
     driver: askLane.mount(withSettingsOps(driver, { workspaceRoot }), driver),
-    ...(petSession !== undefined ? { petDriver: petSession.driver } : {}),
+    ...(petPort !== undefined ? { petDriver: petPort } : {}),
     recovery,
     port: props.port,
     staticDir,
@@ -566,7 +619,7 @@ export async function startUiSession(props: RunUiProps): Promise<UiSession> {
     server,
     registry,
     schedules,
-    ...(petSession !== undefined ? { petDriver: petSession.driver } : {}),
+    ...(petPort !== undefined ? { petDriver: petPort } : {}),
     close: async () => {
       // ω99-242 invariant 3 — the graceful-shutdown checkpoint MUST land
       // before the engine dies: stop() freezes the in-flight session's

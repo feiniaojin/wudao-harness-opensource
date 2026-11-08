@@ -106,6 +106,9 @@ import { IconSessions, IconChart, IconSettings, IconTheme, IconFolder, IconPlus,
 // optional-chain again; an absent or throwing bridge reads as null/false.
 import { resolveTauriInvoke, tauriListenEvent, tauriPickDirectory, tauriStartDrag, tauriToggleMaximize } from "../tauri-invoke.js";
 import { WUDAO_SCREENSHOT_EVENT, screenshotFileFromPayload } from "../screenshot-ask.js";
+// M85-final I-1 — 小精灵归档轮换的会话列表刷新信号（relay 发、App 收，经
+// Tauri 事件总线的主窗自环；常量住 pet-frame.ts——wire contract 之家）。
+import { WUDAO_PET_SESSIONS_REFRESH_EVENT } from "../pet/pet-frame.js";
 // ω99-119: 拖文件即起草 — the React-外 drop mount (main.tsx) stages its
 // drafts into the module sink; this side registers the App half of the
 // bridge (parked files merge + fileSeed arm, the 116 screenshot mirror).
@@ -533,6 +536,29 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
     sessionNameSeenRef.current = { name, armed: true };
     setSessionsEpoch((e) => e + 1);
   }, [status?.sessionName]);
+
+  // M85-final I-1 — 小精灵归档轮换的主窗刷新信号（spec §1 语义 A 的呈现
+  // 缺口补口）：petNewSession 归档回执非 null 时主车道 sessionName 不动、
+  // pet 帧无变化信号——已打开的侧栏不会重取，「精灵 · …」归档行要等某次
+  // 无关操作才出现。relay（main.tsx 挂载，同窗）在回执后广播
+  // WUDAO_PET_SESSIONS_REFRESH_EVENT，此监听 bump 既有 sessionsEpoch——
+  // 侧栏/弹框沿 ω99-150/156/255 的同一重读缝收敛（第五个触发者，同款
+  // additive 接一枪：零新组件零新 fetch 逻辑零新 op）。浏览器（listen →
+  // null）静默降级——桌面桥在场才有信号。
+  useEffect(() => {
+    let dead = false;
+    let off: (() => void) | null = null;
+    void tauriListenEvent(WUDAO_PET_SESSIONS_REFRESH_EVENT, () => {
+      setSessionsEpoch((e) => e + 1);
+    }).then((unlisten) => {
+      if (dead) unlisten?.();
+      else off = unlisten;
+    });
+    return () => {
+      dead = true;
+      off?.();
+    };
+  }, []);
 
   // ω99-116 (P1): 截图快问 — the ⌥⌘S capture arrives as {data,mediaType}
   // on the Tauri event bus (Rust stays silent on Esc; the strict guard is
@@ -2613,6 +2639,8 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
                     connected={connected}
                     onPick={onSwitchWorkspace}
                     onOpenOther={onOpenOtherWorkspace}
+                    labelName={agentRoot !== "" ? pathName(agentRoot) : undefined}
+                    labelPath={agentRoot !== "" ? agentRoot : undefined}
                   />
                 ),
               }
@@ -2974,7 +3002,8 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
                 activeSessionId={view.sessionId}
                 onResume={onPickSession}
                 onNewChat={onNewChat}
-                onOpenSettings={() => setSettingsOpen(true)}
+                /* M85 §3：onOpenSettings 随 sb-f 底部行一并退役——右上已有
+                   配置入口（用户令：这行不需要）。 */
                 /* T8 墨线 §3: the search row rides the topbar 📋 button's EXACT
                    lane (data flow frozen). 弧 C：车道化 server 上开列表不再被
                    busy 拦（拣选取走车道路由）；老 server 字节不变。 */

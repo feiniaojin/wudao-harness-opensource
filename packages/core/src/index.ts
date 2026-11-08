@@ -362,6 +362,7 @@ export { replaceSystemPrompt } from "./state.js";
 // ω99-279: #2 — SESSION_ID_RE 随 store 既有 export 面放出（删除纯层的
 // 形状门单一事实源，别本地抄正则；store.ts 本体零行为改动）。
 export { createJsonlSessionStore, analyzeTornTail, SESSION_ID_RE } from "./session/store.js";
+export { createTaskWallBudget, formatTaskWallBudgetNote, formatTaskContextMessage, type TaskWallBudget, type TaskWallBudgetReminder } from "./task-wall-budget.js";
 // ω99-54: the UUIDv7 session id factory + shape gate — time-sortable ids
 // are what let store.list() order the v7 tier with a plain string sort
 // (zero stat). The clock seam (createSessionIdFactory) pins milliseconds

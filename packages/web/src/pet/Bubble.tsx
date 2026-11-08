@@ -11,15 +11,21 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { tauriEmitEvent, tauriInvokeCommand } from "../tauri-invoke.js";
-import { WUDAO_PET_ANSWER_EVENT, WUDAO_PET_ASK_EVENT } from "./pet-frame.js";
+import { WUDAO_PET_ANSWER_EVENT, WUDAO_PET_ASK_EVENT, WUDAO_PET_TOOLBAR_EVENT } from "./pet-frame.js";
 import { WUDAO_PET_OPEN_MAIN_EVENT } from "./delivery.js";
 import { WUDAO_PET_SELECTION_SUBMIT_EVENT, explainPrompt, genericPrompt, isUrlSelection, questionPrompt, translatePrompt, urlPrompt } from "./selection.js";
 import { digest } from "./pet-chat.js";
 import { PET_SKIN_SHEETS } from "./skins/index.js";
+// M85-pet §2 — 工具栏的图标与档位常量（icons/provider-detail-fields 都是叶子
+// 模块：零 App 依赖，ime-guard 同款先例——ω99-97 隔离钉的是主壳 App/styles.css，
+// 不是 components/ 下的叶子）。EFFORT_LEVELS 与主窗供应商绑定选择器同一事实源
+// （宠物窗无 WS 拿不到 settings 快照的 efforts 能力表，常量档位是降级面）。
+import { IconBolt, IconFolder, IconPlus } from "../components/icons.js";
+import { EFFORT_LEVELS } from "../components/provider-detail-fields.js";
 import { imeEnd, imeStart, imeSwallows, type ImeGuardState } from "../components/ime-guard.js";
 import { PetMarkdown } from "./pet-md.js";
 import type { PetDelivery } from "./delivery.js";
-import type { PetFrameAsk } from "./pet-frame.js";
+import type { PetFrameAsk, PetToolbarAction } from "./pet-frame.js";
 import type { PetSelection } from "./selection.js";
 import type { ChatTurn } from "./pet-chat.js";
 import type { PetSkinId } from "./skins/index.js";
@@ -92,6 +98,31 @@ export interface BubbleProps {
    *  头像用该肤 sheet 的左帧（睁眼）。肤切换时入口重渲即换图；测试直挂
    *  Bubble 不传即 default（既有挂载零演进）。 */
   skinId?: PetSkinId;
+  /** M85-pet §2 — 工具栏三 chip 的显示真值（帧的 model/effort/workspaceName
+   *  蒸馏；null=缺席/未配 → chip 显示占位词）。缺省 undefined 归一 null
+   *  （未接线=缺席——ask/selection 的缺省归一同款，既有挂载零演进）。 */
+  model?: string | null;
+  /** 同上：思考深度档（帧的 effort；null=未设档）。 */
+  effort?: string | null;
+  /** 同上：工作区名（帧的 workspaceName=basename；null=未锚定）。 */
+  workspaceName?: string | null;
+  /** M85-final（终审 M-3）— 工作区全路径（帧的 workspacePath 直通；null=
+   *  缺席）。本弧只接线不消费（宠物面无 hover 需求）——帧契约补齐 spec §2
+   *  蒸馏四项，后续弧接消费零协议改动。缺省归一 null。 */
+  workspacePath?: string | null;
+  /** M85-final I-3 — 模型数据面（帧的 modelChoices 蒸馏；null=数据缺席
+   *  ——旧主窗/降级 → 模型弹层回落手输输入框）。非空列表=列表选择（点行
+   *  即发 set-model）。缺省 undefined 归一 null（未接线=缺席）。 */
+  modelChoices?: readonly { readonly provider: string; readonly model: string }[] | null;
+  /** M85-final I-3 — 工作区数据面（帧的 recentWorkspaces；null=缺席 → 工作
+   *  区弹层回落手输路径框）。非空列表=列表选择（点行即发 set-workspace）。 */
+  recentWorkspaces?: readonly string[] | null;
+  /** M85-pet §2 — 新会话点击的本地清屏回调（emit 之外的呈现面）：PetApp
+   *  清本地 transcript/history/awaiting（服务器史由归档轮换；帧不携带新
+   *  会话回执——本地清是「点击」这一本地事实的呈现，与接单卡「客户端源=
+   *  本地清合法」同据；op 失败时下一拉取沿带回真值，诚实收敛）。缺省
+   *  undefined=测试零触。 */
+  onNewSession?: () => void;
 }
 
 type BubbleContent =
@@ -227,6 +258,14 @@ function TranscriptTurn(props: { turn: ChatTurn; thinking: boolean; avatarSheet:
       )}
     </div>
   );
+}
+
+/** M85-final I-3 — 工作区列表行的 basename（AgentRootCard.rootBasename 同
+ *  语义：末段非空路径段，无段则原串）。本地内联而非 import——宠物窗
+ *  chunk 不因一个纯函数拉入主壳组件模块（AgentRootCard 连带其样式与依赖
+ *  图）。 */
+function petBaseName(path: string): string {
+  return path.split("/").filter((s) => s !== "").slice(-1)[0] ?? path;
 }
 
 export function Bubble(props: BubbleProps) {
@@ -458,6 +497,111 @@ export function Bubble(props: BubbleProps) {
   // ω99-274 — 聊天头像的 sheet（当前肤左帧，缺省 default；PET_SKIN_SHEETS
   // 单一事实源，与精灵本尊同资产）。
   const avatarSheet = PET_SKIN_SHEETS[props.skinId ?? "default"];
+
+  // --- M85-pet §2 工具栏（四控件，全部只作用 pet 车道） -----------------------
+  // 三 chip 显示真值的缺省归一（未接线=缺席——ask/selection 同款）：null →
+  // 占位词（模型/思考/工作区），chip 恒在（值缺席不是控件缺席）。
+  const toolbarModel = props.model ?? null;
+  const toolbarEffort = props.effort ?? null;
+  const toolbarWorkspace = props.workspaceName ?? null;
+  // M85-final I-3 — 两数据面（帧的 modelChoices/recentWorkspaces）：非空列表
+  // → 弹层走列表选择；null/空（缺席、旧主窗、坏数据）→ 手输面照旧（保底
+  // 兼容）。空数组归一 null——零项列表没有任何可选，手输是更诚实的面。
+  const toolbarModelChoices = props.modelChoices ?? null;
+  const modelList = toolbarModelChoices !== null && toolbarModelChoices.length > 0 ? toolbarModelChoices : null;
+  const toolbarRecents = props.recentWorkspaces ?? null;
+  const recentList = toolbarRecents !== null && toolbarRecents.length > 0 ? toolbarRecents : null;
+  // 单开菜单（互斥：model/effort/workspace 三选一或 null）；手输草稿三枚
+  // （effort 无草稿——常量档位即点即发）。模型草稿在开菜单时以帧真值预填
+  // （发回时可整体改）；供应商/路径无帧真值可预（帧不带 provider/全路径），
+  // 空串起步。IME 守卫共享一个 ref：同一时刻至多一个输入持焦（模型弹层的
+  // 两输入也互斥持焦），单 ref 即组合态的唯一事实（ω99-309 同纪律）。
+  const [toolbarMenu, setToolbarMenu] = useState<"model" | "effort" | "workspace" | null>(null);
+  const [modelProviderDraft, setModelProviderDraft] = useState("");
+  const [modelIdDraft, setModelIdDraft] = useState("");
+  const [workspacePathDraft, setWorkspacePathDraft] = useState("");
+  const toolbarImeRef = useRef<ImeGuardState>({ composing: false, endedAt: 0 });
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  // 新会话回调走 ref（入口传内联箭头——delivery/selection 的 ref 纪律）。
+  const onNewSessionRef = useRef(props.onNewSession);
+  onNewSessionRef.current = props.onNewSession;
+  // 气泡外 pointerdown → 菜单收（EffortSelector 的 outside-close 同款；
+  // refocus 不抢焦——点击目标自己拥有焦点）。
+  useEffect(() => {
+    if (toolbarMenu === null) return;
+    const onDown = (e: Event): void => {
+      if (toolbarRef.current !== null && !toolbarRef.current.contains(e.target as Node)) setToolbarMenu(null);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [toolbarMenu]);
+  const openToolbarMenu = (which: "model" | "effort" | "workspace"): void => {
+    setToolbarMenu((cur) => (cur === which ? null : which)); // 同 chip 再点=收起
+    if (which === "model") {
+      setModelProviderDraft(""); // 无帧真值（帧不带 provider）——空串起步
+      setModelIdDraft(toolbarModel ?? ""); // 帧真值预填
+    }
+    if (which === "workspace") setWorkspacePathDraft(""); // 帧只带 basename，全路径不可预填
+  };
+  const toolbarEmit = (action: PetToolbarAction): void => {
+    void tauriEmitEvent(WUDAO_PET_TOOLBAR_EVENT, action);
+  };
+  // 新会话：emit（relay → petNewSession 归档轮换）+ 本地清屏回调（点击是
+  // 本地事实；服务器回执面是下一帧，op 失败时下一拉取沿带回真值）。
+  const toolbarNewSession = (): void => {
+    toolbarEmit({ kind: "new-session" });
+    onNewSessionRef.current?.();
+  };
+  const toolbarPickEffort = (level: string): void => {
+    toolbarEmit({ kind: "set-effort", effort: level });
+    setToolbarMenu(null); // 发完即收；chip 值仍显帧真值（服务器回执才换）
+  };
+  // M85-final I-3 — 数据面列表的点选（effort 档位同款：点行即发 + 收菜单；
+  // chip 值仍显帧真值——服务器回执（下一状态帧）才换，无乐观呈现）。
+  const toolbarPickModel = (provider: string, model: string): void => {
+    toolbarEmit({ kind: "set-model", provider, model });
+    setToolbarMenu(null);
+  };
+  const toolbarPickWorkspace = (path: string): void => {
+    toolbarEmit({ kind: "set-workspace", path });
+    setToolbarMenu(null);
+  };
+  // 试用反馈二（2026-11-09）：浏览动作**不在精灵窗开选择器**——NSOpenPanel
+  // 从无边框小窗打开会作为 sheet 挂窗（贴屏底、不可拖，实测）。改为发
+  // pick-workspace 给 relay：主窗父化开原生框（居中可拖），选完主窗直接
+  // 下发 petSetWorkspace，回执走状态帧。收菜单（对话框期间弹层不叠着）。
+  const toolbarBrowseWorkspace = (): void => {
+    toolbarEmit({ kind: "pick-workspace" });
+    setToolbarMenu(null);
+  };
+  const toolbarSendModel = (): void => {
+    const provider = modelProviderDraft.trim();
+    if (provider === "") return; // wire 门同句：provider 必填非空（空=没给，不发）
+    const model = modelIdDraft.trim();
+    toolbarEmit(model === "" ? { kind: "set-model", provider } : { kind: "set-model", provider, model });
+    setToolbarMenu(null);
+  };
+  const toolbarSendWorkspace = (): void => {
+    const path = workspacePathDraft.trim();
+    if (path === "") return; // 空路径=没给，不发
+    toolbarEmit({ kind: "set-workspace", path });
+    setToolbarMenu(null);
+  };
+  // 工具栏输入的键盘纪律（ω99-309 组合期守卫 + 单行输入 Enter 即发送）：
+  // IME 拥有键盘时 Enter/Esc 全让位；Esc 收菜单不发送。
+  const onToolbarInputKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>, send: () => void): void => {
+    if (imeSwallows(e.nativeEvent, toolbarImeRef.current, Date.now())) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      send();
+      return;
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setToolbarMenu(null);
+    }
+  };
+
   if (!shown || held === null) return null;
   // ω99-105 点击送达气泡 = 关闭 + 唤起主窗（正文即「点开看全文」通路）。
   const openMain = (): void => {
@@ -474,6 +618,183 @@ export function Bubble(props: BubbleProps) {
       onClick={held.kind === "delivery" ? openMain : undefined}
       style={held.kind === "delivery" ? { cursor: "pointer" } : undefined}
     >
+      {/* M85-pet §2 — 工具栏（四控件，全部只作用 pet 车道自己）：恒随气泡
+          渲染（窗口在=控制行在）；三 chip 显示帧真值（null=缺席→占位词），
+          动作全部 emit WUDAO_PET_TOOLBAR_EVENT（relay 翻译成 pet 四 op）。
+          M85-final I-3 数据面升级（spec §2 字面达成）：模型/工作区弹层在帧
+          数据面在场时是列表选择（模型=registry 矩阵 provider·model 行、
+          工作区=最近工作区 basename 行）；缺席（null——旧主窗/坏数据）才
+          回落手输输入框（保底兼容）。思考=EFFORT_LEVELS 常量档位（帧不带
+          供应商能力表——effort 逐供应商可设档，v1 仍常量降级面）。样式见
+          pet.css 的 .pet-toolbar/.pet-menu（列表行复用 effort 菜单的
+          .pet-mi——主窗 .pop/.menu 类在本窗无样式）。 */}
+      <div className="pet-toolbar" data-pet-toolbar="" ref={toolbarRef}>
+        <button
+          type="button"
+          className="pet-toolbar-new"
+          data-toolbar-new=""
+          title="新会话"
+          aria-label="新会话"
+          onClick={toolbarNewSession}
+        >
+          <IconPlus size={12} />
+        </button>
+        <div className="pet-pop">
+          <button
+            type="button"
+            className="pet-chip"
+            data-toolbar-model=""
+            title="模型"
+            aria-haspopup="menu"
+            aria-expanded={toolbarMenu === "model"}
+            onClick={() => openToolbarMenu("model")}
+          >
+            <span className="pet-chip-label">{toolbarModel ?? "模型"}</span>
+            <span className="pet-caret" aria-hidden={true}>▾</span>
+          </button>
+          {toolbarMenu === "model" && (
+            <div className="pet-menu" role="menu" aria-label="模型" data-toolbar-model-menu="">
+              {/* M85-final I-3 — 数据面在场：registry 矩阵列表（provider·model
+                  一行一选；无当前态高亮——帧不带当前 provider，猜错不如不标，
+                  纯 menuitem）。缺席才走手输两框（下方保底兼容分支）。 */}
+              {modelList !== null ? (
+                modelList.map((c) => (
+                  <button
+                    type="button"
+                    key={`${c.provider}/${c.model}`}
+                    role="menuitem"
+                    className="pet-mi"
+                    data-toolbar-model-item=""
+                    title={`${c.provider} · ${c.model}`}
+                    onClick={() => toolbarPickModel(c.provider, c.model)}
+                  >
+                    {c.provider} · {c.model}
+                  </button>
+                ))
+              ) : (
+                <>
+                  <input
+                    data-toolbar-provider=""
+                    placeholder="供应商 id（如 glm）"
+                    value={modelProviderDraft}
+                    onChange={(e) => setModelProviderDraft(e.target.value)}
+                    onCompositionStart={() => { toolbarImeRef.current = imeStart(toolbarImeRef.current); }}
+                    onCompositionEnd={() => { toolbarImeRef.current = imeEnd(toolbarImeRef.current, Date.now()); }}
+                    onKeyDown={(e) => onToolbarInputKeyDown(e, toolbarSendModel)}
+                  />
+                  <input
+                    data-toolbar-model-input=""
+                    placeholder="模型 id（留空=只换供应商）"
+                    value={modelIdDraft}
+                    onChange={(e) => setModelIdDraft(e.target.value)}
+                    onCompositionStart={() => { toolbarImeRef.current = imeStart(toolbarImeRef.current); }}
+                    onCompositionEnd={() => { toolbarImeRef.current = imeEnd(toolbarImeRef.current, Date.now()); }}
+                    onKeyDown={(e) => onToolbarInputKeyDown(e, toolbarSendModel)}
+                  />
+                  <button type="button" className="pet-menu-send" data-toolbar-model-send="" onClick={toolbarSendModel}>
+                    发送
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="pet-pop">
+          <button
+            type="button"
+            className="pet-chip"
+            data-toolbar-effort=""
+            title="思考深度"
+            aria-haspopup="menu"
+            aria-expanded={toolbarMenu === "effort"}
+            onClick={() => openToolbarMenu("effort")}
+          >
+            <IconBolt size={12} />
+            <span className="pet-chip-label">{toolbarEffort ?? "思考"}</span>
+            <span className="pet-caret" aria-hidden={true}>▾</span>
+          </button>
+          {toolbarMenu === "effort" && (
+            <div className="pet-menu" role="menu" aria-label="思考深度" data-toolbar-effort-menu="">
+              {EFFORT_LEVELS.map((level) => (
+                <button
+                  type="button"
+                  key={level}
+                  role="menuitemradio"
+                  aria-checked={level === toolbarEffort}
+                  className={`pet-mi${level === toolbarEffort ? " on" : ""}`}
+                  data-toolbar-effort-item={level}
+                  onClick={() => toolbarPickEffort(level)}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="pet-pop">
+          <button
+            type="button"
+            className="pet-chip"
+            data-toolbar-workspace=""
+            title="工作区"
+            aria-haspopup="menu"
+            aria-expanded={toolbarMenu === "workspace"}
+            onClick={() => openToolbarMenu("workspace")}
+          >
+            <IconFolder size={12} />
+            <span className="pet-chip-label">{toolbarWorkspace ?? "工作区"}</span>
+            <span className="pet-caret" aria-hidden={true}>▾</span>
+          </button>
+          {toolbarMenu === "workspace" && (
+            <div className="pet-menu" role="menu" aria-label="工作区" data-toolbar-workspace-menu="">
+              {/* 试用反馈：浏览优先——原生目录选择器（选定即切换），置顶于
+                  列表/手输之前（这是主入口，列表是快捷方式）。 */}
+              <button
+                type="button"
+                role="menuitem"
+                className="pet-mi pet-mi-browse"
+                data-toolbar-workspace-browse=""
+                onClick={toolbarBrowseWorkspace}
+              >
+                浏览文件夹…
+              </button>
+              {/* M85-final I-3 — 数据面在场：最近工作区列表（label=basename、
+                  title=全路径——主窗 WorkspaceChip 同款信息对，220px 窗显
+                  basename 恰可读）。缺席才走手输路径框（下方保底兼容分支）。 */}
+              {recentList !== null ? (
+                recentList.map((p) => (
+                  <button
+                    type="button"
+                    key={p}
+                    role="menuitem"
+                    className="pet-mi"
+                    data-toolbar-workspace-item=""
+                    title={p}
+                    onClick={() => toolbarPickWorkspace(p)}
+                  >
+                    {petBaseName(p)}
+                  </button>
+                ))
+              ) : (
+                <>
+                  <input
+                    data-toolbar-path=""
+                    placeholder="工作区绝对路径"
+                    value={workspacePathDraft}
+                    onChange={(e) => setWorkspacePathDraft(e.target.value)}
+                    onCompositionStart={() => { toolbarImeRef.current = imeStart(toolbarImeRef.current); }}
+                    onCompositionEnd={() => { toolbarImeRef.current = imeEnd(toolbarImeRef.current, Date.now()); }}
+                    onKeyDown={(e) => onToolbarInputKeyDown(e, toolbarSendWorkspace)}
+                  />
+                  <button type="button" className="pet-menu-send" data-toolbar-workspace-send="" onClick={toolbarSendWorkspace}>
+                    发送
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
       {held.kind === "ask" && (
         <div className="pet-bubble-ask" data-ask-card="">
           <div className="pet-bubble-ask-tool" data-ask-tool="">

@@ -33,7 +33,6 @@ function mountSidebar(client: unknown): HTMLElement {
       activeSessionId={null}
       onResume={() => {}}
       onNewChat={() => {}}
-      onOpenSettings={() => {}}
       onOpenSearch={() => {}}
     />,
   );

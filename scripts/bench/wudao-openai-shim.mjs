@@ -83,7 +83,13 @@ const server = http.createServer((req, res) => {
           // 也没断开）。给 shim 自己的上游调用一个明确的 idle 预算。
           const client = createProvider(plan.config, {
             streamIdleSoftMs: 90_000,
-            streamIdleHardMs: 300_000,
+            // 2026-11-07 取证：300s 硬限下，一次上游停滞=白烧 300s 后拿到空
+            // 响应，而客户端自己的 300s idle 计时器几乎同时到期 → client gone，
+            // 整轮报废（write-compressor 一题实测烧掉 3×300s）。降到 120s：
+            // 停滞 120s→退避→重试（通常第 2 次即成），全程 ~122s，稳在客户端
+            // 300s 窗口内。正常长思考不受影响——reasoning_delta 持续流动时
+            // idle 计时器一直在复位。
+            streamIdleHardMs: 120_000,
           });
           const wantsStream = body.stream === true && typeof client.stream === "function";
           // 2026-11-06 Terminal-Bench 取证：此前 shim 一律走阻塞的 generate()，
@@ -209,7 +215,16 @@ const server = http.createServer((req, res) => {
             msg.includes("connection") || msg.includes("fetch failed") ||
             msg.includes("socket") || msg.includes("econn") || msg.includes("etimedout") ||
             msg.includes("eai_again") || msg.includes("network") ||
-            msg.includes("502") || msg.includes("503") || msg.includes("529");
+            msg.includes("502") || msg.includes("503") || msg.includes("529") ||
+            // GLM 账户级 429（历史波多消费者叠加时实测过）：退避后重试，
+            // 不让瞬时限速直接判死一整题。与 fetch-failed 修复同性质（通用
+            // 可靠性，不动 agent 行为），口径随波披露。
+            msg.includes("429") || msg.includes("rate limit") ||
+            // 2026-11-07 取证：上游停滞（idle 硬限 abort）表现为「空响应」，
+            // 与 502/fetch failed 同属瞬态类。此前不重试，一次停滞=一整轮
+            // 报废（write-compressor 实测 3 次）。空响应路径没有任何字节
+            // 已写给客户端（有字节的走 streamedText 分支），重试安全。
+            msg.includes("empty response");
           if (transient && attempt < MAX_TRANSIENT_RETRIES && !res.destroyed) {
             const waitMs = Math.min(60_000, 2000 * 2 ** attempt);
             console.error(`[shim] ${ts()} transient (retry ${attempt + 1}/${MAX_TRANSIENT_RETRIES}) in ${waitMs / 1000}s: ${msg.slice(0, 200)}`);

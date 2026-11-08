@@ -218,7 +218,8 @@ describe("119 ② — the surface re-allocation (floats/cards vs insets vs canva
       ".sb-i:hover",
       ".sb-arch-i:hover",
       ".sb-search:hover",
-      ".sb-f .settings-link:hover",
+      // M85 §3：.sb-f 整块退役——settings-link 选择器随行删除（缺席断言在
+      // buddy-mode.test.tsx 的 M85 用例）。
       ".ft-row:hover",
       ".filetree .ws-switcher:hover",
       ".filetree .tree-toggle:hover",

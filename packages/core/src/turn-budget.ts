@@ -68,6 +68,13 @@ export function nextTurnBudgetMilestone(
 
 /** The note text. Milestone-aware: the 20% one is directive (stop opening
  *  new fronts, land what exists), the 50% one is informational. */
+/** 计划检查点（动态重规划的最小机制）：按轮数里程碑强制一次
+ * 「路线还成立吗」的重估。文案刻意不规定计划格式——只要求对照与判断；
+ * 「调整不是失败，硬撑过时计划才是」对齐配速原则的语气。 */
+export function formatPlanCheckpointNote(turn: number): string {
+  return `[plan checkpoint: turn ${turn}] One line: the route you set out on — does it still hold given what you have learned since? Continuing, or adjusting? Adjusting is not failure; grinding a stale plan is.`;
+}
+
 export function formatTurnBudgetNote(remaining: number, milestone: number): string {
   const base = `[turn budget: ${remaining} turn(s) left in this run's slice (the run stops when they reach 0)]`;
   return milestone === 1

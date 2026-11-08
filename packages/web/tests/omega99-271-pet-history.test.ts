@@ -9,9 +9,9 @@
 // 本地转写与合并后无轮数帽（(j) 改钉）。
 import { describe, expect, it, vi } from "vitest";
 import { mountPetRelay } from "../src/pet/relay.js";
-import { WUDAO_PET_ASK_EVENT, WUDAO_PET_HISTORY_EVENT, WUDAO_PET_HISTORY_REQ_EVENT, readPetHistory } from "../src/pet/pet-frame.js";
+import { WUDAO_PET_ASK_EVENT, WUDAO_PET_HISTORY_EVENT, WUDAO_PET_HISTORY_REQ_EVENT, WUDAO_PET_TOOLBAR_EVENT, readPetHistory } from "../src/pet/pet-frame.js";
 import { digest, emptyPetChat, mergeChat, pushTurn } from "../src/pet/pet-chat.js";
-import type { DriverStatus, SubmitOutcome, UiSnapshot } from "../src/protocol.js";
+import type { AgentRootSwitchResult, DriverStatus, SubmitOutcome, UiSnapshot } from "../src/protocol.js";
 
 // --- fake client（pet-relay/235 同范式；本文件要驱动 pet 车道） -----------------
 
@@ -30,6 +30,16 @@ function fakeClient(petHistoryImpl?: () => Promise<readonly PetTurn[]>) {
     petSubmit: vi.fn(async (): Promise<SubmitOutcome> => "started"),
     petAnswerPermission: vi.fn(async () => true),
     petHistory: vi.fn(petHistoryImpl ?? (async () => [] as readonly PetTurn[])),
+    // M85-pet §2 — mountPetRelay 的 Pick 契约新增成员（工具栏四 op）：车道
+    // live 时 wudao-pet-toolbar-event 翻译出的四个动作分走它们（行为面在
+    // 本文件 M85-pet describe 块）。
+    petNewSession: vi.fn(async (): Promise<string | null> => null),
+    petSetModel: vi.fn(async (): Promise<true> => true),
+    petSetEffort: vi.fn(async (): Promise<true> => true),
+    petSetWorkspace: vi.fn(async (): Promise<AgentRootSwitchResult> => ({ applied: true, queued: false })),
+    // M85-final I-3 — Pick 契约新增成员（工作区数据面）：挂载取一次进帧。
+    // 空表 → 帧字段 null（行为面在 m85-final-relay.test.ts）。
+    recentWorkspaces: vi.fn(async (): Promise<{ workspaces: readonly { path: string; lastUsed: string }[] }> => ({ workspaces: [] })),
     __setPet: (p: UiSnapshot["pet"]) => { snap = { ...snap, pet: p }; },
   };
 }
@@ -91,6 +101,125 @@ describe("ω99-271 relay 历史代取车道（第四个反向监听）", () => {
     ask!({ text: "精灵问一句" });
     await flush();
     expect(client.petSubmit).toHaveBeenCalledWith("精灵问一句");
+  });
+});
+
+describe("M85-pet §2 relay 工具栏车道（第五个反向监听）", () => {
+  /** listen 捕获工具栏 handler 的装配范式（(a) 同款）——车道判定在事件时点。 */
+  const mountWithToolbar = (client: ReturnType<typeof fakeClient>, pickDirectory: () => Promise<string | null> = async () => null) => {
+    let toolbar: ((p: unknown) => void) | undefined;
+    const listen = vi.fn(async (e: string, h: (p: unknown) => void) => { if (e === WUDAO_PET_TOOLBAR_EVENT) toolbar = h; return () => {}; });
+    const un = mountPetRelay(client, { emit: vi.fn(async () => true), listen, now: () => 0, submit: client.submit, pickDirectory });
+    return { fire: (p: unknown) => toolbar!(p), un };
+  };
+
+  it("(m) new-session → petNewSession（brief Step 1 首例：事件→op 翻译）", async () => {
+    const client = fakeClient();
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client);
+    fire({ kind: "new-session" });
+    await flush();
+    expect(client.petNewSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("(n) set-model 全参透传（provider+model+effort）；provider 单档也合法（可选位=undefined）", async () => {
+    const client = fakeClient();
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client);
+    fire({ kind: "set-model", provider: "glm", model: "glm-5.3", effort: "high" });
+    fire({ kind: "set-model", provider: "deepseek" });
+    await flush();
+    expect(client.petSetModel).toHaveBeenNthCalledWith(1, "glm", "glm-5.3", "high");
+    expect(client.petSetModel).toHaveBeenNthCalledWith(2, "deepseek", undefined, undefined);
+  });
+
+  it("(o) set-effort → petSetEffort(effort)", async () => {
+    const client = fakeClient();
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client);
+    fire({ kind: "set-effort", effort: "max" });
+    await flush();
+    expect(client.petSetEffort).toHaveBeenCalledWith("max");
+  });
+
+  it("(p) set-workspace → petSetWorkspace(path)", async () => {
+    const client = fakeClient();
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client);
+    fire({ kind: "set-workspace", path: "/Users/x/demo" });
+    await flush();
+    expect(client.petSetWorkspace).toHaveBeenCalledWith("/Users/x/demo");
+  });
+
+  // 试用反馈二：pick-workspace——主窗父化选择器（精灵窗直开=贴底 sheet）。
+  it("(p2) pick-workspace：选择器选定 → petSetWorkspace(路径)；取消（null）→ 零调用", async () => {
+    const client = fakeClient();
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client, async () => "/Users/x/picked");
+    fire({ kind: "pick-workspace" });
+    await flush();
+    expect(client.petSetWorkspace).toHaveBeenCalledWith("/Users/x/picked");
+    const cancel = fakeClient();
+    cancel.__setPet(idlePetStatus());
+    const { fire: fire2 } = mountWithToolbar(cancel, async () => null);
+    fire2({ kind: "pick-workspace" });
+    await flush();
+    expect(cancel.petSetWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("(q) 车道缺席：工具栏动作到了也不调四法（无车道无工具栏可答——静默降级同 history-req）", async () => {
+    const client = fakeClient(); // snap.pet 从未在场
+    const { fire } = mountWithToolbar(client);
+    fire({ kind: "new-session" });
+    fire({ kind: "set-model", provider: "glm" });
+    fire({ kind: "set-effort", effort: "high" });
+    fire({ kind: "set-workspace", path: "/w" });
+    await flush();
+    expect(client.petNewSession).not.toHaveBeenCalled();
+    expect(client.petSetModel).not.toHaveBeenCalled();
+    expect(client.petSetEffort).not.toHaveBeenCalled();
+    expect(client.petSetWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("(r) 坏载荷整丢（readPetToolbarAction 纪律：绝不半信跨总线载荷）——四法都不被调", async () => {
+    const client = fakeClient();
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client);
+    fire(null);
+    fire({});
+    fire({ kind: 1 });
+    fire({ kind: "bogus" });
+    fire({ kind: "set-model" }); // provider 缺
+    fire({ kind: "set-model", provider: "" }); // 空串=没给（server 同款门）
+    fire({ kind: "set-model", provider: "glm", model: 3 }); // model 非 string
+    fire({ kind: "set-effort" });
+    fire({ kind: "set-workspace" });
+    await flush();
+    expect(client.petNewSession).not.toHaveBeenCalled();
+    expect(client.petSetModel).not.toHaveBeenCalled();
+    expect(client.petSetEffort).not.toHaveBeenCalled();
+    expect(client.petSetWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("(s) reject 静默吞（旧服务端 unsupported / 网络失败——同 ask/answer/history 的无重试语义）", async () => {
+    const client = fakeClient();
+    client.petNewSession.mockRejectedValueOnce(new Error("pet ops not supported by this driver"));
+    client.__setPet(idlePetStatus());
+    const { fire } = mountWithToolbar(client);
+    fire({ kind: "new-session" });
+    await flush(); await flush();
+    expect(client.petNewSession).toHaveBeenCalledTimes(1); // 调过且未炸（吞掉即通过）
+  });
+
+  it("(t) unmount 退订工具栏监听（unlisten×5——第五个同胞不漏）", async () => {
+    const client = fakeClient();
+    const offs: Array<ReturnType<typeof vi.fn>> = [];
+    const listen = vi.fn(async () => { const off = vi.fn(); offs.push(off); return off; });
+    const un = mountPetRelay(client, { emit: vi.fn(async () => true), listen, now: () => 0, submit: client.submit });
+    await flush(); // 五个 async listen 的 .then 落定（offs 才被持有）
+    expect(listen).toHaveBeenCalledTimes(5);
+    un();
+    for (const off of offs) expect(off).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -59,6 +59,8 @@ describe("ω99-99 wire 契约常量（逐字）", () => {
     // ω99-271 — 历史车道的事件名对（请求/回执，与 ask/answer 同总线范式）。
     expect(WUDAO_PET_HISTORY_REQ_EVENT).toBe("wudao-pet-history-req");
     expect(WUDAO_PET_HISTORY_EVENT).toBe("wudao-pet-history");
+    // M85-pet §2 — 工具栏动作的事件名（宠物 → 主窗，与 answer 同向同范式）。
+    expect(petFrameWire.WUDAO_PET_TOOLBAR_EVENT).toBe("wudao-pet-toolbar-event");
   });
 });
 
@@ -67,7 +69,7 @@ describe("ω99-99 derivePetFrame 全矩阵", () => {
     expect(derivePetFrame({ status: null })).toBeNull();
   });
 
-  it("全空会话 → 零信号帧（ω99-109 期望变更：帧新增 ask；ω99-113 期望变更：帧新增 busyNarration，空=无旁白；v7 γ1 期望变更：帧新增 workKind，空=无分类）", () => {
+  it("全空会话 → 零信号帧（ω99-109 期望变更：帧新增 ask；ω99-113 期望变更：帧新增 busyNarration，空=无旁白；v7 γ1 期望变更：帧新增 workKind，空=无分类；M85-pet §2 期望变更：帧新增 model/effort/workspaceName，空=三 null；M85-final 期望变更：帧新增 workspacePath/modelChoices/recentWorkspaces，空=三 null）", () => {
     expect(derivePetFrame({ status: status({}) })).toEqual({
       busy: false,
       pendingPermission: false,
@@ -77,6 +79,12 @@ describe("ω99-99 derivePetFrame 全矩阵", () => {
       busyNarration: null,
       workKind: null,
       ask: null,
+      model: null,
+      effort: null,
+      workspaceName: null,
+      workspacePath: null,
+      modelChoices: null,
+      recentWorkspaces: null,
     });
   });
 
@@ -117,17 +125,17 @@ describe("ω99-99 derivePetFrame 全矩阵", () => {
 
 describe("ω99-99 petFrameToInput 哨兵映射（98 契约只认非空性）", () => {
   it("pendingPermission：true→true，false→null", () => {
-    expect(petFrameToInput({ busy: false, pendingPermission: true, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null }).pendingPermission).toBe(true);
-    expect(petFrameToInput({ busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null }).pendingPermission).toBe(null);
+    expect(petFrameToInput({ busy: false, pendingPermission: true, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null }).pendingPermission).toBe(true);
+    expect(petFrameToInput({ busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null }).pendingPermission).toBe(null);
   });
 
   it("reasoning：active→非空哨兵 \".\"，inactive→\"\"", () => {
-    expect(petFrameToInput({ busy: false, pendingPermission: false, reasoningActive: true, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null }).live.reasoning).not.toBe("");
-    expect(petFrameToInput({ busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null }).live.reasoning).toBe("");
+    expect(petFrameToInput({ busy: false, pendingPermission: false, reasoningActive: true, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null }).live.reasoning).not.toBe("");
+    expect(petFrameToInput({ busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null }).live.reasoning).toBe("");
   });
 
   it("answer 原样、busyTools 按计数重建、busy 透传", () => {
-    const input = petFrameToInput({ busy: true, pendingPermission: false, reasoningActive: false, answerTail: "尾部", busyToolCount: 2, busyNarration: null, workKind: null, ask: null });
+    const input = petFrameToInput({ busy: true, pendingPermission: false, reasoningActive: false, answerTail: "尾部", busyToolCount: 2, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null });
     expect(input.busy).toBe(true);
     expect(input.live.answer).toBe("尾部");
     expect(input.live.busyTools).toHaveLength(2);
@@ -136,7 +144,7 @@ describe("ω99-99 petFrameToInput 哨兵映射（98 契约只认非空性）", (
 
 describe("ω99-99 组合不回归：帧→PetInput→98 状态机五态", () => {
   const frame = (p: Partial<PetFrame>): PetFrame => ({
-    busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, ...p,
+    busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null, ...p,
   });
 
   it("五态优先级经 wire 往返后原样成立", () => {
@@ -197,7 +205,7 @@ describe("ω99-109 ask 帧（derive 最小集 / IDLE 无卡 / 等值比较）", 
   });
 
   it("ask 不参与 PetInput（98 机器仍只读布尔；卡是 Bubble 的事，不动机器）", () => {
-    const base = { busy: false, pendingPermission: true, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null };
+    const base = { busy: false, pendingPermission: true, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null };
     expect(petFrameToInput({ ...base, ask: { toolName: "Bash", summary: "s", canAlways: true } })).toEqual(
       petFrameToInput({ ...base, ask: null }),
     );
@@ -210,7 +218,7 @@ describe("ω99-109 ask 帧（derive 最小集 / IDLE 无卡 / 等值比较）", 
   it("petFramesEqual：ask 逐字段比较——同值等；任一字段变 / 卡消失 → 不等（pump 据此发新帧）", () => {
     const base: PetFrame = {
       busy: false, pendingPermission: true, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null,
-      ask: { toolName: "Bash", summary: "s1", canAlways: true },
+      ask: { toolName: "Bash", summary: "s1", canAlways: true }, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null,
     };
     expect(petFrameWire.petFramesEqual(base, { ...base, ask: { toolName: "Bash", summary: "s1", canAlways: true } })).toBe(true);
     expect(petFrameWire.petFramesEqual(base, { ...base, ask: { toolName: "Edit", summary: "s1", canAlways: true } })).toBe(false);
@@ -255,6 +263,7 @@ describe("ω99-113 busyNarration 帧（derive 映射 / IDLE 无旁白 / 等值�
   it("petFramesEqual：busyNarration 变 → 不等（计数不变旁白变必须重发帧——open→snapshot 计数同 1）", () => {
     const base: PetFrame = {
       busy: true, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 1, busyNarration: "正在打开网页…", workKind: "browser", ask: null,
+      model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null,
     };
     expect(petFrameWire.petFramesEqual(base, { ...base, busyNarration: "正在打开网页…" })).toBe(true);
     expect(petFrameWire.petFramesEqual(base, { ...base, busyNarration: "正在读页面…" })).toBe(false);
@@ -262,7 +271,7 @@ describe("ω99-113 busyNarration 帧（derive 映射 / IDLE 无旁白 / 等值�
   });
 
   it("busyNarration 不参与 PetInput（98 机器仍只读 busyToolCount 的非空性）", () => {
-    const base = { busy: true, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 1, workKind: null, ask: null };
+    const base = { busy: true, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 1, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null };
     expect(petFrameToInput({ ...base, busyNarration: "正在读页面…" })).toEqual(petFrameToInput({ ...base, busyNarration: null }));
   });
 });
@@ -293,7 +302,148 @@ describe("v7 γ1 workKind 帧（derive 分类 / IDLE 无分类 / 等值比较 / 
   });
 
   it("workKind 不参与 PetInput（98 机器仍只读 busyToolCount 的非空性）", () => {
-    const base = { busy: true, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 1, busyNarration: null, ask: null };
+    const base = { busy: true, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 1, busyNarration: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null };
     expect(petFrameToInput({ ...base, workKind: "command" })).toEqual(petFrameToInput({ ...base, workKind: null }));
+  });
+});
+
+// --- M85-pet §2 帧扩展：model/effort/workspaceName（工具栏 chips 的数据面） ---
+// 精灵工具栏三个 chip（模型/思考/工作区）的显示值随帧跨窗——蒸馏源是状态
+// 帧 pet 字段：model 块（label=model id、effort=会话生效档）与 Task 3 新增
+// 的 workspaceName（agentRootStatus 派生 basename；全路径 workspacePath 留
+// 主窗 StatusBar 面，不进帧）。与 113 旁白同款 additive 方式（帧加可空字段
+// ——旧形状=三 null 零噪音）；不参与 PetInput（98 机器仍布尔）。
+describe("M85-pet §2 工具栏帧字段（derive 蒸馏 / IDLE 三 null / 等值比较）", () => {
+  it("model 块在场 → label/effort 蒸馏；workspaceName 直通", () => {
+    const s = status({
+      model: { label: "glm-5.3", provider: "glm", effort: "high", choices: [] },
+      workspaceName: "demo",
+    });
+    const f = derivePetFrame({ status: s });
+    expect(f?.model).toBe("glm-5.3");
+    expect(f?.effort).toBe("high");
+    expect(f?.workspaceName).toBe("demo");
+  });
+
+  it("model 块在场但 effort 缺（未设档）→ model 有值、effort=null（逐字段独立）", () => {
+    const f = derivePetFrame({ status: status({ model: { label: "deepseek-v4", choices: [] } }) });
+    expect(f?.model).toBe("deepseek-v4");
+    expect(f?.effort).toBeNull();
+  });
+
+  it("旧形状（无 model 块 / 无 workspace 对）→ 三 null（additive 零噪音）", () => {
+    const f = derivePetFrame({ status: status({ model: null }) });
+    expect(f?.model).toBeNull();
+    expect(f?.effort).toBeNull();
+    expect(f?.workspaceName).toBeNull();
+  });
+
+  it("IDLE_PET_FRAME 三 null（断线=无活配置可显，工具栏 chips 诚实空白）", () => {
+    expect(IDLE_PET_FRAME.model).toBeNull();
+    expect(IDLE_PET_FRAME.effort).toBeNull();
+    expect(IDLE_PET_FRAME.workspaceName).toBeNull();
+  });
+
+  it("petFramesEqual：model/effort/workspaceName 任一变 → 不等（换模型/换档/换工作区=新帧，pump 重发——brief Step 1 第二例）", () => {
+    const base = derivePetFrame({
+      status: status({ model: { label: "glm-5.3", effort: "high", choices: [] }, workspaceName: "demo" }),
+    })!;
+    expect(petFrameWire.petFramesEqual(base, { ...base })).toBe(true);
+    expect(petFrameWire.petFramesEqual(base, { ...base, model: "glm-5.4" })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, effort: "max" })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, workspaceName: "other" })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null })).toBe(false);
+  });
+
+  it("三新字段不参与 PetInput（98 机器仍只读布尔——同 ask/旁白纪律）", () => {
+    const f = derivePetFrame({ status: status({ model: { label: "glm-5.3", effort: "high", choices: [] }, workspaceName: "demo" }) })!;
+    expect(petFrameToInput(f)).toEqual(petFrameToInput({ ...f, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null }));
+  });
+});
+
+// --- M85-pet §2 readPetToolbarAction（工具栏动作的 wire 解析） -----------------
+// 宠物窗 emit 的载荷跨 Tauri 总线无类型——readPetAnswer/readPetToast 同纪
+// 律：形状不合法整丢，绝不半信。字符串门与 server 同句（provider/effort/
+// path 非空 string）；多余键被归一化剥掉（canonical 形状出解析器）。
+describe("M85-pet §2 readPetToolbarAction（wire 解析）", () => {
+  it("四形全收（canonical 归一）", () => {
+    expect(petFrameWire.readPetToolbarAction({ kind: "new-session" })).toEqual({ kind: "new-session" });
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model", provider: "glm", model: "glm-5.3", effort: "high" })).toEqual({ kind: "set-model", provider: "glm", model: "glm-5.3", effort: "high" });
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model", provider: "glm" })).toEqual({ kind: "set-model", provider: "glm" });
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model", provider: "glm", extra: 1 })).toEqual({ kind: "set-model", provider: "glm" });
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-effort", effort: "max" })).toEqual({ kind: "set-effort", effort: "max" });
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-workspace", path: "/w" })).toEqual({ kind: "set-workspace", path: "/w" });
+  });
+
+  it("坏载荷整丢（不半信：非对象/坏 kind/字符串门不过）", () => {
+    expect(petFrameWire.readPetToolbarAction(null)).toBeNull();
+    expect(petFrameWire.readPetToolbarAction("new-session")).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({})).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: 1 })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "bogus" })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model" })).toBeNull(); // provider 缺
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model", provider: "" })).toBeNull(); // 空串=没给
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model", provider: "glm", model: 3 })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-model", provider: "glm", effort: true })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-effort" })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-effort", effort: "" })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-workspace" })).toBeNull();
+    expect(petFrameWire.readPetToolbarAction({ kind: "set-workspace", path: "" })).toBeNull();
+  });
+});
+
+// --- M85-final（终审修复波）帧扩展：workspacePath/modelChoices/recentWorkspaces --
+// 终审 M-3：spec §2 蒸馏四项的第四项（workspacePath 在 wire 但不进帧）补齐。
+// 终审 I-3：模型/工作区数据面（modelChoices=registry 矩阵对；recentWorkspaces
+// =relay 注入的最近工作区路径）——Bubble 弹层据此升列表选择，null=缺席回落
+// 手输。等值函数同步三字段（数组逐元素——蒸馏每帧新建数组，内容等值即帧
+// 等值，泵照常短路）。
+describe("M85-final 帧字段（workspacePath 蒸馏 / modelChoices / recentWorkspaces 注入 / 等值）", () => {
+  it("workspacePath 直通（wire 已携带——server 帧 pet 字段）；缺席=null", () => {
+    expect(derivePetFrame({ status: status({ workspaceName: "demo", workspacePath: "/Users/x/demo" }) })?.workspacePath).toBe("/Users/x/demo");
+    expect(derivePetFrame({ status: status({}) })?.workspacePath).toBeNull();
+    expect(IDLE_PET_FRAME.workspacePath).toBeNull();
+  });
+
+  it("modelChoices：choices 矩阵蒸馏为 {provider,model} 对（source/contextLength 剥掉——宠物面不消费）；块缺席/空矩阵=null", () => {
+    const withMatrix = status({
+      model: { label: "glm-5.3", choices: [
+        { provider: "glm", model: "glm-5.3", source: "builtin", contextLength: 128000 },
+        { provider: "deepseek", model: "deepseek-v4", source: "registry" },
+      ] },
+    });
+    expect(derivePetFrame({ status: withMatrix })?.modelChoices).toEqual([
+      { provider: "glm", model: "glm-5.3" },
+      { provider: "deepseek", model: "deepseek-v4" },
+    ]);
+    expect(derivePetFrame({ status: status({ model: { label: "glm-5.3", choices: [] } }) })?.modelChoices).toBeNull();
+    expect(derivePetFrame({ status: status({}) })?.modelChoices).toBeNull();
+    expect(IDLE_PET_FRAME.modelChoices).toBeNull();
+  });
+
+  it("recentWorkspaces：extra 参数注入（非状态帧字段——relay 挂载取数）；缺席=null", () => {
+    const s = status({});
+    expect(derivePetFrame({ status: s }, { recentWorkspaces: ["/w/a", "/w/b"] })?.recentWorkspaces).toEqual(["/w/a", "/w/b"]);
+    expect(derivePetFrame({ status: s }, { recentWorkspaces: null })?.recentWorkspaces).toBeNull();
+    expect(derivePetFrame({ status: s })?.recentWorkspaces).toBeNull();
+    expect(IDLE_PET_FRAME.recentWorkspaces).toBeNull();
+  });
+
+  it("petFramesEqual：workspacePath/modelChoices/recentWorkspaces 任一变 → 不等；同内容异身份数组 → 等（泵短路不受蒸馏新建数组干扰）", () => {
+    const base = derivePetFrame({
+      status: status({ workspaceName: "demo", workspacePath: "/Users/x/demo", model: { label: "glm-5.3", choices: [{ provider: "glm", model: "glm-5.3", source: "builtin" }] } }),
+    }, { recentWorkspaces: ["/w/a"] })!;
+    expect(petFrameWire.petFramesEqual(base, { ...base })).toBe(true);
+    // 同内容新数组（蒸馏每帧重建的身份差）→ 等值
+    expect(petFrameWire.petFramesEqual(base, {
+      ...base,
+      modelChoices: [{ provider: "glm", model: "glm-5.3" }],
+      recentWorkspaces: ["/w/a"],
+    })).toBe(true);
+    expect(petFrameWire.petFramesEqual(base, { ...base, workspacePath: "/other" })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, modelChoices: [{ provider: "glm", model: "glm-5.4" }] })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, modelChoices: null })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, recentWorkspaces: ["/w/b"] })).toBe(false);
+    expect(petFrameWire.petFramesEqual(base, { ...base, recentWorkspaces: null })).toBe(false);
   });
 });

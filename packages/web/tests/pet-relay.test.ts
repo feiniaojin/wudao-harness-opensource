@@ -17,7 +17,7 @@ import type { PetFrame } from "../src/pet/pet-frame.js";
 import type { DriverStatus, SubmitOutcome, UiSnapshot } from "../src/protocol.js";
 
 const f = (p: Partial<PetFrame>): PetFrame => ({
-  busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, ...p,
+  busy: false, pendingPermission: false, reasoningActive: false, answerTail: "", busyToolCount: 0, busyNarration: null, workKind: null, ask: null, model: null, effort: null, workspaceName: null, workspacePath: null, modelChoices: null, recentWorkspaces: null, ...p,
 });
 const FA = f({});
 const FB = f({ busy: true });
@@ -132,6 +132,16 @@ type FakeClient = {
    *  的快照从不含 pet 字段 → 车道判定恒 false → petHistory 永不被调，挂上
    *  仅为满足类型契约；pet 源的历史行为面在 omega99-271-pet-history.test.ts。 */
   petHistory: ReturnType<typeof vi.fn<() => Promise<readonly { q: string; a: string }[]>>>;
+  /** M85-pet §2 — Pick 契约新增成员（工具栏四 op）。同上：本文件的快照从不
+   *  含 pet 字段 → 车道判定恒 false → 四法永不被调，挂上仅为满足类型契约；
+   *  工具栏行为面在 omega99-271-pet-history.test.ts 的 M85-pet 块。 */
+  petNewSession: ReturnType<typeof vi.fn<() => Promise<string | null>>>;
+  petSetModel: ReturnType<typeof vi.fn<(provider: string, model?: string, effort?: string) => Promise<true>>>;
+  petSetEffort: ReturnType<typeof vi.fn<(effort: string) => Promise<true>>>;
+  petSetWorkspace: ReturnType<typeof vi.fn<(path: string) => Promise<{ applied: boolean; queued: boolean }>>>;
+  /** M85-final I-3 — Pick 契约新增成员（工作区数据面）：挂载时取一次最近
+   *  工作区进帧（recentWorkspaces）。行为面在 m85-final-relay.test.ts。 */
+  recentWorkspaces: ReturnType<typeof vi.fn<(add?: string) => Promise<{ workspaces: readonly { path: string; lastUsed: string }[] }>>>;
   __set: (s: UiSnapshot["status"]) => void;
   /** ω99-103：断线路径只改 connection（protocol.ts onclose 不碰 status）——单独驱动它。 */
   __setConnection: (c: UiSnapshot["connection"]) => void;
@@ -152,6 +162,11 @@ function fakeClient(): FakeClient {
     petSubmit: vi.fn(async () => "started" as SubmitOutcome),
     petAnswerPermission: vi.fn(async () => true),
     petHistory: vi.fn(async () => [] as readonly { q: string; a: string }[]),
+    petNewSession: vi.fn(async () => null),
+    petSetModel: vi.fn(async () => true),
+    petSetEffort: vi.fn(async () => true),
+    petSetWorkspace: vi.fn(async () => ({ applied: true, queued: false })),
+    recentWorkspaces: vi.fn(async () => ({ workspaces: [] as readonly { path: string; lastUsed: string }[] })),
     __set: (s) => { snap = { ...snap, status: s }; notify(); },
     __setConnection: (c) => { snap = { ...snap, connection: c }; notify(); },
     __listeners: () => listeners.size,
@@ -222,7 +237,8 @@ describe("ω99-99 mountPetRelay（注入 deps 的行为面）", () => {
     // 同一个 unlisten mock 被两条订阅各还一次。
     // ω99-110 再变更为 3（依据：本弧加第三条 listen——划词接单 submit 车道）。
     // ω99-271 再变更为 4（依据：本弧加第四条 listen——历史代取 req 车道）。
-    expect(unlisten).toHaveBeenCalledTimes(4);
+    // M85-pet §2 再变更为 5（依据：本弧加第五条 listen——工具栏动作车道）。
+    expect(unlisten).toHaveBeenCalledTimes(5);
     client.__set(busyStatus()); // 订阅已退 → 无帧
     expect(emit).not.toHaveBeenCalled();
   });

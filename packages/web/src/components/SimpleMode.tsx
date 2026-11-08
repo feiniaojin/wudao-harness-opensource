@@ -32,6 +32,7 @@ import { SimpleTurnStatus } from "./SimpleTurnStatus.js";
 import { EmptyHero } from "./EmptyHero.js";
 import type { ShieldMode } from "./ShieldSelector.js";
 import { AgentRootCard } from "./AgentRootCard.js";
+import { pathName } from "./app-consts.js";
 import { WorkspaceChip } from "./WorkspaceChip.js";
 import type { FileOpsClient } from "../file-ops.js";
 
@@ -343,6 +344,8 @@ export function SimpleMode(props: SimpleModeProps): React.JSX.Element {
               connected={connected}
               onPick={onSwitchWorkspace}
               onOpenOther={onOpenOtherWorkspace}
+              labelName={rootCard !== null && rootCard.agentRoot !== "" ? pathName(rootCard.agentRoot) : undefined}
+              labelPath={rootCard !== null && rootCard.agentRoot !== "" ? rootCard.agentRoot : undefined}
             />
           }
           {...(imageSeed !== undefined ? { imageSeed } : {})}

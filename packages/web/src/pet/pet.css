@@ -975,3 +975,180 @@
    的 [data-theme="light"] 整块覆写退役（26 行零残留，census 钉死）；
    boot stamp（入口读同源 localStorage）与 live 切换（wudao-pet-theme
    事件 → signals.ts）两条既有通路不动。 */
+
+/* --- M85-pet §2 工具栏（四控件行——新会话/模型/思考/工作区） --------------------
+   恒随气泡渲染（窗口在=控制行在）。宠物窗只加载 pet.css——主窗 .pop/.menu
+   族在本窗无样式，工具栏的 chip/弹层样式必须自带（紧凑规格：11px 字、
+   20px 控件高，220px 窄窗四控件一行）。明暗走 var(--*) 令牌（119b：随
+   html[data-theme] 自动翻转，零浅色覆写）。 */
+
+.pet-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px; /* 控制行与下方内容（卡/聊天复合体/正文）的分界 */
+  min-width: 0; /* flex 子项的收缩许可（chip 的 max-width 收缩链） */
+}
+
+/* 新会话：低调图标钮（无文字——四控件里唯一的纯动作）。 */
+.pet-toolbar-new {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.pet-toolbar-new:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+/* chip 弹层锚（.pet-menu 的 absolute 定位父）。 */
+.pet-pop {
+  position: relative;
+  flex: none;
+}
+
+/* 三 chip：紧凑胶囊（--surface-2 内嵌一档 + hair-1 发丝线）。值缺席时
+   label 显占位词（模型/思考/工作区）——控件恒在，缺席的是值不是控件。 */
+.pet-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 84px; /* 长模型 id 不挤爆 220px 窗（label 收缩见下） */
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+}
+.pet-chip:hover {
+  color: var(--text-1);
+  border-color: var(--hair-2); /* 119b 边框色族：悬停/强调边档 */
+}
+.pet-chip .pet-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pet-caret {
+  flex: none;
+  color: var(--text-3);
+  font-size: 9px;
+}
+
+/* 弹层：绝对定位向下展开（--surface 浮层 + --elev-2 影——描边画进影里，
+   .pet-bubble/.pet-toast 同族；z 压过 transcript/正文）。 */
+.pet-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+  min-width: 168px;
+  max-width: calc(100vw - 24px); /* 窄窗不溢出视口 */
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--elev-2);
+  font: 11px/1.5 var(--font);
+  color: var(--text-1);
+}
+.pet-menu input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: var(--bg); /* 阶梯内嵌面（--bg 比 --surface 深一档） */
+  color: var(--text-1);
+  font: 11px/1.5 var(--font);
+}
+.pet-menu input::placeholder {
+  color: var(--text-3);
+}
+.pet-menu input:focus {
+  outline: none;
+  border-color: var(--hair-2); /* 119b 边框色族：输入框描边档 */
+}
+.pet-menu-send {
+  padding: 3px 6px;
+  border: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font-size: 11px;
+  cursor: pointer;
+}
+.pet-menu-send:hover {
+  border-color: var(--hair-2); /* 119b 边框色族：悬停/强调边档 */
+}
+/* 档位行（思考 chip 的受限列表）：当前档 --surface-2 高亮 + --text-1。 */
+.pet-mi {
+  padding: 3px 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+.pet-mi:hover {
+  color: var(--text-1);
+}
+.pet-mi.on {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+/* 试用反馈：浏览行——主入口的视觉分离（底 hairline + text-1，与列表快捷
+   项区分；220px 窗一行不换行）。radius-sm 同族（119b ③ 圆角全走 scale，
+   直角 0 也是裸值）。 */
+.pet-mi.pet-mi-browse {
+  width: 100%;
+  color: var(--text-1);
+  border-bottom: 1px solid var(--hair-1);
+  border-radius: var(--radius-sm);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* stream（回答阅读）形态：右上 ✕ 浮角（pet-bubble-close，top:4 right:4）
+   与控制行同顶——工具栏右侧让位 22px，首枚 chip 不被关闭钮压住。 */
+.pet-bubble[data-bubble-state="stream"] .pet-toolbar {
+  padding-right: 22px;
+}
+
+/* 窄窗收缩（brief：窄窗 chips 收缩为图标）：220px 气泡窗以下的过渡窗宽里
+   四控件仍一行——思考/工作区 chip 收图标（bolt/folder，aria 文字仍在
+   DOM），模型 chip 无图标语义（主窗 ModelSelector 同款纯文字面）→ 收缩
+   为截断 label（max-width 收紧），caret 退役。 */
+@media (max-width: 260px) {
+  .pet-chip {
+    max-width: 60px;
+    padding: 0 4px;
+  }
+  .pet-chip .pet-caret {
+    display: none;
+  }
+  .pet-chip[data-toolbar-effort] .pet-chip-label,
+  .pet-chip[data-toolbar-workspace] .pet-chip-label {
+    display: none;
+  }
+}

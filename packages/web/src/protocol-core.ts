@@ -201,6 +201,11 @@ export interface DriverStatus {
   readonly model?: {
     readonly label: string;
     readonly provider?: string;
+    /** S5（与 server agent-driver 同名落点）: the session-effective reasoning
+     *  effort riding the same block — absent when neither a switch nor boot
+     *  meta set one. M85-pet §2 声明进类型：宠物工具栏的思考 chip 从 pet
+     *  状态帧的这里蒸馏（此前 wire 已携带、类型未声明）。 */
+    readonly effort?: string;
     readonly choices: readonly {
       readonly provider: string;
       readonly model: string;
@@ -236,6 +241,13 @@ export interface DriverStatus {
    *  server, non-repo, read failure) renders NOTHING — the zero-noise
    *  gate, no placeholder. */
   readonly gitBranch?: string | null;
+  /** M85-pet §2 — the pet lane's workspace pair (server 从 pet 车道的
+   *  agentRootStatus 派生合并进状态帧 pet 字段：name=basename、path=全路径)。
+   *  OPTIONAL 且只在 pet 字段上出现（主车道状态不携带——主窗工作区面走
+   *  ω99-224 的既有 op）；absent（旧服务端 / 坏读降级）= 宠物工具栏工作区
+   *  chip 诚实空白。 */
+  readonly workspaceName?: string;
+  readonly workspacePath?: string;
   /** ω99-255: #2 — the session's current name (the auto-title / /rename
    *  landing). NOT a display source (the sidebar's rows are the store's
    *  truth) — it is a CHANGE SIGNAL: App watches it across frames and bumps
@@ -392,6 +404,17 @@ export type ClientOp =
    *  truncation (500-char tail frames + local 3-turn transcript) with the
    *  lane driver's own paired pet.jsonl turns. */
   | { op: "petHistory" }
+  /** M85-pet §2（spec 2026-11-08-pet-session-and-buddy-ui-design.md §2）——
+   *  精灵工具栏四 op（宠物窗工具栏的动作面，主窗 relay 从
+   *  WUDAO_PET_TOOLBAR_EVENT 翻译得到）。全部写 pet 车道自己的状态：轮换归
+   *  档（petNewSession）、liveConfig 模型/档位写（petSetModel/petSetEffort，
+   *  setMode 同族）、agentRootSwitch 的车道镜像（petSetWorkspace——回执
+   *  AgentRootSwitchResult 同形）。与 petSubmit 同族入 vault 全集（server
+   *  vault.ts 镜像同动——mid-flap 重放恰一次）。 */
+  | { op: "petNewSession" }
+  | { op: "petSetModel"; provider: string; model?: string; effort?: string }
+  | { op: "petSetEffort"; effort: string }
+  | { op: "petSetWorkspace"; path: string }
   | { op: "listSlashCommands" }
   | { op: "sessions" }
   /** ω99-277: #5 — the session-picker's full-text search READ (the 260

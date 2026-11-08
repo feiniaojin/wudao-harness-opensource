@@ -139,11 +139,26 @@ describe("ω99-110 index chunk 门（relay.ts 增量计入，pet 专属文件不
     // 6820 破 6144——271 收弧电池漏跑本件（未申报即加厚，本弧补报）。272
     // 对 relay 零字节改动；同形演进 6144→8192（6k→8k，实测 6820，余
     // ~1.3kB）；下次任何加厚仍须声明。
+    // M85-pet §2: 期望变更（依据）：工具栏车道给 relay 加了第五条 listen
+    // （wudao-pet-toolbar-event → readPetToolbarAction 整收/整丢 → 按 kind
+    // 分发 pet 四 op，车道缺席静默）+ Pick 契约扩四法 + unmount 第五退订；
+    // relay.ts +~1.6kB（代码+操作契约级注释，短任务 5 工具栏的通路本体），
+    // 6820+1649=8469 破 8192——第五同胞与第四（271 史车道）同形同量级，
+    // 重钉 8192→10240（8k→10k，实测 8469，余 ~1.8kB）；下次任何加厚仍须
+    // 声明。
+    // M85-final（终审修复波）: 期望变更（依据）：I-1 归档回执的刷新信号
+    // （new-session 分支从 fire-and-forget 升为读回执：非 null → emit
+    // WUDAO_PET_SESSIONS_REFRESH_EVENT，App bump sessionsEpoch——归档行主窗
+    // 呈现缺口的修复本体）+ I-3 工作区数据面（挂载时 recentWorkspaces op
+    // 取一次 ≤5 条进帧，subscribe 体重构成 pushSnapshot 供取数落定复用）
+    // + M-2 降级态注释归真；relay.ts 13481→15813（+2332B，操作契约级中文
+    // 注释占大头），sum 8469→10801 破 10240——重钉 10240→12288（10k→12k，
+    // 实测 10801，余 ~1.5kB）；下次任何加厚仍须声明。
     const RELAY_BASELINE_BYTES = 7793; // 76cb0084 的 wc -c
     const sel = readFileSync(new URL("../src/pet/selection.ts", import.meta.url), "utf8");
     const relay = readFileSync(new URL("../src/pet/relay.ts", import.meta.url), "utf8");
     const relayDelta = Math.max(0, Buffer.byteLength(relay) - RELAY_BASELINE_BYTES);
-    expect(Buffer.byteLength(sel) + relayDelta).toBeLessThanOrEqual(8192);
+    expect(Buffer.byteLength(sel) + relayDelta).toBeLessThanOrEqual(12288);
   });
 });
 

@@ -9,7 +9,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createHash, randomBytes } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
-import { extname, join, normalize, sep } from "node:path";
+import { extname, basename, join, normalize, sep } from "node:path";
 import { WebSocket, WebSocketServer } from "ws";
 // ω99-242 — the crash-recovery coordinator's server-facing slice + the
 // status row type (the recoveryStatus op's reply shape). The coordinator
@@ -69,6 +69,33 @@ export { PET_LANE_SESSION_ID } from "./ports.js";
 // 拆分运动（借鉴弧 δ 顺带件，file-size 棘轮）：petTurnsFromHistory 纯函数
 // 外提至 pet-turns.ts（逐字节搬家；本行 re-export 维持既有公共面）。
 export { petTurnsFromHistory } from "./pet-turns.js";
+
+/** M85-pet §2（Task 2 转来的遗留收口）—— petNewSession 的服务端稳定化：
+ *  busy===false 可先于最后一条史落盘，仅靠 UI idle 门控不充分——轮换前若
+ *  pet 车道运行中，先 interrupt 再等其状态离开 busy。事件驱动（状态帧的同一
+ *  订阅——driver 每次状态变化都 emit），带硬上限：卡死车道不得吃掉用户的
+ *  新会话点击（明确意图，超时仍执行）。idle 进门零动作（不 interrupt——
+ *  「点新会话」本身不是停跑令）。 */
+export async function interruptAndWaitPetIdle(pet: UiPetDriverPort, capMs: number): Promise<void> {
+  const busy = (): boolean => {
+    const st = pet.getStatus() as { busy?: unknown } | null | undefined;
+    return typeof st === "object" && st !== null && st.busy === true;
+  };
+  if (!busy()) return;
+  pet.interrupt();
+  await new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(cap);
+      unsub();
+      resolve();
+    };
+    const unsub = pet.subscribe(() => { if (!busy()) finish(); });
+    const cap = setTimeout(finish, capMs);
+  });
+}
 
 export interface UiServerOptions {
   readonly driver: UiDriverPort;
@@ -310,13 +337,19 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           // ω99-235: #5 — the post-auth initial state frame rides the same
           // dual-lane push (#4): a reconnecting client gets BOTH statuses.
           pushState();
-          send({ t: "history", entries: opts.driver.getHistory(), reset: true });
-          // 多 driver 弧 B —— 副车道的初始重放：带 sid + reset，紧跟主车道
-          // 重放之后（lane-aware 客户端据此恢复每车道转录；主车道帧不带 sid
-          // ——重连语义与今日字节不变）。无副车道时零帧（缺省零变化）。
-          for (const r of laneTable.replay()) {
-            send({ t: "history", entries: r.entries, reset: true, sid: r.sid });
-          }
+          // M85-pet §2：带 pet 车道的首帧经链构建（workspace 对的异步读）——
+          // history 重放排到链后，auth 行序 state→history 不翻。无 petDriver
+          // 时链恒已 resolved，微任务时序与旧行为一致（首帧行序钉在 235
+          // 测试文件里）。
+          void frameChain.then(() => {
+            send({ t: "history", entries: opts.driver.getHistory(), reset: true });
+            // 多 driver 弧 B —— 副车道的初始重放：带 sid + reset，紧跟主车道
+            // 重放之后（lane-aware 客户端据此恢复每车道转录；主车道帧不带 sid
+            // ——重连语义与今日字节不变）。无副车道时零帧（缺省零变化）。
+            for (const r of laneTable.replay()) {
+              send({ t: "history", entries: r.entries, reset: true, sid: r.sid });
+            }
+          });
           return;
         }
         clearTimeout(authTimer);
@@ -669,6 +702,91 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           } catch (e) {
             reply(undefined, `petHistory failed: ${(e as Error).message}`);
           }
+          return;
+        }
+        // M85-pet §2（spec 2026-11-08-pet-session-and-buddy-ui-design.md §2）——
+        // 精灵工具栏四 op。全部消费 UiPetDriverPort 的可选面（缺面 → 与
+        // petSubmit 同句的干净拒答，宠物窗控件降级）；路由永不碰主 driver
+        // （车道隔离钉）；四个 op 是 pet 车道自己的状态变更，入 vault 全集
+        // （vault.ts 镜像同动——mid-flap 重放恰好一次，归档绝不双跑）。
+        case "petNewSession": {
+          const pet = opts.petDriver;
+          const rotate = pet?.newPetSession;
+          if (pet === undefined || rotate === undefined) {
+            reply(undefined, "pet ops not supported by this driver");
+            return;
+          }
+          void (async () => {
+            // 稳定化（Task 2 遗留的 server 侧收口）：busy===false 可先于尾条
+            // 落盘——先 interrupt 等离 busy（10s 上限，超时仍执行：用户点新
+            // 会话是明确意图，卡死车道不得吃掉这次点击）。
+            await interruptAndWaitPetIdle(pet, 10_000);
+            try {
+              reply(await rotate());
+            } catch (e) {
+              reply(undefined, `petNewSession failed: ${errText(e)}`);
+            }
+          })();
+          return;
+        }
+        // 模型 chip：provider 必给（选择器的主键），model/effort 可选叠加。
+        // configureModel 是 void 面——坏档/坏 provider 落会话内 notice 不抛
+        // 错，回执恒 true（诚实面在史里）。
+        case "petSetModel": {
+          if (opts.petDriver === undefined || opts.petDriver.configureModel === undefined) {
+            reply(undefined, "pet ops not supported by this driver");
+            return;
+          }
+          if (typeof o.provider !== "string" || o.provider === "") {
+            reply(undefined, "petSetModel provider must be a non-empty string");
+            return;
+          }
+          if (o.model !== undefined && typeof o.model !== "string") {
+            reply(undefined, "petSetModel model must be a string");
+            return;
+          }
+          if (o.effort !== undefined && typeof o.effort !== "string") {
+            reply(undefined, "petSetModel effort must be a string");
+            return;
+          }
+          opts.petDriver.configureModel({
+            provider: o.provider,
+            ...(o.model !== undefined ? { model: o.model } : {}),
+            ...(o.effort !== undefined ? { effort: o.effort } : {}),
+          });
+          reply(true);
+          return;
+        }
+        // 思考 chip：configureModel 的 effort 单档窄缝（/effort 同源落点）。
+        case "petSetEffort": {
+          if (opts.petDriver === undefined || opts.petDriver.configureModel === undefined) {
+            reply(undefined, "pet ops not supported by this driver");
+            return;
+          }
+          if (typeof o.effort !== "string" || o.effort === "") {
+            reply(undefined, "petSetEffort needs an effort string");
+            return;
+          }
+          opts.petDriver.configureModel({ effort: o.effort });
+          reply(true);
+          return;
+        }
+        // 工作区 chip：主车道 agentRootSwitch 的镜像（AgentRootSwitchResult
+        // 同形回执；存在性/目录校验与 busy 停泊语义都在 driver 侧——server
+        // 只做形状门，v1 不发明新语义）。
+        case "petSetWorkspace": {
+          if (opts.petDriver === undefined || opts.petDriver.agentRootSwitch === undefined) {
+            reply(undefined, "pet ops not supported by this driver");
+            return;
+          }
+          if (typeof o.path !== "string" || o.path === "") {
+            reply(undefined, "petSetWorkspace path must be a non-empty string");
+            return;
+          }
+          void opts.petDriver.agentRootSwitch(o.path).then(
+            (result) => reply(result),
+            (err) => reply(undefined, errText(err)),
+          );
           return;
         }
         case "listSlashCommands":
@@ -1820,16 +1938,52 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
   // 双读合并纪律从 2 车道推广到 N 车道）；无副车道时字段整体缺席，帧与旧
   // 形状字节相同。车道表（lanes.ts）持有 main + 副车道的订阅簿记；挂载/卸载
   // 各推一帧（客户端据 lanes 增减感知车道面）。
+  // M85-pet §2 — 状态帧 pet 字段的 workspace 对（agentRootStatus 派生：
+  // workspaceName=basename、workspacePath=全路径，spec §4「chip 与 StatusBar
+  // 同源」的数据面）。agentRootStatus 是异步读（realpath），带 pet 的帧经一条
+  // 串行链构建：emit 顺序原样上 wire、每帧在发送时刻重读两态（235 双读纪律
+  // 的时点强化）；坏读/慢读降级为基础快照（1.5s 帽——状态信道是 UI 生命线，
+  // 绝不被一个 workspace 读拖住）。无 petDriver → 原同步路径，帧形状与发送
+  // 序字节不变（「旧形状钉」不变量）。
+  const PET_FRAME_BUILD_CAP_MS = 1500;
+  let frameChain: Promise<void> = Promise.resolve();
+  const buildStateFrame = (laneStatuses: ReturnType<LaneTable["statuses"]>, petField: unknown): unknown => ({
+    t: "state",
+    state: opts.driver.getStatus(),
+    ...(petField !== undefined ? { pet: petField } : {}),
+    // 0.4.0 集成缝：laneFactory 在场=车道能力恒声明（空表也算——web 的
+    // capable 判定=lanes 字段存在，鸡生蛋问题：车道只在首次 resume {sid}
+    // 后才创建，但 web 只有看到 lanes 字段才走并发路径发 sid）。
+    ...((laneStatuses !== undefined || opts.laneFactory !== undefined) ? { lanes: laneStatuses ?? {} } : {}),
+  });
   const pushState = (): void => {
-    const laneStatuses = laneTable.statuses();
-    send({
-      t: "state",
-      state: opts.driver.getStatus(),
-      ...(opts.petDriver !== undefined ? { pet: opts.petDriver.getStatus() } : {}),
-      // 0.4.0 集成缝：laneFactory 在场=车道能力恒声明（空表也算——web 的
-      // capable 判定=lanes 字段存在，鸡生蛋问题：车道只在首次 resume {sid}
-      // 后才创建，但 web 只有看到 lanes 字段才走并发路径发 sid）。
-      ...((laneStatuses !== undefined || opts.laneFactory !== undefined) ? { lanes: laneStatuses ?? {} } : {}),
+    if (opts.petDriver === undefined) {
+      send(buildStateFrame(laneTable.statuses(), undefined));
+      return;
+    }
+    const pet = opts.petDriver;
+    // I-1（评审修复轮）—— 链步失败隔离（监听器失败隔离 DNA 在帧链上的同
+    // 构）：一次瞬态抛错只丢那一帧（一行 stderr 操作员收据），链回 resolved、
+    // 下一个 emit 照发——无 .catch 的 rejection 会毒化整条链（pet 帧从此停
+    // 发）+ unhandled rejection 可崩进程。
+    frameChain = frameChain.then(async () => {
+      let petField: unknown = pet.getStatus();
+      if (pet.agentRootStatus !== undefined) {
+        const st = await Promise.race([
+          pet.agentRootStatus().then(
+            (r) => r,
+            () => undefined,
+          ),
+          new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), PET_FRAME_BUILD_CAP_MS)),
+        ]);
+        const root = st?.agentRoot;
+        if (typeof root === "string" && root !== "" && typeof petField === "object" && petField !== null) {
+          petField = { ...(petField as Record<string, unknown>), workspaceName: basename(root), workspacePath: root };
+        }
+      }
+      send(buildStateFrame(laneTable.statuses(), petField));
+    }).catch((e) => {
+      process.stderr.write(`wudao-server: state frame build failed (frame dropped, lane alive): ${errText(e)}\n`);
     });
   };
   const laneTable: LaneTable = createLaneTable({

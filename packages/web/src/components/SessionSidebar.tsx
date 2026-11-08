@@ -18,7 +18,7 @@
 // caps at 50 rows (spec §2).
 import { Fragment, useEffect, useRef, useState } from "react";
 import type { SessionRow, ScheduleListRow } from "../protocol.js";
-import { IconPlus, IconSearch, IconSettings, IconPencil, IconChevronRight, IconChevronDown, IconSpinner } from "./icons.js";
+import { IconPlus, IconSearch, IconPencil, IconChevronRight, IconChevronDown, IconSpinner } from "./icons.js";
 import { Icon } from "./Icon.js";
 // ω99-214: #2 — 会话归档：readArchive/toggleArchive（per-viewer
 // wudao.archive.v1，213 recap 范式）。归档=视图层收起（活跃列表的过滤器），
@@ -148,13 +148,12 @@ export function sessionGroup(iso: string, now: number = Date.now()): string {
   return "更早";
 }
 
-export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, onOpenSettings, onOpenSearch, onRenameSession, sessionsEpoch, awaitingIds, busySessionIds, onFollowUp }: {
+export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, onOpenSearch, onRenameSession, sessionsEpoch, awaitingIds, busySessionIds, onFollowUp }: {
   client: SessionsClient;
   /** The live driver session (status.sessionId) — its row highlights. */
   activeSessionId: string | null;
   onResume: (id: string) => void;
   onNewChat: () => void;
-  onOpenSettings: () => void;
   /** T8 墨线 §3: the compact search row's activation (click or Enter/Space)
    *  — App rides the topbar 📋 button's exact lane (the busy refusal, then
    *  the session picker + its rows load), moved verbatim. */
@@ -656,22 +655,6 @@ export function SessionSidebar({ client, activeSessionId, onResume, onNewChat, o
           ) : null}
         </div>
       ) : null}
-      <div className="sb-f">
-        {/* ω99-147: the footer's model picker is RETIRED — the user's 双入口
-            report (侧栏 footer 与输入框下模型 chips 并存). The footer is now
-            [Buddy 模式 note][⚙ 设置]; model switching lives in the composer
-            (the picker component itself is untouched — the composer still rides it). */}
-        <span className="sb-note">Buddy 模式</span>
-        <button
-          type="button"
-          className="settings-link"
-          aria-label="设置"
-          title="设置"
-          onClick={onOpenSettings}
-        >
-          <IconSettings size={13} />
-        </button>
-      </div>
     </div>
   );
 }

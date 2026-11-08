@@ -33,6 +33,18 @@ export const WUDAO_PET_HISTORY_EVENT = "wudao-pet-history";
  *  之家，ω99-97 隔离），与皮肤事件（skin-ids.ts）区分：那是 Rust→web 的广播，
  *  这是 web 主窗→web 宠物窗的转发。 */
 export const WUDAO_PET_THEME_EVENT = "wudao-pet-theme";
+/** M85-pet §2: #2 — 宠物 → 主窗：工具栏动作事件名，payload 见
+ *  readPetToolbarAction（与 answer 同向同范式——宠物窗永远不开第二条 WS，
+ *  工具栏动作也由主窗代发；relay 按 action.kind 翻译成 pet 四 op）。 */
+export const WUDAO_PET_TOOLBAR_EVENT = "wudao-pet-toolbar-event";
+/** M85-final I-1 — 主窗 → 主窗：会话列表刷新信号。relay 收到 petNewSession
+ *  非 null 归档回执（真发生了归档轮换、主窗侧栏多了一行「精灵 · …」）后广
+ *  播本事件，App 的监听 bump sessionsEpoch——侧栏/弹框沿 ω99-150/156/255
+ *  的既有重读缝收敛（零新组件零新 fetch 逻辑）。住本文件（wire contract
+ *  之家）：虽是主窗自环信号（发收两端都在主窗），但发起点在 relay（pet 域
+ *  的回执面）——与工具栏动作同族同总线。payload `{ archivedId: string }`，
+ *  消费端不读（信号即全部，id 仅供诊断）。 */
+export const WUDAO_PET_SESSIONS_REFRESH_EVENT = "wudao-pet-sessions-refresh";
 /** 状态帧的节流窗口（leading+trailing 节流，relay.ts 的 createFramePump）。 */
 export const PET_EMIT_MS = 150;
 
@@ -74,6 +86,29 @@ export interface PetFrame {
    *  契约钉另立弧）。null=无可分类行（与 busyNarration 的 null 同边界）。 */
   readonly workKind: string | null;
   readonly ask: PetFrameAsk | null; // pendingPermission 的决策最小集（ω99-109）
+  /** M85-pet §2 — 工具栏三 chip 的显示值（状态帧 pet 字段蒸馏）：model=
+   *  model 块的 label（model id；无块=null），effort=model 块的 effort（未设
+   *  档=null），workspaceName=agentRootStatus 派生的 basename（Task 3 的帧
+   *  扩展字段；全路径 workspacePath 留主窗面，不进帧）。与 113 旁白同款
+   *  additive 方式：旧形状=三 null 零噪音；null 边界=chip 诚实空白。 */
+  readonly model: string | null;
+  readonly effort: string | null;
+  readonly workspaceName: string | null;
+  /** M85-final（终审 M-3）— 工作区全路径（状态帧 pet 字段的 workspacePath
+   *  直通；缺席/坏读=null）。spec §2 蒸馏四项的第四项：主窗侧 hover 面未消
+   *  费（Bubble 无 hover 需求）但帧契约补齐——等值/读门同字段族，后续弧
+   *  接消费零协议改动。 */
+  readonly workspacePath: string | null;
+  /** M85-final I-3 — 模型数据面（状态帧 model.choices 的 registry 矩阵蒸
+   *  馏为 {provider,model} 对；块缺席/空矩阵=null）。null=数据缺席 → 宠物
+   *  工具栏弹层回落手输（旧主窗/降级兼容）；非空=列表选择（spec §2 数据面
+   *  复用的字面达成）。 */
+  readonly modelChoices: readonly { readonly provider: string; readonly model: string }[] | null;
+  /** M85-final I-3 — 工作区数据面（主窗 relay 挂载时从 recentWorkspaces op
+   *  取一次的最近工作区路径，≤5 条——WorkspaceChip 同源数据）。null=缺席 →
+   *  手输；非空=列表选择。注意：非状态帧字段——relay 蒸馏时经 extra 参数
+   *  注入（见 derivePetFrame 第二参）。 */
+  readonly recentWorkspaces: readonly string[] | null;
 }
 
 /** ω99-103 — the honest frame for "server unreachable": no connection = no
@@ -92,12 +127,25 @@ export const IDLE_PET_FRAME: PetFrame = {
   busyNarration: null,
   workKind: null,
   ask: null,
+  model: null,
+  effort: null,
+  workspaceName: null,
+  workspacePath: null,
+  modelChoices: null,
+  recentWorkspaces: null,
 };
 
 /** Distill a UiSnapshot's status into a PetFrame. No status yet (snapshot
  *  before the first state frame / no session) → null — the relay stays
- *  quiet rather than inventing an all-idle frame the server never sent. */
-export function derivePetFrame(snap: { status: DriverStatus | null }): PetFrame | null {
+ *  quiet rather than inventing an all-idle frame the server never sent.
+ *  M85-final I-3: the OPTIONAL second param carries the non-status data
+ *  plane (recentWorkspaces — the relay fetches it once at mount from the
+ *  main window's recentWorkspaces op; absent → the frame's field is null
+ *  and the pet toolbar falls back to manual input). */
+export function derivePetFrame(
+  snap: { status: DriverStatus | null },
+  extra?: { readonly recentWorkspaces?: readonly string[] | null },
+): PetFrame | null {
   const s = snap.status;
   if (s === null) return null;
   return {
@@ -122,6 +170,25 @@ export function derivePetFrame(snap: { status: DriverStatus | null }): PetFrame 
             summary: s.pendingPermission.summary,
             canAlways: s.pendingPermission.settingsFile === undefined,
           },
+    // M85-pet §2 — 工具栏三 chip 蒸馏：model 块的 label 即 model id（块缺席
+    // ——旧服务端/未配——=null）；effort 逐字段独立（块在场但未设档=null）；
+    // workspaceName 直通（agentRootStatus 派生 basename，坏读降级=缺省→null）。
+    model: s.model?.label ?? null,
+    effort: s.model?.effort ?? null,
+    workspaceName: s.workspaceName ?? null,
+    // M85-final（终审 M-3）— workspacePath 直通（wire 已携带，蒸馏补齐 spec
+    // §2 四项的第四项；缺席=null）。
+    workspacePath: s.workspacePath ?? null,
+    // M85-final I-3 — 模型数据面：model.choices 的 registry 矩阵蒸馏为
+    // {provider,model} 对（source/contextLength 是主窗选择器的字段，宠物
+    // 面不消费——剥掉保持帧最小）；块缺席/空矩阵=null（手输回落）。
+    modelChoices:
+      s.model !== undefined && s.model !== null && s.model.choices.length > 0
+        ? s.model.choices.map((c) => ({ provider: c.provider, model: c.model }))
+        : null,
+    // M85-final I-3 — 工作区数据面：relay 注入的最近工作区（非状态帧字段，
+    // 见第二参）；缺席=null（手输回落）。
+    recentWorkspaces: extra?.recentWorkspaces ?? null,
   };
 }
 
@@ -154,6 +221,34 @@ export interface PetAnswer {
   readonly scope?: "always";
 }
 
+/** M85-final I-3 — modelChoices 的逐元素等值（petFramesEqual 的数组臂）：
+ *  null 边界先比，长度再比，元素逐对比 provider+model。数组身份不参与
+ *  （蒸馏每帧新建数组——内容等值即帧等值，泵照常短路）。 */
+function sameModelChoices(
+  a: readonly { readonly provider: string; readonly model: string }[] | null,
+  b: readonly { readonly provider: string; readonly model: string }[] | null,
+): boolean {
+  if ((a === null) !== (b === null)) return false;
+  if (a === null || b === null) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i]!.provider !== b[i]!.provider || a[i]!.model !== b[i]!.model) return false;
+  }
+  return true;
+}
+
+/** M85-final I-3 — recentWorkspaces 的逐元素等值（sameModelChoices 的字符串
+ *  版，同纪律）。 */
+function sameStringList(a: readonly string[] | null, b: readonly string[] | null): boolean {
+  if ((a === null) !== (b === null)) return false;
+  if (a === null || b === null) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 /** Field-wise deep equality for the pump's equal-frame short-circuit: the
  *  five primitive leaves compare directly, ask compares field-wise (a card
  *  change with all booleans equal — e.g. toolName swapped — is a NEW frame
@@ -167,6 +262,12 @@ export function petFramesEqual(a: PetFrame, b: PetFrame): boolean {
     a.busyToolCount === b.busyToolCount &&
     a.busyNarration === b.busyNarration && // ω99-113：旁白变=新帧（open→snapshot 计数同 1 也要重发）
     a.workKind === b.workKind && // v7 γ1：种类变=新帧（防御性——与旁白同源，理论不独变；比较零成本）
+    a.model === b.model && // M85-pet §2：换模型=新帧（chip 显示值变必须重发）
+    a.effort === b.effort && // M85-pet §2：换思考档=新帧（逐字段独立）
+    a.workspaceName === b.workspaceName && // M85-pet §2：换工作区=新帧（车道重锚的显示面）
+    a.workspacePath === b.workspacePath && // M85-final M-3：全路径变=新帧（与 basename 同源同变，防御性钉）
+    sameModelChoices(a.modelChoices, b.modelChoices) && // M85-final I-3：模型矩阵变=新帧
+    sameStringList(a.recentWorkspaces, b.recentWorkspaces) && // M85-final I-3：最近工作区变=新帧
     (a.ask === null) === (b.ask === null) &&
     (a.ask === null || b.ask === null
       ? true
@@ -213,4 +314,54 @@ export function readPetHistory(p: unknown): { turns: readonly { q: string; a: st
     parsed.push({ q: row.q, a: row.a });
   }
   return { turns: parsed };
+}
+
+// --- M85-pet §2 工具栏动作（宠物 → 主窗） -------------------------------------
+
+/** WUDAO_PET_TOOLBAR_EVENT 的载荷形——宠物窗工具栏四 chip 的动作面，relay
+ *  按 kind 翻译成 pet 四 op（new-session→petNewSession、set-model→
+ *  petSetModel、set-effort→petSetEffort、set-workspace→petSetWorkspace）。 */
+export type PetToolbarAction =
+  | { kind: "new-session" }
+  | { kind: "set-model"; provider: string; model?: string; effort?: string }
+  | { kind: "set-effort"; effort: string }
+  | { kind: "set-workspace"; path: string }
+  /** 试用反馈二（2026-11-09）：浏览动作不携带路径——选择器由**主窗**开
+   *  （relay 转 tauriPickDirectory）：从精灵窗直接开会把 NSOpenPanel 作
+   *  sheet 挂在无边框小窗上（贴屏底、不可拖——实测）；主窗父化后是
+   *  正常居中可拖的模态框。选完主窗直接下发 petSetWorkspace。 */
+  | { kind: "pick-workspace" };
+
+/** WUDAO_PET_TOOLBAR_EVENT 的 wire 解析（readPetAnswer/readPetToast 同缝的
+ *  纪律）——坏载荷整丢，绝不半信；字符串门与 server 同句（provider/effort/
+ *  path 必须是非空 string——空串=没给，doomed 调用根本不出主窗）；多余键
+ *  归一化剥掉，解析器只出 canonical 形状。 */
+export function readPetToolbarAction(p: unknown): PetToolbarAction | null {
+  if (typeof p !== "object" || p === null) return null;
+  const a = p as Record<string, unknown>;
+  switch (a.kind) {
+    case "new-session":
+      return { kind: "new-session" };
+    case "set-model": {
+      if (typeof a.provider !== "string" || a.provider === "") return null;
+      if (a.model !== undefined && typeof a.model !== "string") return null;
+      if (a.effort !== undefined && typeof a.effort !== "string") return null;
+      return {
+        kind: "set-model",
+        provider: a.provider,
+        ...(a.model !== undefined ? { model: a.model } : {}),
+        ...(a.effort !== undefined ? { effort: a.effort } : {}),
+      };
+    }
+    case "set-effort":
+      if (typeof a.effort !== "string" || a.effort === "") return null;
+      return { kind: "set-effort", effort: a.effort };
+    case "set-workspace":
+      if (typeof a.path !== "string" || a.path === "") return null;
+      return { kind: "set-workspace", path: a.path };
+    case "pick-workspace":
+      return { kind: "pick-workspace" };
+    default:
+      return null;
+  }
 }

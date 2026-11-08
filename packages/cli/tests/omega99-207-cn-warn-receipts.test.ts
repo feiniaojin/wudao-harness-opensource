@@ -104,7 +104,8 @@ describe("ω99-207 — B 反向：英文族归零 + dist 反查 + 计数 + 术�
     // 记忆两库收敛弧（722df55e）随源演进：525 → 531（longterm-memory.ts +6
     // ——settings 节点两行英文警语 + 拦截/写入/遗忘/设置四行中文警语；
     // ② 的英文族归零只扫 hooks-config 家族与 settings-layer.ts，不受影响）。
-    expect(n).toBe(531);
+    // 0.5.1 gate 随源演进：531 → 534（M85 小精灵弧 +3：pet 帧链失败隔离的 stderr 收据行 + busy 稳定化超时放行行 + tools.ts clock 条件常驻的降级注释行——同族同形警语）。
+    expect(n).toBe(534);
   });
 
   it("⑤ 术语保留钉：mcp_tool/sessionEnd/RegExp//trust 译后仍在场（防过度翻译）", () => {

@@ -64,7 +64,6 @@ function mountSidebar(over: Partial<Parameters<typeof SessionSidebar>[0]> = {}):
     activeSessionId: null,
     onResume: () => {},
     onNewChat: () => {},
-    onOpenSettings: () => {},
     onOpenSearch: () => {},
     ...over,
   };
@@ -75,14 +74,14 @@ function mountSidebar(over: Partial<Parameters<typeof SessionSidebar>[0]> = {}):
 // citizen button, the 26px compact search row, date-grouped 28px session
 // rows with the .on selected state, and the footer model row.
 describe("T8 墨线 §3 — SessionSidebar shell", () => {
-  it("the .sb shell: .sb-new button (IconPlus svg) first, then .sb-search div, .sb-list, .sb-f (note + settings, NO model row)", async () => {
+  it("the .sb shell: .sb-new button (IconPlus svg) first, then .sb-search div, .sb-list (note + settings, NO model row)", async () => {
     const c = mountSidebar();
     await act(async () => {});
     const sb = c.querySelector(".sb");
     expect(sb).not.toBeNull();
-    // The four citizens, in contract order (produces: .sb > .sb-new +
-    // .sb-search + .sb-list + .sb-f).
-    expect([...(sb?.children ?? [])].map((k) => k.className)).toEqual(["sb-new", "sb-search", "sb-list", "sb-f"]);
+    // M85 §3：三公民（.sb-new + .sb-search + .sb-list）——.sb-f 底行整体
+    // 退役（右上已有配置入口，用户令）。契约由四元素改三元素。
+    expect([...(sb?.children ?? [])].map((k) => k.className)).toEqual(["sb-new", "sb-search", "sb-list"]);
     const newBtn = c.querySelector(".sb-new");
     expect(newBtn?.tagName).toBe("BUTTON");
     expect(newBtn?.querySelector("svg")).not.toBeNull(); // IconPlus
@@ -90,12 +89,11 @@ describe("T8 墨线 §3 — SessionSidebar shell", () => {
     const search = c.querySelector(".sb-search");
     expect(search?.tagName).toBe("DIV");
     expect(search?.querySelector("svg")).not.toBeNull(); // IconSearch
-    // ω99-147: 双入口去重——footer 只剩 [Buddy 模式 note][⚙ 设置]，模型
-    // 选择器（.sb-model 占位与 .chip.model 下拉）零渲染；模型切换归输入框。
-    expect(c.querySelector(".sb-f .sb-model")).toBeNull();
-    expect(c.querySelector(".sb-f .chip.model")).toBeNull();
-    expect(c.querySelector(".sb-f .sb-note")?.textContent).toBe("Buddy 模式");
-    expect(c.querySelector(".sb-f .settings-link")).not.toBeNull();
+    // M85 §3：底行退役的完整断言——sb-f 不存在，Buddy 模式 note 与设置
+    // 按钮随之消失（模型选择器早已归输入框，ω99-147）。
+    expect(c.querySelector(".sb-f")).toBeNull();
+    expect(c.textContent ?? "").not.toContain("Buddy 模式");
+    expect(c.querySelector('button[aria-label="设置"]')).toBeNull();
   });
 
   it("the selected session row carries .on; the others stay bare", async () => {
@@ -210,22 +208,18 @@ describe("M78-buddy §2 — SessionSidebar", () => {
     expect(onResume).toHaveBeenCalledWith("other-id-0002");
   });
 
-  it("[+ 新对话] fires onNewChat; the footer carries 设置 (onOpenSettings) and the Buddy 模式 label", async () => {
+  it("[+ 新对话] fires onNewChat; the retired footer row (Buddy 模式 label + ⚙ 设置) never renders — M85 §3", async () => {
     const onNewChat = vi.fn();
-    const onOpenSettings = vi.fn();
-    const c = mountSidebar({ onNewChat, onOpenSettings });
-    await act(async () => {});
-    await act(async () => {
-      (c.querySelector(".sb-new") as HTMLButtonElement).click();
-    });
-    expect(onNewChat).toHaveBeenCalledTimes(1);
-    const settings = c.querySelector(".sb-f .settings-link") as HTMLButtonElement;
-    expect(settings).not.toBeNull();
-    await act(async () => {
-      settings.click();
-    });
-    expect(onOpenSettings).toHaveBeenCalledTimes(1);
-    expect(c.querySelector(".sb-f")?.textContent).toContain("Buddy 模式");
+    const c = mountSidebar({ onNewChat });
+    const btn = c.querySelector(".sb-new") as HTMLButtonElement | null;
+    if (btn !== null) {
+      await act(async () => { btn.click(); });
+    }
+    expect(onNewChat).toHaveBeenCalled();
+    // M85 §3：sb-f 底部行整体退役——右上已有配置入口（用户令）。
+    expect(c.querySelector(".sb-f")).toBeNull();
+    expect(c.textContent ?? "").not.toContain("Buddy 模式");
+    expect(c.querySelector('button[aria-label="设置"]')).toBeNull();
   });
 
   it("relativeTime bucketizes 刚刚/分钟/小时/昨天/天/日期", () => {
@@ -409,7 +403,6 @@ describe("ω99-150 — SessionSidebar 行内重命名", () => {
       activeSessionId: null as string | null,
       onResume: () => {},
       onNewChat: () => {},
-      onOpenSettings: () => {},
       onOpenSearch: () => {},
       onRenameSession: () => {},
     };
@@ -679,27 +672,15 @@ describe("M78-buddy §1/§3 — the App's buddy branch", () => {
   // 双入口 report (sidebar footer + composer chips both switch models). The
   // /model lane itself is untouched: the composer's ModelSelector (chatColumn
   // InputBox, pinned by composer-chips/model-selector suites) carries it.
-  it("ω99-147: the .sb-f holds NO model picker even with a live model; settings + note stay", async () => {
-    const h = mountedApp();
-    await act(async () => {
-      authOk(h.server.socket, {
-        model: {
-          label: "glm-5",
-          provider: "zhipu",
-          choices: [
-            { provider: "zhipu", model: "glm-5", source: "registry" },
-            { provider: "zhipu", model: "glm-5-air", source: "registry" },
-          ],
-        },
-      });
-    });
-    await replySettings(h, "buddy");
-    // 侧栏 footer 干净（有活模型也不渲染模型行）；模型切换入口在输入框下
-    // 的 chips（同 fixture 的 composer 已拿到 status.model——此处只钉侧栏无双入口）。
-    expect(h.container.querySelector(".sb-f .chip.model")).toBeNull();
-    expect(h.container.querySelector(".sb-f .sb-model")).toBeNull();
-    expect(h.container.querySelector(".sb-f .sb-note")?.textContent).toBe("Buddy 模式");
-    expect(h.container.querySelector(".sb-f .settings-link")).not.toBeNull();
+  it("ω99-147→M85 §3: the retired .sb-f holds nothing at all — no model picker, no note, no settings", async () => {
+    const c = mountSidebar();
+    await act(async () => {});
+    // 底行整体退役：模型面（ω99-147）与 note/设置（M85 §3）都不再渲染。
+    expect(c.querySelector(".sb-f")).toBeNull();
+    expect(c.querySelector(".sb-model")).toBeNull();
+    expect(c.querySelector(".chip.model")).toBeNull();
+    expect(c.querySelector(".sb-note")).toBeNull();
+    expect(c.querySelector(".settings-link")).toBeNull();
   });
 
   it("the sidebar collapse toggle zeroes the left column", async () => {

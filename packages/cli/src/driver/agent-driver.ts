@@ -131,12 +131,12 @@ import { renameSession, validateSessionName } from "../commands/rename.js";
 import { runDiffCommand } from "../commands/diff.js";
 import { runConfigCommand } from "../commands/config.js";
 import { buildInitPrompt, extractInitDraft, formatInitPreview, applyInitDraft, hasExistingAgentsMd } from "../commands/init.js";
-import { availableModels, formatModelList, formatEffortList, resolveModelArgument, resolveEffortArgument, recordModelSwitch, applyModelSelection, asMutableConfig, sameProviderModels, MODEL_SWITCH_CACHE_NOTE } from "../commands/model.js";
+import { availableModels, formatModelList, formatEffortList, resolveModelArgument, resolveEffortArgument, recordModelSwitch, applyModelSelection, asMutableConfig, sameProviderModels, validateEffort, MODEL_SWITCH_CACHE_NOTE } from "../commands/model.js";
 import type { ModelChoice, ModelSelection } from "../commands/model.js";
 // M63 §A: the /provider command's shared machinery (pure halves; the client
 // rebuild reaches the frontend through the onProviderSwitch seam below).
 import { validateProviderName, providerRows, formatProviderList, recordProviderChange, envOnlyProviderResolver, borrowedKeyPoolNote, PROVIDER_SWITCH_CACHE_NOTE } from "../commands/provider.js";
-import type { BuiltinProviderName, ProviderName } from "@wudao-org/providers";
+import type { BuiltinProviderName, ProviderName, ReasoningEffort } from "@wudao-org/providers";
 // SDD 2026-08-23 persona: the /persona command's pure layer (parse → resolve
 // → apply → record) — the driver's handler is a thin shell over it, exactly
 // like the REPL's (repl.ts ~1668), with appendHistory notices for output.
@@ -6479,6 +6479,81 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
       // around and its methods must not depend on the receiver.
       const seam = o.onProviderSwitch;
       return seam?.isPlaceholderLive?.() === true || seam?.keyRefreshPending?.() === true || seam?.configRefreshPending?.() === true;
+    },
+    // M85-pet §1: pet 车道的历史重置面——/clear 的共享 wipe（clearConversation）
+    // 去掉 id 轮换（车道不变量：活 id 恒 "pet"，归档换文件不换 id）。绝不走
+    // close/recreate：pet 与主车道共享 in-process sidecar（审计/熔断）。忙 →
+    // 先 interrupt（用户点新会话即明确意图）；interrupt() 自带 !busy 早退但
+    // 无条件停掉在飞压缩与后台任务（ω99-45/弧 δ 的同一漏斗——重置即明确
+    // 停止），故直接调用、不另判 busy。
+    resetSessionKeepId(): void {
+      driverObj.interrupt();
+      clearConversation();
+      // sessionId 不动；clear 边界条目不落——归档侧（车道轮换的上层任务）
+      // 已把旧 pet.jsonl 改名，新史从空文件开。
+    },
+    // M85-pet §2: 工具栏的模型配置面——/model 与 /provider 的程序化孪生：
+    // 复用 applyModelSwitch / applyProviderSwitch 的全部落地纪律（context
+    // 窗口守卫、忙时停泊到运行收束、model_change / provider_change JSONL
+    // 条目与回执 notice）。provider 变化 → seam.resolve + seam.build 重建
+    // model client（session-engine-switch 的既有重建路径——boot 同款
+    // withPersona(createProvider(liveConfig, …)) 表达式，persona 链跟随与
+    // 窗口重算都在缝里）；provider 未变仅换 model 不重建（provider client
+    // 持 liveConfig 活引用，/model 的既定语义）；effort 校验后随所选车道
+    // 落 modelLive + liveConfig（onModelSwitch 缝）。空对象 no-op。
+    configureModel(cfg: { provider?: string; model?: string; effort?: string }): void {
+      if (cfg.provider === undefined && cfg.model === undefined && cfg.effort === undefined) return;
+      // Per-knob fail-closed：坏 effort 档只拒那一档（回执说明），其余档照常。
+      let effort: ReasoningEffort | undefined;
+      if (cfg.effort !== undefined) {
+        const v = validateEffort(cfg.effort);
+        if (v.ok) effort = v.level;
+        else appendHistory({ kind: "notice", text: `⚠️ 模型配置：${v.error}——推理档未变` });
+      }
+      const curProvider = modelLive.provider ?? o.statusline?.provider;
+      if (cfg.provider !== undefined && cfg.provider !== curProvider) {
+        const seam = o.onProviderSwitch;
+        if (seam === undefined) {
+          // 脚本化模型会话（modelOverride 测试缝）没有 provider 重建缝——
+          // provider 腿诚实降级：不重建、不谎称切换，仅落 model/effort 叠加。
+          appendHistory({ kind: "notice", text: `⚠️ 模型配置：本会话为脚本化模型（无供应商切换缝）——未切换到 ${cfg.provider}，仅应用 model/effort` });
+          if (cfg.model !== undefined || effort !== undefined) {
+            applyModelSwitch(
+              { ...(cfg.model !== undefined ? { model: cfg.model } : {}), ...(effort !== undefined ? { effort } : {}) },
+              `模型配置 → ${curProvider ?? "?"}/${cfg.model ?? modelLive.model ?? "?"}`,
+            );
+          }
+          return;
+        }
+        const r = seam.resolve(cfg.provider);
+        if (!r.ok) {
+          appendHistory({ kind: "notice", text: `⚠️ 模型配置：切换到 ${cfg.provider} 失败——${r.error}` });
+          return;
+        }
+        // cfg.model 覆写解析出的默认 model；cfg.effort 折进
+        // config.reasoningEffort——供应商切换按 S2 会重 derive effort，显式
+        // 给出的档要在其后生效；busy 停泊时它随 pendingProviderApply 原子
+        // 落地（不另停泊一条会在轮界被切换覆盖掉的 effort——settle 处
+        // pendingModelApply 先于 pendingProviderApply 排空）。
+        const next = {
+          ...r.config,
+          ...(cfg.model !== undefined ? { model: cfg.model } : {}),
+          ...(effort !== undefined ? { reasoningEffort: effort } : {}),
+        };
+        applyProviderSwitch(next, cfg.provider, `供应商 → ${cfg.provider}/${next.model}`);
+        return;
+      }
+      // provider 未给或与当前一致（/provider 同名 no-op 的同款语义）。
+      if (cfg.model !== undefined || effort !== undefined) {
+        applyModelSwitch(
+          {
+            ...(cfg.model !== undefined ? { model: cfg.model } : {}),
+            ...(cfg.provider !== undefined ? { provider: cfg.provider } : {}),
+            ...(effort !== undefined ? { effort } : {}),
+          },
+          `模型 → ${cfg.provider ?? curProvider ?? "?"}/${cfg.model ?? modelLive.model ?? "?"}`,
+        );
+      }
     },
     getHistory(): readonly HistoryEntry[] {
       return historyOut;

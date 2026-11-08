@@ -388,6 +388,25 @@ export interface UiPetDriverPort {
    *  the driver's HistoryEntry union (tool/edit/board entries lack text)
    *  assigns without a cli-side type dependency. */
   getHistory(): readonly { kind: string; text?: string }[];
+  /** M85-pet §2（spec 2026-11-08-pet-session-and-buddy-ui-design.md §2）——
+   *  精灵工具栏四面，全 OPTIONAL（可选方法族契约：老驱动/老宿主缺面 → op 层
+   *  "pet ops not supported by this driver" 干净拒答，宠物窗控件降级）。签名
+   *  镜像 driver 真面（ui.ts 把 PetLaneDriver 原样 Object.assign 钉进本端口，
+   *  server 包结构型消费、永不 import cli）。 */
+  /** 归档活 pet 会话并空史重开（Task 2 的车道轮换编排：rename 原子迁史 + 空史
+   *  重开，绝不 close/recreate）。返回归档 id 或 null（零轮次空会话跳过归档）。 */
+  newPetSession?(): Promise<string | null>;
+  /** 模型 chip：provider/model/effort 落 pet 车道自己的 liveConfig（Task 1 的
+   *  重解析窄缝，与主窗互不牵动）。void 不抛错：坏档/坏 provider 落会话内
+   *  notice——op 回执恒 true（诚实面在史里，不在回执里）。 */
+  configureModel?(cfg: { provider?: string; model?: string; effort?: string }): void;
+  /** 工作区 chip 的真值源：agentRoot = 精灵自己的 agent root（主车道
+   *  AgentRootStatusResult 的同形读；server 只消费 agentRoot 一字段——
+   *  workspaceName/workspacePath 由状态帧按 basename/全路径派生）。 */
+  agentRootStatus?(): Promise<{ readonly agentRoot: string }>;
+  /** 工作区切换：主车道 agentRootSwitch 的镜像（idle 即切 / busy 停泊到运行
+   *  收束——v1 不发明新语义，spec「工作区切换语义 = 主车道镜像」）。 */
+  agentRootSwitch?(path: string): Promise<unknown>;
 }
 
 /** 多 driver 并发弧 B —— sid 寻址车道的驱动面：UiDriverPort 的交互切片

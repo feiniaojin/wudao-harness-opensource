@@ -650,6 +650,15 @@ export function isRetryableMutation(op: ClientOp): boolean {
     case "petSubmit":
     case "petInterrupt":
     case "petAnswerPermission":
+    // M85-pet §2 — the pet toolbar's four writes (same-family evolution):
+    // petNewSession archives (a replay must join the original rotation,
+    // never double-archive); petSetModel/petSetEffort write the lane's own
+    // liveConfig (the setMode family); petSetWorkspace mirrors the already-
+    // vaulted agentRootSwitch twin. Mirrors the server's isVaultedMutation.
+    case "petNewSession":
+    case "petSetModel":
+    case "petSetEffort":
+    case "petSetWorkspace":
     // ω99-260: the memory decision is a side effect — vaulted like the
     // other registry mutations (ok/del converge on replay; a replayed
     // second ok answers ok:false, never breaks).

@@ -113,7 +113,6 @@ function mountSidebar(rows: readonly SessionRow[]): HTMLElement {
       activeSessionId={null}
       onResume={vi.fn()}
       onNewChat={() => {}}
-      onOpenSettings={() => {}}
       onOpenSearch={() => {}}
       onRenameSession={vi.fn()}
     />,

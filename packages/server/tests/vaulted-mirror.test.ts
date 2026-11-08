@@ -48,6 +48,14 @@ describe("ω-3a vaulted-mutation mirror (isVaultedMutation)", () => {
       { op: "petSubmit", text: "t" },
       { op: "petInterrupt" },
       { op: "petAnswerPermission", allow: true },
+      // M85-pet §2（Task 3）— 精灵工具栏四写面：newPetSession 归档落盘
+      // （rename 副作用，mid-flap 重放双归档是真危害）；setModel/setEffort
+      // 是 pet 车道自己的 driver 状态写（setMode 同族）；setWorkspace 镜像
+      // agentRootSwitch（已 vault 的主车道孪生）。
+      { op: "petNewSession" },
+      { op: "petSetModel", provider: "glm", model: "m", effort: "high" },
+      { op: "petSetEffort", effort: "high" },
+      { op: "petSetWorkspace", path: "/w" },
       // ω99-260: #7 — the memory decision — a side effect (confirm flips a
       // line, del removes it), vaulted; ok/del converge on replay.
       { op: "memoryDecide", id: "m-a", action: "ok" },
@@ -195,6 +203,9 @@ describe("ω-3a vaulted-mutation mirror (isVaultedMutation)", () => {
     // PB-2: probeStream + probeRecent + probeStats (reads — the probe
     // telemetry face; a replay re-subscribes/re-scans, never vaulted) joined
     // the reads above → 61 + 3.
-    expect(actions.size).toBe(64);
+    // M85-pet §2（Task 3）: 精灵工具栏四写面（petNewSession/petSetModel/
+    // petSetEffort/petSetWorkspace — mutations of the SECOND driver session,
+    // the ω99-235 family law）joined the mutations above → 64 + 4.
+    expect(actions.size).toBe(68);
   });
 });

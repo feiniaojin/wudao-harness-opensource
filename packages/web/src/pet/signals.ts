@@ -39,6 +39,36 @@ function readAsk(p: unknown): PetFrameAsk | null | typeof BAD_ASK {
   return { toolName: a.toolName, summary: a.summary, canAlways: a.canAlways };
 }
 
+/** M85-final I-3/M-3 — 数据面/全路径字段的 wire 解析（readAsk 的 BAD 哨兵
+ *  同缝）：absent/null → null；数组元素形不对（非对象/provider/model 非
+ *  串）→ BAD（整帧丢弃——绝不半信，同 readPetHistory 纪律）。 */
+const BAD_LIST: unique symbol = Symbol("bad-list");
+function readModelChoices(p: unknown): readonly { provider: string; model: string }[] | null | typeof BAD_LIST {
+  if (p === undefined || p === null) return null;
+  if (!Array.isArray(p)) return BAD_LIST;
+  const out: { provider: string; model: string }[] = [];
+  for (const e of p) {
+    if (typeof e !== "object" || e === null) return BAD_LIST;
+    const r = e as Record<string, unknown>;
+    if (typeof r.provider !== "string" || typeof r.model !== "string") return BAD_LIST;
+    out.push({ provider: r.provider, model: r.model });
+  }
+  return out;
+}
+
+/** M85-final I-3 — recentWorkspaces 的 wire 解析（readModelChoices 的字符串
+ *  版，同哨兵同纪律）。 */
+function readStringList(p: unknown): readonly string[] | null | typeof BAD_LIST {
+  if (p === undefined || p === null) return null;
+  if (!Array.isArray(p)) return BAD_LIST;
+  const out: string[] = [];
+  for (const e of p) {
+    if (typeof e !== "string") return BAD_LIST;
+    out.push(e);
+  }
+  return out;
+}
+
 /** Wire parse — the frame crosses the Tauri bus as an untyped payload; a
  *  malformed frame is dropped whole, never partially trusted. ω99-113:
  *  busyNarration follows ask's compat rule — ABSENT (an old main window's
@@ -55,6 +85,18 @@ function readFrame(p: unknown): PetFrame | null {
   if (typeof f.busyToolCount !== "number") return null;
   if (f.busyNarration !== undefined && f.busyNarration !== null && typeof f.busyNarration !== "string") return null;
   if (f.workKind !== undefined && f.workKind !== null && typeof f.workKind !== "string") return null;
+  // M85-pet §2 — 工具栏三 chip 的显示值同车道：absent/null（旧主窗/未配/
+  // 坏读降级）→ null；非串非 null 整帧丢弃（同 busyNarration 纪律）。
+  if (f.model !== undefined && f.model !== null && typeof f.model !== "string") return null;
+  if (f.effort !== undefined && f.effort !== null && typeof f.effort !== "string") return null;
+  if (f.workspaceName !== undefined && f.workspaceName !== null && typeof f.workspaceName !== "string") return null;
+  // M85-final（终审 M-3/I-3）— workspacePath 同串门；两数据面列表走
+  // BAD 哨兵解析（元素形不对整帧丢弃）。
+  if (f.workspacePath !== undefined && f.workspacePath !== null && typeof f.workspacePath !== "string") return null;
+  const modelChoices = readModelChoices(f.modelChoices);
+  if (modelChoices === BAD_LIST) return null;
+  const recentWorkspaces = readStringList(f.recentWorkspaces);
+  if (recentWorkspaces === BAD_LIST) return null;
   const ask = readAsk(f.ask);
   if (ask === BAD_ASK) return null;
   return {
@@ -66,6 +108,12 @@ function readFrame(p: unknown): PetFrame | null {
     busyNarration: typeof f.busyNarration === "string" ? f.busyNarration : null,
     workKind: typeof f.workKind === "string" ? f.workKind : null,
     ask,
+    model: typeof f.model === "string" ? f.model : null,
+    effort: typeof f.effort === "string" ? f.effort : null,
+    workspaceName: typeof f.workspaceName === "string" ? f.workspaceName : null,
+    workspacePath: typeof f.workspacePath === "string" ? f.workspacePath : null,
+    modelChoices,
+    recentWorkspaces,
   };
 }
 
@@ -243,6 +291,12 @@ export interface PetHistoryHandle {
   history: readonly { q: string; a: string }[] | null;
   /** 主动拉取（三沿 + 回醒沿共用）：发出 wudao-pet-history-request。 */
   requestHistory: () => void;
+  /** M85-pet §2 — 史槽清空（新会话的本地清屏面）：setHistory(null) →
+   *  显示层落回本地转写。不清则 mergeChat 会用 stale 史复活刚清掉的旧轮
+   *  （新会话后服务器史已归档轮换，本地旧回执不再是真值）。诚实收敛：
+   *  若 petNewSession op 失败，下一拉取沿（inputOpen 开沿/busy 落定沿/
+   *  回醒沿）带回服务器真值。 */
+  clearHistory: () => void;
 }
 
 /** ω99-271（续，标记 #9）— 历史回执监听（主窗代取的 pet.jsonl 轮）：
@@ -274,7 +328,7 @@ export function usePetHistorySignal(): PetHistoryHandle {
   useEffect(() => {
     requestHistory();
   }, []);
-  return { history, requestHistory };
+  return { history, requestHistory, clearHistory: () => setHistory(null) };
 }
 
 /** ω99-275（续）— 主题联动（用户令「主窗口切换主题，小精灵也要切换」）：

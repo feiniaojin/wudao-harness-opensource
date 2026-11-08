@@ -624,7 +624,6 @@ describe("ui-review-r3 P1 — stale relative times", () => {
         activeSessionId={null}
         onResume={() => {}}
         onNewChat={() => {}}
-        onOpenSettings={() => {}}
         onOpenSearch={() => {}}
       />
       // ω99-147: modelLabel prop retired with the footer's ModelSelector

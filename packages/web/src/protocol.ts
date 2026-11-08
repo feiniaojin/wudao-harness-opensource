@@ -618,6 +618,39 @@ export class WudaoClient {
     return this.sendOp<readonly PetTurnWire[]>({ op: "petHistory" });
   }
 
+  // --- M85-pet §2 — the pet toolbar's four ops（宠物窗工具栏的动作面） -------
+
+  /** Rotate the PET lane to a fresh session (archive the current pet.jsonl
+   *  under a stamped id → reset keep-id). Resolves the archived session id,
+   *  or null when there was nothing to archive (the empty-session boundary).
+   *  Rejects with "pet ops not supported by this driver" on a lane-less
+   *  server — the toolbar degrades silently. */
+  petNewSession(): Promise<string | null> {
+    return this.sendOp<string | null>({ op: "petNewSession" });
+  }
+
+  /** The model chip: provider is the selector's primary key; model/effort
+   *  are optional refinements riding the same write (the driver-side
+   *  liveConfig re-parse seam). The reply is a constant true — the honest
+   *  face of a bad provider/model lands in the lane's session notices. */
+  petSetModel(provider: string, model?: string, effort?: string): Promise<true> {
+    return this.sendOp<true>({ op: "petSetModel", provider, ...(model !== undefined ? { model } : {}), ...(effort !== undefined ? { effort } : {}) });
+  }
+
+  /** The effort chip: the configureModel seam's single-slot narrowing (the
+   *  /effort twin landing on the pet lane's own config). */
+  petSetEffort(effort: string): Promise<true> {
+    return this.sendOp<true>({ op: "petSetEffort", effort });
+  }
+
+  /** The workspace chip: the pet lane's agentRootSwitch mirror — the reply
+   *  is the AgentRootSwitchResult shape verbatim (applied now, or queued at
+   *  the run's settle seam); existence/dir validation and busy-parking all
+   *  live driver-side. */
+  petSetWorkspace(path: string): Promise<AgentRootSwitchResult> {
+    return this.sendOp<AgentRootSwitchResult>({ op: "petSetWorkspace", path });
+  }
+
   listSlashCommands(): Promise<readonly SlashCommandInfo[]> {
     return this.sendOp<readonly SlashCommandInfo[]>({ op: "listSlashCommands" });
   }

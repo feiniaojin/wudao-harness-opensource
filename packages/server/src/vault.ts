@@ -68,6 +68,14 @@ export function isVaultedMutation(o: Record<string, unknown>): boolean {
     case "petSubmit":
     case "petInterrupt":
     case "petAnswerPermission":
+    // M85-pet §2 — 精灵工具栏四写面（同族演进）：petNewSession 归档落盘
+    // （rename 副作用——mid-flap 重放双归档是真危害，vault 保恰好一次）；
+    // petSetModel/petSetEffort 是 pet 车道自己的 driver 状态写（setMode 同
+    // 族）；petSetWorkspace 镜像 agentRootSwitch（已 vault 的主车道孪生）。
+    case "petNewSession":
+    case "petSetModel":
+    case "petSetEffort":
+    case "petSetWorkspace":
     // ω99-260: the memory decision is a side effect (confirm flips a line,
     // del removes it) — vaulted so a mid-flap replay never double-decides;
     // ok/del converge (a replayed second ok answers ok:false, never breaks).

@@ -31,6 +31,15 @@ type FakeClient = {
   /** ω99-271: #11 — mountPetRelay 的 Pick 契约新增成员（历史代取）：车道
    *  live 时 wudao-pet-history-req 走它（271 的历史行为面在本弧专测文件）。 */
   petHistory: ReturnType<typeof vi.fn<() => Promise<readonly { q: string; a: string }[]>>>;
+  /** M85-pet §2 — Pick 契约新增成员（工具栏四 op）：车道 live 时
+   *  wudao-pet-toolbar-event 翻译出的动作走它们（行为面在
+   *  omega99-271-pet-history.test.ts 的 M85-pet 块）。 */
+  petNewSession: ReturnType<typeof vi.fn<() => Promise<string | null>>>;
+  petSetModel: ReturnType<typeof vi.fn<(provider: string, model?: string, effort?: string) => Promise<true>>>;
+  petSetEffort: ReturnType<typeof vi.fn<(effort: string) => Promise<true>>>;
+  petSetWorkspace: ReturnType<typeof vi.fn<(path: string) => Promise<{ applied: boolean; queued: boolean }>>>;
+  /** M85-final I-3 — Pick 契约新增成员（工作区数据面）。 */
+  recentWorkspaces: ReturnType<typeof vi.fn<(add?: string) => Promise<{ workspaces: readonly { path: string; lastUsed: string }[] }>>>;
   __set: (s: UiSnapshot["status"]) => void;
   __setPet: (p: UiSnapshot["pet"]) => void;
   __setConnection: (c: UiSnapshot["connection"]) => void;
@@ -50,6 +59,12 @@ function fakeClient(): FakeClient {
     petSubmit: vi.fn(async () => "started" as SubmitOutcome),
     petAnswerPermission: vi.fn(async () => true),
     petHistory: vi.fn(async () => [] as readonly { q: string; a: string }[]),
+    petNewSession: vi.fn(async () => null),
+    petSetModel: vi.fn(async () => true),
+    petSetEffort: vi.fn(async () => true),
+    petSetWorkspace: vi.fn(async () => ({ applied: true, queued: false })),
+    // M85-final I-3 — Pick 契约新增成员（工作区数据面）：空表 → 帧字段 null。
+    recentWorkspaces: vi.fn(async () => ({ workspaces: [] as readonly { path: string; lastUsed: string }[] })),
     __set: (s) => { snap = { ...snap, status: s }; notify(); },
     __setPet: (p) => { snap = { ...snap, pet: p }; notify(); },
     __setConnection: (c) => { snap = { ...snap, connection: c }; notify(); },
@@ -313,7 +328,6 @@ describe("ω99-235 侧栏 lane 行（徽标 + toast + 零 resume）", () => {
           activeSessionId={null}
           onResume={onResume}
           onNewChat={() => {}}
-          onOpenSettings={() => {}}
           onOpenSearch={() => {}}
         />,
       );

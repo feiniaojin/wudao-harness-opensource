@@ -302,6 +302,20 @@ export interface AgentDriver {
    *  that would change the live connection lands without a manual
    *  re-switch. */
   providerRefreshPending(): boolean;
+  /** 供 pet 车道轮换：清空会话史与运行态（/clear 的共享 wipe），但 sessionId
+   *  保持不变（车道不变量）。忙 → 先 interrupt（同一漏斗也停在飞压缩与后台
+   *  任务）。忙调用契约（M85-final 终审 M-4）：interrupt 只是发起——被中断
+   *  run 的收束条目仍会异步落账，调用方必须等运行收束（离 busy）后再调本
+   *  方法，否则收束条目可在清空后落进新史。唯一调用方 server petNewSession
+   *  的 interruptAndWaitPetIdle 门控即此责——直调方须自带同款门控。边界
+   *  条目不落——归档侧（车道轮换的上层任务）已把旧文件改名，新史从空开。
+   *  绝不 close/recreate：pet 与主车道共享 in-process sidecar。 */
+  resetSessionKeepId(): void;
+  /** 供 pet 车道工具栏：重解析模型（provider/model 任一变化 → 重建 model
+   *  client；effort 落 liveConfig）。空对象 = no-op。落地纪律与 /model、
+   *  /provider 完全同源（context 窗口守卫、忙时停泊到运行收束、JSONL 切换
+   *  条目与回执 notice）——busy 时 void 返回，实际切换在运行收束时落地。 */
+  configureModel(cfg: { provider?: string; model?: string; effort?: string }): void;
   /** The full history (append-only; the reference changes only on append,
    *  clear, or loadHistory). */
   getHistory(): readonly HistoryEntry[];

@@ -45,7 +45,7 @@ export {
 } from "./loop-synthetics.js";
 export type { TurnRetryClass } from "./loop-synthetics.js";
 import { detectLoop, advanceNoProgress, NO_PROGRESS_CLEAN, resultFingerprint } from "./loop-safety.js";
-import { newTurnBudgetState, nextTurnBudgetMilestone, formatTurnBudgetNote } from "./turn-budget.js";
+import { newTurnBudgetState, nextTurnBudgetMilestone, formatTurnBudgetNote, formatPlanCheckpointNote } from "./turn-budget.js";
 import type { LoopSafetyCall, LoopSafetyTurn, NoProgressState } from "./loop-safety.js";
 // 弧 C（research-import-2026-10，nanobot turn_continuation）— 预算切片续跑：
 // maxTurns 从 run 终点变为切片边界（判定/构造纯函数在 turn-slicing.ts，
@@ -69,6 +69,7 @@ import { runReflectionFork, windowDigest, REFLECTION_KINDS, REFLECTION_DEFAULT_T
 import type { ReflectionOptions } from "./loop-reflection.js";
 import type { TurnProfileRecorder } from "./turn-profile.js";
 import type { SessionBudget } from "./session-budget.js";
+import { type TaskWallBudget, formatTaskWallBudgetNote } from "./task-wall-budget.js";
 // 124b 项 1（codex instant_interrupt）——流抢占通道：steering 提交即时中断
 // 在飞模型流（详见 stream-preempt.ts 的契约注释）。
 import type { StreamPreemptChannel } from "./stream-preempt.js";
@@ -580,6 +581,16 @@ export interface LoopOptions {
   // request; window = compaction boundary count in state.messages). Absent
   // = zero behavior change.
   readonly sessionBudget?: { readonly budget: SessionBudget; readonly threadId: string };
+  // 任务墙钟预算（task-wall-budget.ts）：记墙钟、不杀进程。提醒走
+  // MetaNote 投影（50%/80% 各一次 + 每压缩窗口首请求重述全量），文案
+  // 是系统提示词配速原则的引用。数字由 CLI/编排方注入（--task-budget
+  // / WUDAO_TASK_BUDGET_SECONDS），系统提示词只含通用启发。缺省 = 零
+  // 行为变化。
+  readonly taskWallBudget?: TaskWallBudget;
+  // 计划检查点（动态重规划的最小机制）：everyTurns 的整数倍轮次注入一
+  // 条「路线还成立吗」的重估提示（MetaNote 投影，纯后缀不落盘）。与
+  // 时间/预算/失败三类既有触发互补——这是**进度**触发。缺省不启用。
+  readonly planCheckpoints?: { readonly everyTurns: number };
   // Mid-run steering: the queue is drained (take() until it returns
   // undefined) before EVERY model call, after the abort check. Each drained
   // text runs through the SAME onPromptSubmit gate as the run-start prompt
@@ -2112,16 +2123,29 @@ async function* runAgentLoopBody(
     // initial reminder. Marked delivered AFTER the note is pushed onto this
     // request's payload (the projection is built synchronously — there is no
     // cancellation window between push and request).
+    // 压缩窗口序号（sessionBudget 与 taskWallBudget 提醒共用）：窗口 =
+    // 活动消息链里的压缩边界数；压缩重写前缀 → 新窗口 → 去重失效 →
+    // 重述当前余量。
+    let windowSeq = 0;
+    for (const m of state.messages) {
+      if (m.role === "user" && m.content.startsWith(SUMMARY_MARKER)) windowSeq += 1;
+    }
     if (options.sessionBudget !== undefined) {
-      let windowSeq = 0;
-      for (const m of state.messages) {
-        if (m.role === "user" && m.content.startsWith(SUMMARY_MARKER)) windowSeq += 1;
-      }
       const sb = options.sessionBudget;
       const reminder = sb.budget.pendingReminder(sb.threadId, `w${windowSeq}`);
       if (reminder !== undefined) {
         notes.push(`You have ${reminder.remainingTokens} weighted tokens left in the shared session token budget.`);
         sb.budget.markReminderDelivered(sb.threadId, `w${windowSeq}`, reminder);
+      }
+    }
+    // 任务墙钟预算提醒（task-wall-budget）：窗口语义与 sessionBudget
+    // 相同（压缩边界计窗口）；0 号档随窗口重述，50%/80% 档全局一次。
+    if (options.taskWallBudget !== undefined) {
+      const twb = options.taskWallBudget;
+      const twbReminder = twb.pendingReminder(`w${windowSeq}`);
+      if (twbReminder !== undefined) {
+        notes.push(formatTaskWallBudgetNote(twbReminder));
+        twb.markReminderDelivered(`w${windowSeq}`, twbReminder);
       }
     }
     // ω-long-1: the turn-budget watermark (see the option's comment). The
@@ -2133,6 +2157,13 @@ async function* runAgentLoopBody(
       if (milestone !== undefined) {
         const remaining = maxTurns - (turn - sliceTurnBase);
         notes.push(formatTurnBudgetNote(remaining, milestone));
+      }
+    }
+    // 计划检查点：进度触发的重估（每 everyTurns 轮一次；turn 从 1 计，
+    // 首轮是规划本身不打扰）。
+    if (options.planCheckpoints !== undefined && options.planCheckpoints.everyTurns > 1) {
+      if (turn > 1 && turn % options.planCheckpoints.everyTurns === 0) {
+        notes.push(formatPlanCheckpointNote(turn));
       }
     }
     const notesPayload = notes.length > 0 ? notes.map((t) => `<system_note>\n${t}\n</system_note>`).join("\n") : undefined;
