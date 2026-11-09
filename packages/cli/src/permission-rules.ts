@@ -106,7 +106,15 @@ export function askAnswerToDecision(answer: AskAnswer): PermissionDecision {
 // the SAME lists for its immunity guard instead of a hand-copied mirror that
 // drifted (.mcp.json / the hook trees were missing there after ω99-21
 // widened this side). Export only; the matching logic below is unchanged.
-export const PROTECTED_SETTINGS_FILES = [".wudao/settings.json", ".wudao/mcp.json", ".mcp.json"] as const;
+// 安全审计 2026-11 C2（HIGH）：.wudao/settings.local.json 是最高优先级的
+// 可克隆层（M62 §3），同样满足本注释的威胁模型——能静默写入它的模型即可
+// 塞入 hooks/权限规则并经热加载立即生效；列表此前漏掉了它。
+export const PROTECTED_SETTINGS_FILES = [
+  ".wudao/settings.json",
+  ".wudao/settings.local.json",
+  ".wudao/mcp.json",
+  ".mcp.json",
+] as const;
 // ω99-21 — agent-writable hook sources (boot .mjs extensions + plugin roots,
 // both the project tree and the user tier: a planted ~/.wudao/plugins hook is
 // the worse case — user-scope hooks are not deny-only wrapped). PREFIX
