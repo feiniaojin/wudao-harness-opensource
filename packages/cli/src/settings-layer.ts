@@ -248,6 +248,39 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+/** 安全审计 2026-11 C1 — 原型污染净化。`JSON.parse('{"__proto__":{…}}')` 会
+ *  把 `__proto__` 造成自有数据属性：own-key 循环（forbidden-key 黑名单、
+ *  suppressUntrustedProjectSurface）都能看见它，但随后任何普通赋值
+ *  （`out[key] = value`）都会触发 setter，把整个对象变成记录的
+ *  [[Prototype]]——之后 `record["permissions"]` 等取值解析到注入的原型上，
+ *  trust 门被静默洗白。与其加固每一处累加器，不如在解析边界递归剥掉这个
+ *  键（settings 里它永远不可能合法出现）。纯函数；绝不抛出。 */
+function stripProtoKeys(
+  record: Record<string, unknown>,
+  fileLabel: string,
+  warn: ((m: string) => void) | undefined,
+): Record<string, unknown> {
+  let stripped = false;
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!isPlainObject(node)) return node;
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(node)) {
+      if (key === "__proto__") {
+        stripped = true;
+        continue;
+      }
+      out[key] = walk(value);
+    }
+    return out;
+  };
+  const cleaned = walk(record) as Record<string, unknown>;
+  if (stripped && warn !== undefined) {
+    warn(`⚠️ ${fileLabel}："__proto__" 是原型污染键——已忽略（settings 中不可能合法出现）`);
+  }
+  return cleaned;
+}
+
 /** Stable canonical form for array dedup (member key order is normalized). */
 function canonicalArrayItem(v: unknown): string {
   if (isPlainObject(v)) {
@@ -359,7 +392,7 @@ async function readTier(path: string, tier: "global" | "project" | "local", warn
     warn(`⚠️ ${path}：顶层应为对象——${tier} settings 已忽略`);
     return {};
   }
-  return parsed;
+  return stripProtoKeys(parsed, path, warn);
 }
 
 /** Read all three tiers, apply the trust gate to the cloneable two, merge.
@@ -502,7 +535,9 @@ export function readGlobalSettingsSync(env: NodeJS.ProcessEnv = process.env): Re
   try {
     const parsed = JSON.parse(readFileSync(globalSettingsPath(env), "utf8")) as unknown;
     if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-      return { ...(parsed as Record<string, unknown>) };
+      // 安全审计 2026-11 C1 — 与 readTier 同一净化（同步读取无 warn 通道，
+      // 沿用本函数对损坏输入的静默容忍语义）。
+      return stripProtoKeys({ ...(parsed as Record<string, unknown>) }, globalSettingsPath(env), undefined);
     }
   } catch {
     /* absent or malformed — a fresh record starts the file over */
