@@ -6,6 +6,7 @@
 import type { PermissionDecision } from "@wudao-org/core";
 import { globToRegex } from "@wudao-org/core";
 import { commandArityRule, commandHeadTokens, headHasEscalationFlags, isEnvLauncherHead } from "./permission-arity.js";
+import { credentialSegmentHit } from "./credential-segments.js";
 import { FILE_EDIT_TOOLS, FILENAME_KEY_TOOLS } from "./permission-modes.js";
 
 /** One answer from the y/a/p/N ask menu. `session` = allow AND never ask again
@@ -160,15 +161,14 @@ export function protectedSettingsFile(toolName: string, input: Record<string, un
 // shell is out of scope by design: substring-matching command text is
 // both noisy and trivially bypassed ($HOME, base64, env indirection); the
 // path tools are the reliable surface.
-const CREDENTIAL_DIR_SEGMENTS = [".ssh", ".gnupg"] as const;
-const CREDENTIAL_FILE_SEGMENTS = [".aws/credentials", ".kube/config", ".wudao/.credentials.yaml"] as const;
-
 /** The normalized path when this call touches credential material (SSH/GPG
  *  keyrings, cloud/kube credentials, wudao's own credential store), undefined
  *  otherwise. Directory segments need something UNDER the directory — a file
  *  literally named `.ssh` or prose like `my-ssh-notes` is not key material.
  *  Param-driven: any tool whose input carries a `path` is covered, so grep/
- *  glob picking up a directory param tomorrow needs no change here. */
+ *  glob picking up a directory param tomorrow needs no change here.
+ *  安全审计 2026-11 C7：段表与匹配语义抽到 credential-segments.ts，与
+ *  shell 的 workspace 安全只读类共用同一出处。 */
 export function credentialMaterialPath(toolName: string, input: Record<string, unknown>): string | undefined {
   if (toolName === "shell") return undefined;
   // ω99-123 fix2: make_xlsx carries its write target as `filename`, not
@@ -178,13 +178,7 @@ export function credentialMaterialPath(toolName: string, input: Record<string, u
   const raw = FILENAME_KEY_TOOLS.has(toolName) ? input["filename"] : input["path"];
   if (typeof raw !== "string" || raw.trim() === "") return undefined;
   const p = normalizePath(raw).toLowerCase();
-  for (const seg of CREDENTIAL_DIR_SEGMENTS) {
-    if (p.startsWith(`${seg}/`) || p.includes(`/${seg}/`)) return p;
-  }
-  for (const f of CREDENTIAL_FILE_SEGMENTS) {
-    if (p === f || p.includes(`/${f}`)) return p;
-  }
-  return undefined;
+  return credentialSegmentHit(p);
 }
 
 /** 夜移 010: the ask-line warning when the prompted call touches credential

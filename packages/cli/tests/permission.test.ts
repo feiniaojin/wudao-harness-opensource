@@ -894,6 +894,22 @@ describe("safeWorkspaceCommand — the accept-tier read-only class", () => {
       "ls ../../", "git diff ../other", "git show HEAD:../../x",
     ]) expect(safeWorkspaceCommand(c)).toBe(false);
   });
+  // 安全审计 2026-11 C7（HIGH）：凭据物料段——workspace 根在 $HOME 时
+  // `.ssh/id_rsa` 是合法相对路径，路径逃逸检查够不着；文件工具早已 ask
+  // （credentialMaterialPath），shell 只读类此前是漏网路径。
+  it("C7：触及凭据段的相对路径退出安全类（与文件工具对齐）", () => {
+    for (const c of [
+      "cat .ssh/id_rsa", "head .aws/credentials", "tail .kube/config",
+      "wc -c .wudao/.credentials.yaml", "cat .gnupg/private.key",
+      "cat config/.ssh/id_rsa", // 段在任意深度同样命中
+    ]) expect(safeWorkspaceCommand(c)).toBe(false);
+  });
+  it("C7：非凭据近邻与普通源码照常免问（不扩大打击面）", () => {
+    for (const c of [
+      "cat src/main.ts", "cat .ssh-notes.md", "ls .ssh", // 目录本身（文件工具同语义：需目录之下的东西）
+      "head package.json", "wc -l a.ts",
+    ]) expect(safeWorkspaceCommand(c)).toBe(true);
+  });
   it("git's relocating/output flags disqualify even with a safe subcommand", () => {
     for (const c of [
       "git -C ../other status", "git status -C../other",
