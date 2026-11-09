@@ -25,12 +25,45 @@ const DESTRUCTIVE_HEADS = new Set([
   "kill", "pkill", "killall",
 ]);
 
-/** 只读命令头：arity 1，族级放行无害。 */
+/** 只读命令头：arity 1，族级放行无害。
+ *  安全审计 2026-11 C6：`env` 已移除——`env CMD` 是 busybox 风格启动器，
+ *  族级规则 shell:env 会前缀放行 env rm -rf / 这类任意命令；连裸 `env`
+ *  的 1-token "exact" 规则也照样前缀匹配（匹配侧 token 前缀语义），
+ *  所以 env 头一律不记族级规则（裸 env 不记规则，带参走整条精确），
+ *  见 commandArityRule 的特判。 */
 const READONLY_HEADS = new Set([
   "ls", "cat", "pwd", "echo", "which", "head", "tail", "wc", "stat", "file",
-  "du", "df", "whoami", "date", "env", "hostname", "uname", "ps",
+  "du", "df", "whoami", "date", "hostname", "uname", "ps",
   "grep", "sort", "uniq", "diff", "tree",
 ]);
+
+/** 安全审计 2026-11 C6 — 族内扩权 flag：命令 token 命中即不得按族级前缀
+ *  规则放行（记录侧退化为整条精确，匹配侧跳过前缀 lane 只留整条相等）。
+ *  例：批准 `git push origin main` 记下的族规则 shell:git push 不应放行
+ *  `git push --force` / `git push --delete`；批准 `git branch feat` 不应借
+ *  族规则放行 `git branch -D main`。裸 `-f`/`-d`/`--amend` 故意不列
+ *  （grep -f / docker compose up -d / git commit --amend 等高频无害用法
+ *  误伤面大——残余风险见审计报告）。`--force` 取前缀匹配，覆盖
+ *  --force-with-lease（仍是改写远端历史的强推）。 */
+const ESCALATION_FLAG_EXACT = new Set(["--hard", "--privileged", "--delete", "--purge", "-D", "-ff"]);
+
+export function hasEscalationFlagToken(token: string): boolean {
+  if (token.startsWith("--force")) return true; // --force / --force-with-lease / --force-push
+  return ESCALATION_FLAG_EXACT.has(token);
+}
+
+/** 命令头 token 里是否含扩权 flag（记录侧与匹配侧共用一个判定）。 */
+export function headHasEscalationFlags(head: readonly string[]): boolean {
+  return head.some((t) => hasEscalationFlagToken(t));
+}
+
+/** 安全审计 2026-11 C6 —— env 启动器形状：`env CMD …`（env 后跟真命令，
+ *  非 flags/赋值）。任何 1-token 规则（shell:env）都是放行器，匹配侧
+ *  对该形状跳过前缀 lane，只留整条相等。裸 `env`（仅打印环境）不算。 */
+export function isEnvLauncherHead(head: readonly string[]): boolean {
+  if (head[0] !== "env" || head.length < 2) return false;
+  return head.slice(1).some((t) => !ENV_ASSIGN.test(t) && !t.startsWith("-"));
+}
 
 /** 子命令族 arity 表（最长前缀优先）。值 = 规则取的 token 数。 */
 const ARITY: Readonly<Record<string, number>> = {
@@ -91,6 +124,14 @@ export function commandArityRule(command: string): string | null {
   // 文本即用户批准时看到的命令；匹配侧两边都剥 env，语义一致）。
   const exact = (): string => command.trim().split(/\s+/).join(" ");
   if (DESTRUCTIVE_HEADS.has(first)) return exact();
+  // 安全审计 2026-11 C6 —— `env` 启动器特判：`env CMD` 执行任意 CMD。
+  // 裸 `env`（或 `env`+flags 打印环境）：任何规则文本都是 1-token 前缀
+  // （匹配侧语义），会放行 `env rm -rf /` —— 不记规则（本次放行，逐次问）。
+  if (first === "env" && !head.slice(1).some((t) => !ENV_ASSIGN.test(t) && !t.startsWith("-"))) return null;
+  // 安全审计 2026-11 C6 —— 扩权 flag：族级规则只放行"同族温和形态"，
+  // 带 --force/-D/--hard/--privileged… 的命令退化为整条精确（用户批准
+  // 该形态本身；另一个危险变体重新问）。
+  if (headHasEscalationFlags(head)) return exact();
   if (READONLY_HEADS.has(first)) return first;
   // arity 表：最长前缀优先（"npm run" 先于 "npm"）。
   const max = Math.min(head.length, 3);
