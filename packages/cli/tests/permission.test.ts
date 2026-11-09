@@ -811,6 +811,27 @@ describe("ruleMatches — shell rules match the command (prefix semantics)", () 
     expect(ruleMatches("shell:rm", "shell", cmd("ls -la"))).toBe(false);
     expect(ruleMatches("shell:rm", "shell", {})).toBe(false);
   });
+  // 安全审计 2026-11 C6 —— 扩权 flag 降级：族级前缀规则不再放行带
+  // --force/-D/--hard/--privileged… 的命令；只有整条相等（或显式 glob:
+  // 规则）可命中。env 头任何 1-token 规则都不放行 env CMD。
+  it("C6：族规则 shell:git push 不放行 --force/--delete 变体；温和变体照旧", () => {
+    expect(ruleMatches("shell:git push", "shell", cmd("git push --force origin main"))).toBe(false);
+    expect(ruleMatches("shell:git push", "shell", cmd("git push --force-with-lease origin main"))).toBe(false);
+    expect(ruleMatches("shell:git push", "shell", cmd("git push --delete origin leak"))).toBe(false);
+    // 温和形态：族规则照常命中（正常工作流零影响）。
+    expect(ruleMatches("shell:git push", "shell", cmd("git push origin dev"))).toBe(true);
+    expect(ruleMatches("shell:git push", "shell", cmd("git push origin main"))).toBe(true);
+  });
+  it("C6：扩权命令自身被批准后（整条精确规则）重跑同命令免问，其它变体不放行", () => {
+    expect(ruleMatches("shell:git push --force origin main", "shell", cmd("git push --force origin main"))).toBe(true);
+    expect(ruleMatches("shell:git push --force origin main", "shell", cmd("git push --force origin other"))).toBe(false);
+  });
+  it("C6：env 头不被任何 1-token 规则放行（env 启动器）", () => {
+    expect(ruleMatches("shell:env", "shell", cmd("env rm -rf /"))).toBe(false);
+    expect(ruleMatches("shell:env", "shell", cmd("env"))).toBe(true); // 裸 env 本身照旧
+    expect(ruleMatches("shell:env FOO=1 npm test", "shell", cmd("env FOO=1 npm test"))).toBe(true);
+    expect(ruleMatches("shell:env FOO=1 npm test", "shell", cmd("env FOO=1 rm -rf /"))).toBe(false);
+  });
   it("path rules keep their old semantics (unaffected by the command lane)", () => {
     expect(ruleMatches("write_file:src/", "write_file", { path: "src/a.ts" })).toBe(true);
     expect(ruleMatches("write_file:src/", "write_file", cmd("ls"))).toBe(false);
@@ -872,6 +893,22 @@ describe("safeWorkspaceCommand — the accept-tier read-only class", () => {
       "cat /etc/passwd", "cat ~/.ssh/id_rsa", "cat ../outside.txt",
       "ls ../../", "git diff ../other", "git show HEAD:../../x",
     ]) expect(safeWorkspaceCommand(c)).toBe(false);
+  });
+  // 安全审计 2026-11 C7（HIGH）：凭据物料段——workspace 根在 $HOME 时
+  // `.ssh/id_rsa` 是合法相对路径，路径逃逸检查够不着；文件工具早已 ask
+  // （credentialMaterialPath），shell 只读类此前是漏网路径。
+  it("C7：触及凭据段的相对路径退出安全类（与文件工具对齐）", () => {
+    for (const c of [
+      "cat .ssh/id_rsa", "head .aws/credentials", "tail .kube/config",
+      "wc -c .wudao/.credentials.yaml", "cat .gnupg/private.key",
+      "cat config/.ssh/id_rsa", // 段在任意深度同样命中
+    ]) expect(safeWorkspaceCommand(c)).toBe(false);
+  });
+  it("C7：非凭据近邻与普通源码照常免问（不扩大打击面）", () => {
+    for (const c of [
+      "cat src/main.ts", "cat .ssh-notes.md", "ls .ssh", // 目录本身（文件工具同语义：需目录之下的东西）
+      "head package.json", "wc -l a.ts",
+    ]) expect(safeWorkspaceCommand(c)).toBe(true);
   });
   it("git's relocating/output flags disqualify even with a safe subcommand", () => {
     for (const c of [

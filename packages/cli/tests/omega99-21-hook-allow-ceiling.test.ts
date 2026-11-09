@@ -109,6 +109,29 @@ describe("ω99-21 I7 — the planting chain fence (protected write-set extension
     expect(decideRichPermission({ mode: "auto", toolName: "write_file", input: { path: ".wudao/extensions/x.mjs" } })).toBe("ask");
     expect(decideRichPermission({ mode: "auto", toolName: "edit", input: { path: ".wudao/plugins/y/hooks/hooks.json", old_string: "a", new_string: "b" } })).toBe("ask");
   });
+
+  // 安全审计 2026-11 C2：.wudao/settings.local.json 是最高优先级可克隆层，
+  // 此前不在 PROTECTED_SETTINGS_FILES——workspace 模式下模型可静默写入
+  // hooks/权限规则并经热加载立即生效。补漏后与 settings.json 同等待遇。
+  it("C2 补漏：.wudao/settings.local.json 的写入是受保护免疫目标", () => {
+    expect(protectedSettingsFile("write_file", { path: ".wudao/settings.local.json" })).toBe(".wudao/settings.local.json");
+    expect(protectedSettingsFile("edit", { path: ".wudao/settings.local.json", old_string: "a", new_string: "b" })).toBe(".wudao/settings.local.json");
+    // 绝对路径拼写同样命中。
+    expect(protectedSettingsFile("write_file", { path: "/repo/.wudao/settings.local.json" })).toBe(".wudao/settings.local.json");
+    // 近邻不受牵连（精确匹配，非子串）。
+    expect(protectedSettingsFile("write_file", { path: ".wudao/settings.local.json.bak" })).toBeUndefined();
+    expect(protectedSettingsFile("write_file", { path: ".wudao/settings.local.notes.md" })).toBeUndefined();
+    // 读不受保护（写类才免疫）。
+    expect(protectedSettingsFile("read_file", { path: ".wudao/settings.local.json" })).toBeUndefined();
+  });
+
+  it("C2 补漏：任何模式下（含 auto）写 settings.local.json 都强制 ask", () => {
+    expect(decideRichPermission({ mode: "auto", toolName: "write_file", input: { path: ".wudao/settings.local.json", content: "{}" } })).toBe("ask");
+    expect(decideRichPermission({ mode: "workspace", toolName: "write_file", input: { path: ".wudao/settings.local.json", content: "{}" } })).toBe("ask");
+    expect(decideRichPermission({ mode: "auto", toolName: "edit", input: { path: ".wudao/settings.local.json", old_string: "a", new_string: "b" } })).toBe("ask");
+    // 对照：普通源码写入在 auto 下不问（修复未扩大打击面）。
+    expect(decideRichPermission({ mode: "auto", toolName: "write_file", input: { path: "src/a.ts", content: "" } })).toEqual({ behavior: "allow" });
+  });
 });
 
 // ---------------------------------------------------------------------------
