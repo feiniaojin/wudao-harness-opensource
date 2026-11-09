@@ -229,6 +229,14 @@ export function suppressUntrustedProjectSurface(
     delete out["hooks"];
     warnings.push(`⚠️ ${fileLabel}：hooks 已忽略——工作区未受信任（可用 /trust 审阅）`);
   }
+  // 安全审计 2026-11 C3（HIGH）：`web` 节点同属外联预授权面——allowDomains
+  // 可预放行 web_fetch 域名（含 "*.com" 巨宽通配 → 会话内容静默渗出）、
+  // fetch.allowedPorts 扩开私有端口 SSRF 面、search.endpoint 决定搜索 GET
+  // 落点。与 hooks 同类：未信任工作区整个节点丢弃，/trust 后恢复。
+  if ("web" in out) {
+    delete out["web"];
+    warnings.push(`⚠️ ${fileLabel}：web 已忽略——工作区未受信任（可用 /trust 审阅）`);
+  }
   return { record: out, warnings };
 }
 

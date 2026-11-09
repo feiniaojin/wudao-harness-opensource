@@ -100,9 +100,18 @@ function warnUnknown(record: Record<string, unknown>, known: readonly string[], 
 export async function loadWebSettings(
   workspaceRoot: string,
   warn: WebWarn = defaultWarn,
-  opts?: { readonly endpointLookup?: EndpointLookup; readonly lookupBudgetMs?: number },
+  opts?: {
+    readonly endpointLookup?: EndpointLookup;
+    readonly lookupBudgetMs?: number;
+    /** 安全审计 2026-11 C3 — true 时未信任工作区的 `web` 节点整体丢弃
+     *  （allowDomains / fetch.allowedPorts / search 同属外联预授权面，
+     *  settings-layer.suppressUntrustedProjectSurface 落地）；/trust 后恢复。 */
+    readonly suppressUntrustedProject?: boolean;
+  },
 ): Promise<WebSettings> {
-  const layered = await loadLayeredSettings(workspaceRoot, warn);
+  const layered = await loadLayeredSettings(workspaceRoot, warn, undefined, {
+    suppressUntrustedProject: opts?.suppressUntrustedProject === true,
+  });
   const node = layered.effective["web"];
   if (node === undefined) return DEFAULT_WEB_SETTINGS;
   const record = asRecord(node);

@@ -13,6 +13,7 @@ import {
   sanitizeProjectTier,
   isProjectForbiddenKey,
   loadLayeredSettings,
+  suppressUntrustedProjectSurface,
   readGlobalDefaultPermissionMode,
   saveGlobalSettings,
   readGlobalSettingsSync,
@@ -381,6 +382,58 @@ describe("原型污染净化（安全审计 C1）", () => {
     const layered = await loadLayeredSettings(project, warn);
     expect(layered.effective["compaction"]).toEqual({ enabled: true });
     expect(messages.some((m) => m.includes("__proto__"))).toBe(false);
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 安全审计 2026-11 C3 — 未信任工作区的 `web` 节点抑制。web.allowDomains
+// 可预放行 web_fetch 域名（含 "*.com" 巨宽通配）、fetch.allowedPorts 扩开
+// 私有端口、search.endpoint 决定搜索 GET 落点——克隆层即可控制的外联
+// 预授权面。回归线：suppressUntrustedProjectSurface 开启时整个节点丢弃
+// 并警告；关闭时字节级不变。
+// ---------------------------------------------------------------------------
+describe("web 节点未信任抑制（安全审计 C3）", () => {
+  it("suppressUntrustedProjectSurface 开启：克隆层的 web 节点整体丢弃并警告", () => {
+    const { record, warnings } = suppressUntrustedProjectSurface(
+      { web: { allowDomains: ["*.com"], fetch: { allowedPorts: [22, 3389] }, search: { provider: "brave", apiKeyEnv: "K" } } },
+      ".wudao/settings.json",
+    );
+    expect(record["web"]).toBeUndefined();
+    expect(warnings.some((m) => m.includes("web 已忽略"))).toBe(true);
+  });
+
+  it("suppress 关闭（默认路径 loadLayeredSettings 不传标志）：web 节点字节级保留——既有消费者零影响", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeJson(project, join(".wudao", "settings.json"), {
+      web: { allowDomains: ["example.com"], fetch: { maxChars: 8000 } },
+    });
+    const { warn, messages } = collector();
+    const layered = await loadLayeredSettings(project, warn);
+    expect(layered.effective["web"]).toEqual({ allowDomains: ["example.com"], fetch: { maxChars: 8000 } });
+    expect(messages.some((m) => m.includes("web 已忽略"))).toBe(false);
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
+  });
+
+  it("loadLayeredSettings 传抑制标志时同样生效（global 层 web 不受抑制——用户自己的）", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeJson(project, join(".wudao", "settings.json"), { web: { allowDomains: ["*.com"] } });
+    const { warn } = collector();
+    const suppressed = await loadLayeredSettings(project, warn, process.env, { suppressUntrustedProject: true });
+    expect(suppressed.effective["web"]).toBeUndefined();
+    expect(suppressed.project["web"]).toBeUndefined();
+    const trusted = await loadLayeredSettings(project, warn);
+    expect(trusted.effective["web"]).toEqual({ allowDomains: ["*.com"] });
     await Promise.all([
       rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
       rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
