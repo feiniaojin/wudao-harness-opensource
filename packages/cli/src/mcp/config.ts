@@ -213,9 +213,25 @@ export interface McpTiers {
   readonly project: Record<string, McpServerConfig>;
 }
 
+/** 安全审计 2026-11 C4 — MCP 信任门选项。true 时克隆层（project-root
+ *  `.mcp.json`（CC 兼容层）与 `.wudao/mcp.json`）整体丢弃：stdio 条目的
+ *  `command` 是任意本地命令，skills/plugins/hooks 均受 trust 门，唯独此前
+ *  这一层不受管——克隆即启动。缺省 = 无门（既有调用方与测试字节稳定）。 */
+export interface McpTrustOptions {
+  readonly trustSuppressed?: boolean;
+}
+
 /** Read all three tiers WITHOUT folding (per-tier maps, replacement still
  *  expressed by name presence in a later tier). */
-export function loadMcpTiers(cwd: string, warn: (msg: string) => void = () => {}): McpTiers {
+export function loadMcpTiers(cwd: string, warn: (msg: string) => void = () => {}, opts: McpTrustOptions = {}): McpTiers {
+  if (opts.trustSuppressed === true) {
+    warn("⚠️ 未信任工作区——项目层 MCP 配置（.mcp.json / .wudao/mcp.json）已忽略（可用 /trust 审阅；全局层不受影响）");
+    return {
+      user: readMcpFile(globalMcpConfigPath(), "global mcp.json", warn),
+      root: {},
+      project: {},
+    };
+  }
   return {
     user: readMcpFile(globalMcpConfigPath(), "global mcp.json", warn),
     root: readMcpFile(ccMcpConfigPath(cwd), ".mcp.json", warn),
@@ -226,8 +242,8 @@ export function loadMcpTiers(cwd: string, warn: (msg: string) => void = () => {}
 /** The effective MCP config: global tier first, then the project-root
  *  `.mcp.json` (CC compat), then the wudao project tier — each REPLACING
  *  same-name servers (M57 §1 — per-server-name replacement, not merge). */
-export function loadMcpConfig(cwd: string, warn: (msg: string) => void = () => {}): McpConfig {
-  const tiers = loadMcpTiers(cwd, warn);
+export function loadMcpConfig(cwd: string, warn: (msg: string) => void = () => {}, opts: McpTrustOptions = {}): McpConfig {
+  const tiers = loadMcpTiers(cwd, warn, opts);
   const servers: Record<string, McpServerConfig> = { ...tiers.user };
   for (const [name, entry] of Object.entries(tiers.root)) servers[name] = entry;
   for (const [name, entry] of Object.entries(tiers.project)) servers[name] = entry;

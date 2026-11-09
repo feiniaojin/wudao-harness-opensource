@@ -263,7 +263,11 @@ export async function loadMcpToolsFor(cwd: string, plugins: readonly LoadedPlugi
   // A3: the merged startup list (user mcp.json + plugin servers) is part of
   // the extension state — a rescan refreshes it in place. The pre-A3 merge
   // stays as the fallback for the (never-live) un-bootstrapped path.
-  const config = getExtensionState()?.mcpConfig ?? mergeMcpConfigs(loadMcpConfig(cwd, mcpWarn), plugins, mcpWarn);
+  // 安全审计 2026-11 C4 — 回退路径同样过 trust 门（此分支绕过了 boot 装配
+  // 的抑制，不补门即构成旁路；此处无 --trust 旗标上下文，按
+  // trustGateStatus 判定：fail-closed）。
+  const config = getExtensionState()?.mcpConfig
+    ?? mergeMcpConfigs(loadMcpConfig(cwd, mcpWarn, { trustSuppressed: trustGateStatus(cwd, process.env).effectiveSuppressed }), plugins, mcpWarn);
   return loadMcpTools(config, mcpWarn, mcpRuntime.timeouts);
 }
 

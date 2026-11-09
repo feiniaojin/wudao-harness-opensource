@@ -124,6 +124,11 @@ export function detectTrustRequiringProjectResources(workspaceRoot: string): rea
   const fileExists = (rel: string): boolean => existsSync(join(workspaceRoot, rel));
   if (fileExists(join(".wudao", "settings.json"))) found.push("project settings (.wudao/settings.json)");
   if (fileExists(join(".wudao", "settings.local.json"))) found.push("project settings (.wudao/settings.local.json)");
+  // 安全审计 2026-11 C4（HIGH）：项目层 MCP 配置（CC 兼容 .mcp.json 与
+  // .wudao/mcp.json）的 stdio `command` 是任意本地命令，克隆即启动——
+  // 与 settings/hooks/skills/plugins 同为 trust 触发资源。
+  if (fileExists(".mcp.json")) found.push("project MCP config (.mcp.json)");
+  if (fileExists(join(".wudao", "mcp.json"))) found.push("project MCP config (.wudao/mcp.json)");
   for (const rel of [join(".agents", "skills"), join(".wudao", "skills"), join(".claude", "skills")]) {
     if (dirExists(rel)) found.push(`project skills (${rel.split(/[\\/]/).join("/")})`);
   }
