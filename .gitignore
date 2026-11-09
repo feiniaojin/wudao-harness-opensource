@@ -22,7 +22,3 @@ docs/superpowers/sdd/
 # 发布产物：publish-assets.mjs 在发版前搬进子包的 LICENSE/README（不是源码）
 packages/*/LICENSE
 packages/cli/README.md
-
-# 本地工具产物（安全扫描器作业目录 / 会话工具目录——会话内生成，永不提交）
-.mimosa/
-.zcode/
