@@ -104,7 +104,11 @@ describe("ω99-207 — B 反向：英文族归零 + dist 反查 + 计数 + 术�
     // 记忆两库收敛弧（722df55e）随源演进：525 → 531（longterm-memory.ts +6
     // ——settings 节点两行英文警语 + 拦截/写入/遗忘/设置四行中文警语；
     // ② 的英文族归零只扫 hooks-config 家族与 settings-layer.ts，不受影响）。
-    expect(n).toBe(531);
+    // 安全审计 2026-11（C1/C3/C4/C5）随源演进：531 → 535（+4：settings-layer
+    // 的 __proto__ 剥离警告与 web 节点未信任抑制警告、mcp/config 的项目层
+    // MCP 未信任丢弃警告、cli-main-helpers 的 .env 端点劫持黑名单警告——
+    // 全部带 CJK，② 的英文族归零不受影响）。
+    expect(n).toBe(535);
   });
 
   it("⑤ 术语保留钉：mcp_tool/sessionEnd/RegExp//trust 译后仍在场（防过度翻译）", () => {
