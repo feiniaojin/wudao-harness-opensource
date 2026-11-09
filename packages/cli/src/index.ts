@@ -589,10 +589,8 @@ async function main(): Promise<void> {
   // M59 §3: the web runtime — search provider config (present → web_search
   // registers; absent → the tool stays out of the list, /doctor carries the
   // guidance), fetch caps, and the web.allowDomains pre-approval list for
-  // the permission gate. Resolved ONCE from both settings tiers; fetch
-  // itself is zero-config always-on.
-  // 安全审计 2026-11 C3 — 未信任工作区的克隆层 web 节点整体抑制（外联
-  // 预授权面：allowDomains/allowedPorts/search.endpoint）；/trust 后恢复。
+  // the permission gate. Resolved ONCE from both tiers; fetch always-on.
+  // 安全审计 2026-11 C3 — 未信任工作区的克隆层 web 节点抑制；/trust 后恢复。
   const webSettings = await loadWebSettings(process.cwd(), mcpWarn, { suppressUntrustedProject: trustSuppressedLive() });
   const webRuntime: WebToolsRuntime = {
     fetch: { maxChars: webSettings.fetch.maxChars, allowedPorts: webSettings.fetch.allowedPorts },
