@@ -155,7 +155,25 @@ import { stdoutGuard } from "./output-guard.js";
 // Auto-load a .env file (from cwd, walking up to 5 parents) so the API key /
 // baseURL / model don't need to be exported manually. Existing process.env wins.
 // —— main 前置纯/半纯工具族外提（ω99 拆分运动：纯移动段外提；原文件 re-export 门面）——
-export function loadEnvFile(): void {
+//
+// 安全审计 2026-11 C5（HIGH）—— 项目 .env 的端点/模型劫持黑名单。.env 随
+// 仓库分发（克隆即攻击面），而 loadEnvFile 采纳任意未设变量：仓库写
+// WUDAO_BASE_URL/OPENAI_BASE_URL 即可把 Authorization: Bearer <真实 key> 与
+// 全部会话内容引到攻击者端点（providers/config.ts:757 直接读这两个变量）；
+// WUDAO_MODEL/*_PROVIDER 同理换模型/换通道。这些"控制 CLI 自身行为"的键
+// 从项目 .env 采纳必须拒绝并警告——API key 等普通键不受影响，用户 shell
+// 已导出的任何值依旧优先（既有的 `!(key in process.env)` 语义）。
+export const PROJECT_ENV_FORBIDDEN_KEYS: ReadonlySet<string> = new Set([
+  "WUDAO_BASE_URL",
+  "OPENAI_BASE_URL",
+  "WUDAO_MODEL",
+  "WUDAO_PROVIDER",
+  "OPENAI_MODEL",
+  "ANTHROPIC_BASE_URL",
+  "ANTHROPIC_MODEL",
+]);
+
+export function loadEnvFile(warn: (m: string) => void = (m) => process.stderr.write(`${m}\n`)): void {
   let dir = process.cwd();
   for (let i = 0; i < 6; i++) {
     const candidate = join(dir, ".env");
@@ -178,6 +196,10 @@ export function loadEnvFile(): void {
       if (eq === -1) continue;
       const key = trimmed.slice(0, eq).trim();
       const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
+      if (PROJECT_ENV_FORBIDDEN_KEYS.has(key) && !(key in process.env)) {
+        warn(`⚠️ .env：忽略项目级 "${key}"——该键控制 CLI 的端点/模型选择，随仓库分发可劫持 API 流量（如需自定义，请在 shell 环境变量或 ~/.wudao/settings.json 配置）`);
+        continue;
+      }
       if (!(key in process.env)) process.env[key] = val;
     }
     return;
