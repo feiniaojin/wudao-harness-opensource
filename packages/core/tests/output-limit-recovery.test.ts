@@ -133,6 +133,38 @@ describe("output-limit recovery ladder (夜移 013, nudge-only)", () => {
     expect(caps).toEqual([48_000, 48_000]);
   });
 
+  // 0.5.7 — 窗口收缩（服务端把 1M 降到 200K）时，阶梯自身也要收缩：
+  // 输出不许吃掉超过 1/4 的窗口，否则既易 400 也易频繁压缩。
+  it("ladder: a shrunken window prunes the rungs (no rung above window × 25%)", async () => {
+    // 200K window → only ≤50K rungs survive → the ladder is effectively [48K].
+    const model = recordingModel([truncated("p1"), truncated("p2"), truncated("p3"), done("d")]);
+    const { events } = await drain(
+      runAgentLoop(state(), model, {
+        maxTurns: 12,
+        compaction: { contextWindowTokens: 200_000 },
+        outputLimitRecovery: { ladder: [48_000, 64_000, 96_000, 128_000] },
+      }),
+    );
+    const caps = (events.filter((e) => e.type === "output_limit_recovery" && e.kind === "nudge") as { maxTokens?: number }[]).map((e) => e.maxTokens);
+    // 200K × 0.25 = 50K → 48K is the only admissible rung, and it repeats.
+    expect(caps.every((c) => c === undefined || c <= 50_000)).toBe(true);
+    expect(caps).toContain(48_000);
+  });
+
+  // 窗口 1M 时四档全部可用（回归：份额过滤不能误伤正常大窗）。
+  it("ladder: a 1M window keeps the full ladder available", async () => {
+    const model = recordingModel([truncated("p1"), truncated("p2"), done("d")]);
+    const { events } = await drain(
+      runAgentLoop(state(), model, {
+        maxTurns: 10,
+        compaction: { contextWindowTokens: 1_000_000 },
+        outputLimitRecovery: { ladder: [48_000, 64_000, 96_000, 128_000] },
+      }),
+    );
+    const caps = (events.filter((e) => e.type === "output_limit_recovery" && e.kind === "nudge") as { maxTokens?: number }[]).map((e) => e.maxTokens);
+    expect(caps).toEqual([48_000, 64_000]);
+  });
+
   it("ladder: with a tight window only the rungs that actually FIT are used", async () => {
     // window 60k → nothing above 60k fits, so the climb tops out at 48k
     const model = recordingModel([truncated("p1"), truncated("p2"), truncated("p3"), done("d")]);

@@ -1050,6 +1050,11 @@ async function* runAgentLoopBody(
   // ω-2b (I1): the smallest completion cap the ladder will ever send — below
   // this the answer cannot be useful, so the ladder moves on to compaction.
   const MIN_CLIP_TOKENS = 1024;
+  // 0.5.7 — 输出占窗口的份额上限。服务端可能把窗口缩小（learnedWindow 收缩：
+  // 配 1M、实际 200K），此时把 cap 固定在 128K 会让输出吃掉 64% 的窗口，
+  // 输入只剩 36% —— 既更容易撞 400，也让压缩触发得过于频繁。约束到 1/4：
+  // 输入恒有 3/4 的空间，输出仍远高于真实产出（实测长文 15.7K 即 stop）。
+  const MAX_OUTPUT_SHARE = 0.25;
   // 87 item 2: the floor on a window LEARNED from a trusted context-limit
   // parse. No real endpoint offers a window this small (the classic 4k floor);
   // a parse below it is poison (truncated body, unit mismatch) — clamping it
@@ -3808,7 +3813,18 @@ async function* runAgentLoopBody(
             // window; when it does not, COMPACT first and then carry the tier
             // (the whole point: never hand the model a dwarfed cap — that is
             // what produced truncated answers on long-context tasks).
-            let tier = ladder[Math.min(ladderStep, ladder.length - 1)];
+            // 0.5.7 — 有效阶梯随窗口收缩：只保留 ≤ 窗口 × MAX_OUTPUT_SHARE
+            // 的档。窗口被服务端降到 200K 时，128K 档自动出局（200K×0.25=50K
+            // → 只有 48K 可用），既防 400，也防压缩过于频繁。窗口未知
+            // （baseWindow=0）时不过滤——那时没有任何约束依据。
+            const winForLadder = effectiveWindow();
+            const usableLadder = winForLadder > 0
+              ? ladder.filter((t) => t <= winForLadder * MAX_OUTPUT_SHARE)
+              : [...ladder];
+            // 全部出局（窗口极小）时保留最低档：宁可让它去走压缩路径，
+            // 也不要退化成「根本不升档」的静默截断。
+            const liveLadder = usableLadder.length > 0 ? usableLadder : [ladder[0]!];
+            let tier = liveLadder[Math.min(ladderStep, liveLadder.length - 1)];
             ladderStep += 1;
             if (tier !== undefined && (callInput.maxTokens === undefined || lastCallLadderArmed)) {
               // 窗口未知（baseWindow=0，未配置压缩上下文）= 没有约束，不是
@@ -3828,7 +3844,7 @@ async function* runAgentLoopBody(
                 const winAfter = effectiveWindow();
                 const after = winAfter > 0 ? winAfter - (pendingUsage?.promptTokens ?? 0) : Number.POSITIVE_INFINITY;
                 if (after < tier) {
-                  const fitting = ladder.filter((t) => t <= after);
+                  const fitting = liveLadder.filter((t) => t <= after);
                   tier = fitting.length > 0 ? fitting[fitting.length - 1] : undefined;
                 }
               }

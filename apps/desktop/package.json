@@ -1,6 +1,6 @@
 {
   "name": "@wudao-org/desktop",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "private": true,
   "type": "module",
   "description": "wudao-harness-desktop — the Tauri v2 shell (M43-C): spawns the standalone-compiled wudao-server sidecar (Node SEA), parses its stdout protocol line, navigates, and terminates it on exit.",
