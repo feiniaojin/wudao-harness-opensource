@@ -140,4 +140,26 @@ describe("resumeEntries", () => {
     const entries = resumeEntries(messages, SESSION);
     expect(entries.slice(1)).toEqual([{ kind: "assistant", text: "answer" }]);
   });
+
+  // 用户报障（0.5.5）：点开历史会话看不到 thinking —— JSONL 里存了
+  // （0.3.8 起 append-only），但 resume 投影整字段丢弃，UI 的 ReasoningBlock
+  // 拿不到值。同形状透传，空串/缺席不产生噪音字段。
+  it("carries reasoning from the persisted message into the history entry", () => {
+    const messages: AgentMessage[] = [
+      { role: "user", content: "修个 bug" },
+      { role: "assistant", content: "修好了", reasoning: "先看日志，再定位到竞态…" },
+      { role: "assistant", content: "无思考的一轮" },
+    ];
+    const entries = resumeEntries(messages, SESSION)
+      .slice(1) // 跳过 "已恢复…" divider
+      .filter((e) => e.kind === "assistant");
+    expect(entries[0]).toEqual({
+      kind: "assistant",
+      text: "修好了",
+      reasoning: "先看日志，再定位到竞态…",
+    });
+    // 缺席者零噪音：不产生 reasoning 键（老 JSONL / 非推理模型）。
+    expect(entries[1]).toEqual({ kind: "assistant", text: "无思考的一轮" });
+    expect("reasoning" in (entries[1] as object)).toBe(false);
+  });
 });

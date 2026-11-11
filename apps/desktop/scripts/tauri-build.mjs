@@ -63,11 +63,17 @@ const CONF = join(APPS_DIR, "src-tauri", "tauri.conf.json");
 const confOriginal = readFileSync(CONF, "utf8");
 if (process.platform !== "darwin") {
   const conf = JSON.parse(confOriginal);
+  // ONLY the main window: its transparency exists to reveal the macOS
+  // NSVisualEffectView material, which Windows has no equivalent for — there
+  // the flag just made everything see-through. The PET window is different:
+  // it is a decorations:false floating sprite, and transparency is what hides
+  // its rectangular frame (0.5.5 turned it off too and the pet grew an opaque
+  // box). Leave non-main windows alone.
   for (const w of conf.app?.windows ?? []) {
-    if (w.transparent === true) w.transparent = false;
+    if (w.label === "main" && w.transparent === true) w.transparent = false;
   }
   writeFileSync(CONF, `${JSON.stringify(conf, null, 2)}\n`);
-  process.stdout.write("[tauri] non-darwin: window transparency disabled (no NSVisualEffectView material)\n");
+  process.stdout.write("[tauri] non-darwin: MAIN window transparency disabled (pet keeps its cutout)\n");
 }
 process.on("exit", () => {
   try { writeFileSync(CONF, confOriginal); } catch { /* best effort */ }

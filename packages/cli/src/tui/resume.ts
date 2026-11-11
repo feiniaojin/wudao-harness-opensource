@@ -113,7 +113,15 @@ function buildResumeProjection(messages: readonly AgentMessage[], sessionId: str
       results = [];
       foldStart = msgIndex;
     } else {
-      out.push({ kind: "assistant", text: m.content });
+      // reasoning 从 AgentMessage 带到 HistoryEntry：JSONL 里存了（0.3.8 起
+      // 就 append-only 落盘），但这里曾整字段丢弃——用户点开历史会话只剩
+      // 正文，像是模型没思考过。同字段同形状透传，UI 的 ReasoningBlock 有
+      // 值即渲染（HistoryList.tsx:115 的既有判据）。
+      out.push({
+        kind: "assistant",
+        text: m.content,
+        ...(m.reasoning !== undefined && m.reasoning !== "" ? { reasoning: m.reasoning } : {}),
+      });
       starts.push(msgIndex);
     }
   }
