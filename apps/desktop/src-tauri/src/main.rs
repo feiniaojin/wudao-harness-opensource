@@ -418,8 +418,45 @@ fn resolve_sidecar(app: &AppHandle) -> Result<SidecarLaunch, String> {
             let static_dir = bundle.parent().map(|d| d.join("web")).filter(|d| d.is_dir());
             Ok(SidecarLaunch { bin, args: vec![bundle], static_dir })
         }
-        None => Ok(SidecarLaunch { bin, args: vec![], static_dir: None }),
+        // The build writes a mode marker instead of leaving the shell to
+        // guess. Getting this wrong is silent and fatal either way: a bare
+        // node with stdin=null parks in the REPL forever (no `open:` line, no
+        // EOF → the window spins until the handshake timeout, and the user
+        // sees an empty ~/.wudao-desktop with no explanation).
+        //
+        //   bundled-runtime.json present → this is a pristine node binary and
+        //     REQUIRES the .cjs argument. Missing bundle = broken installer:
+        //     fail loud instead of spawning a REPL.
+        //   marker absent                → SEA single binary, no args.
+        None => {
+            let pair_mode = is_bundled_runtime(
+                runtime_bundle_candidates(app.path().resource_dir().ok().as_deref(), &exe_dir),
+                &exe_dir,
+            ) || exe_dir.join("sidecar-resources/bundled-runtime.json").is_file();
+            if pair_mode {
+                Err(format!(
+                    "bundled-runtime sidecar at {} needs sidecar-resources/wudao-server.cjs — the installer did not ship its resource bundle",
+                    bin.display()
+                ))
+            } else {
+                Ok(SidecarLaunch { bin, args: vec![], static_dir: None })
+            }
+        }
     }
+}
+
+/// Is this a bundled-runtime (node + .cjs pair) install? The build writes
+/// `bundled-runtime.json` next to the payload it materializes; finding that
+/// marker is the ONLY reliable signal (binary size and file names are shared
+/// with SEA builds). Pure over "does this path exist" so the caller keeps the
+/// filesystem probe.
+fn is_bundled_runtime(candidates: Vec<PathBuf>, exe_dir: &Path) -> bool {
+    candidates
+        .iter()
+        .filter_map(|p| p.parent())
+        .map(|d| d.join("bundled-runtime.json"))
+        .chain(std::iter::once(exe_dir.join("sidecar-resources/bundled-runtime.json")))
+        .any(|marker| marker.is_file())
 }
 
 /// The runtime-bundle probe order as a pure list (回滚重做 T2): the
@@ -431,6 +468,12 @@ fn resolve_sidecar(app: &AppHandle) -> Result<SidecarLaunch, String> {
 fn runtime_bundle_candidates(resource_dir: Option<&Path>, exe_dir: &Path) -> Vec<PathBuf> {
     [
         resource_dir.map(|d| d.join("sidecar-resources").join("wudao-server.cjs")),
+        // Tauri's resource globs here are single-level (`sidecar-resources/*`),
+        // so on Windows NSIS the files land FLAT in the resource dir —
+        // `resource_dir()/wudao-server.cjs`, with no sidecar-resources/
+        // wrapper. Missing this candidate is what left Windows spawning a
+        // bare node (REPL, no output, permanent spinner) while macOS worked.
+        resource_dir.map(|d| d.join("wudao-server.cjs")),
         Some(exe_dir.join("sidecar-resources/wudao-server.cjs")),
         Some(exe_dir.join("../../sidecar-resources/wudao-server.cjs")),
     ]
@@ -472,7 +515,12 @@ fn workspace_dir() -> Result<PathBuf, String> {
 /// WUDAO_BOOT_WORKSPACE. Missing/corrupt file or a dead/not-dir path → None
 /// → the v1 boot root stands.
 fn boot_workspace_env() -> Option<(String, String)> {
-    let home = std::env::var("HOME").ok()?;
+    // Windows has no HOME — USERPROFILE is the equivalent. Same fallback as
+    // workspace_dir() above; before this fix the `?` bailed on every Windows
+    // launch, silently dropping the remembered agent root.
+    let home = std::env::var("HOME")
+        .or_else(|_| std::env::var("USERPROFILE"))
+        .ok()?;
     let recents = PathBuf::from(home).join(".wudao").join("recent-workspaces.json");
     let raw = std::fs::read_to_string(recents).ok()?;
     let v: serde_json::Value = serde_json::from_str(&raw).ok()?;
@@ -485,6 +533,23 @@ fn boot_workspace_env() -> Option<(String, String)> {
         return None;
     }
     Some(("WUDAO_BOOT_WORKSPACE".to_string(), ws))
+}
+
+/// 启动诊断日志：GUI 应用在 Windows 上没有可见 stderr，握手失败时用户只能
+/// 看到永久 "starting wudao ui…"。每次握手把阶段与 sidecar 的 stderr 尾巴
+/// 追加进 <config>/boot.log —— 排障时让用户直接发这个文件。
+fn boot_log(app: &AppHandle, line: &str) {
+    let Some(dir) = app.path().app_config_dir().ok() else { return };
+    let _ = std::fs::create_dir_all(&dir);
+    let path = dir.join("boot.log");
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+        use std::io::Write;
+        let _ = writeln!(f, "[{stamp}] {line}");
+    }
 }
 
 fn spawn_sidecar(launch: &SidecarLaunch, cwd: &PathBuf) -> std::io::Result<Child> {
@@ -530,13 +595,21 @@ enum StdoutMsg {
 }
 
 fn handshake_and_navigate(app: &AppHandle, state: &Arc<SidecarState>) -> Result<(), String> {
+    boot_log(app, &format!(
+        "=== boot start · exe={:?} resource_dir={:?}",
+        std::env::current_exe().ok(),
+        app.path().resource_dir().ok()
+    ));
     let launch = resolve_sidecar(app)?;
+    boot_log(app, &format!("resolved sidecar: {} args={:?} static_dir={:?}", launch.bin.display(), launch.args, launch.static_dir));
     let cwd = workspace_dir()?;
+    boot_log(app, &format!("workspace: {}", cwd.display()));
     // The child enters the state cell AT SPAWN TIME: a fast quit during a slow
     // first boot must still terminate it. Handshake failures take it back out
     // and kill it here; success leaves it for the window/exit handlers.
     let mut child = spawn_sidecar(&launch, &cwd)
         .map_err(|e| format!("failed to spawn {}: {e}", launch.bin.display()))?;
+    boot_log(app, &format!("spawned sidecar pid={}", child.id()));
     let deadline = Instant::now() + HANDSHAKE_TIMEOUT;
 
     let stderr_tail: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
@@ -607,12 +680,15 @@ fn handshake_and_navigate(app: &AppHandle, state: &Arc<SidecarState>) -> Result<
                 // down (e.g. "No API key found"). Collect its status + stderr.
                 let status = take_and_reap_until(state, deadline);
                 let tail = stderr_tail.lock().unwrap().join("\n");
+                boot_log(app, &format!("sidecar EOF before handshake: {status}\nstderr: {tail}"));
                 return Err(format!(
                     "sidecar exited before the handshake ({status}){}",
                     if tail.is_empty() { String::new() } else { format!("\n{tail}") }
                 ));
             }
             Err(RecvTimeoutError::Timeout) => {
+                let tail = stderr_tail.lock().unwrap().join("\n");
+                boot_log(app, &format!("handshake TIMEOUT after {}s; stderr: {tail}", HANDSHAKE_TIMEOUT.as_secs()));
                 take_and_kill(state);
                 return Err(format!(
                     "sidecar handshake timed out after {}s (no {PROTOCOL_PREFIX}line on stdout)",
@@ -627,6 +703,7 @@ fn handshake_and_navigate(app: &AppHandle, state: &Arc<SidecarState>) -> Result<
     }
 
     let url = url.unwrap_or_default();
+    boot_log(app, &format!("handshake OK: {url}"));
 
     // M65-space §1: mark the desktop shell — the web entry reads
     // ?shell=desktop and stamps <html data-shell="desktop"> before first
@@ -714,8 +791,12 @@ fn parse_protocol_line(line: &str) -> Option<String> {
 
 fn show_boot_error(app: &AppHandle, message: &str) {
     if let Some(window) = app.get_webview_window("main") {
+        // The pre-handshake page owns #status; if the window already navigated
+        // (or the element is missing) the assignment silently no-ops and the
+        // user keeps staring at the spinner. Fall back to replacing the whole
+        // body so a failure is ALWAYS visible.
         let js = format!(
-            "document.getElementById('status').textContent = 'wudao ui failed to start\\n\\n{}';",
+            "(() => {{ const el = document.getElementById('status'); const text = 'wudao ui failed to start\\n\\n' + {}; if (el) {{ el.textContent = text; }} else {{ document.body.textContent = text; document.body.style.whiteSpace = 'pre-wrap'; }} }})();",
             serde_json::to_string(message).unwrap_or_else(|_| "\"(unprintable error)\"".to_string())
         );
         let _ = window.eval(&js);
@@ -2373,6 +2454,41 @@ mod sidecar_resolve_tests {
     }
 
     #[test]
+    fn bundled_runtime_marker_detects_the_pair_layout() {
+        // Regression pin (Windows 0.5.1: 一直卡在 "start ui"): a missing
+        // sidecar-resources bundle under bundled-runtime mode used to fall
+        // through to `args: vec![]`, spawning a pristine node with stdin=null
+        // — it parked in the REPL forever (no `open:` line, no EOF), so the
+        // window spun to the handshake timeout and the workspace dir stayed
+        // empty. The marker is what tells the shell to fail loud instead.
+        let tmp = std::env::temp_dir().join(format!("wudao-marker-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&tmp);
+        let res = tmp.join("resources");
+        std::fs::create_dir_all(&res).unwrap();
+        let exe_dir = tmp.join("install");
+        std::fs::create_dir_all(&exe_dir).unwrap();
+
+        // No marker anywhere → SEA single binary (args stay empty).
+        let candidates = vec![res.join("sidecar-resources/wudao-server.cjs")];
+        assert!(!is_bundled_runtime(candidates, &exe_dir));
+
+        // Marker beside the resource bundle (inside sidecar-resources/, where
+        // build-sea writes it) → bundled-runtime pair.
+        std::fs::create_dir_all(res.join("sidecar-resources")).unwrap();
+        std::fs::write(res.join("sidecar-resources/bundled-runtime.json"), "{}").unwrap();
+        let candidates = vec![res.join("sidecar-resources/wudao-server.cjs")];
+        assert!(is_bundled_runtime(candidates, &exe_dir));
+
+        // Marker only next to the executable → also bundled-runtime.
+        std::fs::remove_file(res.join("sidecar-resources/bundled-runtime.json")).unwrap();
+        std::fs::create_dir_all(exe_dir.join("sidecar-resources")).unwrap();
+        std::fs::write(exe_dir.join("sidecar-resources/bundled-runtime.json"), "{}").unwrap();
+        assert!(is_bundled_runtime(vec![], &exe_dir));
+
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
     fn installed_bundle_probes_in_order() {
         // the installed .app: exe in Contents/MacOS, resources in
         // Contents/Resources (the array-form resources layout).
@@ -2384,6 +2500,10 @@ mod sidecar_resolve_tests {
             candidates,
             vec![
                 pb("/Applications/wudao-harness-desktop.app/Contents/Resources/sidecar-resources/wudao-server.cjs"),
+                // Windows NSIS flattens the single-level resource globs:
+                // the .cjs lands directly in the resource dir (0.5.1 root
+                // cause — no sidecar-resources/ wrapper there).
+                pb("/Applications/wudao-harness-desktop.app/Contents/Resources/wudao-server.cjs"),
                 // T2: DIRECTLY next to the executable — the bundle layout
                 // 0.3.76 found in the wild (payload parked in
                 // MacOS/sidecar-resources/), tolerated instead of fatal

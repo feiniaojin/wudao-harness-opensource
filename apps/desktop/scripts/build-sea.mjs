@@ -253,6 +253,11 @@ async function buildOneTarget(triple, { configPath, strategy }) {
     await copyFile(nodeBin, dest);
     await chmod(dest, 0o755);
     await materializeRuntimeResources();
+    // Positive marker for the pair layout (see the SEA branch above).
+    await writeFile(
+      join(APPS_DIR, "src-tauri", "sidecar-resources", "bundled-runtime.json"),
+      `${JSON.stringify({ mode: "bundled-runtime", triple }, null, 2)}\n`,
+    );
   } else {
     const work = await mkdtemp(join(tmpdir(), `wudao-sea-${triple}-`));
     const binary = join(work, `node-${triple}`);
@@ -284,6 +289,11 @@ async function buildOneTarget(triple, { configPath, strategy }) {
     // SEA single-binary mode must NOT leave stale runtime resources around —
     // the shell detects the mode by their presence.
     await materializeRuntimeResources({ clean: true });
+    // Build-time mode marker: the shell reads this instead of guessing from
+    // the binary (a wrong guess made a bare node park in the REPL behind a
+    // spinner). Present = SEA single binary (no bundle arg); absent = the
+    // bundled-runtime pair below needs sidecar-resources/wudao-server.cjs.
+    await rm(join(APPS_DIR, "src-tauri", "sidecar-resources", "bundled-runtime.json"), { force: true });
   }
   const info = await stat(dest);
   log(`[sea] ${triple}: ${(info.size / 1_048_576).toFixed(1)} MB → ${relative(REPO_ROOT, dest)}`);
