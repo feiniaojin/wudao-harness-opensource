@@ -1,6 +1,6 @@
 {
   "name": "wudao-harness",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "private": true,
   "type": "module",
   "description": "A production-grade agent harness (wudao-harness).",

@@ -69,7 +69,10 @@
   --tok-num: #d19a66; --tok-fn: #61afef;
   /* —— 墨线工艺层（2026-08-22 spec §1）—— 字号五档/行高 */
   --fs-caption:12px; --fs-ui:13px; --fs-body:14px; --fs-title:16px; --fs-head:20px;
-  --lh-caption:1.4; --lh-ui:1.4; --lh-body:1.55; --lh-title:1.4; --lh-head:1.3;
+  /* 0.5.9 阅读密度（用户反馈：文字太紧凑、行距小、压抑）——
+     正文 1.55→1.72（中文正文的舒适区），UI 行 1.4→1.5，caption 1.4→1.45。
+     只放松行高，不动字号（字号是既有视觉基线，动它会连带所有布局）。 */
+  --lh-caption:1.45; --lh-ui:1.5; --lh-body:1.72; --lh-title:1.4; --lh-head:1.3;
   /* DESIGN-SYSTEM P1：字重三令牌（此前 600/700 散落 ~50 处无管理） */
   --fw-regular:400; --fw-medium:500; --fw-strong:600;
   /* DESIGN-SYSTEM P2 预置：浮层玻璃令牌（先定义，Phase 2 消费） */

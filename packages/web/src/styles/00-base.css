@@ -368,7 +368,11 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
    容器底保持中性 surface-2。info（无前缀）形不变。
    0.3.6 反馈追修（0.3.7）：容器纵排——胶囊在上，展开的全文块（.notice-detail，
    viewport-bounded 内滚）居中垫在下方。 */
-.entry-notice { display: flex; flex-direction: column; align-items: center; }
+/* 0.5.9 通知表达重做（用户反馈：全部居中、信息密集、看着凌乱）——
+   通知是**阅读单位**不是装饰，所以左对齐、与正文同基线对齐、给足内边距；
+   只有「极短的单行状态」（≤1 行）保持居中，长内容一律左起（中文段落居中
+   会让每一行的起点都不同，眼睛每次都要重新定位，正是凌乱感的来源）。 */
+.entry-notice { display: flex; flex-direction: column; align-items: stretch; padding: 0 var(--sp-2); }
 .notice-bub {
   display: inline-flex;
   align-items: center;
@@ -378,16 +382,37 @@ button, .sb-i, .sb-search, .chip, .icobtn, a {
   /* 119：系统气泡归气泡族 8px（旧胶囊 pill 22px 退役——胶囊帽与 6/8/12
      scale 不搭）；底仍是 surface-2 小面（对话流里的嵌面胶囊卡）。 */
   border-radius: var(--radius-md);
-  padding: var(--sp-1) var(--sp-3);
+  /* 内边距放大一号：通知块是独立阅读单元，贴着边框会显得挤。 */
+  padding: var(--sp-2) var(--sp-3);
   font-size: var(--fs-caption);
   line-height: var(--lh-caption);
-  max-width: 78%;
+  max-width: 100%;
   overflow-wrap: anywhere;
-  text-align: center;
+  /* 左对齐（见 .entry-notice 上方注释）：多行通知居中会让每行起点不齐。 */
+  text-align: left;
   white-space: pre-wrap;
+  /* 中文长句的行内断点更自然（中英混排时不撕开数字/单位）。 */
+  word-break: normal;
+  line-break: auto;
 }
 /* §6.4 变体三态：文字色承载语义（warn/ok 在全表面 ≥4.5:1，contrast 门辖），
    字形继承 currentColor（.ic 全局规则已 flex:none）。 */
+/* 0.5.9 多行通知（/context 报告这类结构化数据）：等宽字体 + 保留列对齐，
+   否则「system prompt by section」那些 padEnd 出来的列会被比例字体撑歪，
+   看上去就是一坨乱码——这是用户说"凌乱"的直接来源。整宽、独立成块。 */
+.notice-bub[data-multiline] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: calc(var(--fs-caption) - 0.5px);
+  line-height: 1.6;
+  padding: var(--sp-2) var(--sp-3);
+  tab-size: 4;
+}
+/* 多行块里的图标行内不抢位（warn/ok 前缀仍在句首）。 */
+.notice-bub[data-multiline] > svg { vertical-align: -1px; margin-right: var(--sp-1); }
+
 .notice-bub[data-variant="warn"] { color: var(--warn); }
 .notice-bub[data-variant="ok"] { color: var(--ok); }
 .notice-exp {

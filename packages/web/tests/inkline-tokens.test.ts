@@ -10,8 +10,10 @@ describe("inkline tokens v2", () => {
     // DESIGN-SYSTEM P1（§2.5）：字号档升 caption 12 / ui 13（消灭半像素）+
     // 行高 1.4 两档；字重三令牌 --fw-regular/medium/strong 同批定义。
     for (const v of ["--fs-caption:12px", "--fs-ui:13px", "--fs-body:14px",
-      "--fs-title:16px", "--fs-head:20px", "--lh-body:1.55",
-      "--lh-caption:1.4", "--lh-ui:1.4",
+      "--fs-title:16px", "--fs-head:20px", // 0.5.9 用户反馈「文字太紧凑、行距小、压抑」——正文行高 1.55→1.72
+      // （中文正文舒适区），UI 1.4→1.5，caption 1.4→1.45。字号不动。
+      "--lh-body:1.72",
+      "--lh-caption:1.45", "--lh-ui:1.5",
       "--fw-regular:400", "--fw-medium:500", "--fw-strong:600"]) {
       expect(css).toContain(v);
     }

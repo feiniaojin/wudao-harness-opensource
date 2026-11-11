@@ -232,7 +232,7 @@ function NoticeBubble({ entry }: { readonly entry: NoticeEntry }): React.JSX.Ele
   const notice = classifyNotice(entry.text);
   return (
     <div className="entry-notice">
-      <span className="notice-bub" data-variant={notice.variant}>
+      <span className="notice-bub" data-variant={notice.variant} data-multiline={notice.text.includes("\n") ? "" : undefined}>
         {notice.variant === "warn" ? <Icon name="triangle-alert" size={12} /> : notice.variant === "ok" ? <IconCheck size={12} className="ic" /> : null}
         {notice.text}
         {hasDetail ? (
