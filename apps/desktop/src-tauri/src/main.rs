@@ -372,6 +372,31 @@ fn target_triple() -> String {
 ///     WUDAO_UI_STATIC_DIR at the resource web build.
 /// The mode is detected purely by which files exist next to the app — the
 /// build decides, the shell obeys.
+/// Tauri v2 returns **verbatim** paths on Windows (`\\?\D:\dir`). Passing one
+/// to node as a script argument breaks its path resolution: `resolveMainPath`
+/// strips the `\\?\` and then chokes on the bare drive, dying with
+/// `EISDIR: lstat 'D:'` — the 0.5.2/0.5.3 Windows report. Node (and most
+/// tooling) expects the classic form, so strip the prefix on the way out.
+///
+/// `\\?\UNC\server\share` → `\\server\share` (UNC keeps its leading pair);
+/// everything else drops the four-character prefix. No-op off Windows and for
+/// paths that never carried it.
+fn strip_verbatim(p: PathBuf) -> PathBuf {
+    #[cfg(windows)]
+    {
+        let s = p.to_string_lossy();
+        if let Some(rest) = s.strip_prefix(r"\\?\UNC\") {
+            return PathBuf::from(format!(r"\\{rest}"));
+        }
+        if let Some(rest) = s.strip_prefix(r"\\?\") {
+            return PathBuf::from(rest.to_string());
+        }
+        return p;
+    }
+    #[cfg(not(windows))]
+    p
+}
+
 struct SidecarLaunch {
     bin: PathBuf,
     args: Vec<PathBuf>,
@@ -383,7 +408,7 @@ fn resolve_sidecar(app: &AppHandle) -> Result<SidecarLaunch, String> {
     if let Ok(path) = std::env::var("WUDAO_SERVER_BIN") {
         let path = PathBuf::from(path);
         if path.is_file() {
-            return Ok(SidecarLaunch { bin: path, args: vec![], static_dir: None });
+            return Ok(SidecarLaunch { bin: strip_verbatim(path), args: vec![], static_dir: None });
         }
         return Err(format!("WUDAO_SERVER_BIN={} does not exist", path.display()));
     }
@@ -416,7 +441,11 @@ fn resolve_sidecar(app: &AppHandle) -> Result<SidecarLaunch, String> {
     match runtime_bundle {
         Some(bundle) => {
             let static_dir = bundle.parent().map(|d| d.join("web")).filter(|d| d.is_dir());
-            Ok(SidecarLaunch { bin, args: vec![bundle], static_dir })
+            Ok(SidecarLaunch {
+                bin: strip_verbatim(bin),
+                args: vec![strip_verbatim(bundle)],
+                static_dir: static_dir.map(strip_verbatim),
+            })
         }
         // The build writes a mode marker instead of leaving the shell to
         // guess. Getting this wrong is silent and fatal either way: a bare
@@ -439,7 +468,7 @@ fn resolve_sidecar(app: &AppHandle) -> Result<SidecarLaunch, String> {
                     bin.display()
                 ))
             } else {
-                Ok(SidecarLaunch { bin, args: vec![], static_dir: None })
+                Ok(SidecarLaunch { bin: strip_verbatim(bin), args: vec![], static_dir: None })
             }
         }
     }
@@ -2487,6 +2516,34 @@ mod sidecar_resolve_tests {
 
     fn pb(s: &str) -> PathBuf {
         PathBuf::from(s)
+    }
+
+    #[test]
+    fn verbatim_prefix_is_stripped_for_node() {
+        // 0.5.3 Windows boot.log, verbatim:
+        //   resource_dir = \\?\D:\悟道Harness
+        //   args = ["\\?\D:\悟道Harness\sidecar-resources\wudao-server.cjs"]
+        //   stderr: EISDIR: lstat 'D:'
+        // Node's resolveMainPath cannot take the verbatim form — it drops the
+        // prefix, keeps the drive alone, and tries to run "D:" as a script.
+        #[cfg(windows)]
+        {
+            let p = strip_verbatim(PathBuf::from(r"\\?\D:\悟道Harness\sidecar-resources\wudao-server.cjs"));
+            assert_eq!(p, PathBuf::from(r"D:\悟道Harness\sidecar-resources\wudao-server.cjs"));
+            // UNC verbatim keeps its leading pair.
+            let u = strip_verbatim(PathBuf::from(r"\\?\UNC\srv\share\x.cjs"));
+            assert_eq!(u, PathBuf::from(r"\\srv\share\x.cjs"));
+            // A plain path passes through untouched.
+            let plain = strip_verbatim(PathBuf::from(r"C:\wudao\x.cjs"));
+            assert_eq!(plain, PathBuf::from(r"C:\wudao\x.cjs"));
+        }
+        // Off Windows the helper is the identity — still assert it compiles
+        // into the right shape so the cfg split cannot rot silently.
+        #[cfg(not(windows))]
+        {
+            let p = strip_verbatim(PathBuf::from("/opt/wudao/x.cjs"));
+            assert_eq!(p, PathBuf::from("/opt/wudao/x.cjs"));
+        }
     }
 
     #[test]

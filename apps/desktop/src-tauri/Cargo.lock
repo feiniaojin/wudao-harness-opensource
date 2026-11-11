@@ -5076,7 +5076,7 @@ dependencies = [
 
 [[package]]
 name = "wudao-harness-desktop"
-version = "0.5.2"
+version = "0.5.3"
 dependencies = [
  "libc",
  "serde_json",
