@@ -468,14 +468,21 @@ fn is_bundled_runtime(candidates: Vec<PathBuf>, exe_dir: &Path) -> bool {
 fn runtime_bundle_candidates(resource_dir: Option<&Path>, exe_dir: &Path) -> Vec<PathBuf> {
     [
         resource_dir.map(|d| d.join("sidecar-resources").join("wudao-server.cjs")),
-        // Tauri's resource globs here are single-level (`sidecar-resources/*`),
-        // so on Windows NSIS the files land FLAT in the resource dir —
-        // `resource_dir()/wudao-server.cjs`, with no sidecar-resources/
-        // wrapper. Missing this candidate is what left Windows spawning a
-        // bare node (REPL, no output, permanent spinner) while macOS worked.
+        // Tauri v2 on Windows: resource_dir() IS the install dir (next to the
+        // .exe), and a `resources` entry keeps its RELATIVE path under it —
+        // so the payload lands at <install>/sidecar-resources/wudao-server.cjs
+        // (already covered by the first candidate). The flat spelling is kept
+        // for installers that strip the prefix.
         resource_dir.map(|d| d.join("wudao-server.cjs")),
+        // A relative `../..` from a drive-root exe collapses toward the bare
+        // drive ("D:") — Path::join with an absolute piece replaces the base,
+        // and node then tries to run "D:" as a script (EISDIR). Only probe the
+        // dev layout when the exe actually has parents to climb.
+        exe_dir
+            .parent()
+            .and_then(|p| p.parent())
+            .map(|_| exe_dir.join("../../sidecar-resources/wudao-server.cjs")),
         Some(exe_dir.join("sidecar-resources/wudao-server.cjs")),
-        Some(exe_dir.join("../../sidecar-resources/wudao-server.cjs")),
     ]
     .into_iter()
     .flatten()
@@ -539,9 +546,19 @@ fn boot_workspace_env() -> Option<(String, String)> {
 /// 看到永久 "starting wudao ui…"。每次握手把阶段与 sidecar 的 stderr 尾巴
 /// 追加进 <config>/boot.log —— 排障时让用户直接发这个文件。
 fn boot_log(app: &AppHandle, line: &str) {
-    let Some(dir) = app.path().app_config_dir().ok() else { return };
-    let _ = std::fs::create_dir_all(&dir);
-    let path = dir.join("boot.log");
+    // app_config_dir() can be unwritable (corporate machines, redirected
+    // profiles) — the log then silently vanished, which is useless exactly
+    // when it matters. Walk the fallbacks and keep the FIRST writable one.
+    let candidates: Vec<PathBuf> = [
+        app.path().app_config_dir().ok(),
+        std::env::current_exe().ok().and_then(|p| p.parent().map(|d| d.to_path_buf())),
+        std::env::temp_dir().into(),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+    let Some(dir) = candidates.into_iter().find(|d| std::fs::create_dir_all(d).is_ok()) else { return };
+    let path = dir.join("wudao-boot.log");
     let stamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
@@ -607,6 +624,18 @@ fn handshake_and_navigate(app: &AppHandle, state: &Arc<SidecarState>) -> Result<
     // The child enters the state cell AT SPAWN TIME: a fast quit during a slow
     // first boot must still terminate it. Handshake failures take it back out
     // and kill it here; success leaves it for the window/exit handlers.
+    // Every arg must be an existing file: a path that degraded to a bare
+    // drive ("D:") makes node try to run it as a script and die with EISDIR —
+    // the Windows corporate-machine signature. Fail with the exact argv.
+    for arg in &launch.args {
+        if !arg.is_file() {
+            return Err(format!(
+                "sidecar arg is not a file: {:?} (argv={:?})",
+                arg,
+                launch.args.iter().map(|a| a.display().to_string()).collect::<Vec<_>>()
+            ));
+        }
+    }
     let mut child = spawn_sidecar(&launch, &cwd)
         .map_err(|e| format!("failed to spawn {}: {e}", launch.bin.display()))?;
     boot_log(app, &format!("spawned sidecar pid={}", child.id()));
@@ -790,6 +819,13 @@ fn parse_protocol_line(line: &str) -> Option<String> {
 }
 
 fn show_boot_error(app: &AppHandle, message: &str) {
+    let where_log = app
+        .path()
+        .app_config_dir()
+        .ok()
+        .map(|d| d.join("wudao-boot.log").display().to_string())
+        .unwrap_or_else(|| "<config>/wudao-boot.log".to_string());
+    let message = &format!("{message}\n\n诊断日志: {where_log}");
     if let Some(window) = app.get_webview_window("main") {
         // The pre-handshake page owns #status; if the window already navigated
         // (or the element is missing) the assignment silently no-ops and the
@@ -2504,11 +2540,16 @@ mod sidecar_resolve_tests {
                 // the .cjs lands directly in the resource dir (0.5.1 root
                 // cause — no sidecar-resources/ wrapper there).
                 pb("/Applications/wudao-harness-desktop.app/Contents/Resources/wudao-server.cjs"),
+                // dev layout (src-tauri/sidecar-resources, two up from
+                // target/<profile>) — guarded on having parents to climb:
+                // a drive-root exe would otherwise collapse to the bare
+                // drive ("D:") and node would try to execute it (EISDIR,
+                // the 0.5.2 Windows report).
+                pb("/Applications/wudao-harness-desktop.app/Contents/MacOS/../../sidecar-resources/wudao-server.cjs"),
                 // T2: DIRECTLY next to the executable — the bundle layout
                 // 0.3.76 found in the wild (payload parked in
                 // MacOS/sidecar-resources/), tolerated instead of fatal
                 pb("/Applications/wudao-harness-desktop.app/Contents/MacOS/sidecar-resources/wudao-server.cjs"),
-                pb("/Applications/wudao-harness-desktop.app/Contents/MacOS/../../sidecar-resources/wudao-server.cjs"),
             ]
         );
     }
@@ -2521,10 +2562,10 @@ mod sidecar_resolve_tests {
         assert_eq!(
             candidates,
             vec![
-                pb("/w/src-tauri/target/release/sidecar-resources/wudao-server.cjs"),
                 // dev layout: src-tauri/sidecar-resources, two up from the
                 // profile dir (literal .. segments — the probe never normalizes)
                 pb("/w/src-tauri/target/release/../../sidecar-resources/wudao-server.cjs"),
+                pb("/w/src-tauri/target/release/sidecar-resources/wudao-server.cjs"),
             ]
         );
     }
