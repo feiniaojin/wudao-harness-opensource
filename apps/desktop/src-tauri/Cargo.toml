@@ -1,6 +1,6 @@
 [package]
 name = "wudao-harness-desktop"
-version = "0.5.4"
+version = "0.5.5"
 description = "wudao ui desktop shell — spawns the wudao-server sidecar and hosts the web UI"
 edition = "2021"
 rust-version = "1.77"

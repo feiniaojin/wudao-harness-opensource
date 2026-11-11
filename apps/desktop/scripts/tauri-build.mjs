@@ -4,7 +4,7 @@
 //   win/linux → host default (nsis / AppImage+deb; CI picks explicitly)
 // Override: DESKTOP_TAURI_TARGET=a,b,c (comma list, passed through).
 import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, rmSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -52,6 +52,26 @@ function buildClickHelper() {
 }
 
 buildClickHelper();
+
+// 117 玻璃化的平台分叉（0.5.4 Windows 实测：主窗除实底区外全透明）：
+// conf 的 windowEffects:"sidebar" 是 macOS NSVisualEffectView 专属——Windows
+// 上 Tauri 忽略它，但 transparent:true 仍然生效，于是整窗透到桌面，只剩
+// 会话流/输入框这些自带实底的区域可见。tauri.conf 不支持按平台分支，所以
+// 构建时改写：非 darwin 把主窗 transparent 关掉（宠物窗同理）。
+// 改写在进程内进行、不落盘回仓库：读完即改 conf 文件，构建结束恢复原字节。
+const CONF = join(APPS_DIR, "src-tauri", "tauri.conf.json");
+const confOriginal = readFileSync(CONF, "utf8");
+if (process.platform !== "darwin") {
+  const conf = JSON.parse(confOriginal);
+  for (const w of conf.app?.windows ?? []) {
+    if (w.transparent === true) w.transparent = false;
+  }
+  writeFileSync(CONF, `${JSON.stringify(conf, null, 2)}\n`);
+  process.stdout.write("[tauri] non-darwin: window transparency disabled (no NSVisualEffectView material)\n");
+}
+process.on("exit", () => {
+  try { writeFileSync(CONF, confOriginal); } catch { /* best effort */ }
+});
 
 const targets = process.env.DESKTOP_TAURI_TARGET
   ? process.env.DESKTOP_TAURI_TARGET.split(",").map((s) => s.trim())
