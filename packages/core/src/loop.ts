@@ -360,7 +360,17 @@ export interface LoopOptions {
   // (admission clips own those). Absent object = ladder ON, maxNudges 3,
   // no escalation; {maxNudges: 0} = opt-out.
   readonly outputLimitRecovery?: {
+    /** Legacy single-tier escalation (kept byte-compatible: when `ladder` is
+     *  absent this behaves exactly as before). */
     readonly escalateTo?: number;
+    /** 0.5.7 — the graded ladder: consecutive length-stops raise the cap one
+     *  tier at a time (32K → 48K → 64K → 96K → 128K for GLM). Each tier is
+     *  admitted only when it still FITS the window (window − promptTokens ≥
+     *  tier); when it does not, the run compacts FIRST and then retries at
+     *  that tier — never a dwarfed cap, which would produce a crippled answer
+     *  exactly on the long-context tasks that need room. Wins over
+     *  `escalateTo` when both are present. */
+    readonly ladder?: readonly number[];
     readonly maxNudges?: number;
   };
   // 夜移 024 — the empty-final guard: a final-answer turn with NO visible
@@ -1697,6 +1707,14 @@ async function* runAgentLoopBody(
   // 133 #5 — content_filter 指导的 run 级一次性旗标。
   let contentFilterGuided = false; // 夜移 024: consecutive blank finals this streak has spent
   let escalateNextCall = false;
+  /** 0.5.7 — the cap the NEXT continuation call should carry (ladder tier).
+   *  Undefined = no escalation armed. Unlike the legacy boolean this survives
+   *  the whole ladder: each length-stop advances one tier. */
+  let escalateToNext: number | undefined;
+  /** The previous call's cap was ladder-armed (not an admission clip). */
+  let lastCallLadderArmed = false;
+  /** How far up the ladder we already climbed (index into `ladder`). */
+  let ladderStep = 0;
   // 夜移 033: one-shot flag — the disguised-overflow detour (below) has
   // already run its reactive compaction this RUN. A second zero-output
   // length-stop after it settles straight to the typed output_limit
@@ -1993,6 +2011,26 @@ async function* runAgentLoopBody(
       // shorter answer instead. max_tokens is a sampling parameter; the
       // prompt bytes (and the cached prefix) are untouched (M24).
       admissionClip = undefined;
+      // 0.5.7 — 压缩后动态重算（用户令）：压缩刚跑完时占用是**确数**而非
+      // 估算，正是决定「这次能给多少输出」的最佳时点。规则不是压 cap，而是
+      // 「窗口余量装不下默认档 → 先把 cap 抬到能装下的最大阶梯档」；只有
+      // 余量连最低档都装不下时，才回到既有的 clip 行为（让压缩继续介入）。
+      // 这也保证了 independent 窗口（glm/kimi/minimax）在长上下文下不会
+      // 因固定 cap 撞 400 —— 而 shared 窗口的既有 clip 语义保持原样。
+      // 0.5.7 — 压缩后的动态重算，语义只做「**收缩**」不做「抬升」：
+      // 抬升的唯一通道是阶梯（escalateToNext）。这里若取最高档，会把升档
+      // 机制整个盖掉（第一轮就直接 128K，阶梯与回落全部失效），也正是
+      // 用户指出的「后面全部变成 128k」。因此：窗口余量装不下默认档时，
+      // 把 cap 收缩到装得下的最大档；装得下就什么都不做（默认档生效）。
+      // 已被 nudge 武装升档时一律跳过——那一轮由阶梯说了算。
+      if (admissionClip === undefined && escalateToNext === undefined && options.outputLimitRecovery?.ladder !== undefined) {
+        const win = effectiveWindow();
+        const room = win > 0 ? win - occupancyNow() - OUTPUT_BUDGET_RESERVE_TOKENS : Number.POSITIVE_INFINITY;
+        const ladder = options.outputLimitRecovery.ladder;
+        const fitting = [...ladder].reverse().find((t) => t <= room);
+        // 只有「所有档都装不下」才收缩（取一个仍为正的余量），否则留给默认。
+        if (fitting === undefined && room > 0) admissionClip = Math.floor(room);
+      }
       if (options.compaction.windowMode === "shared") {
         const postCompactOccupancy = occupancyNow();
         if (postCompactOccupancy >= effectiveThreshold()) {
@@ -2253,6 +2291,12 @@ async function* runAgentLoopBody(
         // ω-2b (I1-d): the admission clip rides the per-request override —
         // present only on the turns the occupancy check armed it (requests
         // stay byte-identical otherwise).
+        // ω-2b (I1-d): the admission clip rides the per-request override —
+        // present only on the turns the occupancy check armed it (requests
+        // stay byte-identical otherwise). 0.5.7 widened what arms it: the
+        // clip now also serves INDEPENDENT windows (glm/kimi/minimax, where
+        // the cap is a profile constant that a long prompt can push past the
+        // window) and its floor is 32K so a clipped answer is never crippled.
         ...(admissionClip !== undefined ? { maxTokens: admissionClip } : {}),
         onUsage: (u: ModelUsage) => {
           pendingUsage = attribution !== undefined
@@ -2292,10 +2336,20 @@ async function* runAgentLoopBody(
     // (admission clips set maxTokens and own those turns; raising their cap
     // would fight the window fitting). The flag is consumed here, once.
     const escalateTo = options.outputLimitRecovery?.escalateTo;
-    const callInput: typeof modelInput = escalateNextCall && escalateTo !== undefined && modelInput.maxTokens === undefined
-      ? { ...modelInput, maxTokens: escalateTo }
+    // 0.5.7 ladder: escalateToNext (when armed) already carries the fitted
+    // tier — the window check happened at arm time, not here.
+    const armedCap = escalateToNext ?? (escalateNextCall ? escalateTo : undefined);
+    const callInput: typeof modelInput = armedCap !== undefined && modelInput.maxTokens === undefined
+      ? { ...modelInput, maxTokens: armedCap }
       : modelInput;
+    // 0.5.7 — 阶梯自持标记：本次调用携带的 cap 是阶梯给的（而非 admission
+    // clip 的窗口裁剪）。下一档升档必须允许从「阶梯自己的 cap」继续爬，
+    // 否则第二档起会被 `callInput.maxTokens === undefined` 守卫挡死
+    // （实测 caps=[undefined,48000,undefined]）。admission clip 的 cap
+    // 仍然不可叠加（那条守卫的原意）。
+    lastCallLadderArmed = armedCap !== undefined && modelInput.maxTokens === undefined;
     escalateNextCall = false;
+    escalateToNext = undefined;
     // Prefer streaming when the model supports it; emit text deltas live as
     // assistant_delta. Otherwise fall back to a blocking generate() call.
     // Abort during the call → aborted terminal, no partial assistant appended.
@@ -2865,6 +2919,12 @@ async function* runAgentLoopBody(
     // including M70's truncated tool call — does not reset.
     if (finalAssistant.stopReason !== "length") {
       outputLimitNudges = 0;
+      ladderStep = 0;
+      // 0.5.7 — 阶梯回落（用户指出的关键）：一次 length-stop 把 cap 推到
+      // 128K 后，若不回落，后续每个请求都按 128K 预留 —— 浪费窗口、拖慢
+      // 首 token、且让「偶发一次长回答」永久污染整段会话。规则：回合干净
+      // 结束（stopReason 不是 length，即 nudge 计数为 0 走到这里）→ 阶梯
+      // 归零，回到 profile 的 defaultMaxTokens。只有连续撞限才逐级爬升。
     }
     // 夜移 024 (Reasonix handleToolRound's reset): a tool round proves
     // progress — a LATER blank-final streak deserves a fresh nudge budget,
@@ -3730,18 +3790,64 @@ async function* runAgentLoopBody(
           turn += 1;
           continue;
         }
-        const maxNudges = options.outputLimitRecovery?.maxNudges ?? DEFAULT_OUTPUT_LIMIT_NUDGES;
+        // 0.5.7 — a ladder needs one nudge per rung: the default budget
+        // follows the ladder length (4 for GLM) so the whole climb is reachable;
+        // the legacy single-tier keeps the historical 3. An explicit maxNudges
+        // still wins over both.
+        const ladderForBudget = options.outputLimitRecovery?.ladder;
+        const maxNudges = options.outputLimitRecovery?.maxNudges
+          ?? (ladderForBudget !== undefined && ladderForBudget.length > 0 ? ladderForBudget.length : DEFAULT_OUTPUT_LIMIT_NUDGES);
         if (outputLimitNudges < maxNudges && turn - sliceTurnBase + 1 < maxTurns) {
           outputLimitNudges += 1;
+          const ladder = options.outputLimitRecovery?.ladder;
           const esc = options.outputLimitRecovery?.escalateTo;
-          const applyEsc: boolean = esc !== undefined && callInput.maxTokens === undefined;
-          escalateNextCall = applyEsc;
+          let applied: number | undefined;
+          if (ladder !== undefined && ladder.length > 0) {
+            // 0.5.7 graded ladder — one tier per length-stop, capped at the
+            // top rung. The tier is admitted only when it FITS the remaining
+            // window; when it does not, COMPACT first and then carry the tier
+            // (the whole point: never hand the model a dwarfed cap — that is
+            // what produced truncated answers on long-context tasks).
+            let tier = ladder[Math.min(ladderStep, ladder.length - 1)];
+            ladderStep += 1;
+            if (tier !== undefined && (callInput.maxTokens === undefined || lastCallLadderArmed)) {
+              // 窗口未知（baseWindow=0，未配置压缩上下文）= 没有约束，不是
+              // 「装不下」——否则无压缩配置的会话永远拿不到升档。
+              const win = effectiveWindow();
+              const remaining = win > 0 ? win - (pendingUsage?.promptTokens ?? 0) : Number.POSITIVE_INFINITY;
+              if (remaining < tier) {
+                // Compact to free space, then ask again at the SAME tier.
+                // doCompact is exempt from the PreCompact defer gate at this
+                // trigger (same proof as the 413 / overflow-detour arms).
+                const out = await doCompact(turn, "reactive");
+                for (const ev of out.events) yield ev;
+                pendingCompaction = false;
+                // Re-fit against the post-compact window before committing:
+                // if even a compacted prompt cannot host this tier, step down
+                // to the largest rung that still fits (never below the floor).
+                const winAfter = effectiveWindow();
+                const after = winAfter > 0 ? winAfter - (pendingUsage?.promptTokens ?? 0) : Number.POSITIVE_INFINITY;
+                if (after < tier) {
+                  const fitting = ladder.filter((t) => t <= after);
+                  tier = fitting.length > 0 ? fitting[fitting.length - 1] : undefined;
+                }
+              }
+              if (tier !== undefined) {
+                escalateToNext = tier;
+                applied = tier;
+              }
+            }
+          } else {
+            const applyEsc: boolean = esc !== undefined && callInput.maxTokens === undefined;
+            escalateNextCall = applyEsc;
+            if (applyEsc) applied = esc;
+          }
           state.messages.push({ role: "user", content: OUTPUT_LIMIT_NUDGE });
           yield {
             type: "output_limit_recovery",
             turn,
             kind: "nudge",
-            ...(applyEsc && esc !== undefined ? { maxTokens: esc } : {}),
+            ...(applied !== undefined ? { maxTokens: applied } : {}),
           };
           turn += 1;
           continue;

@@ -138,6 +138,7 @@ export {
   omitsReasoningOnToolTurns,
   // 取证弧 0921: the output-limit ladder's escalation tier (profile-resolved).
   outputLimitEscalateFor,
+  outputEscalationLadderFor,
   // ω-2b (I1-c): the profile's window semantics (gates the admission clip).
   resolveWindowMode,
 } from "./config.js";

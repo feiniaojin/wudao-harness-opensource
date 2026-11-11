@@ -145,7 +145,7 @@ import {
   personaSwitchBreaksCache, recordPersonaChange, formatPersonaList, PERSONA_SWITCH_CACHE_NOTE,
 } from "../commands/persona.js";
 import type { PersonaChainSources } from "../commands/persona.js";
-import { applyWirePersona, outputLimitEscalateFor, resolveContextWindowTokens, catalogPricesFor } from "@wudao-org/providers";
+import { applyWirePersona, outputLimitEscalateFor, resolveContextWindowTokens, catalogPricesFor, outputEscalationLadderFor } from "@wudao-org/providers";
 import { loadEffectiveProfiles, resolveSessionCachePricing } from "../provider-registry.js";
 import { coldCacheResumeDecision } from "../cache-clock-ledger.js";
 import type { PersonaRegistry, PersonaRuntime, ResolvedPersona, ProtocolId } from "@wudao-org/providers";
@@ -2090,7 +2090,12 @@ export function createAgentDriver(opts: AgentDriverOptions): AgentDriver {
         // on unpinned providers ≡ the absent-object default: nudges, no
         // escalation — byte-identical). Cap-raising fires only on cap-free
         // requests (admission clips keep ownership).
-        outputLimitRecovery: { escalateTo: outputLimitEscalateFor(modelLive.provider) },
+        outputLimitRecovery: {
+          // 0.5.7 — 分级阶梯优先（GLM: 48k→64k→96k→128k），单档兜底。
+          ...(outputEscalationLadderFor(modelLive.provider) !== undefined
+            ? { ladder: outputEscalationLadderFor(modelLive.provider) }
+            : { escalateTo: outputLimitEscalateFor(modelLive.provider) }),
+        },
         gates: plan ? { ...(o.gates ?? {}), plan: true } : o.gates,
         // M53 §5: the --no-loop-safety ablation seam (core stays env-free).
         ...(isFeatureAblated("loop-safety") ? { loopSafety: false } : {}),

@@ -1,6 +1,6 @@
 {
   "name": "@wudao-org/evals",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "private": true,
   "type": "module",
   "description": "Eval suites for wudao-harness: deterministic regression (scripted model, zero cost) + live (real model, temp workspace).",

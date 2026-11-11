@@ -82,6 +82,72 @@ describe("output-limit recovery ladder (夜移 013, nudge-only)", () => {
     expect(nudge).toMatchObject({ kind: "nudge", maxTokens: 8192 });
   });
 
+  // 0.5.7 — 分级阶梯（用户令：默认 32k，撞限后 48k→64k→96k→128k）。
+  // 三个契约：逐级爬升、干净轮回落、窗口装不下时取能装下的档。
+  it("ladder: consecutive length-stops climb one rung at a time", async () => {
+    const model = recordingModel([truncated("p1"), truncated("p2"), done("done")]);
+    const { events } = await drain(
+      runAgentLoop(state(), model, {
+        maxTurns: 8,
+        outputLimitRecovery: { ladder: [48_000, 64_000, 96_000, 128_000] },
+      }),
+    );
+    expect(model.inputs[0]?.maxTokens).toBeUndefined();
+    expect(model.inputs[1]?.maxTokens).toBe(48_000);
+    expect(model.inputs[2]?.maxTokens).toBe(64_000);
+    const nudges = events.filter((e) => e.type === "output_limit_recovery" && e.kind === "nudge");
+    expect(nudges.map((e) => (e.type === "output_limit_recovery" ? e.maxTokens : undefined))).toEqual([48_000, 64_000]);
+  });
+
+  it("ladder: a clean TOOL turn resets the climb — the next truncation starts again at rung 0", async () => {
+    // length → nudge(48k) → clean tool turn (resets) → length → nudge(48k),
+    // NOT 64k: a non-truncated turn means the model made progress another
+    // way, so the episode is over (same discipline as the nudge counter).
+    const echo = buildTool({
+      name: "echo",
+      description: "echo",
+      parameters: { type: "object", properties: {} },
+      isReadOnly: () => true,
+      isConcurrencySafe: () => true,
+      isDestructive: () => false,
+      isOpenWorld: () => false,
+      async execute() {
+        return { content: "ok" };
+      },
+    });
+    const callTool = (): AssistantMessage => ({
+      role: "assistant",
+      content: "",
+      toolCalls: [{ id: "c1", name: "echo", arguments: {} }],
+    });
+    const model = recordingModel([truncated("p1"), callTool(), truncated("p2"), done("d")]);
+    const st = { ...state(), tools: [echo] };
+    const { events } = await drain(
+      runAgentLoop(st, model, {
+        maxTurns: 12,
+        outputLimitRecovery: { ladder: [48_000, 64_000, 96_000, 128_000] },
+      }),
+    );
+    const caps = (events.filter((e) => e.type === "output_limit_recovery" && e.kind === "nudge") as { maxTokens?: number }[]).map((e) => e.maxTokens);
+    // Two episodes, each starting at rung 0 — never a 64k second episode.
+    expect(caps).toEqual([48_000, 48_000]);
+  });
+
+  it("ladder: with a tight window only the rungs that actually FIT are used", async () => {
+    // window 60k → nothing above 60k fits, so the climb tops out at 48k
+    const model = recordingModel([truncated("p1"), truncated("p2"), truncated("p3"), done("d")]);
+    const { events } = await drain(
+      runAgentLoop(state(), model, {
+        maxTurns: 10,
+        compaction: { contextWindowTokens: 60_000 },
+        outputLimitRecovery: { ladder: [48_000, 64_000, 96_000, 128_000] },
+      }),
+    );
+    const caps = (events.filter((e) => e.type === "output_limit_recovery" && e.kind === "nudge") as { maxTokens?: number }[]).map((e) => e.maxTokens);
+    // No rung above the window is ever handed out.
+    expect(caps.every((c) => c === undefined || c <= 60_000)).toBe(true);
+  });
+
   it("NO default escalation: absent outputLimitRecovery, the continuation goes out with maxTokens undefined", async () => {
     const model = recordingModel([truncated("p"), done("d")]);
     await drain(runAgentLoop(state(), model, { maxTurns: 5 }));

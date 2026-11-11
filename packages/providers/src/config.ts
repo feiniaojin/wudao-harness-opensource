@@ -161,6 +161,13 @@ export interface ProviderProfile {
    *  so equal tiers cancel). Loop 夜移 013's contract: "supply it from the
    *  provider profile, never a magic 64k". Absent = no escalation. */
   readonly outputEscalateTo?: number;
+  /** 0.5.7 — the GRADED ladder (wins over `outputEscalateTo` when present):
+   *  consecutive length-stops climb one rung at a time. Each rung is admitted
+   *  only if it fits the remaining window; otherwise the run compacts first
+   *  and retries at that rung. The ladder RESETS on a clean turn (see
+   *  loop.ts) so an isolated long answer never pins every later request to
+   *  the top rung. */
+  readonly outputEscalationLadder?: readonly number[];
 }
 
 /** The ω-2b window-semantics union, named (registry/UserProviderConfig reuses it). */
@@ -296,10 +303,25 @@ export const PROVIDER_PROFILES: Readonly<Record<BuiltinProviderName, ProviderPro
     windowMode: "independent",
     wire: "anthropic",
     bearerAuth: true,
-    // 取证弧 0921: probe-verified completion tiers (16384 base / 32768
-    // escalation) — kills the 4096-default reasoning-exhaustion death.
-    defaultMaxTokens: 16_384,
-    outputEscalateTo: 32_768,
+    // 「不人为限制输出」的落点（用户质疑 0.5.6 的 16384 太小）：
+    // 1) Anthropic wire 的 max_tokens 是**必填**字段，无法省略——所以不能
+    //    "不设"，只能"设一个不构成实际约束的值"；
+    // 2) 取值依据：模型窗口 1,000,000 - 思考预算（max=32768）- 输入占用
+    //    后仍绰绰有余；实测 probe-out-cap 四档（16K/32K/64K/131072）全 200，
+    //    probe-long 在 cap=131072 下自然产出 15.7K 字符即 stop（未撞限）。
+    // 3) 故取窗口的八分之一（128K）——远离真实输出长度，同时给同窗上下文
+    //    留足余量；不是拍脑袋的常量，是按窗口比例推的。
+    // 旧值 16384 的来历：取证弧 0921 用来治 4096 默认的思考耗尽，属过度
+    // 收缩（思考预算 32768 就已超过它）。
+    defaultMaxTokens: 32_000,
+    // 0.5.7 分级输出阶梯（用户令：默认 32k，撞限后 48k→64k→96k→128k）。
+    // 依据：GLM-5.3 窗口 1M；probe-out-cap 实测 16K/32K/64K/131072 四档全
+    // 200，probe-long 在 cap=131072 下自然产出 15.7K 字符即 stop。
+    // 每档只在「窗口装得下」时启用，装不下先压缩（loop.ts 的梯子实现）。
+    // 阶梯在一次干净回合后回落（不粘连），故 128K 不会传染后续请求。
+    outputEscalationLadder: [48_000, 64_000, 96_000, 128_000],
+    // 兼容单档（ladder 缺席时生效；GLM 这里 ladder 优先）。
+    outputEscalateTo: 131_072,
     // docs.bigmodel.cn/cn/coding-plan/quick-start: both cataloged models
     // are 1M context (official model cards).
     models: [
@@ -935,6 +957,14 @@ export function omitsReasoningOnToolTurns(config: ProviderConfig): boolean {
 export function outputLimitEscalateFor(provider: string | undefined): number | undefined {
   if (provider === undefined || !isProviderName(provider)) return undefined;
   return PROVIDER_PROFILES[provider].outputEscalateTo;
+}
+
+/** 0.5.7 — the profile's graded output ladder (wins over the single tier when
+ *  present). Undefined = no ladder; the loop then falls back to
+ *  `outputLimitEscalateFor` exactly as before. */
+export function outputEscalationLadderFor(provider: string | undefined): readonly number[] | undefined {
+  if (provider === undefined || !isProviderName(provider)) return undefined;
+  return PROVIDER_PROFILES[provider].outputEscalationLadder;
 }
 
 // ω99-39 — the once-per-process stderr tell. Providers has no warn/notice

@@ -112,8 +112,9 @@ describe("PROVIDER_PROFILES", () => {
       bearerAuth: true,
       // 取证弧 0921: probe-verified completion tiers (4096-default reasoning
       // exhaustion was polyglot 三败题 root cause).
-      defaultMaxTokens: 16_384,
-      outputEscalateTo: 32_768,
+      defaultMaxTokens: 32_000,
+      outputEscalationLadder: [48_000, 64_000, 96_000, 128_000],
+      outputEscalateTo: 131_072,
       models: [
         { name: "glm-5.3", contextLength: 1_000_000 },
         { name: "glm-5.3-flash", contextLength: 1_000_000 },
