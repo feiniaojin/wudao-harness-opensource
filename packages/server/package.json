@@ -1,6 +1,6 @@
 {
   "name": "@wudao-org/server",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "type": "module",
   "description": "Localhost WS server for the wudao agent driver — first-frame auth, two-channel state protocol (see PROTOCOL.md).",
   "main": "./dist/index.js",

@@ -179,9 +179,16 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // 多 driver 并发弧 C —— busy 从全局改 per-lane：主车道视图=既有 busy（老
   // server 恒此路，字节不变），副车道视图读 lanes 快照位。主车道自身的门
   // （收尾通知/settle 盯梢/parked 队列）用 mainBusy 不随视角漂移；视图状态按
-  // 会话分键（A 车道的回执绝不落进 B 车道，recon §G1）。v1 边界：副车道无
-  // 独立 mode/model/effort 面（chips 读写主车道——显示与作用一致）。
+  // 会话分键（A 车道的回执绝不落进 B 车道，recon §G1）。
+  // 0.5.11 报障修（Buddy 模式切模型不生效）：撤「v1 边界——chips 读写主车
+  // 道」。用户在副车道会话里聊天（提交带 sid），切换却打主驱动：切换落错
+  // 车道、glm-code 配额报障复现。现在模型/强度 chips、/rename、/effort 全
+  // 部跟视图车道读写；副车道快照无 model 块（老 server）时显示回落主车道
+  // （旧显示），但提交寻址仍跟视图车道。
   const { view, setViewLane } = useLaneView(snap);
+  const laneView = view.sid !== null ? snap.lanes?.[view.sid] : undefined;
+  const viewModel = view.sid !== null ? (laneView?.model ?? status?.model) : status?.model;
+  const viewedSessionId = view.sid !== null ? (laneView?.sessionId ?? null) : (status?.sessionId ?? null);
   const views = useSessionViews();
   const viewSlot = views.slot(view.key);
   const busy = view.busy;
@@ -450,19 +457,21 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   const [sessionsEpoch, setSessionsEpoch] = useState(0);
   const onRenameSession = useCallback(
     (id: string, name: string): void => {
-      if (id !== (status?.sessionId ?? null)) {
+      // 0.5.11 — 「当前打开」按视图车道判（副车道会话此前被误拒）；/rename
+      // 也随视图车道提交（命令落在该会话自己的驱动器上）。
+      if (id !== viewedSessionId) {
         notify("命名只对当前打开的会话生效：先打开它再命名");
         return;
       }
       void client
-        .submit(`/rename ${name}`)
+        .submit(`/rename ${name}`, view.sid === null ? undefined : { sid: view.sid })
         .then(() => {
           setSessionsEpoch((e) => e + 1);
           notify(`会话已命名：${name}`);
         })
         .catch((e: unknown) => notify(`⚠️ 命名失败：${e instanceof Error ? e.message : String(e)}`)); // ω99-204: #1
     },
-    [client, notify, status?.sessionId],
+    [client, notify, viewedSessionId, view.sid],
   );
 
   // ω99-279（续，标记见上）— 弹框回收站式删除的 op 车道：确认后发 sessionDelete，
@@ -698,30 +707,34 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // cache). Pure frontend — the driver-side switch machinery is untouched.
   const pickModel = useCallback(
     (model: string, provider: string): void => {
-      const line = modelPickCommand({ provider, model }, status?.model?.provider);
+      // 0.5.11 — 同/跨 provider 的命令构造读视图车道自己的 provider（副车道
+      // 读 lanes[sid].model——此前读主车道：车道在 glm-code、主车道在 deepseek
+      // 时会误发 /model 把别家模型名打进当前端点）；提交带视图车道的 sid。
+      const line = modelPickCommand({ provider, model }, viewModel?.provider);
       const cross = line.startsWith("/provider");
       void client
-        .submit(line)
+        .submit(line, view.sid === null ? undefined : { sid: view.sid })
         .then(() => notify(cross
           ? `供应商 → ${provider} — 历史在新端点重新处理，下一轮生效（缓存全冷）` // ω99-195: #7（provider 分支中文化——同一 notify 块的另一半）ω99-310: 称谓随设置面统一
           : `模型 → ${model} — 下一轮生效`)) // ω99-195: #8（前缀+尾语，与 Wizard/ProviderDetail 对齐）
         .catch((e: unknown) => notify(`⚠️ ${line.split(" ")[0]} 失败：${e instanceof Error ? e.message : String(e)}`)); // ω99-200: #3
     },
-    [client, notify, status],
+    [client, notify, viewModel?.provider, view.sid],
   );
   // The ModelSelector footer — persists the SESSION's current model as the
   // boot default (model.defaultModel → the global settings tier; the boot
   // applies it when no flag/env pins the field). The R6 quickwin's Ctrl+S
   // lane, made visible as a menu row.
   const persistModelDefault = useCallback((): void => {
-    const m = status?.model;
+    // 0.5.11 — 读视图车道的模型（副车道会话也能「设为默认」）。
+    const m = viewModel;
     if (m == null || m.label === "") return;
     const provider = m.provider ?? "deepseek";
     void client
       .settingsSet("model.defaultModel", { provider, model: m.label })
       .then(() => notify(`已设为默认:${provider}/${m.label} —— 下次启动 wudao ui 生效`))
       .catch((e: unknown) => notify(`⚠️ 默认模型保存失败：${e instanceof Error ? e.message : String(e)}`));
-  }, [client, notify, status]);
+  }, [client, notify, viewModel]);
 
   // ω99-234: the language chip's App lanes (pickLanguage/persistLanguageDefault)
   // RETIRED with the composer chip — the write lane moved into the 偏好 tab
@@ -734,7 +747,8 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   // settingsSaveProvider (the wholesale-replace rule: providerEffortSavePayload
   // rebuilds the row from the wire card; a bare {effort} would eat it).
   const persistEffortProviderDefault = useCallback((): void => {
-    const provider = status?.model?.provider;
+    // 0.5.11 — provider 读视图车道（副车道会话的档也随其 provider 落绑）。
+    const provider = viewModel?.provider;
     const level = gateStatus?.current?.effort;
     if (provider == null || provider === "" || level == null || level === "") {
       notify("⚠️ 当前会话没有生效的推理档,无法设为默认");
@@ -754,7 +768,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
         } else notify(`⚠️ 保存失败：${r.error}`);
       })
       .catch((e: unknown) => notify(`⚠️ 保存失败：${e instanceof Error ? e.message : String(e)}`));
-  }, [client, notify, status, gateStatus, refreshGateStatus]);
+  }, [client, notify, viewModel?.provider, gateStatus, refreshGateStatus]);
 
   // workspace-ux B1: resolve the file panel's view root on connect — the
   // switcher's label starts at the REAL root instead of the 工作区
@@ -1202,7 +1216,8 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
   const recentModelsRef = useRef<readonly RecentModel[]>(recentModels);
   const lastTouchedModelRef = useRef<RecentModel | null>(null);
   useEffect(() => {
-    const m = status?.model;
+    // 0.5.11 — 记视图车道的模型（副车道切换也进「最近使用」；主车道视图不变）。
+    const m = viewModel;
     if (m == null || m.label === "" || m.provider === undefined || m.provider === "") return;
     const entry: RecentModel = { provider: m.provider, model: m.label };
     const last = lastTouchedModelRef.current;
@@ -1211,7 +1226,7 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
     const next = writeRecent(touchRecent(recentModelsRef.current, entry));
     recentModelsRef.current = next;
     setRecentModels(next);
-  }, [status?.model?.label, status?.model?.provider]);
+  }, [viewModel?.label, viewModel?.provider]);
 
   // M74-ide §3: agent refresh (spec §2) — watch the RAW driver history (the
   // merge below adds localNotes, which never carry tool entries) for NEW
@@ -2610,24 +2625,24 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
           // 输入框下方模型/强度 chips（spec 2026-08-28 §2.6）：模型走现有
           // ModelPicker 弹窗；强度提交 /effort 并刷新 settings 快照让 chip
           // 标签跟上（gateStatus 是 connect 时拉的，不刷会滞后一轮）。
-          modelLabel={status?.model?.label ?? null}
-          modelProvider={status?.model?.provider}
-          modelChoices={status?.model?.choices}
+          modelLabel={viewModel?.label ?? null}
+          modelProvider={viewModel?.provider}
+          modelChoices={viewModel?.choices}
           modelRecent={recentModels}
           onPickModel={pickModel}
           onPersistModelDefault={persistModelDefault}
-          effort={gateStatus?.current?.effort ?? null}
+          effort={viewModel?.effort ?? gateStatus?.current?.effort ?? null}
           efforts={gateStatus != null ? [...(gateStatus.efforts ?? [])] : undefined}
           onPickEffort={(level) => {
             void client
-              .submit(`/effort ${level}`)
+              .submit(`/effort ${level}`, view.sid === null ? undefined : { sid: view.sid })
               .then(() => {
                 notify(`effort → ${level} — 下一轮生效`);
                 refreshGateStatus();
               })
               .catch((e: unknown) => notify(`⚠️ /effort 失败：${e instanceof Error ? e.message : String(e)}`)); // ω99-202: #8
           }}
-          effortProviderLabel={providerCardLabel(gateStatus, status?.model?.provider)}
+          effortProviderLabel={providerCardLabel(gateStatus, viewModel?.provider)}
           onPersistEffortDefault={persistEffortProviderDefault}
           {...(uiMode === "buddy"
             ? {
@@ -2953,24 +2968,24 @@ export function App({ client }: { client: WudaoClient }): React.JSX.Element {
           onFileSeedApplied={onFileSeedApplied}
           // 输入框下方模型/强度 chips（spec 2026-08-28 §2.6）：简洁线同款
           // 五连 prop（SimpleMode→SimpleComposer→InputBox 穿层）。
-          modelLabel={status?.model?.label ?? null}
-          modelProvider={status?.model?.provider}
-          modelChoices={status?.model?.choices}
+          modelLabel={viewModel?.label ?? null}
+          modelProvider={viewModel?.provider}
+          modelChoices={viewModel?.choices}
           modelRecent={recentModels}
           onPickModel={pickModel}
           onPersistModelDefault={persistModelDefault}
-          effort={gateStatus?.current?.effort ?? null}
+          effort={viewModel?.effort ?? gateStatus?.current?.effort ?? null}
           efforts={gateStatus != null ? [...(gateStatus.efforts ?? [])] : undefined}
           onPickEffort={(level) => {
             void client
-              .submit(`/effort ${level}`)
+              .submit(`/effort ${level}`, view.sid === null ? undefined : { sid: view.sid })
               .then(() => {
                 notify(`effort → ${level} — 下一轮生效`);
                 refreshGateStatus();
               })
               .catch((e: unknown) => notify(`⚠️ /effort 失败：${e instanceof Error ? e.message : String(e)}`)); // ω99-202: #9
           }}
-          effortProviderLabel={providerCardLabel(gateStatus, status?.model?.provider)}
+          effortProviderLabel={providerCardLabel(gateStatus, viewModel?.provider)}
           onPersistEffortDefault={persistEffortProviderDefault}
           workspaceRoot={panelRoot}
           bootRoot={bootRoot !== "" ? bootRoot : undefined}

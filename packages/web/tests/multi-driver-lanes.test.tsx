@@ -413,6 +413,72 @@ describe("多 driver 弧 C — App 车道化", () => {
     expect(h.container.querySelectorAll(".sb-run")).toHaveLength(0);
   });
 
+  // 0.5.11 报障修（Buddy 模式切模型不生效）：副车道视图里模型 chip 读车道
+  // 自己的 model（wire 全量状态此前被客户端类型收窄丢弃），/provider 切换
+  // 随视图车道 sid 提交——此前一律打主驱动，车道会话纹丝不动（用户报障：
+  // glm-code 配额用尽后切 deepseek，会话仍报 glm-code 配额用尽）。
+  it("副车道视图的模型 chip：显示车道自己的模型，跨 provider 选择随车道 sid 提交 /provider", async () => {
+    const h = mountedApp();
+    await act(async () => {
+      authOk(h.server.socket, { sessionId: "wudao-main-0001" });
+    });
+    await replySettings(h, "buddy");
+    await replySessions(h, [mainRow(), row()]);
+    // capable 先行（空 lanes 帧）——否则侧栏点击走老单车道路径（裸 resume 无
+    // sid），后续车道帧就无处落。同款时序见本 describe 第一例。
+    await push(h, { t: "state", state: statusFrame({ busy: false }), lanes: {} });
+    // 开车道（侧栏点击 → resume 带 sid → ok 回执 + 车道状态带 model 块 + reset 重放）。
+    await act(async () => {
+      (h.container.querySelectorAll(".sb-i")[1] as HTMLElement).click();
+    });
+    const resumeOp = opFrames(h).filter((o) => o.op.op === "resume").at(-1);
+    const sid = (resumeOp?.op as { sid?: string }).sid;
+    expect(typeof sid).toBe("string");
+    if (sid === undefined) return;
+    await act(async () => {
+      h.server.socket.serverSend({ t: "result", id: resumeOp?.id, ok: { ok: true } });
+      h.server.socket.serverSend({
+        t: "state",
+        state: statusFrame({ busy: false }),
+        lanes: {
+          [sid]: {
+            busy: false,
+            sessionId: "sess-lane-b",
+            model: {
+              label: "glm-5.3",
+              provider: "glm-code",
+              choices: [
+                { provider: "glm-code", model: "glm-5.3", source: "registry" },
+                { provider: "deepseek", model: "deepseek-v3.2", source: "registry" },
+              ],
+            },
+          },
+        },
+      });
+      h.server.socket.serverSend({ t: "history", entries: [{ kind: "user", text: "车道B的消息" }], reset: true, sid });
+    });
+    expect(h.container.textContent).toContain("车道B的消息");
+    // chip 显示车道自己的模型（不是主车道的）。
+    const chip = h.container.querySelector<HTMLButtonElement>(".composer-tools .chip.model");
+    expect(chip).not.toBeNull();
+    expect(chip?.textContent).toContain("glm-5.3");
+    // 跨 provider 选择 deepseek → /provider 随车道 sid 提交（绝不裸打主车道）。
+    await act(async () => {
+      chip!.click();
+    });
+    await act(async () => {
+      (h.container.querySelector<HTMLButtonElement>('.menu .mroot .mi.mprov[data-provider="deepseek"]') as HTMLElement).click();
+    });
+    await act(async () => {
+      (h.container.querySelector<HTMLButtonElement>('.menu .mi[data-model="deepseek-v3.2"]') as HTMLElement).click();
+    });
+    const submitOps = opFrames(h).filter((o) => o.op.op === "submit");
+    const last = submitOps.at(-1)?.op;
+    expect(last).toMatchObject({ text: "/provider deepseek", sid });
+    // 主车道（sid 缺省）从未收到过这条命令。
+    expect(submitOps.some((o) => o.op.text === "/provider deepseek" && o.op.sid === undefined)).toBe(false);
+  });
+
   it("老 server 回归钉：主车道 busy 时侧栏点击仍被拒（无 resume op、中文拒绝回执）", async () => {
     const h = mountedApp();
     await act(async () => {

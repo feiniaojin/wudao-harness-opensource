@@ -480,6 +480,11 @@ export interface UiSnapshot {
 export interface LaneStatusWire {
   readonly busy: boolean;
   readonly sessionId: string;
+  /** 0.5.11 报障修（Buddy 模式切模型不生效）：车道自己的模型面。server 的
+   *  lane status 本就是全量 driver 状态（字节一直在 wire 上），此前类型收窄
+   *  丢弃——chips 只能读主车道，副车道视图里切模型落错驱动器。Optional：
+   *  老 server 缺席 = 消费端回落主车道显示（旧行为）。 */
+  readonly model?: DriverStatus["model"];
 }
 
 /** The client-side per-lane view: the wire status + the lane's own history
@@ -488,6 +493,9 @@ export interface LaneStatusWire {
 export interface LaneSnapshot {
   readonly busy: boolean;
   readonly sessionId: string;
+  /** 0.5.11 — the lane's own model block (value-stable across frames; see
+   *  mergeLaneStatuses). */
+  readonly model?: DriverStatus["model"];
   readonly history: readonly HistoryEntry[];
   readonly historyEpoch: number;
 }
@@ -519,13 +527,34 @@ export function mergeLaneStatuses(
     }
     const busy = w.busy === true;
     const sessionId = typeof w.sessionId === "string" ? w.sessionId : "";
+    // 0.5.11 — the model block rides VALUE-STABLY: the server rebuilds the
+    // status object on every push (per-keystroke frames), so identity compare
+    // would churn the snapshot per frame; the signature (label|provider + the
+    // choices matrix's provider:model pairs) moves only on a real switch.
+    const model = w.model === undefined || w.model === null ? undefined : w.model;
     const ex = prev?.[sid];
-    if (ex === undefined || ex.busy !== busy || ex.sessionId !== sessionId) {
-      out[sid] = { busy, sessionId, history: ex?.history ?? [], historyEpoch: ex?.historyEpoch ?? 0 };
+    if (
+      ex === undefined || ex.busy !== busy || ex.sessionId !== sessionId ||
+      laneModelSig(ex.model) !== laneModelSig(model)
+    ) {
+      out[sid] = {
+        busy,
+        sessionId,
+        history: ex?.history ?? [],
+        historyEpoch: ex?.historyEpoch ?? 0,
+        ...(model !== undefined ? { model } : {}),
+      };
       changed = true;
     } else out[sid] = ex;
   }
   return changed ? out : prev;
+}
+
+/** 0.5.11 — the value signature mergeLaneStatuses keys model-block changes
+ *  on: label|provider + the choices matrix pairs. Pure; "" when absent. */
+function laneModelSig(m: DriverStatus["model"] | undefined): string {
+  if (m === undefined || m === null || typeof m.label !== "string") return "";
+  return `${m.label}|${m.provider ?? ""}|${(m.choices ?? []).map((c) => `${c.provider}:${c.model}`).join(",")}`;
 }
 
 /** History-frame apply (a frame WITH sid): append/replace into THAT lane
@@ -546,6 +575,10 @@ export function applyLaneHistory(
       sessionId: ex?.sessionId ?? "",
       history: reset ? [...entries] : [...(ex?.history ?? []), ...entries],
       historyEpoch: (ex?.historyEpoch ?? 0) + (reset ? 1 : 0),
+      // 0.5.11 — history 帧只动 history/epoch；model 块随既有快照过桥
+      //（此前重建时静默丢弃——状态帧带来的模型面被每条 sid history 帧
+      // 抹掉，副车道 chip 因此永远空）。
+      ...(ex?.model !== undefined ? { model: ex.model } : {}),
     },
   };
 }
