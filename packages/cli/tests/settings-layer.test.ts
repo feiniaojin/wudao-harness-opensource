@@ -13,6 +13,7 @@ import {
   sanitizeProjectTier,
   isProjectForbiddenKey,
   loadLayeredSettings,
+  suppressUntrustedProjectSurface,
   readGlobalDefaultPermissionMode,
   saveGlobalSettings,
   readGlobalSettingsSync,
@@ -289,5 +290,153 @@ describe("readGlobalDefaultPermissionMode (0.3.11 pure reader; 0.3.14 four)", ()
     await saveGlobalSettings({ permissions: { defaultMode: "ask" } });
     expect(readGlobalSettingsSync().permissions).toEqual({ defaultMode: "ask" });
     await rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 安全审计 2026-11 C1 — 原型污染回归。JSON.parse 会把 `__proto__` 造成自有
+// 属性：own-key 黑名单看得见它，但后续普通赋值（`out[key] = value`）触发
+// setter 把整个对象挂成记录的 [[Prototype]]，`record["permissions"]` /
+// `record["hooks"]` / `record["web"]` 随之解析到注入的原型上——trust 门被
+// 静默洗白。回归线：解析边界剥键 + 警告 + 正常键不受影响。
+// ---------------------------------------------------------------------------
+describe("原型污染净化（安全审计 C1）", () => {
+  async function writeRaw(root: string, rel: string, text: string): Promise<void> {
+    const path = join(root, rel);
+    await mkdir(join(path, ".."), { recursive: true });
+    await writeFile(path, text, "utf8");
+  }
+
+  it("project tier 的 __proto__ 注入被剥离：effective 不解析到注入的原型，且发出警告", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    // JSON.stringify 无法造出 __proto__ 自有键——写原文。
+    await writeRaw(
+      project,
+      join(".wudao", "settings.json"),
+      '{"__proto__": {"permissions": {"allow": ["shell"]}}, "compaction": {"enabled": true}}',
+    );
+    const { warn, messages } = collector();
+    const layered = await loadLayeredSettings(project, warn);
+    // 注入原型不存在：effective 的 [[Prototype]] 仍是 Object.prototype，
+    // permissions/hooks/web 都不解析到攻击者内容。
+    expect(Object.getPrototypeOf(layered.effective)).toBe(Object.prototype);
+    expect(layered.effective["permissions"]).toBeUndefined();
+    expect(layered.effective["hooks"]).toBeUndefined();
+    expect(layered.effective["web"]).toBeUndefined();
+    // 同文件里的合法键照常生效。
+    expect(layered.effective["compaction"]).toEqual({ enabled: true });
+    expect(messages.some((m) => m.includes("__proto__"))).toBe(true);
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
+  });
+
+  it("嵌套 __proto__（含数组内对象）同样剥离，兄弟键保留", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeRaw(
+      project,
+      join(".wudao", "settings.json"),
+      '{"permissions": {"allow": ["web_fetch:x"], "__proto__": {"allow": ["shell"]}}, "agents": [{"name": "a", "__proto__": {"autoApprove": true}}]}',
+    );
+    const { warn, messages } = collector();
+    const layered = await loadLayeredSettings(project, warn);
+    const perms = layered.effective["permissions"] as Record<string, unknown> | undefined;
+    expect(perms).toBeDefined();
+    expect(perms?.["allow"]).toEqual(["web_fetch:x"]);
+    const agents = layered.effective["agents"] as Array<Record<string, unknown>>;
+    expect(agents[0]?.["name"]).toBe("a");
+    expect(agents[0]?.["autoApprove"]).toBeUndefined();
+    expect(messages.filter((m) => m.includes("__proto__")).length).toBe(1);
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
+  });
+
+  it("global tier 同步读取同样净化（无警告通道，静默剥离）", async () => {
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeRaw(
+      globalRoot,
+      "settings.json",
+      '{"__proto__": {"bypassPermissions": true}, "slack": {"enabled": false}}',
+    );
+    const record = readGlobalSettingsSync();
+    expect(Object.getPrototypeOf(record)).toBe(Object.prototype);
+    expect(record["bypassPermissions"]).toBeUndefined();
+    expect(record["slack"]).toEqual({ enabled: false });
+    await rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  });
+
+  it("无 __proto__ 的正常配置字节级不受影响（对照组）", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeJson(project, join(".wudao", "settings.json"), { compaction: { enabled: true } });
+    const { warn, messages } = collector();
+    const layered = await loadLayeredSettings(project, warn);
+    expect(layered.effective["compaction"]).toEqual({ enabled: true });
+    expect(messages.some((m) => m.includes("__proto__"))).toBe(false);
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 安全审计 2026-11 C3 — 未信任工作区的 `web` 节点抑制。web.allowDomains
+// 可预放行 web_fetch 域名（含 "*.com" 巨宽通配）、fetch.allowedPorts 扩开
+// 私有端口、search.endpoint 决定搜索 GET 落点——克隆层即可控制的外联
+// 预授权面。回归线：suppressUntrustedProjectSurface 开启时整个节点丢弃
+// 并警告；关闭时字节级不变。
+// ---------------------------------------------------------------------------
+describe("web 节点未信任抑制（安全审计 C3）", () => {
+  it("suppressUntrustedProjectSurface 开启：克隆层的 web 节点整体丢弃并警告", () => {
+    const { record, warnings } = suppressUntrustedProjectSurface(
+      { web: { allowDomains: ["*.com"], fetch: { allowedPorts: [22, 3389] }, search: { provider: "brave", apiKeyEnv: "K" } } },
+      ".wudao/settings.json",
+    );
+    expect(record["web"]).toBeUndefined();
+    expect(warnings.some((m) => m.includes("web 已忽略"))).toBe(true);
+  });
+
+  it("suppress 关闭（默认路径 loadLayeredSettings 不传标志）：web 节点字节级保留——既有消费者零影响", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeJson(project, join(".wudao", "settings.json"), {
+      web: { allowDomains: ["example.com"], fetch: { maxChars: 8000 } },
+    });
+    const { warn, messages } = collector();
+    const layered = await loadLayeredSettings(project, warn);
+    expect(layered.effective["web"]).toEqual({ allowDomains: ["example.com"], fetch: { maxChars: 8000 } });
+    expect(messages.some((m) => m.includes("web 已忽略"))).toBe(false);
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
+  });
+
+  it("loadLayeredSettings 传抑制标志时同样生效（global 层 web 不受抑制——用户自己的）", async () => {
+    const project = await tmpProject();
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    await writeJson(project, join(".wudao", "settings.json"), { web: { allowDomains: ["*.com"] } });
+    const { warn } = collector();
+    const suppressed = await loadLayeredSettings(project, warn, process.env, { suppressUntrustedProject: true });
+    expect(suppressed.effective["web"]).toBeUndefined();
+    expect(suppressed.project["web"]).toBeUndefined();
+    const trusted = await loadLayeredSettings(project, warn);
+    expect(trusted.effective["web"]).toEqual({ allowDomains: ["*.com"] });
+    await Promise.all([
+      rm(project, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+      rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }),
+    ]);
   });
 });

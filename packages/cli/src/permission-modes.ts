@@ -5,6 +5,9 @@
 // global-settings read in resolveInitialMode.
 import type { PermissionDecision } from "@wudao-org/core";
 import { readGlobalDefaultPermissionMode, readGlobalSettingsSync } from "./settings-layer.js";
+// 安全审计 2026-11 C7 —— 凭据段表共享出处（与本文件反向引用 rules 会成环，
+// 独立模块两侧共用）。
+import { credentialSegmentHit } from "./credential-segments.js";
 // ω99-236: the doc trio's name rosters (READ/EDIT) — the two Sets below
 // consume them at the tail instead of hardcoding the twelve doc names
 // (展开后内容等值，出处注释全数保留在原位).
@@ -207,7 +210,12 @@ function workspaceSafeToken(token: string): boolean {
 }
 
 /** One `;`/`&&`/`||`-separated segment qualifies when the verb is listed and
- *  every token is path-safe and metachar-free. */
+ *  every token is path-safe and metachar-free.
+ *  安全审计 2026-11 C7（HIGH）：token 触及凭据物料段（.ssh/.gnupg 之下、
+ *  .aws/credentials 等）即退出安全类走 ask——与文件工具的
+ *  credentialMaterialPath 对齐（shell 是此前漏网的路径；workspace 根在
+ *  $HOME 时 `cat .ssh/id_rsa` 曾零确认零收据）。段表同一出处：
+ *  credential-segments.ts。 */
 function safeWorkspaceSegment(segment: string): boolean {
   // Shell metacharacters (post-split: a lone |, &, or any redirection/command
   // substitution) disqualify outright — quoting subtleties are not worth
@@ -221,7 +229,13 @@ function safeWorkspaceSegment(segment: string): boolean {
   const isGit = verb === "git" && sub !== undefined && SAFE_GIT_SUBCOMMANDS.has(sub);
   if (!isGit && !SAFE_WORKSPACE_VERBS.has(verb)) return false;
   return tokens.every(
-    (t) => workspaceSafeToken(t) && !UNSAFE_GIT_FLAGS.some((f) => t.startsWith(f)),
+    (t) =>
+      workspaceSafeToken(t) &&
+      !UNSAFE_GIT_FLAGS.some((f) => t.startsWith(f)) &&
+      // C7：路径 token 小写后做段匹配（normalize 语义与文件工具一致——
+      // 反斜杠归一 + .. 折叠由 workspaceSafeToken/normalizePath 分担，
+      // 这里只补凭据段判定）。
+      credentialSegmentHit(t.replace(/\\/g, "/").toLowerCase()) === undefined,
   );
 }
 

@@ -158,7 +158,10 @@ export async function buildExtensionState(cwd: string, argv: readonly string[], 
 
   // M36: plugin MCP servers merge into the one startup list AFTER the user's
   // mcp.json (name conflicts keep the user's side — mergeMcpConfigs warns).
-  const mcpConfig = mergeMcpConfigs(loadMcpConfig(cwd, warn), plugins, warn);
+  // 安全审计 2026-11 C4 — 项目层 MCP 配置纳入 trust 门（与 skills/plugins/
+  // hooks 同一参数链）：未信任工作区克隆层（.mcp.json / .wudao/mcp.json）
+  // 整体丢弃——stdio 条目的 command 是任意本地命令，克隆即启动。
+  const mcpConfig = mergeMcpConfigs(loadMcpConfig(cwd, warn, { trustSuppressed }), plugins, warn);
 
   return {
     plugins,

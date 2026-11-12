@@ -105,7 +105,12 @@ describe("ω99-207 — B 反向：英文族归零 + dist 反查 + 计数 + 术�
     // ——settings 节点两行英文警语 + 拦截/写入/遗忘/设置四行中文警语；
     // ② 的英文族归零只扫 hooks-config 家族与 settings-layer.ts，不受影响）。
     // 0.5.1 gate 随源演进：531 → 534（M85 小精灵弧 +3：pet 帧链失败隔离的 stderr 收据行 + busy 稳定化超时放行行 + tools.ts clock 条件常驻的降级注释行——同族同形警语）。
-    expect(n).toBe(534);
+    // 0.5.10 合流（安全审计 PR #2）：534 + 4 = 538（settings-layer 的
+    // __proto__ 剥离警告与 web 节点未信任抑制警告、mcp/config 的项目层
+    // MCP 未信任丢弃警告、cli-main-helpers 的 .env 端点劫持黑名单警告——
+    // 全部带 CJK，② 的英文族归零不受影响）。两族来源不相交（M85 弧 vs
+    // 安全审计），合并树实测 538。
+    expect(n).toBe(538);
   });
 
   it("⑤ 术语保留钉：mcp_tool/sessionEnd/RegExp//trust 译后仍在场（防过度翻译）", () => {

@@ -57,6 +57,26 @@ describe("loadWebSettings (M59 §3)", () => {
     );
   });
 
+  // 安全审计 2026-11 C3：未信任工作区（suppressUntrustedProject: true）的
+  // 克隆层 web 节点整体抑制——allowDomains 预放行 "*.com" 即可静默渗出；
+  // /trust 后（false，默认）字节级不变。
+  it("C3：未信任工作区的 web.allowDomains 不生效且不预放行", async () => {
+    await withRoot(
+      `{"web": {"allowDomains": ["*.com"], "fetch": {"allowedPorts": [22]}}}`,
+      async (root) => {
+        const warns: string[] = [];
+        const s = await loadWebSettings(root, (m) => warns.push(m), { suppressUntrustedProject: true });
+        expect(s.allowDomains).toEqual([]);
+        expect(s.fetch.allowedPorts).toEqual([]);
+        expect(warns.some((m) => m.includes("web 已忽略"))).toBe(true);
+        // 对照：默认（已信任）路径不受影响。
+        const trusted = await loadWebSettings(root, undefined, { endpointLookup: PUBLIC_LOOKUP });
+        expect(trusted.allowDomains).toEqual(["*.com"]);
+        expect(trusted.fetch.allowedPorts).toEqual([22]);
+      },
+    );
+  });
+
   it("two tiers deep-merge — the PROJECT tier wins provider/endpoint", async () => {
     const globalHome = await mkdtemp(join(tmpdir(), "web-global-"));
     const root = await mkdtemp(join(tmpdir(), "web-project-"));
