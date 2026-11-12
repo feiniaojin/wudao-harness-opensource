@@ -390,11 +390,15 @@ describe("M85-pet 状态帧 workspace 对", () => {
     const pet = petDriverMock();
     pet.agentRootStatus = async () => ({ panelRoot: "/w", agentRoot: "/w/精灵空间", aligned: true });
     const { c, main } = await authed(pet);
+    // 0.5.10 — 状态帧零等待改形：auth 首帧不再等 workspace 读（旧形每帧
+    // await realpath，慢读机器上整条 delta 流被拖住——本测试文件修订的同
+    // 根因）。首帧照发（lane/busy 即时），pair 由读落地后的补推帧送达。
     const first = c.frames.find((f) => f.t === "state");
-    expect(first?.pet?.workspaceName).toBe("精灵空间");
-    expect(first?.pet?.workspacePath).toBe("/w/精灵空间");
     expect(first?.pet?.lane).toBe("pet"); // 既有字段不动
     expect(first?.pet?.busy).toBe(false);
+    await until(() => c.frames.some((f) => f.t === "state" && f.pet?.workspaceName === "精灵空间"), "cold-start follow-up frame with the pair");
+    const primed = c.frames.filter((f) => f.t === "state" && f.pet?.workspaceName === "精灵空间").at(-1)!;
+    expect(primed.pet?.workspacePath).toBe("/w/精灵空间");
     expect(c.frames.findIndex((f) => f.t === "state")).toBeLessThan(c.frames.findIndex((f) => f.t === "history")); // 行序钉
     expect(main.calls).toEqual([]);
 

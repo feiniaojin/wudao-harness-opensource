@@ -9,7 +9,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createHash, randomBytes } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
-import { extname, basename, join, normalize, sep } from "node:path";
+import { extname, join, normalize, sep } from "node:path";
 import { WebSocket, WebSocketServer } from "ws";
 // ω99-242 — the crash-recovery coordinator's server-facing slice + the
 // status row type (the recoveryStatus op's reply shape). The coordinator
@@ -65,6 +65,7 @@ export type { ResumeOutcome, UiDriverPort, UiPetDriverPort, UiRecoveryPort, PetH
 // main + 副车道（key=sessionId）的可寻址集合；装配/订阅簿记在 lanes.ts。
 import { assertMountableLaneSid, createLaneTable, MAIN_LANE_SID, type LaneTable } from "./lanes.js";
 import { petTurnsFromHistory } from "./pet-turns.js";
+import { createPetWorkspaceCache } from "./pet-workspace-cache.js";
 export { PET_LANE_SESSION_ID } from "./ports.js";
 // 拆分运动（借鉴弧 δ 顺带件，file-size 棘轮）：petTurnsFromHistory 纯函数
 // 外提至 pet-turns.ts（逐字节搬家；本行 re-export 维持既有公共面）。
@@ -337,19 +338,15 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           // ω99-235: #5 — the post-auth initial state frame rides the same
           // dual-lane push (#4): a reconnecting client gets BOTH statuses.
           pushState();
-          // M85-pet §2：带 pet 车道的首帧经链构建（workspace 对的异步读）——
-          // history 重放排到链后，auth 行序 state→history 不翻。无 petDriver
-          // 时链恒已 resolved，微任务时序与旧行为一致（首帧行序钉在 235
-          // 测试文件里）。
-          void frameChain.then(() => {
-            send({ t: "history", entries: opts.driver.getHistory(), reset: true });
-            // 多 driver 弧 B —— 副车道的初始重放：带 sid + reset，紧跟主车道
-            // 重放之后（lane-aware 客户端据此恢复每车道转录；主车道帧不带 sid
-            // ——重连语义与今日字节不变）。无副车道时零帧（缺省零变化）。
-            for (const r of laneTable.replay()) {
-              send({ t: "history", entries: r.entries, reset: true, sid: r.sid });
-            }
-          });
+          // 0.5.10 — pushState 已是纯同步发送（workspace 对走 TTL 缓存，见
+          // 其定义处），auth 行序 state→history 由顺序语句天然保持，链退役。
+          send({ t: "history", entries: opts.driver.getHistory(), reset: true });
+          // 多 driver 弧 B —— 副车道的初始重放：带 sid + reset，紧跟主车道
+          // 重放之后（lane-aware 客户端据此恢复每车道转录；主车道帧不带 sid
+          // ——重连语义与今日字节不变）。无副车道时零帧（缺省零变化）。
+          for (const r of laneTable.replay()) {
+            send({ t: "history", entries: r.entries, reset: true, sid: r.sid });
+          }
           return;
         }
         clearTimeout(authTimer);
@@ -1940,13 +1937,19 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
   // 各推一帧（客户端据 lanes 增减感知车道面）。
   // M85-pet §2 — 状态帧 pet 字段的 workspace 对（agentRootStatus 派生：
   // workspaceName=basename、workspacePath=全路径，spec §4「chip 与 StatusBar
-  // 同源」的数据面）。agentRootStatus 是异步读（realpath），带 pet 的帧经一条
-  // 串行链构建：emit 顺序原样上 wire、每帧在发送时刻重读两态（235 双读纪律
-  // 的时点强化）；坏读/慢读降级为基础快照（1.5s 帽——状态信道是 UI 生命线，
-  // 绝不被一个 workspace 读拖住）。无 petDriver → 原同步路径，帧形状与发送
-  // 序字节不变（「旧形状钉」不变量）。
-  const PET_FRAME_BUILD_CAP_MS = 1500;
-  let frameChain: Promise<void> = Promise.resolve();
+  // 同源」的数据面）。
+  // 0.5.10 — workspace 对改走 TTL 缓存（pet-workspace-cache.ts），状态帧
+  // 发送路径零 await：旧形每帧 await agentRootStatus、1.5s 帽、串行链，把
+  // UI 生命线排在每帧一次的 realpath 后面——realpath 快的机器无症状，慢
+  // 路径（外接盘/重定向 profile/网络卷）上 delta 流整链积压。新形首帧
+  // 缺席 pair 由缓存的补推帧收敛（TTL/冷启动语义见模块）。
+  let pushStateRef: () => void = () => {};
+  const petWorkspaceCache = opts.petDriver === undefined
+    ? undefined
+    : createPetWorkspaceCache({
+        read: opts.petDriver.agentRootStatus === undefined ? undefined : () => opts.petDriver!.agentRootStatus!(),
+        onChange: () => pushStateRef(),
+      });
   const buildStateFrame = (laneStatuses: ReturnType<LaneTable["statuses"]>, petField: unknown): unknown => ({
     t: "state",
     state: opts.driver.getStatus(),
@@ -1962,30 +1965,25 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
       return;
     }
     const pet = opts.petDriver;
-    // I-1（评审修复轮）—— 链步失败隔离（监听器失败隔离 DNA 在帧链上的同
-    // 构）：一次瞬态抛错只丢那一帧（一行 stderr 操作员收据），链回 resolved、
-    // 下一个 emit 照发——无 .catch 的 rejection 会毒化整条链（pet 帧从此停
-    // 发）+ unhandled rejection 可崩进程。
-    frameChain = frameChain.then(async () => {
+    // I-1（评审修复轮）—— 失败隔离照旧（监听器失败隔离 DNA 的同构）：一次
+    // 瞬态抛错只丢那一帧（一行 stderr 操作员收据），下一个 emit 照发——
+    // 绝不让 pet 字段的构建毒化状态信道本身。
+    try {
       let petField: unknown = pet.getStatus();
-      if (pet.agentRootStatus !== undefined) {
-        const st = await Promise.race([
-          pet.agentRootStatus().then(
-            (r) => r,
-            () => undefined,
-          ),
-          new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), PET_FRAME_BUILD_CAP_MS)),
-        ]);
-        const root = st?.agentRoot;
-        if (typeof root === "string" && root !== "" && typeof petField === "object" && petField !== null) {
-          petField = { ...(petField as Record<string, unknown>), workspaceName: basename(root), workspacePath: root };
-        }
+      const ws = petWorkspaceCache?.snapshot();
+      if (ws !== undefined && typeof petField === "object" && petField !== null) {
+        petField = {
+          ...(petField as Record<string, unknown>),
+          workspaceName: ws.name,
+          workspacePath: ws.path,
+        };
       }
       send(buildStateFrame(laneTable.statuses(), petField));
-    }).catch((e) => {
+    } catch (e) {
       process.stderr.write(`wudao-server: state frame build failed (frame dropped, lane alive): ${errText(e)}\n`);
-    });
+    }
   };
+  pushStateRef = pushState;
   const laneTable: LaneTable = createLaneTable({
     main: opts.driver,
     onStatus: pushState,

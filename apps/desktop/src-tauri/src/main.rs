@@ -38,6 +38,11 @@ mod selection;
 // screencapture runner that emits the png bytes to the composer's rail.
 mod screenshot;
 
+// 0.5.10 — Windows 宠物窗常驻 layered（流式 present 修复，根因与配方见
+// 模块头注释：穿透轮询裸增删 WS_EX_LAYERED → 重定向面未定义态 → WebView2
+// 停止 present；常驻 layered + α=255 attributes 把窗口面放进确定态）。
+mod pet_layered;
+
 /// How long the sidecar gets to print its protocol line (server boot is
 /// ~1-2s; the bound also covers first-launch disk churn).
 const HANDSHAKE_TIMEOUT: Duration = Duration::from_secs(30);
@@ -248,6 +253,9 @@ fn main() {
             // window (pet disabled/unbuilt) is a skip, same as the handshake
             // path.
             if let Some(pet) = app.get_webview_window("pet") {
+                // 0.5.10 — 初始即进入确定态（setup 在主线程，样式写入的
+                // 线程归属正确）；此后轮询每拍自愈重申。
+                pet_layered::ensure_layered(&pet);
                 spawn_pet_penetration_poll(pet);
             }
 
@@ -1502,6 +1510,11 @@ fn spawn_pet_penetration_poll(pet: tauri::WebviewWindow) {
             {
                 break; // the toggle itself failing = dead window too
             }
+            // 0.5.10 — tao 的 set_ignore_cursor_events(false) 会把
+            // WS_EX_LAYERED 连同 WS_EX_TRANSPARENT 一起剥掉（两 flag 同臂），
+            // 每拍重申：非 Windows 是编译期空操作，Windows 上缺位才写回。
+            // 与 tao 的线程化写入即使同拍交错，下一拍（≤120ms）自愈收敛。
+            pet_layered::ensure_layered(&pet);
         }
     });
 }
