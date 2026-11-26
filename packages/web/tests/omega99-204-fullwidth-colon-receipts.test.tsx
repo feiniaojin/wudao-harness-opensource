@@ -85,7 +85,9 @@ describe("ω99-204 — A 正向：43 面全角在场（源钉法）", () => {
     expect(countOf(srcOf("components/App.tsx"), "未保存：")).toBe(1);
     expect(countOf(srcOf("components/PreferencesTab.tsx"), "失败：")).toBe(4); // wave2 改进提案小节 +2（同意失败/激活失败回执）
     expect(countOf(srcOf("components/Wizard.tsx"), "失败：")).toBe(9);
-    expect(countOf(srcOf("components/ProviderDetail.tsx"), "失败：")).toBe(7); // 拆分运动 C：添加失败两面随 CREATE 半面迁 NewProviderDetail
+    // 用户 2026-11-22：7→8 —— 凭据删除道加了一面「⚠️ 删除失败：…」；
+    // 8→9 —— 删除升级为凭证 WHOLE 后，回执逐半报告又添一面「⚠️ 端点配置删除失败：…」。
+    expect(countOf(srcOf("components/ProviderDetail.tsx"), "失败：")).toBe(9); // 拆分运动 C：添加失败两面随 CREATE 半面迁 NewProviderDetail
     expect(countOf(srcOf("components/NewProviderDetail.tsx"), "失败：")).toBe(2);
     expect(countOf(srcOf("components/PersonaPanel.tsx"), "失败：")).toBe(6);
     expect(countOf(srcOf("components/ModelConfigModal.tsx"), "失败：")).toBe(2);

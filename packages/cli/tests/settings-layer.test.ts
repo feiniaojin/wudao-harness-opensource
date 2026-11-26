@@ -3,7 +3,7 @@
 // and WUDAO_GLOBAL_HOME isolation. These pin the semantics every rewired
 // loader inherits; loader-level behavior stays in the loaders' own tests.
 import { describe, it, expect, afterEach } from "vitest";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -289,6 +289,19 @@ describe("readGlobalDefaultPermissionMode (0.3.11 pure reader; 0.3.14 four)", ()
     // a forbidden key; the gate is sanitizeUntrustedTier's sub-key rule).
     await saveGlobalSettings({ permissions: { defaultMode: "ask" } });
     expect(readGlobalSettingsSync().permissions).toEqual({ defaultMode: "ask" });
+    await rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+  });
+  it("concurrent saveGlobalSettings calls never share a tmp name (the wizard's same-tick pair used to ENOENT)", async () => {
+    const globalRoot = await tmpGlobal();
+    setGlobalHome(globalRoot);
+    // The wizard saves "UI defaults" and "wizard marker" in the same tick.
+    // With a pid-only tmp name both computed the SAME path, so the loser's
+    // rename saw ENOENT ("默认界面写入失败 ... settings.json.tmp-16172").
+    // Every write must land, and no tmp sibling may be left behind.
+    const writes = Array.from({ length: 8 }, (_, i) => saveGlobalSettings({ wizard: { completedVersion: i } }));
+    await expect(Promise.all(writes)).resolves.toHaveLength(8);
+    expect(readGlobalSettingsSync().wizard).toBeDefined();
+    expect(await readdir(globalRoot)).toEqual(["settings.json"]);
     await rm(globalRoot, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
   });
 });

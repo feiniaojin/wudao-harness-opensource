@@ -1196,6 +1196,24 @@ export async function createUiServer(opts: UiServerOptions): Promise<UiServer> {
           );
           return;
         }
+        case "settingsDeleteCredential": {
+          // 用户 2026-11-22：凭据的删除道（settingsSaveKey 的正对面）。没有
+          // 它，一个贴错的 Key 只能被另一个 Key 覆盖，永远退不掉。删的是
+          // 凭据 WHOLE：凭据文件的 Key 行 + providers.json 的覆盖行。
+          if (opts.driver.settingsDeleteCredential === undefined) {
+            reply(undefined, "settings ops not supported by this driver");
+            return;
+          }
+          if (typeof o.provider !== "string" || o.provider.trim() === "") {
+            reply(undefined, "settingsDeleteCredential needs a provider string");
+            return;
+          }
+          void opts.driver.settingsDeleteCredential(o.provider).then(
+            (result) => reply(result),
+            (err) => reply(undefined, errText(err)),
+          );
+          return;
+        }
         case "settingsTestConnection": {
           if (opts.driver.settingsTestConnection === undefined) {
             reply(undefined, "settings ops not supported by this driver");

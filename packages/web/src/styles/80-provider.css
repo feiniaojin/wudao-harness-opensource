@@ -73,6 +73,9 @@
 .model-badge.live { color: var(--text-2); }
 .detail-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
 .provider-detail .detail-del { color: var(--danger); }
+/* 用户 2026-11-22：删除确认从「两击武装」升级为确认弹窗（不可忽略的显式
+   确认）——武装态的 .detail-del.armed 样式随交互一起退役，弹窗复用
+   .modal-card 家族（含 .wudao.danger 确认键），无需新增样式。 */
 .provider-empty { color: var(--text-2); font-size: var(--fs-ui); padding: var(--sp-2); }
 /* --- 0.3.38 ①: the provider-detail MODAL (pvd) — .modal-card family mecha-
        nics (the family's max-height + overflow:hidden own the viewport fit);
@@ -278,6 +281,9 @@ button.ctl.card-apply { border-color: var(--accent); color: var(--accent); }
 }
 .provider-card .key-badge.on { color: var(--ok); border-color: rgb(var(--ok-rgb) / .35); }
 .provider-card .key-badge.off { color: var(--text-3); border-style: dashed; }
+/* 用户 2026-11-22：探活失败的徽章 —— 「已配」是真的（文件里有这一行），
+   「能用」是假的（401/403）。红色只说第二件事，不否定第一件。 */
+.provider-card .key-badge.bad { color: var(--danger); border-color: rgb(var(--danger-rgb) / .4); }
 .provider-detail .detail-field .keyrow { flex: 1; min-width: 12rem; flex-wrap: wrap; }
 .provider-detail .detail-field .keyrow .ctl { flex: none; min-width: 0; }
 .provider-detail .detail-field .keyrow .key-input { flex: 1 1 8rem; min-width: 0; max-width: 100%; }
@@ -455,6 +461,7 @@ button.ctl.detail-save { border-color: var(--accent); color: var(--accent); }
 }
 .provider-detail .detail-field .key-badge.on { color: var(--ok); border-color: rgb(var(--ok-rgb) / .35); }
 .provider-detail .detail-field .key-badge.off { color: var(--text-3); border-style: dashed; }
+.provider-detail .detail-field .key-badge.bad { color: var(--danger); border-color: rgb(var(--danger-rgb) / .4); }
 /* B (round 6 amended): the read-mode model list — ONE line per row, the row
    itself the grid (the round-5 row-head + expansion card is deleted). */
 .provider-detail .model-row-name { font-family: var(--mono); color: var(--text-1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

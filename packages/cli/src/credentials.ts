@@ -147,6 +147,33 @@ export async function saveProviderKey(
   return writeCredentialsFile({ ...current, [id]: value }, env);
 }
 
+/** Delete ONE provider's key (read-modify-write; other keys untouched).
+ *  Idempotent by design: a missing id is a no-op that still reports the
+ *  remaining count — the UI's delete lane must not have to know (or race)
+ *  whether the key was there when the click happened.
+ *  Before this existed the only way to retire a bad key was to overwrite it
+ *  with another one, which meant a pasted-wrong key could never be removed,
+ *  only exchanged (用户 2026-11-22). */
+export async function deleteProviderKey(
+  provider: string,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<{ readonly path: string; readonly keyCount: number; readonly removed: boolean }> {
+  const id = provider.trim();
+  if (!ID_RE.test(id)) throw new Error(`invalid credentials id "${id}" (expected letter first, then [A-Za-z0-9_-])`);
+  const current = await readCredentialsFile(env);
+  if (!Object.hasOwn(current, id)) {
+    return { path: credentialsFilePath(env), keyCount: Object.keys(current).length, removed: false };
+  }
+  const next: Record<string, string> = { ...current };
+  delete next[id];
+  // Same private-storage primitive as the save path: 0700 dir, 0600 tmp +
+  // atomic rename. An emptied map leaves a zero-byte file rather than
+  // unlinking it — the file's mere presence holds no key, and keeping the
+  // inode avoids a window where a concurrent save's rename target vanished.
+  const out = await writeCredentialsFile(next, env);
+  return { ...out, removed: true };
+}
+
 /** The status face every surface reports: counts only, never values. Absent
  *  file → count 0; unreadable mode → modeOk false (doctor warns + hints the
  *  repair that the next write performs anyway). */

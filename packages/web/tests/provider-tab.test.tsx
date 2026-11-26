@@ -142,8 +142,10 @@ const btnByText = (scope: HTMLElement, text: string): HTMLButtonElement => {
 describe("the provider-card matrix", () => {
   it("renders dot words, the key badge, and the 默认 badge on the LIVE provider (L5) — with ZERO editing surface (iter3)", () => {
     const h = mountedTab(STATUS, DRIVER);
-    // The human status words.
-    expect(card(h.container, "deepseek").textContent).toContain("可用");
+    // The human status words. 用户 2026-11-22: ready now says 已配置, not 可用 —
+    // status is computed from「Key 非空 + 端点非空」(settings-ops.ts:231) with
+    // no network check, so 可用 was promising something it never verified.
+    expect(card(h.container, "deepseek").textContent).toContain("已配置");
     expect(card(h.container, "glm").textContent).toContain("缺 Key");
     expect(card(h.container, "glm").getAttribute("data-status")).toBe("missing-key");
     // The key badge (iter3): 已配/未配 off the wire keySource — the ONLY key
@@ -220,11 +222,13 @@ describe("key management", () => {
     const cfgOp = opsOf(h.server).find((o) => o.op.op === "settingsSaveProvider");
     expect(cfgOp?.op).toMatchObject({ id: "deepseek" });
     await replyTo(h.server, "settingsSaveKey", { provider: "deepseek", saved: true, keyCount: 2 });
+    // 用户 2026-11-22：保存即验证 —— 写盘回执之后紧接一次探活,回执合并。
+    await replyTo(h.server, "settingsTestConnection", { ok: true, state: "ok", message: "连接成功" });
     await replyTo(h.server, "settingsSaveProvider", { ok: true, provider: "deepseek" });
     // Round 5: the save closed the form — the paste box itself is gone
     // (nothing retains the key client-side, stronger than an emptied input).
     expect(detailPanel(h.container).querySelector("input.key-input")).toBeNull();
-    expect(h.notify).toHaveBeenCalledWith("已保存 deepseek 的 Key(凭据文件现有 2 个,权限 0600)——下会话可用");
+    expect(h.notify).toHaveBeenCalledWith("已保存 deepseek 的 Key(凭据文件现有 2 个)· 连接验证通过");
     expect(h.refresh).toHaveBeenCalled();
   });
 });

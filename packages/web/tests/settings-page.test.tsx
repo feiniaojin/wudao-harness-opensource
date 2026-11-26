@@ -227,8 +227,11 @@ describe("key management", () => {
     expect(op?.op).toMatchObject({ provider: "glm", key: "sk-paste-me" });
     await replyTo(h.server, "settingsSaveProvider", { ok: true, provider: "glm" });
     await replyTo(h.server, "settingsSaveKey", { provider: "glm", saved: true, keyCount: 3 });
+    // 用户 2026-11-22：保存即验证 —— 写盘成功紧接着一次探活,回执合并成一条。
+    await replyTo(h.server, "settingsTestConnection", { ok: true, state: "ok", message: "连接成功" });
     expect(h.container.textContent).toContain("已保存 glm 的 Key");
     expect(h.container.textContent).toContain("凭据文件现有 3 个");
+    expect(h.container.textContent).toContain("连接验证通过");
     // round 5 A: save success EXITS edit (back to read) — the paste box is
     // gone entirely, so nothing retains the key client-side.
     expect(detailPanel(h.container).querySelector("input.key-input")).toBeNull();
@@ -690,6 +693,8 @@ describe("settings notices as toasts (iter4)", () => {
     });
     await replyTo(h.server, "settingsSaveProvider", { ok: true, provider: "glm" });
     await replyTo(h.server, "settingsSaveKey", { provider: "glm", saved: true, keyCount: 3 });
+    // 用户 2026-11-22：保存即验证 —— 探活回执与写盘回执同批落进 toast host。
+    await replyTo(h.server, "settingsTestConnection", { ok: true, state: "ok", message: "连接成功" });
     // The host is a DIRECT CHILD of .settings-page (the containment seam),
     // and the entry carries the existing receipt copy verbatim. 0.3.12: the
     // single save fires BOTH lanes → two receipts (config + key), each its

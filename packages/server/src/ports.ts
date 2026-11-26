@@ -190,6 +190,10 @@ export interface UiDriverPort {
   settingsStatus?(): Promise<unknown>;
   /** Persist one provider key to the credentials file (cli-side write). */
   settingsSaveKey?(provider: string, key: string): Promise<unknown>;
+  /** Retire one provider's credential WHOLE — key line + registry overlay row
+   *  (用户 2026-11-22: "删除 Key" 不够). Both halves idempotent; the receipt
+   *  reports them separately (overlayError carries a registry-write failure). */
+  settingsDeleteCredential?(provider: string): Promise<unknown>;
   /** One minimal request through the target provider; human failure states. */
   settingsTestConnection?(provider: string, opts?: { readonly key?: string; readonly model?: string }): Promise<unknown>;
   /** Write one allowlisted settings key — the 13 writable keys (ω99-237: #2 —

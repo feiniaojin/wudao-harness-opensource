@@ -73,7 +73,7 @@ import type { EffectiveProfile, PersonaDefinition, ProviderName, ReasoningEffort
 import { resolveMemorySettings, resolveDocSuiteEnabled, schedulesSettingsFromNode } from "../misc-config.js";
 import { resolveLanguagePreference } from "../language.js";
 import { loadLayeredSettings, readGlobalDefaultPermissionMode, readGlobalSettings, readGlobalSettingsSync, resolveGlobalHome, saveGlobalSettings } from "../settings-layer.js";
-import { credentialsFileStatus, readCredentialsFile, saveProviderKey } from "../credentials.js";
+import { credentialsFileStatus, deleteProviderKey, readCredentialsFile, saveProviderKey } from "../credentials.js";
 import { isHttpMcpServer, loadMcpTiers, ccMcpConfigPath, globalMcpConfigPath, mcpConfigPath } from "../mcp/config.js";
 import { mcpRuntimeSnapshot } from "../mcp/tools.js";
 import { redactUrl } from "../mcp/http.js";
@@ -533,6 +533,21 @@ export interface SettingsOpsDeps {
 export interface SettingsOps {
   settingsStatus(): Promise<SettingsStatusPayload>;
   settingsSaveKey(provider: string, key: string): Promise<{ readonly provider: string; readonly saved: boolean; readonly keyCount: number }>;
+  /** The save lane's inverse — retire ONE provider's credential WHOLE (用户
+   *  2026-11-22: "删除 Key" 不够——凭据不止 Key): the .credentials.yaml key
+   *  line AND the providers.json overlay row (a builtin's saved baseUrl
+   *  override included — settingsDeleteProvider refuses builtin ids by
+   *  design, the compiled profile stays; only the user's overlay leaves).
+   *  Both halves idempotent and reported separately: `overlayError` carries a
+   *  registry-write failure while the key half still landed — a partial
+   *  delete IS the receipt, retry completes the rest. */
+  settingsDeleteCredential(provider: string): Promise<{
+    readonly provider: string;
+    readonly keyDeleted: boolean;
+    readonly keyCount: number;
+    readonly overlayDeleted: boolean;
+    readonly overlayError: string | null;
+  }>;
   settingsTestConnection(provider: string, opts?: { readonly key?: string; readonly model?: string }): Promise<TestConnectionResult>;
   settingsSet(key: string, value: unknown): Promise<{ readonly key: string; readonly saved: boolean }>;
   /** M75-ux1 §2: the workspace switcher's recents — read the list, or (with
@@ -752,6 +767,10 @@ export function createSettingsOps(deps: SettingsOpsDeps): SettingsOps {
   const doFetch = deps.fetchImpl ?? fetch;
   const timeoutMs = deps.testTimeoutMs ?? 10_000;
   const busy = () => deps.isBusy?.() === true;
+  // 用户 2026-11-22 (the credential-delete lane): settingsDeleteCredential
+  // composes the key half (below) with the registry overlay half — created
+  // here, inside a function body, per the module-cycle note's one rule.
+  const registryOps = createProviderRegistryOps(deps);
 
   const bad = (state: TestConnectionState): TestConnectionResult => ({ ok: false, state, message: TEST_MESSAGES[state] });
 
@@ -909,6 +928,29 @@ export function createSettingsOps(deps: SettingsOpsDeps): SettingsOps {
       const saved = await saveProviderKey(id, key, env());
       // Status only — the key never rides back (server strips stray fields too).
       return { provider: id, saved: true, keyCount: saved.keyCount };
+    },
+
+    async settingsDeleteCredential(provider) {
+      const id = provider.trim();
+      // Same widened gate as the save lane: any builtin ∪ registry id may hold
+      // a credential (key line + overlay row), so any of them may need it
+      // retired whole.
+      if (!loadEffectiveProfiles().has(id)) {
+        throw new Error(`unknown provider "${id}" (the matrix: ${[...loadEffectiveProfiles().keys()].join(", ")})`);
+      }
+      // Key first, overlay second — each half reports its own outcome, neither
+      // masks the other: an overlay-write failure surfaces as `overlayError`
+      // while the key deletion stays landed (retry completes the rest; both
+      // halves idempotent). The key never rides back in any field.
+      const key = await deleteProviderKey(id, env());
+      const overlay = await registryOps.settingsDeleteProviderOverlay(id);
+      return {
+        provider: id,
+        keyDeleted: key.removed,
+        keyCount: key.keyCount,
+        overlayDeleted: overlay.ok ? overlay.deleted : false,
+        overlayError: overlay.ok ? null : overlay.error,
+      };
     },
 
     async settingsTestConnection(provider, opts) {
@@ -1608,6 +1650,20 @@ export function withSettingsOps(driver: AgentDriver, deps: SettingsOpsDeps): UiD
       if (out.saved && driver.getStatus().model?.provider === id && driver.providerRefreshPending()) {
         void driver.submit(`/provider ${id}`);
       }
+      return out;
+    },
+    // 删除是对称的反向动作，但不做 save 那套 `/provider` 重提：切过去只会
+    // 立刻缺 Key（还可能缺端点）。让调用方在回执里说清楚「当前会话若正用
+    // 它，下一次调用会失败」就够了 —— 这里不替用户做决定。
+    // 用户 2026-11-22: op 升级为 settingsDeleteCredential（Key + 覆盖行一起
+    // 删）。删除必须立即生效（用户 2026-11-22 追加：不能等重启）——Key 和
+    // 覆盖行任一落盘都是模型矩阵的真相变化（keyDeleted 影响 matrixReady，
+    // 也就是「未配置任何模型 Key」横幅；overlayDeleted 影响连接真相），
+    // push-only 的快照必须当场重建，否则 Web 要等下一个无关事件才刷新
+    // （同类先例：M75 保存供应商模型后下拉不出现新模型）。
+    settingsDeleteCredential: async (provider) => {
+      const out = await ops.settingsDeleteCredential(provider);
+      if (out.overlayDeleted || out.keyDeleted) driver.refreshStatus();
       return out;
     },
     settingsTestConnection: ops.settingsTestConnection,

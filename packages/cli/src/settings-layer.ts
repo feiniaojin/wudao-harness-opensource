@@ -27,10 +27,46 @@
 //
 // Credentials never live in settings — they live in `~/.wudao/.credentials.yaml`
 // (0600, M63 §B; see credentials.ts). Settings keep non-secret preferences.
+import { randomInt } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+
+/** Unique tmp sibling for atomic writes. pid ALONE collides: the wizard's
+ *  "save UI defaults" and "save wizard marker" writes land in the same tick,
+ *  so both computed the same tmp name and the loser's rename got ENOENT
+ *  (user-visible: "默认界面写入失败 ... settings.json.tmp-16172"). Same
+ *  discipline as peer/registry.ts and teams/mailbox.ts: pid + randomInt. */
+function tmpSibling(path: string): string {
+  return `${path}.tmp-${process.pid}-${randomInt(1_000_000)}`;
+}
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/** Windows-hardened rename. Antivirus real-time scanners and the settings
+ *  hot-reload watcher transiently hold a JUST-WRITTEN tmp (or the dest)
+ *  without FILE_SHARE_DELETE, so one rename can EPERM although nothing is
+ *  permanently wrong (user-visible: "EPERM: operation not permitted, rename
+ *  settings.json.tmp-43348-875026 -> settings.json" on every wizard finish).
+ *  Retry with backoff; only EPERM/EACCES are transient — ENOENT and friends
+ *  surface immediately. */
+async function renameWithRetry(from: string, to: string): Promise<void> {
+  const delays = [0, 50, 100, 200, 400, 800];
+  let lastErr: unknown;
+  for (const d of delays) {
+    if (d > 0) await sleep(d);
+    try {
+      await rename(from, to);
+      return;
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code !== "EPERM" && code !== "EACCES") throw err;
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
 
 /** Where the global tier lives. `WUDAO_GLOBAL_HOME` overrides `~/.wudao`
  *  (tests/CI isolation — never read this into a persisted path). */
@@ -492,9 +528,9 @@ export async function saveLocalSettings(
     existed = false;
   }
   await mkdir(dirname(path), { recursive: true });
-  const tmp = `${path}.tmp-${process.pid}`;
+  const tmp = tmpSibling(path);
   await writeFile(tmp, `${JSON.stringify(record, null, 2)}\n`, "utf8");
-  await rename(tmp, path);
+  await renameWithRetry(tmp, path);
   let gitignored = false;
   if (!existed) {
     const entry = ".wudao/settings.local.json";
@@ -509,9 +545,9 @@ export async function saveLocalSettings(
       warn(`⚠️ 未找到 .gitignore——请手动将 "${entry}" 加入其中，以免本地 settings 被提交`);
     } else if (!text.split(/\r?\n/).some((l) => l.trim() === entry)) {
       const withEntry = `${text.replace(/\n*$/, "\n")}${entry}\n`;
-      const tmpIg = `${gitignore}.tmp-${process.pid}`;
+      const tmpIg = tmpSibling(gitignore);
       await writeFile(tmpIg, withEntry, "utf8");
-      await rename(tmpIg, gitignore);
+      await renameWithRetry(tmpIg, gitignore);
       gitignored = true;
     } else {
       gitignored = true;
@@ -598,8 +634,8 @@ export async function saveGlobalSettings(
   }
   const path = globalSettingsPath(env);
   await mkdir(dirname(path), { recursive: true });
-  const tmp = `${path}.tmp-${process.pid}`;
+  const tmp = tmpSibling(path);
   await writeFile(tmp, `${JSON.stringify(record, null, 2)}\n`, { encoding: "utf8", mode: 0o600 });
-  await rename(tmp, path);
+  await renameWithRetry(tmp, path);
   return path;
 }

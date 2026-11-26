@@ -19,7 +19,7 @@
 // One tmp WUDAO_GLOBAL_HOME for the whole file (deps.env AND process.env —
 // the memo keys on the process-resolved default path, so the invalidation pin
 // is honest only when both agree).
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -28,6 +28,15 @@ import { createSettingsOps } from "../src/driver/settings-ops.js";
 import { resetProviderRegistryCacheForTests } from "../src/provider-registry.js";
 import { readGlobalSettingsSync, saveGlobalSettings } from "../src/settings-layer.js";
 import { credentialsFilePath, saveProviderKey } from "../src/credentials.js";
+
+// The R-M5 pin mocks saveGlobalSettings to inject a THROWING settings
+// fallback — the spy wraps the real writer, so every call in other tests
+// (setup seeding) still hits the disk; only the explicit mockRejectedValueOnce
+// in that one test throws. vi.mock is hoisted, hence the factory form.
+vi.mock("../src/settings-layer.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/settings-layer.js")>();
+  return { ...actual, saveGlobalSettings: vi.fn(actual.saveGlobalSettings) };
+});
 
 let home: string;
 let savedHome: string | undefined;
@@ -322,11 +331,17 @@ describe("settingsDeleteProvider", () => {
     await saveGlobalSettings({ model: { defaultModel: { provider: "my-gw", model: "m-x" } } }, env());
     const settings = createSettingsOps({ env: env(), workspaceRoot: process.cwd() });
     expect((await settings.settingsStatus()).providers.some((c) => c.provider === "my-gw")).toBe(true); // primes the memo
-    // Force the fallback's saveGlobalSettings to throw: the writer stages its
-    // atomic write at `${settings.json}.tmp-<pid>` — a DIRECTORY at exactly
-    // that path fails the staging writeFile (EISDIR) while the registry write
-    // (its own tmp name, same dir) stays unaffected.
-    mkdirSync(join(home, `settings.json.tmp-${process.pid}`));
+    // Force the fallback's saveGlobalSettings to throw. Fault injection went
+    // through two iterations: (1) a DIRECTORY planted at the staged tmp path
+    // `${settings.json}.tmp-<pid>` broke the staging writeFile (EISDIR) — this
+    // stopped working when the tmp name gained a randomInt suffix (fix "make
+    // settings writes collision-proof"); (2) a DIRECTORY at the DEST path
+    // fails the rename, but readGlobalSettings' earlier swallow of the EISDIR
+    // read returns an empty record first, so the fallback (and the throw)
+    // never runs at all. So: mock the writer directly — deterministic and
+    // platform-independent, and the registry write (its own writer) stays
+    // unaffected.
+    vi.mocked(saveGlobalSettings).mockRejectedValueOnce(new Error("injected: settings write throws"));
     const ops = makeOps();
     await expect(ops.settingsDeleteProvider("my-gw")).rejects.toThrow();
     // The registry write LANDED …

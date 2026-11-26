@@ -483,6 +483,7 @@ export type ClientOp =
   /** M63 §B settings ops (same first-frame auth; replies are status-only). */
   | { op: "settingsStatus" }
   | { op: "settingsSaveKey"; provider: string; key: string }
+  | { op: "settingsDeleteCredential"; provider: string }
   | { op: "settingsTestConnection"; provider: string; key?: string; model?: string }
   | { op: "settingsSet"; key: string; value: unknown }
   /** Provider management §5: register/update one provider in the machine
@@ -882,6 +883,19 @@ export interface SaveKeyResult {
   readonly provider: string;
   readonly saved: boolean;
   readonly keyCount: number;
+}
+
+/** settingsDeleteCredential's reply — status only, no key material. `keyDeleted`
+ *  is false when the credentials file held no key for the id (a re-click after
+ *  a race), `overlayDeleted` likewise for the providers.json row: both
+ *  idempotent, never an error. `overlayError` carries a registry-write failure
+ *  while the key half still landed — a partial delete IS the receipt. */
+export interface DeleteCredentialResult {
+  readonly provider: string;
+  readonly keyDeleted: boolean;
+  readonly keyCount: number;
+  readonly overlayDeleted: boolean;
+  readonly overlayError: string | null;
 }
 
 /** The human failure states of 测试连接 (spec §B/§C wording). */

@@ -41,7 +41,8 @@
 // resets when the selection moves). A post-save refresh produces a NEW card
 // object; the effect below re-seeds the drafts from the server's truth only
 // while they are clean — dirty drafts survive the refresh (the F4 guard).
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useFocusReturn } from "../use-focus-return.js";
 import type { PersonaSummary, ProviderCard, TestConnectionResult, WudaoClient } from "../protocol.js";
 // ui-review-r5 I2: the chips ride the SAME lane the StatusBar picker does —
 // modelPickCommand picks /model vs /provider per row.
@@ -77,6 +78,8 @@ export function ProviderDetail({
   currentProvider,
   currentModel,
   defaultModel,
+  verification,
+  onVerified,
   notify,
   refresh,
 }: {
@@ -97,6 +100,12 @@ export function ProviderDetail({
    *  默认 badge rides it — NOT the live session model (the old badge
    *  mislabeled 当前 as 默认); undefined/null = none written yet. */
   defaultModel?: { readonly provider: string; readonly model: string } | null;
+  /** 用户 2026-11-22：本会话内这张卡的探活结论（ProviderTab 的账本）。read
+   *  mode 的 badge 与卡片矩阵读同一份 —— 保存/测试之后两处同时改口。 */
+  verification?: TestConnectionResult | null;
+  /** 探活结论回传（保存即验证、手动测试连接都走它）—— detail 按选中项重新
+   *  挂载,结论放这里就丢了,必须上抬到 tab。 */
+  onVerified?: (provider: string, r: TestConnectionResult) => void;
   notify: (text: string) => void;
   refresh: () => void;
 }): React.JSX.Element {
@@ -119,7 +128,13 @@ export function ProviderDetail({
   // the paste, not the stored one); the pending lane is separate from the
   // model-manager's (the old card rows were independent lanes too).
   const [keyDraft, setKeyDraft] = useState("");
-  const [keyPending, setKeyPending] = useState<"save" | "test" | null>(null);
+  const [keyPending, setKeyPending] = useState<"save" | "test" | "del" | null>(null);
+  // 用户 2026-11-22：凭据的删除道。弹窗确认（用户 2026-11-22 追加：两击
+  // 确认不够友好——用户可能根本没注意到按钮变成了「再点一次确认」，弹窗是
+  // 不可忽略的显式确认）。删 Key 不可逆，值得一次真正的确认动作；家族位
+  // 沿用 NewChatConfirm 的 .scrim + .modal-card idiom（Escape/Enter 取消、
+  // 焦点归还）。
+  const [delConfirmOpen, setDelConfirmOpen] = useState(false);
   const [testResult, setTestResult] = useState<TestConnectionResult | null>(null);
   // persona-settings T7 — the binding dropdown's rows (personaList). null =
   // not yet loaded OR the op failed: the selector DEGRADES to its two
@@ -210,9 +225,85 @@ export function ProviderDetail({
       .settingsTestConnection(card.provider, opts)
       .then((r) => {
         setTestResult(r);
+        // 手动测试也改口（同一把钥匙,同一个结论）——卡片矩阵不该只在保存后
+        // 才诚实。
+        onVerified?.(card.provider, r);
       })
       .catch((e: unknown) => notify(`⚠️ 测试失败：${errText(e)}`)) // ω99-204: #3
       .finally(() => setKeyPending(null));
+  };
+
+  /** 用户 2026-11-22：保存即验证。向导一直是「先探活、ok 才落盘」
+   *  (Wizard.tsx:testConnection)，设置页却直接写盘、零校验 —— 于是 401 的
+   *  Key 存完，卡片照样是绿的「已配」。这里对齐，但不阻塞：Key 先落盘(网络
+   *  抖动/余额为 0 不该扣留用户的配置)，随即用刚存的 Key 探一次，结论骑回
+   *  badge 并合并成一条回执。写盘失败则只报写盘 —— 没存进去就无从谈验证。 */
+  const saveKeyThenProbe = (key: string): void => {
+    const provider = card.provider;
+    const model = models[0];
+    setKeyPending("save");
+    client
+      .settingsSaveKey(provider, key)
+      .then((r) => {
+        // The input clears on success: the key lives only in the 0600 file,
+        // and nothing in this UI ever reads it back.
+        setKeyDraft("");
+        // 探活期间保持禁用(同一枚按钮,同一条 pending 道),避免连点重复提交。
+        setKeyPending("test");
+        return client
+          .settingsTestConnection(provider, { key, ...(model !== undefined ? { model } : {}) })
+          .then((t) => {
+            setTestResult(t);
+            onVerified?.(provider, t);
+            notify(
+              t.ok
+                ? `已保存 ${r.provider} 的 Key(凭据文件现有 ${r.keyCount} 个)· 连接验证通过`
+                : `⚠️ 已保存 ${r.provider} 的 Key(现有 ${r.keyCount} 个),但验证未通过：${t.message}`,
+            );
+          })
+          .catch((e: unknown) => {
+            // 探活通道本身挂了(旧 server / 连接断)：写盘已成功,如实说「未验证」，
+            // 不谎称通过,也不谎称保存失败。
+            notify(`已保存 ${r.provider} 的 Key(现有 ${r.keyCount} 个)—— 未能验证：${errText(e)}`);
+          });
+      })
+      .catch((e: unknown) => notify(`⚠️ 保存失败：${errText(e)}`)) // ω99-204: #3
+      .finally(() => {
+        setKeyPending(null);
+        // refresh 到这里才跑：让 card.keySource 落成 credentials，矩阵的
+        // 「未配」不会被误留。
+        refresh();
+      });
+  };
+
+  /** 用户 2026-11-22：与保存对称的删除道。删除前它并不存在 —— 贴错的 Key
+   *  只能被另一个 Key 覆盖，等于永远退不掉。幂等：文件里本来就没有该 id 的
+   *  时候 op 回 deleted:false，不是错误。删完清掉本会话的探活结论（否则徽章
+   *  还挂着上一枚 Key 的判决）。op 只从确认弹窗的「确认删除」出发 —— 按钮
+   *  本身只开弹窗。 */
+  const delKey = (): void => {
+    setKeyPending("del");
+    client
+      .settingsDeleteCredential(card.provider)
+      .then((r) => {
+        setTestResult(null);
+        // 凭据 WHOLE：Key 行 + 端点覆盖行分开报告 —— 一半失败不吞另一半。
+        const halves: string[] = [];
+        halves.push(r.keyDeleted ? `Key 已删(凭据文件现有 ${r.keyCount} 个)` : "凭据文件里本没有 Key");
+        halves.push(r.overlayDeleted ? "端点配置已清" : "没有端点配置可清");
+        if (r.overlayError !== null) halves.push(`⚠️ 端点配置删除失败：${r.overlayError}`);
+        // 用户 2026-11-22（实测修正）：正在运行的会话仍能继续聊 —— 模型客户端
+        // 在会话启动时就已带着 Key 解析进内存，删除只动磁盘与状态快照，不重建
+        // 已在跑的客户端（设计如此，settings-ops 的删除 lane 不替用户掐会话）。
+        // 回执如实说失效时点：重启 / 新会话才真正缺 Key。
+        notify(`已删除 ${r.provider} 的凭证 —— ${halves.join("，")}。当前会话仍可继续（Key 已驻留内存），重启或新会话后失效`);
+        refresh();
+      })
+      .catch((e: unknown) => notify(`⚠️ 删除失败：${errText(e)}`))
+      .finally(() => {
+        setKeyPending(null);
+        setDelConfirmOpen(false);
+      });
   };
 
   /** The chips'/apply switch lane (the same one ProviderTab's 「应用」 rides):
@@ -246,18 +337,10 @@ export function ProviderDetail({
     // with their own receipts; a key failure never blocks the config save.
     const key = keyDraft.trim();
     if (key !== "") {
-      setKeyPending("save");
-      client
-        .settingsSaveKey(card.provider, key)
-        .then((r) => {
-          // The input clears on success: the key lives only in the 0600 file,
-          // and nothing in this UI ever reads it back.
-          setKeyDraft("");
-          notify(`已保存 ${r.provider} 的 Key(凭据文件现有 ${r.keyCount} 个,权限 0600)——下会话可用`);
-          refresh();
-        })
-        .catch((e: unknown) => notify(`⚠️ 保存失败：${errText(e)}`))
-        .finally(() => setKeyPending(null));
+      // 0.3.12 single save：粘贴的 Key 随同一次点击提交 —— 现在这一次点击也会
+      // 探活（saveKeyThenProbe），结论直接写进卡片徽章，而不是只留一句
+      // 「已保存——下会话可用」让用户自己猜。
+      saveKeyThenProbe(key);
     }
     const models = modelsPayload(draft.rows);
     const config: Record<string, unknown> = card.custom
@@ -502,8 +585,15 @@ export function ProviderDetail({
           </div>
         ) : (
           <div className="keyrow">
-            <span className={`key-badge ${keyBadge(card).cls}`} title={KEY_SOURCE_TEXT[card.keySource ?? "none"]}>
-              {keyBadge(card).text}
+            <span
+              className={`key-badge ${keyBadge(card, verification).cls}`}
+              title={
+                verification != null
+                  ? `${KEY_SOURCE_TEXT[card.keySource ?? "none"]} · ${verification.message}`
+                  : KEY_SOURCE_TEXT[card.keySource ?? "none"]
+              }
+            >
+              {keyBadge(card, verification).text}
             </span>
             <button
               type="button"
@@ -513,6 +603,20 @@ export function ProviderDetail({
             >
               测试连接
             </button>
+            {/* 用户 2026-11-22：删除道只对「凭据文件」来源开放 —— 环境变量
+                来源的 Key 不归本应用管，删也删不掉，摆个按钮才是骗人。
+                删的是凭证 WHOLE（Key + 端点配置），不止 Key 那一行。
+                点击开确认弹窗（不可忽略的显式确认），op 只从弹窗出发。 */}
+            {card.keySource === "credentials" ? (
+              <button
+                type="button"
+                className="ctl detail-del"
+                disabled={keyPending !== null}
+                onClick={() => setDelConfirmOpen(true)}
+              >
+                删除凭证
+              </button>
+            ) : null}
           </div>
         )}
       </div>
@@ -772,6 +876,66 @@ export function ProviderDetail({
           onSaved={(rows) => setDraft((d) => ({ ...d, rows }))}
         />
       ) : null}
+      {delConfirmOpen ? (
+        <DeleteCredentialConfirm
+          provider={card.provider}
+          onChoose={(yes) => {
+            if (yes) delKey();
+            else setDelConfirmOpen(false);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+// 用户 2026-11-22：删除凭证的确认弹窗 —— NewChatConfirm 的家族位（.scrim +
+// .modal-card.pop-in、Escape/Enter 取消、resolved 防双发、useFocusReturn），
+// 文案换成凭证语义：删的是 WHOLE（Key + 端点配置），不可恢复。
+function DeleteCredentialConfirm({
+  provider,
+  onChoose,
+}: {
+  provider: string;
+  onChoose: (yes: boolean) => void;
+}): React.JSX.Element {
+  const resolved = useRef(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useFocusReturn();
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
+  const choose = (yes: boolean): void => {
+    if (resolved.current) return;
+    resolved.current = true;
+    onChoose(yes);
+  };
+  return (
+    <div className="scrim">
+      <div
+        className="modal-card pop-in"
+        role="dialog"
+        aria-label="删除凭证"
+        ref={ref}
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" || e.key === "Enter") {
+            e.preventDefault();
+            choose(false);
+          }
+        }}
+      >
+        <h3>删除 {provider} 的凭证？</h3>
+        <div className="muted">将删除该供应商的 Key 与端点配置，不可恢复；正在运行的会话仍可继续（Key 已驻留内存），重启或新会话后生效</div>
+        <div className="btnrow">
+          <button type="button" className="wudao danger" onClick={() => choose(true)}>
+            确认删除
+          </button>
+          <button type="button" className="wudao" onClick={() => choose(false)}>
+            取消
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

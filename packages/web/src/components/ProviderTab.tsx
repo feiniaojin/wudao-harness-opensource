@@ -27,7 +27,7 @@
 // Adding a provider is the same interaction as editing one (0.3.38: a modal
 // — the create form rides the SAME dialog as the edit detail).
 import { useEffect, useRef, useState } from "react";
-import type { DriverStatus, ProviderCard, SettingsStatus, WudaoClient } from "../protocol.js";
+import type { DriverStatus, ProviderCard, SettingsStatus, TestConnectionResult, WudaoClient } from "../protocol.js";
 import { NewProviderDetail, ProviderDetail } from "./ProviderDetail.js";
 import { imeEnd, imeStart, imeSwallows, type ImeGuardState } from "./ime-guard.js";
 
@@ -42,10 +42,23 @@ export function cardModels(card: ProviderCard, status: DriverStatus | null): rea
   return fromChoices.includes(card.defaultModel) ? fromChoices : [...fromChoices, card.defaultModel];
 }
 
+// 用户 2026-11-22：「可用」名不副实。status 只由「Key 非空 + 端点非空」算出来
+// （settings-ops.ts:231），从不联网校验，所以一个 401 的 Key 也照样得到 ready
+// —— 用户看到的是「已配」+「可用」，实际一调就废。话术与判据对齐：ready 只说
+// 「已配置」，可用性交给 badge（保存/测试连接的探活结论）说。
 export const DOT_TEXT: Readonly<Record<ProviderCard["status"], string>> = {
-  ready: "可用",
+  ready: "已配置",
   "missing-key": "缺 Key",
   "missing-endpoint": "缺端点",
+};
+
+/** The dot's hover text — 「已配置」under-claims nothing but explains nothing
+ *  either; the title carries the full judgement so the distinction is
+ *  discoverable without opening the detail. */
+export const DOT_TITLE: Readonly<Record<ProviderCard["status"], string>> = {
+  ready: "配置齐全(Key 与端点均已填写)—— 可用性未校验,点「测试连接」才会真的验证",
+  "missing-key": "缺 Key —— 填一个才能调用",
+  "missing-endpoint": "缺端点 —— 需要 baseUrl 或 WUDAO_BASE_URL",
 };
 
 const KEY_SOURCE_TEXT: Readonly<Record<string, string>> = {
@@ -62,8 +75,19 @@ const KEY_BADGE: Readonly<Record<string, { readonly cls: string; readonly text: 
   credentials: { cls: "on", text: "已配 · 凭据文件" },
   none: { cls: "off", text: "未配 Key" },
 };
-const keyBadge = (c: ProviderCard): { readonly cls: string; readonly text: string } =>
-  KEY_BADGE[c.keySource ?? "none"] ?? KEY_BADGE.none!;
+/** 用户 2026-11-22：探活结论必须骑到 badge 上。判据是「文件里有没有这一行」，
+ *  所以「已配」本身没错 —— 错的是没有第二句话。verdict 一进来就把话说全：
+ *  失败红、通过绿、没探过就只报来源。verdict 是会话内事实（本组件的 state），
+ *  刷新即回到「已配 · 凭据文件」；宁可说未验证，也不冒充可用。 */
+const keyBadge = (
+  c: ProviderCard,
+  verdict?: TestConnectionResult | null,
+): { readonly cls: string; readonly text: string } => {
+  if (c.keySource == null) return KEY_BADGE.none!;
+  if (verdict?.ok === false) return { cls: "bad", text: "已配 · 验证失败" };
+  if (verdict?.ok === true) return { cls: "on", text: "已配 · 已验证" };
+  return KEY_BADGE[c.keySource] ?? KEY_BADGE.none!;
+};
 export { keyBadge, KEY_SOURCE_TEXT };
 
 const errText = (e: unknown): string => (e instanceof Error ? e.message : String(e));
@@ -89,6 +113,14 @@ export function ProviderTab({
   loadError?: string | null;
 }): React.JSX.Element {
   const [pending, setPending] = useState<string | null>(null);
+  // 用户 2026-11-22：探活结论的会话内账本（provider id → verdict）。它是
+  // 唯一让卡片说出「验证失败」的东西 —— settingsStatus 的 card 只有
+  // keySource/status（存在性），永远不知道 Key 是不是真的能用。放在 TAB 上
+  // 而不留在 detail 里，是因为 detail 按选中项重新挂载、关掉就丢；卡片矩阵
+  // 才是用户扫一眼的地方。
+  const [verifications, setVerifications] = useState<Readonly<Record<string, TestConnectionResult>>>({});
+  const recordVerdict = (provider: string, r: TestConnectionResult): void =>
+    setVerifications((prev) => ({ ...prev, [provider]: r }));
   // §6 T4: the search box, the selected card. iter5: the add flow's draft
   // flag — true while the blank lead card + the create form are up (the draft
   // itself is client-side only; NewProviderDetail owns its fields). 0.3.38:
@@ -220,6 +252,8 @@ export function ProviderTab({
               currentProvider={currentProvider}
               currentModel={currentModel}
               defaultModel={settings.defaultModel}
+              verification={verifications[selected.provider] ?? null}
+              onVerified={recordVerdict}
               notify={notify}
               refresh={refresh}
             />
@@ -323,7 +357,8 @@ export function ProviderTab({
                   }
                   const isDefault = currentProvider === c.provider;
                   const isSelected = selected?.provider === c.provider;
-                  const badge = keyBadge(c);
+                  const verdict = verifications[c.provider] ?? null;
+                  const badge = keyBadge(c, verdict);
                   // Selecting a REAL card drops the draft (iter5): the draft
                   // and the selection are one detail surface — picking
                   // something real abandons the blank card. 0.3.38: picking
@@ -349,12 +384,19 @@ export function ProviderTab({
                           word, then the mono endpoint. Same classNames, same
                           click lanes (the whole card still selects). */}
                       <div className="card-head">
-                        <span className={`dot ${c.status}`} title={DOT_TEXT[c.status]} />
+                        <span className={`dot ${c.status}`} title={DOT_TITLE[c.status]} />
                         <button type="button" className="card-name" title="选中查看详情" onClick={pick}>
                           {c.provider === "wudao" ? "兼容端点(wudao)" : c.label}
                         </button>
                         {isDefault ? <span className="meta tag-default">{"默认"}</span> : null}
-                        <span className={`key-badge ${badge.cls}`} title={KEY_SOURCE_TEXT[c.keySource ?? "none"]}>
+                        <span
+                          className={`key-badge ${badge.cls}`}
+                          title={
+                            verdict !== null
+                              ? `${KEY_SOURCE_TEXT[c.keySource ?? "none"]} · ${verdict.message}`
+                              : KEY_SOURCE_TEXT[c.keySource ?? "none"]
+                          }
+                        >
                           {badge.text}
                         </span>
                       </div>

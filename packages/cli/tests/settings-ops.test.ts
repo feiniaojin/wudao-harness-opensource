@@ -212,6 +212,58 @@ describe("settingsSaveKey (the write path)", () => {
   });
 });
 
+describe("settingsDeleteCredential (the retire path — 用户 2026-11-22: 凭证不止 Key)", () => {
+  it("removes ONE key, keeps the others, and replies status-only", async () => {
+    const ops = createSettingsOps({ env: env(), workspaceRoot: root });
+    await ops.settingsSaveKey("deepseek", "sk-a");
+    await ops.settingsSaveKey("qwen", "sk-b");
+    const r = await ops.settingsDeleteCredential("deepseek");
+    expect(r).toEqual({
+      provider: "deepseek",
+      keyDeleted: true,
+      keyCount: 1,
+      overlayDeleted: false, // the test home has no providers.json row for it
+      overlayError: null,
+    });
+    expect(JSON.stringify(r)).not.toContain("sk-");
+    const file = readFileSync(credentialsFilePath(env()), "utf8");
+    expect(file).not.toContain("deepseek");
+    expect(file).toContain("qwen: sk-b");
+  });
+
+  it("is idempotent — a second delete reports both halves false, never an error", async () => {
+    const ops = createSettingsOps({ env: env(), workspaceRoot: root });
+    await ops.settingsSaveKey("deepseek", "sk-a");
+    await ops.settingsDeleteCredential("deepseek");
+    await expect(ops.settingsDeleteCredential("deepseek")).resolves.toEqual({
+      provider: "deepseek",
+      keyDeleted: false,
+      keyCount: 0,
+      overlayDeleted: false,
+      overlayError: null,
+    });
+  });
+
+  it("deletes a BUILTIN's overlay row too (the compiled profile stays, the override leaves)", async () => {
+    const ops = createSettingsOps({ env: env(), workspaceRoot: root });
+    // A builtin may overlay (validateUserProviderEntry) — save a baseUrl
+    // override the way the settings page does (registry ops own that write),
+    // then retire the credential whole.
+    const regOps = createProviderRegistryOps({ env: env(), workspaceRoot: root });
+    const saved = await regOps.settingsSaveProvider("deepseek", { baseUrl: "https://api.example.com/v1" });
+    expect(saved).toMatchObject({ ok: true });
+    const r = await ops.settingsDeleteCredential("deepseek");
+    expect(r).toMatchObject({ provider: "deepseek", keyDeleted: false, overlayDeleted: true, overlayError: null });
+    const registry = readFileSync(join(env()["WUDAO_GLOBAL_HOME"]!, "providers.json"), "utf8");
+    expect(registry).not.toContain("deepseek");
+  });
+
+  it("rejects providers outside the matrix", async () => {
+    const ops = createSettingsOps({ env: env(), workspaceRoot: root });
+    await expect(ops.settingsDeleteCredential("openai")).rejects.toThrow(/unknown provider/);
+  });
+});
+
 describe("settingsTestConnection (mocked fetch, three human states)", () => {
   it("401 → Key 无效或无余额", async () => {
     const ops = createSettingsOps({ env: env(), workspaceRoot: root, fetchImpl: fakeFetch([{ status: 401, body: '{"error":"auth"}' }]) });

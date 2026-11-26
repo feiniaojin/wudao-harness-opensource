@@ -58,6 +58,12 @@ import type { SettingsOpsDeps, TestConnectionState } from "./settings-ops.js";
 /** The ops' reply shapes (mirrored by packages/web/src/protocol.ts). */
 export type SaveProviderOutcome = { readonly ok: true; readonly provider: string } | { readonly ok: false; readonly error: string };
 export type DeleteProviderOutcome = { readonly ok: true } | { readonly ok: false; readonly error: string };
+/** 用户 2026-11-22 (the credential-delete lane): the overlay twin of
+ *  DeleteProviderOutcome — `deleted` distinguishes "a row actually left the
+ *  file" from "already absent" (both are the idempotent goal state). */
+export type DeleteProviderOverlayOutcome =
+  | { readonly ok: true; readonly deleted: boolean }
+  | { readonly ok: false; readonly error: string };
 export type ListModelsOutcome =
   | { readonly ok: true; readonly models: readonly ProviderModelEntry[] }
   | { readonly ok: false; readonly state: TestConnectionState; readonly message: string };
@@ -65,6 +71,13 @@ export type ListModelsOutcome =
 export interface ProviderRegistryOps {
   settingsSaveProvider(id: string, config: unknown): Promise<SaveProviderOutcome>;
   settingsDeleteProvider(id: string): Promise<DeleteProviderOutcome>;
+  /** Retires a registry ROW for ANY id — custom rows and builtin overlays
+   *  alike. settingsDeleteProvider refuses builtin ids because the COMPILED
+   *  profile always exists; the overlay row does not share that eternity, and
+   *  a saved baseUrl override on a builtin is exactly what the credential
+   *  delete must clear (validateUserProviderEntry: "a builtin id may overlay").
+   *  Same read-modify-write + memo invalidation + defaultModel heal. */
+  settingsDeleteProviderOverlay(id: string): Promise<DeleteProviderOverlayOutcome>;
   settingsListModels(provider: string, opts?: { readonly key?: string }): Promise<ListModelsOutcome>;
 }
 
@@ -173,6 +186,25 @@ const KEY_FIELDS = ["key", "apiKey", "apiKeys", "keys"] as const;
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+/** The stored pick may point at a provider whose row just vanished (deleting
+ *  the custom — or a hand-edited registry): drop it so the boot's default
+ *  resolution owns the default again (design §5's fallback). Idempotent — an
+ *  absent pick is a no-op. Shared by settingsDeleteProvider and
+ *  settingsDeleteProviderOverlay. */
+async function healDefaultModelPick(trimmed: string, e: NodeJS.ProcessEnv): Promise<void> {
+  const record = await readGlobalSettings(e);
+  const modelNode = record["model"];
+  if (isPlainObject(modelNode)) {
+    const pick = modelNode["defaultModel"];
+    if (isPlainObject(pick) && pick["provider"] === trimmed) {
+      const next = { ...modelNode };
+      delete next["defaultModel"];
+      record["model"] = next;
+      await saveGlobalSettings(record, e);
+    }
+  }
 }
 
 /** Read the registry file RAW (unvalidated) for the modify half of the
@@ -302,23 +334,30 @@ export function createProviderRegistryOps(deps: SettingsOpsDeps): ProviderRegist
         // settings matrix) still showing it — a stale-matrix window.
         invalidateProviderRegistryCache();
       }
-      // The stored pick may point at a provider that just vanished (deleting
-      // the custom — or a hand-edited registry): drop it so the boot's default
-      // resolution owns the default again (design §5's fallback). Runs on the
-      // idempotent path too — an absent row with a dangling pick still heals.
-      const e = env();
-      const record = await readGlobalSettings(e);
-      const modelNode = record["model"];
-      if (isPlainObject(modelNode)) {
-        const pick = modelNode["defaultModel"];
-        if (isPlainObject(pick) && pick["provider"] === trimmed) {
-          const next = { ...modelNode };
-          delete next["defaultModel"];
-          record["model"] = next;
-          await saveGlobalSettings(record, e);
-        }
-      }
+      await healDefaultModelPick(trimmed, env());
       return { ok: true };
+    },
+
+    async settingsDeleteProviderOverlay(id): Promise<DeleteProviderOverlayOutcome> {
+      const trimmed = id.trim();
+      if (trimmed === "") return { ok: false, error: "provider id 不能为空" };
+      // NO builtin refusal here (see the interface note): the compiled profile
+      // is untouched — only the user's overlay row leaves the file, builtin or
+      // custom alike. Body mirrors settingsDeleteProvider's core verbatim.
+      const path = defaultProviderRegistryPath(env());
+      const providers = readRawProviders(path);
+      const present = providers[trimmed] !== undefined;
+      if (present) {
+        delete providers[trimmed];
+        try {
+          writeProviderRegistrySync(path, { version: 1, providers: providers as Record<string, UserProviderConfig> });
+        } catch (err) {
+          return { ok: false, error: `写入 providers.json 失败：${err instanceof Error ? err.message : String(err)}` };
+        }
+        invalidateProviderRegistryCache();
+      }
+      await healDefaultModelPick(trimmed, env());
+      return { ok: true, deleted: present };
     },
 
     async settingsListModels(provider, opts): Promise<ListModelsOutcome> {

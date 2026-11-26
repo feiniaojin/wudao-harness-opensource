@@ -64,6 +64,7 @@ export type {
   ProviderCard,
   SettingsStatus,
   SaveKeyResult,
+  DeleteCredentialResult,
   TestConnectionState,
   TestConnectionResult,
   SettingsSetResult,
@@ -118,6 +119,7 @@ import {
   ResumeForkOutcome,
   SettingsStatus,
   SaveKeyResult,
+  DeleteCredentialResult,
   TestConnectionResult,
   SettingsSetResult,
   SaveProviderResult,
@@ -809,6 +811,15 @@ export class WudaoClient {
    *  success; there is nothing to read here even on reconnect). */
   settingsSaveKey(provider: string, key: string): Promise<SaveKeyResult> {
     return this.sendOp<SaveKeyResult>({ op: "settingsSaveKey", provider, key });
+  }
+
+  /** Remove one provider's credential WHOLE (0600 key line + the registry
+   *  overlay row — a builtin's saved baseUrl override included). Both halves
+   *  idempotent; the receipt reports them separately. Sibling of
+   *  settingsSaveKey — wrong credentials used to be un-removable, only
+   *  overwritable (用户 2026-11-22). */
+  settingsDeleteCredential(provider: string): Promise<DeleteCredentialResult> {
+    return this.sendOp<DeleteCredentialResult>({ op: "settingsDeleteCredential", provider });
   }
 
   /** One minimal request through the target provider. `key` tests an

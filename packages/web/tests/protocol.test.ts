@@ -480,6 +480,9 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
       { op: "rewind", target: "last" },
       { op: "edit", n: 1 },
       { op: "settingsSaveKey", provider: "glm", key: "k" },
+      // 用户 2026-11-22：删除是保存的对面 —— 同为凭据写，同样必须 vault
+      // （幂等，但回执要随重放原样再送）。
+      { op: "settingsDeleteCredential", provider: "glm" },
       { op: "settingsSet", key: "ui.theme", value: "dark" },
       // Provider management §5: a provider write is a side effect that must
       // survive a mid-flap replay exactly once — vaulted like settingsSet.
@@ -714,7 +717,9 @@ describe("ω-3a reconnect replay (mutation idempotency)", () => {
     // (mutations — the pet toolbar's four writes, vaulted so a mid-flap replay
     // archives exactly once and the config/root switches land exactly once)
     // joined the mutations above → 77 + 4.
-    expect(actions.size).toBe(81); // M85-pet §2 工具栏四 op 入表（77→81，写）
+    // 用户 2026-11-22: settingsDeleteCredential (the credentials retire lane,
+    // key line + registry overlay row in ONE op) joined the mutations above → 81 + 1.
+    expect(actions.size).toBe(82); // M85-pet §2 四 op + settingsDeleteCredential（81→82，写）
 
     // Report-86 review M1 (report 89 item 1): the count pin above is
     // RUNTIME-only — a new ClientOp action that never enters the lists trips

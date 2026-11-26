@@ -40,6 +40,7 @@ afterEach(() => {
   });
   root = null;
   document.body.innerHTML = "";
+  deleteKeyMockResult = null;
 });
 
 // --- fixtures (the T5 wire contract) -------------------------------------------
@@ -86,6 +87,16 @@ const CUSTOM_CARD: ProviderCard = {
 
 type Spy = ReturnType<typeof vi.fn>;
 
+/** 用户 2026-11-22：删除道回执的可注入形态（null = 默认全成功 receipt）。
+ *  逐半报告的回执测试用它改写删除结果，测试末尾复位。 */
+let deleteKeyMockResult: {
+  readonly provider: string;
+  readonly keyDeleted: boolean;
+  readonly keyCount: number;
+  readonly overlayDeleted: boolean;
+  readonly overlayError: string | null;
+} | null = null;
+
 interface Harness {
   container: HTMLElement;
   personaListMock: Spy;
@@ -94,6 +105,8 @@ interface Harness {
    *  lane (submit) — mocked alongside the registry save from day one. */
   saveKeyMock: Spy;
   testMock: Spy;
+  /** 用户 2026-11-22：凭据的删除道（两击确认的第二击才发 op）。 */
+  deleteKeyMock: Spy;
   submitMock: Spy;
   /** 模型配置反馈 2026-08-29 ②④: the boot-default write lane + the /models
    *  probe the picker rides. */
@@ -146,6 +159,17 @@ async function renderDetail(opts: {
       ? vi.fn(() => Promise.resolve(opts.saveProvider))
       : vi.fn(() => Promise.resolve({ ok: true as const, provider: opts.card.provider }));
   const saveKeyMock = vi.fn(() => Promise.resolve({ provider: opts.card.provider, saved: true, keyCount: 3 }));
+  const deleteKeyMock = vi.fn(() =>
+    Promise.resolve(
+      deleteKeyMockResult ?? {
+        provider: opts.card.provider,
+        keyDeleted: true,
+        keyCount: 2,
+        overlayDeleted: false,
+        overlayError: null,
+      },
+    ),
+  );
   const testMock = vi.fn(() => Promise.resolve({ ok: true, state: "ok", message: "连接成功" }));
   const submitMock = vi.fn(() => Promise.resolve("started"));
   const setMock = vi.fn(() => Promise.resolve({ key: "", saved: true }));
@@ -154,6 +178,7 @@ async function renderDetail(opts: {
     personaList: personaListMock,
     settingsSaveProvider: saveProviderMock,
     settingsSaveKey: saveKeyMock,
+    settingsDeleteCredential: deleteKeyMock,
     settingsTestConnection: testMock,
     submit: submitMock,
     settingsSet: setMock,
@@ -190,6 +215,7 @@ async function renderDetail(opts: {
     // The iter3 key/chip lanes' mocks — narrowed from the same unknown cast.
     saveKeyMock,
     testMock,
+    deleteKeyMock,
     submitMock,
     setMock,
     listModelsMock,
@@ -476,12 +502,54 @@ describe("ProviderDetail key lane (mocked op client)", () => {
     // Round 5: the save exited the form — the paste box itself is GONE
     // (nothing retains the key client-side, stronger than an emptied input).
     expect(h.container.querySelector("input.key-input")).toBeNull();
-    expect(h.notify).toHaveBeenCalledWith("已保存 deepseek 的 Key(凭据文件现有 3 个,权限 0600)——下会话可用");
+    // 用户 2026-11-22：保存即验证 —— 写盘之后紧接一次探活，回执把结论一并说
+    // 出来（旧文案「下会话可用」只报了写盘，等于让用户自己去撞 401）。
+    expect(h.testMock).toHaveBeenCalledWith("deepseek", { key: "sk-paste-me", model: "deepseek-v4-flash" });
+    expect(h.notify).toHaveBeenCalledWith("已保存 deepseek 的 Key(凭据文件现有 3 个)· 连接验证通过");
     expect(h.refresh).toHaveBeenCalled();
   });
 
-  it("the keyrow carries NO second save button (one commit edge per panel)", async () => {
-    const h = await renderDetail({ card: BUILTIN_CARD });
+  it("删除凭证弹窗确认：点击按钮只开弹窗,弹窗里「确认删除」才真的发 settingsDeleteCredential", async () => {
+    const h = await renderDetail({ card: CUSTOM_CARD, mode: "read" });
+    click(btnByText(h.container, "删除凭证"));
+    await flush();
+    // 第一击只开确认弹窗，不发 op —— 删除不可逆，误触不该有任何后果。
+    expect(h.deleteKeyMock).not.toHaveBeenCalled();
+    click(btnByText(h.container, "确认删除"));
+    await flush();
+    expect(h.deleteKeyMock).toHaveBeenCalledWith("my-gateway");
+    expect(h.notify).toHaveBeenCalledWith(expect.stringContaining("已删除 my-gateway 的凭证"));
+    expect(h.refresh).toHaveBeenCalled();
+  });
+
+  it("删除凭证弹窗的「取消」不发 op，弹窗收起", async () => {
+    const h = await renderDetail({ card: CUSTOM_CARD, mode: "read" });
+    click(btnByText(h.container, "删除凭证"));
+    await flush();
+    click(btnByText(h.container, "取消"));
+    await flush();
+    expect(h.deleteKeyMock).not.toHaveBeenCalled();
+    expect(h.container.querySelector('[role="dialog"][aria-label="删除凭证"]')).toBeNull();
+  });
+
+  it("删除凭证的回执逐半报告：Key 与端点覆盖分开说,overlayError 不吞", async () => {
+    deleteKeyMockResult = { provider: "my-gateway", keyDeleted: false, keyCount: 0, overlayDeleted: true, overlayError: null };
+    const h = await renderDetail({ card: CUSTOM_CARD, mode: "read" });
+    click(btnByText(h.container, "删除凭证"));
+    await flush();
+    click(btnByText(h.container, "确认删除"));
+    await flush();
+    expect(h.notify).toHaveBeenCalledWith(expect.stringContaining("凭据文件里本没有 Key"));
+    expect(h.notify).toHaveBeenCalledWith(expect.stringContaining("端点配置已清"));
+  });
+
+  it("环境变量来源的 Key 不给删除入口（不归本应用管，摆个按钮才是骗人）", async () => {
+    const h = await renderDetail({ card: BUILTIN_CARD, mode: "read" });
+    const hasDelete = [...h.container.querySelectorAll("button")].some((b) => b.textContent === "删除凭证");
+    expect(hasDelete).toBe(false);
+  });
+
+  it("the keyrow carries NO second save button (one commit edge per panel)", async () => {    const h = await renderDetail({ card: BUILTIN_CARD });
     // 保存修改 is the ONLY button whose text starts with 保存.
     const saves = [...h.container.querySelectorAll("button")].filter((b) => b.textContent?.startsWith("保存"));
     expect(saves.map((b) => b.textContent)).toEqual(["保存修改"]);

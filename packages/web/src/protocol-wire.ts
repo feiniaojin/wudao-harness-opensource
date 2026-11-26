@@ -650,6 +650,9 @@ export function isRetryableMutation(op: ClientOp): boolean {
     // branch is driver state) — replayed like every other vaulted mutation.
     case "edit":
     case "settingsSaveKey":
+    // 用户 2026-11-22：删除是保存的对面，同为凭据的写 —— 重放必须收敛
+    // 在同一个判定上（幂等：第二回 keyDeleted/overlayDeleted 均 false，不报错）。
+    case "settingsDeleteCredential":
     case "settingsSet":
     // Provider management §5: a provider write is a side effect that must
     // survive a mid-flap replay exactly once — vaulted like settingsSet

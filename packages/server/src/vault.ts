@@ -35,6 +35,9 @@ export function isVaultedMutation(o: Record<string, unknown>): boolean {
     // mid-flap replay re-serves the armed text instead of re-arming.
     case "edit":
     case "settingsSaveKey":
+    // 用户 2026-11-22：删除是保存的对面，同为凭据的写 —— vault 保证
+    // 断线重放不重复执行（幂等，但回执也要原样再送一次）。
+    case "settingsDeleteCredential":
     case "settingsSet":
     // Provider management §5: a provider write is a side effect that must
     // survive a mid-flap replay exactly once — vaulted like settingsSet
